@@ -2,8 +2,8 @@
 
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
-use WC_Order;
 use Mollie\WooCommerce\Shared\FieldConstants;
+use WC_Order;
 
 /**
  * Middleware to handle customer birthdate in the request.
@@ -11,14 +11,16 @@ use Mollie\WooCommerce\Shared\FieldConstants;
 class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
 {
     /**
-     * @var array The payment methods.
+     * @var array<mixed> The payment methods.
      */
+    // phpstan:ignore [dead-code] injected via constructor but never read; likely needed once birthdate validation checks which methods require it
+    // @phpstan-ignore-next-line
     private array $paymentMethods;
 
     /**
      * Constructor.
      *
-     * @param array $paymentMethods The payment methods.
+     * @param array<mixed> $paymentMethods The payment methods.
      */
     public function __construct(array $paymentMethods)
     {
@@ -28,16 +30,16 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
     /**
      * Invoke the middleware.
      *
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param WC_Order $order The WooCommerce order object.
      * @param string $context The context of the request.
      * @param callable $next The next middleware to call.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     public function __invoke(array $requestData, WC_Order $order, $context, $next): array
     {
         $birthdatePostedFieldName = $this->getBirthdatePostedFieldName($order);
-        if (!$birthdatePostedFieldName || $birthdatePostedFieldName === '' || !is_string($birthdatePostedFieldName)) {
+        if (!$birthdatePostedFieldName) {
             return $next($requestData, $order, $context);
         }
         $format = "Y-m-d";

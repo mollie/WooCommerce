@@ -13,6 +13,11 @@ class DefaultFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pay
         return $this->gatewayDescription;
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return '';

@@ -9,12 +9,12 @@ use Inpsyde\PaymentGateway\PaymentProcessorInterface;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Notice\NoticeInterface;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\PaymentMethods\Constants;
 use Psr\Log\LoggerInterface as Logger;
 use WC_Order;
 
@@ -24,7 +24,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
 
     /**
-     * @var
+     * @var mixed
      */
     protected $deprecatedGatewayHelper;
     /**
@@ -43,18 +43,30 @@ class PaymentProcessor implements PaymentProcessorInterface
      * @var Data
      */
     protected $dataHelper;
+    /**
+     * @var Api
+     */
     protected $apiHelper;
+    /**
+     * @var Settings
+     */
     protected $settingsHelper;
+    /**
+     * @var string
+     */
     protected $pluginId;
     /**
      * @var PaymentCheckoutRedirectService
      */
     protected $paymentCheckoutRedirectService;
     private PaymentGateway $gateway;
+    /** @var array<mixed> */
     private array $deprecatedGatewayInstances;
 
     /**
      * PaymentProcessor constructor.
+     *
+     * @param array<mixed> $deprecatedGatewayInstances
      */
     public function __construct(
         NoticeInterface $notice,
@@ -79,17 +91,17 @@ class PaymentProcessor implements PaymentProcessorInterface
         $this->deprecatedGatewayInstances = $deprecatedGatewayInstances;
     }
 
-    public function setGatewayHelper(string $paymentGatewayId)
+    public function setGatewayHelper(string $paymentGatewayId): void
     {
         $this->deprecatedGatewayHelper = $this->deprecatedGatewayInstances[$paymentGatewayId] ?? false;
     }
 
-    public function setGateway(PaymentGateway $gateway)
+    public function setGateway(PaymentGateway $gateway): void
     {
         $this->gateway = $gateway;
     }
 
-    public function processPayment($order, $paymentGateway): array
+    public function processPayment(\WC_Order $order, PaymentGateway $paymentGateway): array
     {
         $orderId = $order->get_id();
         $this->setGateway($paymentGateway);
@@ -151,14 +163,14 @@ class PaymentProcessor implements PaymentProcessorInterface
     /**
      * Redirect location after successfully completing process_payment
      *
+     * @param PaymentMethodI $paymentMethod
      * @param WC_Order $order
      * @param MollieOrder|MolliePayment $paymentObject
-     *
-     *
+     * @return mixed
      */
     public function getProcessPaymentRedirect(
-        PaymentMethodI $paymentMethod,
-        $order,
+        $paymentMethod,
+        WC_Order $order,
         $paymentObject,
         string $redirectUrl
     ) {
@@ -173,11 +185,9 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $order
-     * @param $test_mode
      * @return null|string
      */
-    protected function getUserMollieCustomerId($order)
+    protected function getUserMollieCustomerId(WC_Order $order): ?string
     {
         $order_customer_id = $order->get_customer_id();
         $apiKey = $this->settingsHelper->getApiKey();
@@ -185,6 +195,10 @@ class PaymentProcessor implements PaymentProcessorInterface
         return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
     }
 
+    /**
+     * @param mixed $paymentMethod
+     * @return string
+     */
     protected function paymentTypeBasedOnGateway($paymentMethod)
     {
         $optionName = $this->pluginId . '_' . 'api_switch';
@@ -205,12 +219,11 @@ class PaymentProcessor implements PaymentProcessorInterface
      * If products are virtual, use Payments API instead of Orders API
      *
      * @param \WC_Order $order
-     *
-     * @param string $molliePaymentType
+     * @param mixed $molliePaymentType
      *
      * @return string
      */
-    protected function paymentTypeBasedOnProducts($order, $molliePaymentType)
+    protected function paymentTypeBasedOnProducts(\WC_Order $order, $molliePaymentType)
     {
         foreach ($order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
@@ -248,18 +261,18 @@ class PaymentProcessor implements PaymentProcessorInterface
     /**
      * @param MollieOrder $paymentObject
      * @param \WC_Order $order
-     * @param $customer_id
-     * @param $test_mode
+     * @param string|null $customer_id
+     * @param string|false $apiKey
      *
-     * @return array
+     * @return array<mixed>
      * @throws ApiException
      */
     protected function processAsMollieOrder(
         MollieOrder $paymentObject,
-        $order,
+        \WC_Order $order,
         $customer_id,
         $apiKey
-    ) {
+    ): array {
 
         $molliePaymentType = self::PAYMENT_METHOD_TYPE_ORDER;
         $paymentRequestData = $paymentObject->getPaymentRequestData(
@@ -367,17 +380,17 @@ class PaymentProcessor implements PaymentProcessorInterface
 
     /**
      * @param \WC_Order $order
-     * @param $customer_id
-     * @param $test_mode
+     * @param string|null $customer_id
+     * @param string|false $apiKey
      *
-     * @return Payment $paymentObject
+     * @return Payment
      * @throws ApiException
      */
     protected function processAsMolliePayment(
         \WC_Order $order,
         $customer_id,
         $apiKey
-    ) {
+    ): Payment {
 
         $paymentObject = $this->paymentFactory->getPaymentObject(
             self::PAYMENT_METHOD_TYPE_PAYMENT
@@ -435,21 +448,21 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $molliePaymentType
-     * @param $orderId
-     * @param MollieOrder|MolliePayment $paymentObject
+     * @param mixed $molliePaymentType
+     * @param int $orderId
+     * @param mixed $paymentObject
      * @param \WC_Order $order
-     * @param $customer_id
-     * @param $test_mode
+     * @param string|null $customer_id
+     * @param string|false $apiKey
      *
-     * @return mixed|Payment|MollieOrder
+     * @return Payment|MollieOrder|MolliePayment
      * @throws ApiException
      */
     protected function processPaymentForMollie(
         $molliePaymentType,
-        $orderId,
+        int $orderId,
         $paymentObject,
-        $order,
+        \WC_Order $order,
         $customer_id,
         $apiKey
     ) {
@@ -506,10 +519,10 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $order
-     * @param $payment
+     * @param \WC_Order $order
+     * @param mixed $payment
      */
-    protected function saveMollieInfo($order, $payment)
+    protected function saveMollieInfo(\WC_Order $order, $payment): void
     {
         // Get correct Mollie Payment Object
         $payment_object = $this->paymentFactory->getPaymentObject($payment);
@@ -525,11 +538,11 @@ class PaymentProcessor implements PaymentProcessorInterface
 
     /**
      * @param \WC_Order $order
-     * @param string $new_status
+     * @param mixed $new_status
      * @param string $note
      * @param bool $restore_stock
      */
-    public function updateOrderStatus(\WC_Order $order, $new_status, $note = '', $restore_stock = true)
+    public function updateOrderStatus(\WC_Order $order, $new_status, string $note = '', bool $restore_stock = true): void
     {
         $order->update_status($new_status, $note);
 
@@ -561,9 +574,9 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $orderId
+     * @param int $orderId
      */
-    protected function noValidMandateForSubsSwitchFailure($orderId): void
+    protected function noValidMandateForSubsSwitchFailure(int $orderId): void
     {
         $this->logger->debug(
             $this->gateway->id . ': Subscription switch failed, no valid mandate for order #' . $orderId
@@ -580,7 +593,10 @@ class PaymentProcessor implements PaymentProcessorInterface
         );
     }
 
-    protected function subsSwitchCompleted($order): array
+    /**
+     * @return array<mixed>
+     */
+    protected function subsSwitchCompleted(WC_Order $order): array
     {
         $order->payment_complete();
 
@@ -602,13 +618,13 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $order
+     * @param \WC_Order $order
      * @param string|null $customerId
-     * @param $apiKey
+     * @param string|false $apiKey
      * @return bool
      * @throws ApiException
      */
-    protected function processValidMandate($order, ?string $customerId, $apiKey): bool
+    protected function processValidMandate(\WC_Order $order, ?string $customerId, $apiKey): bool
     {
         $paymentObject = $this->paymentFactory->getPaymentObject(
             self::PAYMENT_METHOD_TYPE_PAYMENT
@@ -629,7 +645,11 @@ class PaymentProcessor implements PaymentProcessorInterface
         return $validMandate;
     }
 
-    protected function processSubscriptionSwitch(WC_Order $order, int $orderId, ?string $customerId, ?string $apiKey)
+    /**
+     * @param string|false $apiKey
+     * @return array<string, string>
+     */
+    protected function processSubscriptionSwitch(WC_Order $order, int $orderId, ?string $customerId, $apiKey): array
     {
         //
         // PROCESS SUBSCRIPTION SWITCH - If this is a subscription switch and customer has a valid mandate, process the order internally
@@ -652,11 +672,11 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $orderId
-     * @param $e
-     * @param $paymentMethodId
+     * @param int $orderId
+     * @param ApiException $e
+     * @param mixed $paymentMethodId
      */
-    protected function reportPaymentCreationFailure($orderId, $e, $paymentMethodId): void
+    protected function reportPaymentCreationFailure(int $orderId, ApiException $e, $paymentMethodId): void
     {
         $this->logger->debug(
             $paymentMethodId . ': Failed to create Mollie payment object for order ' . $orderId . ': ' . $e->getMessage(
@@ -676,11 +696,11 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $paymentObject
-     * @param $order
-     * @param $initialOrderStatus
+     * @param mixed $paymentObject
+     * @param \WC_Order $order
+     * @param mixed $initialOrderStatus
      */
-    protected function updatePaymentStatusForDelayedMethods($paymentObject, $order, $initialOrderStatus): void
+    protected function updatePaymentStatusForDelayedMethods($paymentObject, \WC_Order $order, $initialOrderStatus): void
     {
 // Update initial order status for payment methods where the payment status will be delivered after a couple of days.
         // See: https://www.mollie.com/nl/docs/status#expiry-times-per-payment-method
@@ -703,11 +723,12 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $paymentObject
-     * @param $orderId
-     * @param $order
+     * @param mixed $paymentObject
+     * @param int $orderId
+     * @param \WC_Order $order
+     * @param mixed $paymentMethod
      */
-    protected function reportPaymentSuccess($paymentObject, $orderId, $order, $paymentMethod): void
+    protected function reportPaymentSuccess($paymentObject, int $orderId, \WC_Order $order, $paymentMethod): void
     {
         $paymentMethodTitle = $paymentMethod->getProperty('id');
         $this->logger->debug(
@@ -731,30 +752,31 @@ class PaymentProcessor implements PaymentProcessorInterface
     }
 
     /**
-     * @param $order
-     * @param $orderId
+     * @param \WC_Order $order
+     * @param int $orderId
      * @return bool
      */
-    protected function needsSubscriptionSwitch($order, $orderId): bool
+    protected function needsSubscriptionSwitch(\WC_Order $order, int $orderId): bool
     {
-        return ('0.00' === $order->get_total())
+        return (0.0 === (float) $order->get_total())
             && ($this->dataHelper->isWcSubscription($orderId) === true)
             && 0 !== $order->get_user_id()
             && (wcs_order_contains_switch($order));
     }
 
     /**
-     * @param $exception
+     * @param ApiException $exception
      * @return string[]
      */
-    protected function paymentObjectFailure($exception): array
+    protected function paymentObjectFailure(ApiException $exception): array
     {
         $this->logger->debug($exception->getMessage());
         return ['result' => 'failure'];
     }
 
     /**
-     * @return mixed|void|null
+     * @param PaymentMethodI $paymentMethod
+     * @return mixed
      */
     protected function processInitialOrderStatus($paymentMethod)
     {
@@ -817,7 +839,7 @@ class PaymentProcessor implements PaymentProcessorInterface
      *
      * @throws ApiException
      */
-    private function handleUnprocessablePhone()
+    private function handleUnprocessablePhone(): void
     {
         $this->logger->debug(
             "Creating payment object: The phone number provided is invalid, stopping process."
@@ -834,7 +856,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     /**
      * @throws ApiException
      */
-    private function handleProcessingException(ApiException $e)
+    private function handleProcessingException(ApiException $e): void
     {
         switch ($this->apiHelper->isMollieException($e)) {
             case 'unprocessable_phone_number':

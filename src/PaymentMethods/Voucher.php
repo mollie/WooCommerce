@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-use Mollie\WooCommerce\Payment\MollieOrder;
-use Mollie\WooCommerce\Payment\MolliePayment;
-
 class Voucher extends AbstractPaymentMethod implements PaymentMethodI
 {
     /**
@@ -36,6 +33,9 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      */
     public const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
 
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -54,9 +54,8 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         ];
     }
 
-    public function filtersOnBuild()
+    public function filtersOnBuild(): void
     {
-
         add_action('mollie-payments-for-woocommerce_after_webhook_action', [$this, 'addPaymentDetailsOrderNote'], 10, 2);
     }
 
@@ -93,6 +92,8 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         if (isset($details->remainderAmount)) {
             $remainder = sprintf(
                 __('%1$s: %2$s %3$s<br/>', 'mollie-payments-for-woocommerce'),
+                // phpstan:ignore [mollie-stub] Mollie payment detail object exposes remainderMethod as a dynamic property not covered by type definitions
+                // @phpstan-ignore-next-line
                 $details->remainderMethod,
                 $details->remainderAmount->value,
                 $details->remainderAmount->currency
@@ -116,7 +117,11 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
+    public function getFormFields(array $generalFormFields): array
     {
         $paymentMethodFormFieds = [
             'mealvoucher_category_default' => [
@@ -157,7 +162,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      *
      * @param \WC_Product $product The WooCommerce product for which to retrieve voucher categories.
      *
-     * @return array An array of category identifiers (or names) associated with the product.
+     * @return array<mixed> An array of category identifiers (or names) associated with the product.
      *               Returns an empty array if no categories are found.
      */
     public static function getCategoriesForProduct(\WC_Product $product): array
@@ -214,9 +219,9 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
      * Filters a list of categories to include only the predefined valid categories.
      * This ensures the resulting array contains only categories recognized by the system.
      *
-     * @param array $categories The array of categories to be cleaned.
+     * @param array<mixed> $categories The array of categories to be cleaned.
      *
-     * @return array An array containing only valid category identifiers.
+     * @return array<mixed> An array containing only valid category identifiers.
      *               Returns an empty array if no valid categories are found.
      */
     public static function cleanCategories(array $categories): array
@@ -228,7 +233,7 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * Retrieve the default categories saved in the db option
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function voucherDefaultCategories(): array
     {

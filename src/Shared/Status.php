@@ -27,7 +27,7 @@ class Status
      * @var CompatibilityChecker
      */
     protected $compatibilityChecker;
-    protected $pluginTitle;
+    protected string $pluginTitle;
 
     public function __construct(
         CompatibilityChecker $compatibilityChecker,
@@ -182,7 +182,7 @@ class Status
     /**
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    public function getMollieApiStatus($apiClient)
+    public function getMollieApiStatus(MollieApiClient $apiClient): void
     {
         try {
             // Try to load Mollie issuers

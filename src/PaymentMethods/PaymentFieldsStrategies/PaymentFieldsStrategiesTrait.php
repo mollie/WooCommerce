@@ -4,6 +4,9 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 trait PaymentFieldsStrategiesTrait
 {
+    /**
+     * @return \WC_Order|false
+     */
     protected function getOrderIdOnPayForOrderPage()
     {
         global $wp;
@@ -11,7 +14,12 @@ trait PaymentFieldsStrategiesTrait
         return wc_get_order($orderId);
     }
 
-    protected function dateOfBirth($birthValue, $birthdateField)
+    /**
+     * @param string|false $birthValue
+     * @param string       $birthdateField
+     * @return string
+     */
+    protected function dateOfBirth($birthValue, $birthdateField): string
     {
         $birthValue = $birthValue ?: '';
         $html = '<p class="form-row form-row-wide" id="billing_birthdate_field">';

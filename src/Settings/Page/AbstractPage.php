@@ -16,10 +16,14 @@ abstract class AbstractPage
     protected string $currentSection;
     protected bool $connectionStatus;
     protected bool $testModeEnabled;
+    /** @var array<mixed> */
     protected array $pages;
     protected Data $dataHelper;
     protected ContainerInterface $container;
 
+    /**
+     * @param array<mixed> $pages
+     */
     public function __construct(
         Settings $settings,
         string $pluginUrl,
@@ -50,11 +54,17 @@ abstract class AbstractPage
         return 'tabName';
     }
 
+    /**
+     * @return array<mixed>
+     */
     protected function sections(): array
     {
         return [];
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function settings(): array
     {
         $settings = [];

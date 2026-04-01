@@ -40,6 +40,11 @@ class GiftcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pa
         return $this->gatewayDescription . $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         if (!$this->dropDownEnabled($gateway)) {
@@ -52,7 +57,7 @@ class GiftcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pa
     }
 
     /**
-     * @param $issuers
+     * @param mixed $issuers
      */
     protected function checkSvgIssuers($issuers): string
     {

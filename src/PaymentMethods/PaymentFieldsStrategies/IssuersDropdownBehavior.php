@@ -4,7 +4,11 @@ namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
 trait IssuersDropdownBehavior
 {
-    public function dropDownEnabled($gateway)
+    /**
+     * @param mixed $gateway
+     * @return bool
+     */
+    public function dropDownEnabled($gateway): bool
     {
         $defaultDropdownSetting = true;
         return $gateway->paymentMethod()->getProperty('issuers_dropdown_shown') ?
@@ -12,11 +16,11 @@ trait IssuersDropdownBehavior
             $defaultDropdownSetting;
     }
     /**
-     * @param $gateway
-     * @param $dataHelper
-     * @return array
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return array<mixed>
      */
-    public function getIssuers($gateway, $dataHelper)
+    public function getIssuers($gateway, $dataHelper): array
     {
         $testMode = $dataHelper->isTestModeEnabled();
         $apiKey = $dataHelper->getApiKey();
@@ -29,7 +33,8 @@ trait IssuersDropdownBehavior
     }
 
     /**
-     * @return string|NULL
+     * @param mixed $gateway
+     * @return string|null
      */
     public function getSelectedIssuer($gateway): ?string
     {
@@ -39,7 +44,13 @@ trait IssuersDropdownBehavior
         return !empty($postedIssuer) ? $postedIssuer : null;
     }
 
-    public function renderIssuers($gateway, $issuers, $selectedIssuer)
+    /**
+     * @param mixed        $gateway
+     * @param array<mixed> $issuers
+     * @param string|null  $selectedIssuer
+     * @return string
+     */
+    public function renderIssuers($gateway, $issuers, $selectedIssuer): string
     {
         $html = $this->issuersDropdownMarkup(
             $gateway,
@@ -60,10 +71,9 @@ trait IssuersDropdownBehavior
     }
 
     /**
-     * @param $gateway
-     * @param $issuers
-     * @param $selectedIssuer
-     *
+     * @param mixed        $gateway
+     * @param array<mixed> $issuers
+     * @param string|null  $selectedIssuer
      * @return string
      */
     public function issuersDropdownMarkup(
@@ -80,11 +90,9 @@ trait IssuersDropdownBehavior
     }
 
     /**
-     * @param        $description
-     * @param string $html
-     * @param        $issuers
-     * @param        $selectedIssuer
-     *
+     * @param mixed        $gateway
+     * @param array<mixed> $issuers
+     * @param string|null  $selectedIssuer
      * @return string
      */
     public function dropdownOptions(

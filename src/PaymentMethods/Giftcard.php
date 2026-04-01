@@ -11,14 +11,13 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * Method to print the giftcard payment details on debug and order note
      *
-     * @param           $payment
-     * @param \WC_Order  $order
-     *
+     * @param mixed $payment
+     * @param \WC_Order $order
      */
     public function debugGiftcardDetails(
         $payment,
         \WC_Order $order
-    ) {
+    ): void {
 
         $details = $payment->details;
         if (!$details) {
@@ -55,6 +54,9 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
         $order->add_order_note($orderNoteLine);
     }
 
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -83,11 +85,15 @@ class Giftcard extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
+    public function getFormFields(array $generalFormFields): array
     {
         $searchKey = 'advanced';
         $keys = array_keys($generalFormFields);
-        $index = array_search($searchKey, $keys);
+        $index = (int)array_search($searchKey, $keys);
         $before = array_slice($generalFormFields, 0, $index + 1, true);
         $after = array_slice($generalFormFields, $index + 1, null, true);
         $paymentMethodFormFields =  [

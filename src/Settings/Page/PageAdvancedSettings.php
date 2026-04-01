@@ -27,6 +27,9 @@ class PageAdvancedSettings extends AbstractPage
         return 'mollie_advanced';
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function sections(): array
     {
         return [

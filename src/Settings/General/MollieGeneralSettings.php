@@ -7,6 +7,13 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 
 class MollieGeneralSettings
 {
+    /**
+     * @param string $defaultTitle
+     * @param string $defaultDescription
+     * @param string|bool $paymentConfirmation
+     * @param bool $isOrderApi
+     * @return array<mixed>
+     */
     public function gatewayFormFields(
         $defaultTitle,
         $defaultDescription,

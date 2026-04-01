@@ -20,9 +20,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\PaymentMethods\Constants;
-use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
-use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -165,20 +163,22 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 if (!$title) {
                     return;
                 }
+                // phpstan:ignore [wc-stub] $paymentContext is passed via WC REST action with no declared type; ->order is a WC_Order
+                // @phpstan-ignore-next-line
                 $order = $paymentContext->order;
                 $order->set_payment_method_title($title);
                 $order->save();
             }
         );
         add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
-        add_filter('woocommerce_checkout_fields', static function ($fields) use ($container) {
+        add_filter('woocommerce_checkout_fields', static function ($fields) {
             if (!isset($fields['billing']['billing_phone']) || !$fields['billing']['billing_phone']['required']) {
                 update_option('mollie_wc_is_phone_required_flag', false);
             } else {
                 update_option('mollie_wc_is_phone_required_flag', true);
             }
             return $fields;
-        }, 10, 3);
+        }, 10, 1);
 
         add_action('init', static function () use ($container) {
             $paymentMethods = $container->get('gateway.paymentMethods');
@@ -362,15 +362,18 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         }, $screen, 'side', 'high');
     }
 
-    public function gatewaySurchargeHandling(Surcharge $surcharge)
+    public function gatewaySurchargeHandling(Surcharge $surcharge): void
     {
         new GatewaySurchargeHandler($surcharge);
     }
 
     /**
      * Don't show SEPA Direct Debit in WooCommerce Checkout
+     *
+     * @param array<string, mixed> $available_gateways
+     * @return array<string, mixed>
      */
-    public function disableSEPAInCheckout($available_gateways)
+    public function disableSEPAInCheckout(array $available_gateways): array
     {
         if (is_checkout()) {
             unset($available_gateways['mollie_wc_gateway_directdebit']);
@@ -381,8 +384,11 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 
     /**
      * Don't show Mollie Payment Methods in WooCommerce Account > Subscriptions
+     *
+     * @param array<string, mixed> $available_gateways
+     * @return array<string, mixed>
      */
-    public function disableMollieOnPaymentMethodChange($available_gateways)
+    public function disableMollieOnPaymentMethodChange(array $available_gateways): array
     {
         // Can't use $wp->request or is_wc_endpoint_url()
         // to check if this code only runs on /subscriptions and /view-subscriptions,
@@ -410,7 +416,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      * placed with Mollie, set a flag, so status updates (like expired) aren't processed by
      * Mollie Payments for WooCommerce.
      */
-    public function setOrderPaidByOtherGateway($order_id)
+    public function setOrderPaidByOtherGateway(int $order_id): void
     {
         $order = wc_get_order($order_id);
 
@@ -421,7 +427,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $order->update_meta_data('_mollie_paid_by_other_gateway', '1');
             $order->save();
         }
-        return true;
     }
 
     /**
@@ -451,9 +456,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      * This instantiates all payment methods that we have implemented
      * disregards if they are available at Mollie or not
      *
-     * @return array
+     * @return array<string, mixed>
      */
-    protected function instantiatePaymentMethods(): array
+    public function instantiatePaymentMethods(): array
     {
         $paymentMethods = [];
         $allGatewayClassNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
@@ -476,11 +481,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     }
     /**
      * @param string $id
-     * @param IconFactory $iconFactory
-     * @param Settings $settingsHelper
-     * @param Surcharge $surchargeService
-     * @param array $paymentMethods
-     * @return PaymentMethodI | array
+     * @return PaymentMethodI|array<mixed>
      */
     public function buildPaymentMethod(
         string $id

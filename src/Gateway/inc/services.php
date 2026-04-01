@@ -12,19 +12,20 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\DeprecatedGatewayBuilder;
+use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\Gateway\Refund\RefundLineItemsBuilder;
 use Mollie\WooCommerce\Gateway\Refund\RefundProcessor;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
-use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
-use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\IconFactory;
+use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -45,7 +46,7 @@ return static function (): array {
         },
         'gateway.paymentMethods' => static function (ContainerInterface $container): array {
             $onlyAvailableMethods = $container->get('gateway.getPaymentMethodsAfterFeatureFlag');
-            $allPaymentMethods = (new self())->instantiatePaymentMethods();
+            $allPaymentMethods = (new GatewayModule())->instantiatePaymentMethods();
             //we want only the methods after the feature flags
             return array_filter($allPaymentMethods, static function ($method, $key) use ($onlyAvailableMethods) {
                 return array_key_exists($key, $onlyAvailableMethods);
@@ -204,7 +205,7 @@ return static function (): array {
             $ajaxRequests = new AppleAjaxRequests($responseTemplates, $notice, $logger, $apiHelper, $settingsHelper);
             return new ApplePayDirectHandler($notice, $ajaxRequests);
         },
-        PayPalExpressButton::class => static function (ContainerInterface $container): PayPalExpressButton {
+        PayPalExpressButton::class => static function (ContainerInterface $container) {
             $notice = $container->get(AdminNotice::class);
             assert($notice instanceof AdminNotice);
             $logger = $container->get(Logger::class);
@@ -296,6 +297,8 @@ return static function (): array {
                         }
 
                         // Empty cart
+                        // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
+                        // @phpstan-ignore-next-line
                         if (WC()->cart) {
                             WC()->cart->empty_cart();
                         }
@@ -384,6 +387,9 @@ return static function (): array {
 
     ];
 
-    $paymentMethods = (new self())->instantiatePaymentMethods();
-    return array_merge($services, (new self())->providePaymentMethodServices(...array_values($paymentMethods)));
+    $paymentMethods = (new GatewayModule())->instantiatePaymentMethods();
+    return array_merge(
+        $services,
+        (new GatewayModule())->providePaymentMethodServices(...array_values($paymentMethods))
+    );
 };

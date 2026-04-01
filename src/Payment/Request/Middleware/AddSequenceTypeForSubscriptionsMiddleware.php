@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
+use WC_Payment_Gateway;
 
 /**
  * Middleware to add sequence type for subscription payments.
@@ -38,16 +39,16 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
     /**
      * Invoke the middleware.
      *
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param WC_Order $order The WooCommerce order object.
      * @param string $context The context of the request.
      * @param callable $next The next middleware to call.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     public function __invoke(array $requestData, WC_Order $order, $context, callable $next): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
-        if ($gateway) {
+        if ($gateway instanceof WC_Payment_Gateway) {
             $requestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $requestData, $context);
         }
         return $next($requestData, $order, $context);
@@ -58,9 +59,9 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
      *
      * @param int $orderId The order ID.
      * @param WC_Payment_Gateway $gateway The payment gateway.
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param string $context The context of the request.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     private function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $requestData, $context): array
     {
@@ -78,9 +79,9 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
     /**
      * Add the sequence type 'first' to the request data.
      *
-     * @param array $requestData The request data.
+     * @param array<mixed> $requestData The request data.
      * @param string $context The context of the request.
-     * @return array The modified request data.
+     * @return array<mixed> The modified request data.
      */
     private function addSequenceTypeFirst($requestData, $context)
     {

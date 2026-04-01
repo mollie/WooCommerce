@@ -10,8 +10,14 @@ interface ExpressButtonInterface
 
     public function getButtonComponent(): string; // React component name
 
+    /**
+     * @return array<mixed>
+     */
     public function getAjaxHandlers(): array;
 
+    /**
+     * @return array<mixed>
+     */
     public function getScriptData(): array;
 
     public function canShow(): bool;

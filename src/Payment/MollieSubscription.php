@@ -5,7 +5,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Payment\Request\Middleware\PaymentDescriptionMiddleware;
-use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Psr\Log\LoggerInterface as Logger;
@@ -13,18 +13,29 @@ use Psr\Log\LoggerInterface as Logger;
 class MollieSubscription extends MollieObject
 {
     protected $pluginId;
-    /**
-     * @var mixed
-     */
-    private AbstractPaymentMethod $paymentMethod;
+    // phpstan:ignore [dead-code] injected via constructor but never read in this class; MollieObject subclasses access it through other paths
+    // @phpstan-ignore-next-line
+    private PaymentMethodI $paymentMethod;
     protected MiddlewareHandler $middleware;
 
     /**
      * Molliesubscription constructor.
      *
+     * @param string $pluginId
+     * @param \Mollie\WooCommerce\Settings\Settings $settingsHelper
+     * @param \Mollie\WooCommerce\Shared\Data $dataHelper
+     * @param MiddlewareHandler $middlewareHandler
      */
-    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, Logger $logger, AbstractPaymentMethod $paymentMethod, $middlewareHandler)
-    {
+    public function __construct(
+        $pluginId,
+        Api $apiHelper,
+        $settingsHelper,
+        $dataHelper,
+        Logger $logger,
+        PaymentMethodI $paymentMethod,
+        $middlewareHandler
+    ) {
+
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
@@ -34,9 +45,10 @@ class MollieSubscription extends MollieObject
         $this->middleware = $middlewareHandler;
     }
     /**
-     * @param $order
-     * @param $customerId
-     * @return array
+     * @param mixed $order
+     * @param mixed $customerId
+     * @param mixed $initialPaymentUsedOrderAPI
+     * @return array<mixed>
      */
     public function getRecurringPaymentRequestData($order, $customerId, $initialPaymentUsedOrderAPI)
     {
@@ -73,6 +85,12 @@ class MollieSubscription extends MollieObject
         return $this->middleware->handle($requestData, $order, $context);
     }
 
+    /**
+     * @param mixed $order
+     * @param mixed $option
+     * @param mixed $initialPaymentUsedOrderAPI
+     * @return string
+     */
     protected function getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI)
     {
         $description = !$option ? '' : trim($option);
@@ -104,6 +122,8 @@ class MollieSubscription extends MollieObject
      *
      * @param bool $status
      * @param MollieSubscriptionGatewayHandler $deprecatedSubscriptionHelper
+     * @param mixed $orderTotal
+     * @param mixed $gateway
      * @return bool
      */
     public function isAvailableForSubscriptions(bool $status, MollieSubscriptionGatewayHandler $deprecatedSubscriptionHelper, $orderTotal, $gateway): bool
@@ -155,11 +175,11 @@ class MollieSubscription extends MollieObject
 
     /**
      * @param string $currency
-     * @param $recurring_total
+     * @param mixed $recurring_total
      * @param string $billingCountry
      * @param string $sequenceType
      * @param string $paymentLocale
-     * @return array
+     * @return array<mixed>
      */
     protected function buildFilters(
         string $currency,

@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\Settings\Page\Section;
 
 class InstructionsConnected extends AbstractSection
 {
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [

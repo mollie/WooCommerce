@@ -16,7 +16,7 @@ class OrderLines implements LineItemProvider
     /**
      * Formatted order lines.
      *
-     * @var $order_lines
+     * @var array<mixed>
      */
     private $order_lines =  [];
 
@@ -30,12 +30,16 @@ class OrderLines implements LineItemProvider
     /**
      * WooCommerce currency.
      *
+     * @var string
      */
     private $currency;
     /**
      * @var Data
      */
     protected $dataHelper;
+    /**
+     * @var string
+     */
     protected $pluginId;
 
     /**
@@ -54,7 +58,7 @@ class OrderLines implements LineItemProvider
      *
      * @param WC_Order $order WooCommerce Order
      *
-     * @return array
+     * @return array<mixed>
      */
     public function order_lines(WC_Order $order): array
     {
@@ -70,7 +74,7 @@ class OrderLines implements LineItemProvider
         return $this->get_order_lines();
     }
 
-    private function process_mismatch()
+    private function process_mismatch(): void
     {
         $orderTotal = (float) $this->order->get_total();
         $orderTotalRounded = round($orderTotal, 2);
@@ -123,7 +127,7 @@ class OrderLines implements LineItemProvider
      *
      * @access private
      */
-    private function process_items()
+    private function process_items(): void
     {
         foreach ($this->order->get_items() as $cart_item) {
             if ($cart_item['quantity']) {
@@ -182,7 +186,7 @@ class OrderLines implements LineItemProvider
                 }
 
                 if ($product instanceof \WC_Product && $product->get_image_id()) {
-                    $productImage = wp_get_attachment_image_src($product->get_image_id(), 'full');
+                    $productImage = wp_get_attachment_image_src((int)$product->get_image_id(), 'full');
                     if (isset($productImage[0]) && wc_is_valid_url($productImage[0])) {
                         $mollie_order_item['imageUrl'] = $productImage[0];
                     }
@@ -207,14 +211,17 @@ class OrderLines implements LineItemProvider
      *
      * @access private
      */
-    private function process_shipping()
+    private function process_shipping(): void
     {
         $shipping_methods = $this->order->get_shipping_methods();
         if ($shipping_methods) {
             foreach ($shipping_methods as $shipping_method) {
                 $vatRate = 0;
                 if ($shipping_method->get_total_tax() > 0 && $shipping_method->get_total() > 0) {
-                    $vatRate = round($shipping_method->get_total_tax() / $shipping_method->get_total(), 4) * 100;
+                    $vatRate = round(
+                        (float)$shipping_method->get_total_tax() / (float)$shipping_method->get_total(),
+                        4
+                    ) * 100;
                 }
                 $shipping = [
                     'type' => 'shipping_fee',
@@ -223,15 +230,24 @@ class OrderLines implements LineItemProvider
                     'vatRate' => $vatRate,
                     'unitPrice' =>  [
                         'currency' => $this->currency,
-                        'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total() + $shipping_method->get_total_tax(), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue(
+                            (float)$shipping_method->get_total() + (float)$shipping_method->get_total_tax(),
+                            $this->currency
+                        ),
                     ],
                     'totalAmount' =>  [
                         'currency' => $this->currency,
-                        'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total() + $shipping_method->get_total_tax(), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue(
+                            (float)$shipping_method->get_total() + (float)$shipping_method->get_total_tax(),
+                            $this->currency
+                        ),
                     ],
                     'vatAmount' =>  [
                         'currency' => $this->currency,
-                        'value' => $this->dataHelper->formatCurrencyValue($shipping_method->get_total_tax(), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue(
+                            (float)$shipping_method->get_total_tax(),
+                            $this->currency
+                        ),
                     ],
                     'metadata' => [
                         'order_item_id' => $shipping_method->get_id(),
@@ -248,7 +264,7 @@ class OrderLines implements LineItemProvider
      *
      * @access private
      */
-    private function process_fees()
+    private function process_fees(): void
     {
         if (! empty($this->order->get_items('fee'))) {
             foreach ($this->order->get_items('fee') as $cart_fee) {
@@ -310,22 +326,31 @@ class OrderLines implements LineItemProvider
      *
      * @access private
     */
-    private function process_gift_cards()
+    private function process_gift_cards(): void
     {
         if (!empty($this->order->get_items('gift_card'))) {
             foreach ($this->order->get_items('gift_card') as $cart_gift_card) {
+                // phpstan:ignore [wc-stub] WC gift card item's get_amount() is not declared in stubs
+                // @phpstan-ignore-next-line
+                $giftCardAmount = $cart_gift_card->get_amount();
                 $gift_card = [
                     'type' => 'gift_card',
                     'name' => $cart_gift_card->get_name(),
                     'unitPrice' => [
                         'currency' => $this->currency,
-                        'value' =>  $this->dataHelper->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue(
+                            -$giftCardAmount,
+                            $this->currency
+                        ),
                     ],
                     'vatRate' => 0,
                     'quantity' => 1,
                     'totalAmount' => [
                         'currency' => $this->currency,
-                        'value' =>  $this->dataHelper->formatCurrencyValue(-$cart_gift_card->get_amount(), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue(
+                            -$giftCardAmount,
+                            $this->currency
+                        ),
                     ],
                     'vatAmount' => [
                         'currency' => $this->currency,
@@ -366,6 +391,8 @@ class OrderLines implements LineItemProvider
      *
      * @return integer $item_tax_amount Item tax amount.
      */
+    // phpstan:ignore [dead-code] private method appears unused; kept for potential future use
+    // @phpstan-ignore-next-line
     private function get_item_tax_amount($cart_item)
     {
         return $cart_item['line_tax'];

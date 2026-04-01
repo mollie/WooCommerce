@@ -7,11 +7,9 @@ namespace Mollie\WooCommerce\Shared;
 use Exception;
 use InvalidArgumentException;
 use Mollie\Api\Resources\Method;
-use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use WC_Customer;
 use WC_Order;
 
@@ -44,13 +42,13 @@ class Data
      * @var Api
      */
     protected $api_helper;
-    protected $settingsHelper;
+    protected Settings $settingsHelper;
     /**
      * @var Logger
      */
     protected $logger;
-    protected $pluginId;
-    protected $pluginPath;
+    protected string $pluginId;
+    protected string $pluginPath;
 
     public function __construct(Api $api_helper, Logger $logger, string $pluginId, Settings $settingsHelper, string $pluginPath)
     {
@@ -97,7 +95,7 @@ class Data
             );
     }
 
-    public function getGlobalSettingsUrl()
+    public function getGlobalSettingsUrl(): string
     {
         return $this->settingsHelper->getGlobalSettingsUrl();
     }
@@ -111,22 +109,22 @@ class Data
     }
 
     /**
-     * @param bool $overrideTestMode
+     * @param bool|null $overrideTestMode Pass null to use the current test mode setting.
      *
      * @return false|string
      */
-    public function getApiKey($overrideTestMode = 2)
+    public function getApiKey(?bool $overrideTestMode = null)
     {
         return $this->settingsHelper->getApiKey($overrideTestMode);
     }
 
-    public function processSettings($gateway)
+    public function processSettings(string $gatewayId): void
     {
 
-        $this->settingsHelper->processSettings($gateway);
+        $this->settingsHelper->processSettings($gatewayId);
     }
 
-    public function getPaymentLocale()
+    public function getPaymentLocale(): string
     {
 
         return $this->settingsHelper->getPaymentLocale();
@@ -160,7 +158,16 @@ class Data
         $max_option_name_length = 191;
 
         if ($option_name_length > $max_option_name_length) {
-            trigger_error(sprintf('Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).', esc_html($transient_id), esc_html($option_name), esc_html($option_name_length), esc_html($max_option_name_length)), E_USER_WARNING);
+            trigger_error(
+                sprintf(
+                    'Transient id %s is to long. Option name %s (%s) will be to long for database column wp_options.option_name which is varchar(%s).',
+                    esc_html($transient_id),
+                    esc_html($option_name),
+                    esc_html((string)$option_name_length),
+                    esc_html((string)$max_option_name_length)
+                ),
+                E_USER_WARNING
+            );
         }
 
         return $transient_id;
@@ -188,12 +195,13 @@ class Data
     }
 
     /**
+     * @param string|false $apiKey
      * @param bool $testMode
      * @param bool $useCache
      *
-     * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
+     * @return array<mixed>
      */
-    public function getAllPaymentMethods($apiKey, $testMode = false, $useCache = true)
+    public function getAllPaymentMethods($apiKey, bool $testMode = false, bool $useCache = true)
     {
         $result = $this->getRegularPaymentMethods($apiKey, $testMode, $useCache);
         if (!is_array($result)) {
@@ -208,13 +216,20 @@ class Data
         return $result;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function wooCommerceFiltersForCheckout(): array
     {
 
         $cart = WC()->cart;
+        // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $cartTotal = $cart ? $cart->get_total('edit') : 0;
 
         $currency = get_woocommerce_currency();
+        // phpstan:ignore [wc-stub] WC()->customer is WC_Customer|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
         $fallbackToShopCountry = wc_get_base_location()['country'];
         $billingCountry = $customerExistsAndHasCountry ? WC()->customer->get_billing_country() : $fallbackToShopCountry;
@@ -237,7 +252,10 @@ class Data
      * @param $orderTotal
      * @param $currency
      */
-    protected function getAmountValue($orderTotal, $currency): string
+    /**
+     * @param float|int $orderTotal
+     */
+    protected function getAmountValue($orderTotal, string $currency): string
     {
         return $this->formatCurrencyValue(
             $orderTotal,
@@ -248,20 +266,16 @@ class Data
     /**
      * Returns a list of filters, ensuring that the values are valid.
      *
-     * @param $currency
-     * @param $orderTotal
-     * @param $paymentLocale
-     * @param $billingCountry
-     *
-     * @return array
+     * @param float|int $orderTotal
+     * @return array<string, mixed>
      * @throws InvalidArgumentException
      */
     public function getFilters(
-        $currency,
+        string $currency,
         $orderTotal,
-        $paymentLocale,
-        $billingCountry
-    ) {
+        string $paymentLocale,
+        string $billingCountry
+    ): array {
 
         $amountValue = $this->getAmountValue($orderTotal, $currency);
         if ($amountValue <= 0) {
@@ -314,7 +328,11 @@ class Data
      *
      * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
      */
-    public function getRegularPaymentMethods($apiKey, $testMode = false, $useCache = true)
+    /**
+     * @param string|false $apiKey
+     * @return array<mixed>
+     */
+    public function getRegularPaymentMethods($apiKey, bool $testMode = false, bool $useCache = true)
     {
         // Already initialized
         if ($useCache && ! empty(self::$regular_api_methods)) {
@@ -324,7 +342,7 @@ class Data
         $methods = $this->getAllAvailablePaymentMethods($useCache);
         // We cannot access allActive for all methods so we filter them out here
         $filtered_methods = array_filter($methods, static function ($method) use ($testMode) {
-            if ($testMode === "live") {
+            if (!$testMode) {
                 return $method['status'] === "activated";
             } else {
                 return in_array($method['status'], ["activated", "pending-review"]);
@@ -335,7 +353,11 @@ class Data
         return self::$regular_api_methods;
     }
 
-    public function getRecurringPaymentMethods($apiKey, $testMode = false, $useCache = true)
+    /**
+     * @param string|false $apiKey
+     * @return array<mixed>
+     */
+    public function getRecurringPaymentMethods($apiKey, bool $testMode = false, bool $useCache = true): array
     {
         // Already initialized
         if ($useCache && ! empty(self::$recurring_api_methods)) {
@@ -347,7 +369,11 @@ class Data
         return self::$recurring_api_methods;
     }
 
-    public function getApiPaymentMethods($useCache = true, $filters = [])
+    /**
+     * @param array<string, mixed> $filters
+     * @return array<mixed>
+     */
+    public function getApiPaymentMethods(bool $useCache = true, array $filters = []): array
     {
         $testMode = $this->isTestModeEnabled();
         $apiKey = $this->settingsHelper->getApiKey();
@@ -409,12 +435,14 @@ class Data
     }
 
     /**
-     * @param bool $testMode
      * @param      $method
      *
      * @return mixed|\Mollie\Api\Resources\Method|null
      */
-    public function getPaymentMethod($method)
+    /**
+     * @return mixed
+     */
+    public function getPaymentMethod(string $method)
     {
         $testMode = $this->isTestModeEnabled();
         $apiKey = $this->settingsHelper->getApiKey();
@@ -433,12 +461,13 @@ class Data
     /**
      * Get issuers for payment method (e.g. for iDEAL, KBC/CBC payment button, gift cards)
      *
+     * @param string      $apiKey
      * @param bool        $testMode (default: false)
      * @param string|null $methodId
      *
-     * @return array
+     * @return array<int, mixed>
      */
-    public function getMethodIssuers($apiKey, $testMode = false, $methodId = null)
+    public function getMethodIssuers($apiKey, bool $testMode = false, ?string $methodId = null): array
     {
         if (!$methodId) {
             return [];
@@ -538,7 +567,7 @@ class Data
      * @param $customerId
      * @return $this
      */
-    public function setUserMollieCustomerIdAtSubscription($orderId, $customerId)
+    public function setUserMollieCustomerIdAtSubscription(int $orderId, string $customerId)
     {
         if (!empty($customerId)) {
             $order = wc_get_order($orderId);
@@ -550,8 +579,8 @@ class Data
     }
 
     /**
-     * @param int  $userId
-     * @param bool $testMode
+     * @param int $userId
+     * @param string $apiKey
      * @return null|string
      */
     public function getUserMollieCustomerId($userId, $apiKey)
@@ -601,7 +630,7 @@ class Data
                 // Get the best name for use as Mollie Customer name
                 $user_full_name = $userdata->first_name . ' ' . $userdata->last_name;
 
-                if (strlen(trim($user_full_name)) === null) {
+                if (strlen(trim($user_full_name)) === 0) {
                     $user_full_name = $userdata->display_name;
                 }
 
@@ -645,7 +674,7 @@ class Data
     /**
      * @param WC_Order $order
      */
-    public function restoreOrderStock(WC_Order $order)
+    public function restoreOrderStock(WC_Order $order): void
     {
         wc_maybe_increase_stock_levels($order->get_id());
     }
@@ -657,7 +686,7 @@ class Data
      *
      * @return string $value
      */
-    public function getOrderCurrency($order)
+    public function getOrderCurrency(WC_Order $order): string
     {
         return $order->get_currency();
     }
@@ -669,7 +698,10 @@ class Data
      *
      * @return string
      */
-    public function formatCurrencyValue($value, $currency)
+    /**
+     * @param float|int $value
+     */
+    public function formatCurrencyValue($value, string $currency): string
     {
         return mollieWooCommerceFormatCurrencyValue($value, $currency);
     }
@@ -680,7 +712,7 @@ class Data
      *
      * @return bool
      */
-    public function isWcSubscription($orderId): bool
+    public function isWcSubscription(int $orderId): bool
     {
         if (!(class_exists('WC_Subscriptions') && class_exists('WC_Subscriptions_Admin'))) {
             return false;
@@ -699,13 +731,19 @@ class Data
         return false;
     }
 
-    public function isSubscription($orderId)
+    /**
+     * @return mixed
+     */
+    public function isSubscription(int $orderId)
     {
         $isSubscription = false;
         return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
     }
 
-    public function getAllAvailablePaymentMethods($useCache = true)
+    /**
+     * @return array<mixed>
+     */
+    public function getAllAvailablePaymentMethods(bool $useCache = true): array
     {
         $apiKey = $this->settingsHelper->getApiKey();
         $methods = false;
@@ -764,7 +802,12 @@ class Data
      * @param $result
      * @return mixed
      */
-    protected function addRecurringPaymentMethods($apiKey, bool $testMode, bool $useCache, $result)
+    /**
+     * @param string|false $apiKey
+     * @param array<mixed> $result
+     * @return array<mixed>
+     */
+    protected function addRecurringPaymentMethods($apiKey, bool $testMode, bool $useCache, array $result): array
     {
         $recurringPaymentMethods = $this->getRecurringPaymentMethods($apiKey, $testMode, $useCache);
         if (!is_array($recurringPaymentMethods)) {

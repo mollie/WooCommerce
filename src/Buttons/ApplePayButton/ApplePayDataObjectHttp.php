@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Psr\Log\LoggerInterface as Logger;
 
+/**
+ * @phpcs:disable Inpsyde.CodeQuality.PropertyPerClassLimit.TooManyProperties
+ */
 class ApplePayDataObjectHttp
 {
     /**
@@ -33,7 +36,7 @@ class ApplePayDataObjectHttp
      */
     protected $productQuantity;
     /**
-     * @var array|mixed
+     * @var array<mixed>
      */
     protected $shippingMethod = [];
     /**
@@ -45,7 +48,11 @@ class ApplePayDataObjectHttp
      */
     protected $shippingAddress = [];
     /**
-     * @var array
+     * @var mixed
+     */
+    public $callerPage;
+    /**
+     * @var array<mixed>
      */
     protected $errors = [];
     /**
@@ -64,7 +71,7 @@ class ApplePayDataObjectHttp
     /**
      * Resets the errors array
      */
-    protected function resetErrors()
+    protected function resetErrors(): void
     {
         $this->errors = [];
     }
@@ -73,13 +80,14 @@ class ApplePayDataObjectHttp
      * Returns if the object has any errors
      * @return bool
      */
-    public function hasErrors()
+    public function hasErrors(): bool
     {
         return !empty($this->errors);
     }
+
     /**
      * Returns errors
-     * @return array
+     * @return array<mixed>
      */
     public function errors(): array
     {
@@ -89,12 +97,15 @@ class ApplePayDataObjectHttp
     /**
      * Set the object with the data relevant to ApplePay validation
      */
-    public function validationData()
+    public function validationData(): void
     {
         if (!$this->isNonceValid()) {
             return;
         }
         $data = $this->getFilteredRequestData();
+        if (!is_array($data)) {
+            return;
+        }
 
         $this->resetErrors();
         if (
@@ -112,12 +123,15 @@ class ApplePayDataObjectHttp
      * Set the object with the data relevant to ApplePay on update shipping contact
      * Required data depends on callerPage
      */
-    public function updateContactData()
+    public function updateContactData(): void
     {
         if (!$this->isNonceValid()) {
             return;
         }
         $data = $this->getFilteredRequestData();
+        if (!is_array($data)) {
+            return;
+        }
 
         $result = $this->updateRequiredData(
             $data,
@@ -127,20 +141,27 @@ class ApplePayDataObjectHttp
         if (!$result) {
             return;
         }
-        $this->updateSimplifiedContact($data[PropertiesDictionary::SIMPLIFIED_CONTACT]);
+        $simplifiedContact = $data[PropertiesDictionary::SIMPLIFIED_CONTACT];
+        if (is_array($simplifiedContact)) {
+            $this->updateSimplifiedContact($simplifiedContact);
+        }
     }
 
     /**
      * Set the object with the data relevant to ApplePay on update shipping method
      * Required data depends on callerPage
      */
-    public function updateMethodData()
+    public function updateMethodData(): void
     {
         if (!$this->isNonceValid()) {
             return;
         }
 
         $data = $this->getFilteredRequestData();
+        if (!is_array($data)) {
+            return;
+        }
+
         $result = $this->updateRequiredData(
             $data,
             PropertiesDictionary::UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS,
@@ -149,7 +170,10 @@ class ApplePayDataObjectHttp
         if (!$result) {
             return;
         }
-        $this->updateSimplifiedContact($data[PropertiesDictionary::SIMPLIFIED_CONTACT]);
+        $simplifiedContact = $data[PropertiesDictionary::SIMPLIFIED_CONTACT];
+        if (is_array($simplifiedContact)) {
+            $this->updateSimplifiedContact($simplifiedContact);
+        }
         $this->updateShippingMethod($data);
     }
 
@@ -157,15 +181,17 @@ class ApplePayDataObjectHttp
      * Set the object with the data relevant to ApplePay on authorized order
      * Required data depends on callerPage
      *
-     * @param       $callerPage
+     * @param string $callerPage
      */
-    public function orderData($callerPage)
+    public function orderData(string $callerPage): void
     {
         if (!$this->isNonceValid()) {
             return;
         }
-        // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+        $data = $this->getFilteredRequestData();
+        if (!is_array($data)) {
+            return;
+        }
         $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
         $result = $this->updateRequiredData(
             $data,
@@ -175,11 +201,13 @@ class ApplePayDataObjectHttp
         if (!$result) {
             return;
         }
+        $shippingContact = $data[PropertiesDictionary::SHIPPING_CONTACT];
         if (
-            !array_key_exists('emailAddress', $data[PropertiesDictionary::SHIPPING_CONTACT])
-            || !$data[PropertiesDictionary::SHIPPING_CONTACT]['emailAddress']
+            !is_array($shippingContact)
+            || !array_key_exists('emailAddress', $shippingContact)
+            || !$shippingContact['emailAddress']
         ) {
-            $this->errors[] =  [
+            $this->errors[] = [
                 'errorCode' => PropertiesDictionary::SHIPPING_CONTACT_INVALID,
                 'contactField' => 'emailAddress',
             ];
@@ -187,16 +215,17 @@ class ApplePayDataObjectHttp
             return;
         }
 
-        $filteredShippingContact = $data[PropertiesDictionary::SHIPPING_CONTACT];
         $this->shippingAddress = $this->completeAddress(
-            $filteredShippingContact,
+            $shippingContact,
             PropertiesDictionary::SHIPPING_CONTACT_INVALID
         );
         $filteredbillingContact = $data[PropertiesDictionary::BILLING_CONTACT];
-        $this->billingAddress = $this->completeAddress(
-            $filteredbillingContact,
-            PropertiesDictionary::BILLING_CONTACT_INVALID
-        );
+        if (is_array($filteredbillingContact)) {
+            $this->billingAddress = $this->completeAddress(
+                $filteredbillingContact,
+                PropertiesDictionary::BILLING_CONTACT_INVALID
+            );
+        }
         $this->updateShippingMethod($data);
     }
 
@@ -206,10 +235,11 @@ class ApplePayDataObjectHttp
      * If not it adds an unknown error to the object's error list, as this errors
      * are not supported by ApplePay
      *
-     *
+     * @param array<mixed> $data
+     * @param array<mixed> $required
      * @return bool
      */
-    protected function hasRequiredFieldsValuesOrError(array $data, array $required)
+    protected function hasRequiredFieldsValuesOrError(array $data, array $required): bool
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
@@ -233,8 +263,10 @@ class ApplePayDataObjectHttp
 
     /**
      * Sets the value to the appropriate field in the object
+     *
+     * @param array<mixed> $data
      */
-    protected function assignDataObjectValues(array $data)
+    protected function assignDataObjectValues(array $data): void
     {
         foreach ($data as $key => $value) {
             if ($key === 'woocommerce-process-checkout-nonce') {
@@ -246,12 +278,11 @@ class ApplePayDataObjectHttp
 
     /**
      * Returns the address details used in pre-authorization steps
-     * @param array $contactInfo
      *
-     * @return string[]
-     *
+     * @param array<mixed> $contactInfo
+     * @return array<string, string>
      */
-    protected function simplifiedAddress($contactInfo)
+    protected function simplifiedAddress(array $contactInfo): array
     {
         $required = [
             'locality' => 'locality',
@@ -268,9 +299,9 @@ class ApplePayDataObjectHttp
             return [];
         }
         return [
-            'city' => $contactInfo['locality'],
-            'postcode' => $contactInfo['postalCode'],
-            'country' => strtoupper($contactInfo['countryCode']),
+            'city' => (string) $contactInfo['locality'],
+            'postcode' => (string) $contactInfo['postalCode'],
+            'country' => strtoupper((string) $contactInfo['countryCode']),
         ];
     }
 
@@ -279,8 +310,8 @@ class ApplePayDataObjectHttp
      * are not empty.
      * If not it adds a contactField error to the object's error list
      *
-     * @param array  $post      The address to check
-     * @param array  $required  The required fields for the given address
+     * @param array<mixed> $post The address to check
+     * @param array<mixed> $required The required fields for the given address
      * @param string $errorCode Either shipping or billing kind
      *
      * @return bool
@@ -288,8 +319,8 @@ class ApplePayDataObjectHttp
     protected function addressHasRequiredFieldsValues(
         array $post,
         array $required,
-        $errorCode
-    ) {
+        string $errorCode
+    ): bool {
 
         foreach ($required as $requiredField => $errorValue) {
             if (!array_key_exists($requiredField, $post)) {
@@ -304,8 +335,7 @@ class ApplePayDataObjectHttp
                 $this->logger->debug(
                     sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
                 );
-                $this->errors[]
-                    = [
+                $this->errors[] = [
                     'errorCode' => $errorCode,
                     'contactField' => $errorValue,
                 ];
@@ -318,13 +348,11 @@ class ApplePayDataObjectHttp
     /**
      * Returns the address details for after authorization steps
      *
-     * @param array  $data
-     *
+     * @param array<mixed> $data
      * @param string $errorCode differentiates between billing and shipping information
-     *
-     * @return string[]
+     * @return array<string, string>
      */
-    protected function completeAddress($data, $errorCode)
+    protected function completeAddress(array $data, string $errorCode): array
     {
         $required = [
             'givenName' => 'name',
@@ -344,25 +372,28 @@ class ApplePayDataObjectHttp
             return [];
         }
 
+        $addressLines = is_array($data['addressLines'] ?? null) ? $data['addressLines'] : [];
         return [
-            'first_name' => $data['givenName'],
-            'last_name' => $data['familyName'],
-            'email' => $data['emailAddress'] ?? '',
-            'phone' => $data['phoneNumber'] ?? '',
-            'address_1' => $data['addressLines'][0] ?? '',
-            'address_2' => $data['addressLines'][1] ?? '',
-            'city' => $data['locality'],
-            'state' => $data['administrativeArea'],
-            'postcode' => $data['postalCode'],
-            'country' => strtoupper($data['countryCode']),
+            'first_name' => (string) $data['givenName'],
+            'last_name' => (string) $data['familyName'],
+            'email' => (string) ($data['emailAddress'] ?? ''),
+            'phone' => (string) ($data['phoneNumber'] ?? ''),
+            'address_1' => (string) ($addressLines[0] ?? ''),
+            'address_2' => (string) ($addressLines[1] ?? ''),
+            'city' => (string) $data['locality'],
+            'state' => (string) ($data['administrativeArea'] ?? ''),
+            'postcode' => (string) $data['postalCode'],
+            'country' => strtoupper((string) $data['countryCode']),
         ];
     }
 
     /**
-     * @param       $requiredProductFields
-     * @param       $requiredCartFields
+     * @param array<mixed> $data
+     * @param array<mixed> $requiredProductFields
+     * @param array<mixed> $requiredCartFields
+     * @return bool
      */
-    protected function updateRequiredData(array $data, $requiredProductFields, $requiredCartFields)
+    protected function updateRequiredData(array $data, array $requiredProductFields, array $requiredCartFields): bool
     {
         $this->resetErrors();
         $requiredFields = $requiredProductFields;
@@ -384,9 +415,9 @@ class ApplePayDataObjectHttp
     }
 
     /**
-     * @param $data
+     * @param array<mixed> $data
      */
-    protected function updateSimplifiedContact($data)
+    protected function updateSimplifiedContact(array $data): void
     {
         $simplifiedContactInfo = array_map('sanitize_text_field', $data);
         $this->simplifiedContact = $this->simplifiedAddress(
@@ -394,7 +425,10 @@ class ApplePayDataObjectHttp
         );
     }
 
-    protected function updateShippingMethod(array $data)
+    /**
+     * @param array<mixed> $data
+     */
+    protected function updateShippingMethod(array $data): void
     {
         if (
             array_key_exists(
@@ -402,70 +436,104 @@ class ApplePayDataObjectHttp
                 $data
             )
         ) {
-            $this->shippingMethod = filter_var_array(
-                $data[PropertiesDictionary::SHIPPING_METHOD],
+            $shippingMethodData = $data[PropertiesDictionary::SHIPPING_METHOD];
+            if (!is_array($shippingMethodData)) {
+                return;
+            }
+            $filtered = filter_var_array(
+                $shippingMethodData,
                 FILTER_SANITIZE_SPECIAL_CHARS
             );
+            if (is_array($filtered)) {
+                $this->shippingMethod = $filtered;
+            }
         }
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function billingAddress(): array
     {
         return $this->billingAddress;
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function shippingAddress(): array
     {
         return $this->shippingAddress;
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function shippingMethod(): array
     {
-        return $this->shippingMethod ?? [];
+        return $this->shippingMethod;
     }
 
     public function needShipping(): bool
     {
-        return $this->needShipping;
+        return (bool) $this->needShipping;
     }
 
-    public function productId(): string
+    /**
+     * @return mixed
+     */
+    public function productId()
     {
         return $this->productId;
     }
 
-    public function productQuantity(): string
+    /**
+     * @return mixed
+     */
+    public function productQuantity()
     {
         return $this->productQuantity;
     }
 
+    /**
+     * @return mixed
+     */
     public function nonce()
     {
         return $this->nonce;
     }
 
+    /**
+     * @return mixed
+     */
     public function validationUrl()
     {
         return $this->validationUrl;
     }
 
+    /**
+     * @return mixed
+     */
     public function simplifiedContact()
     {
         return $this->simplifiedContact;
     }
 
-    public function isNonceValid()
+    /**
+     * @return bool
+     */
+    public function isNonceValid(): bool
     {
         $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
 
-        return wp_verify_nonce(
+        return (bool) wp_verify_nonce(
             $nonce,
             'woocommerce-process_checkout'
-        ) || wp_verify_nonce($nonce, 'mollie_apple_pay_blocks');
+        ) || (bool) wp_verify_nonce($nonce, 'mollie_apple_pay_blocks');
     }
 
     /**
-     * @return array|false|null
+     * @return array<mixed>|false|null
      */
     public function getFilteredRequestData()
     {

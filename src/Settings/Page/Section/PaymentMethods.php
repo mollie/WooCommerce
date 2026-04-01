@@ -9,6 +9,9 @@ use Mollie\WooCommerce\PaymentMethods\Constants;
 
 class PaymentMethods extends AbstractSection
 {
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         return [
@@ -54,7 +57,7 @@ class PaymentMethods extends AbstractSection
         $activatedGateways = '';
         $deactivatedGateways = '';
 
-        /** @var AbstractPaymentMethod $paymentMethod */
+        /** @var AbstractPaymentMethod[] $paymentMethods */
         $paymentMethods = $this->container->get('gateway.paymentMethods');
         $enabledMethods =  $this->container->get('gateway.paymentMethodsEnabledAtMollie');
         if (!in_array(Constants::DIRECTDEBIT, $enabledMethods, true)) {
@@ -181,6 +184,9 @@ class PaymentMethods extends AbstractSection
         return ob_get_clean();
     }
 
+    /**
+     * @param mixed $enabledInMollie
+     */
     protected function paymentGatewayButton(AbstractPaymentMethod $paymentMethod, $enabledInMollie): string
     {
         $documentationLink = $paymentMethod->getProperty('docs');
@@ -200,7 +206,7 @@ class PaymentMethods extends AbstractSection
                 'enabled',
                 'mollie-payments-for-woocommerce'
             )) . '</span>';
-        } elseif ($enabledInMollie && !$enabledInWoo) {
+        } elseif (!$enabledInWoo) {
             $messageOrLink = '<span class="mollie-settings-pm__status mollie-settings-pm__status--disabled">' . esc_html(__(
                 'disabled',
                 'mollie-payments-for-woocommerce'

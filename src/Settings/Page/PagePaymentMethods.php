@@ -27,6 +27,9 @@ class PagePaymentMethods extends AbstractPage
         return 'mollie_payment_methods';
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function sections(): array
     {
         return [

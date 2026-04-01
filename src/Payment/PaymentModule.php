@@ -37,11 +37,13 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * @var mixed
      */
     protected $logger;
+    /** @var Api|null */
     protected $apiHelper;
     /**
      * @var mixed
      */
     protected $settingsHelper;
+    /** @var string */
     protected $pluginId;
     /**
      * @var mixed
@@ -114,7 +116,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 $this->handleExpiryDateCancelation($paymentMethods);
             },
             10,
-            2
+            0
         );
         add_action(
             OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS,
@@ -132,6 +134,11 @@ class PaymentModule implements ServiceModule, ExecutableModule
         return true;
     }
 
+    /**
+     * @param mixed $willCancel
+     * @param mixed $order
+     * @return mixed
+     */
     public function maybeLetWCCancelOrder($willCancel, $order)
     {
         if (!empty($willCancel)) {
@@ -151,6 +158,9 @@ class PaymentModule implements ServiceModule, ExecutableModule
         return $willCancel;
     }
 
+    /**
+     * @return void
+     */
     public function cancelOrderOnExpiryDate()
     {
         $classNames = $this->gatewayClassnames;
@@ -165,7 +175,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 continue;
             }
 
-            $heldDuration = isset($gatewaySettings) && isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
+            $heldDuration = isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
 
             if ($heldDuration < 1) {
                 continue;
@@ -205,7 +215,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * @param Refund $refund
      * @param WC_Order $order
-     * @param array $data
+     * @param array<mixed> $data
+     * @return void
      */
     public function addOrderNoteForRefundCreated(
         Refund $refund,
@@ -227,8 +238,9 @@ class PaymentModule implements ServiceModule, ExecutableModule
     }
 
     /**
-     * @param array $data
+     * @param array<mixed> $data
      * @param WC_Order $order
+     * @return void
      */
     public function addOrderNoteForCancelledLineItems(array $data, WC_Order $order)
     {
@@ -248,6 +260,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * Old Payment return url callback
      *
+     * @param mixed $container
+     * @return void
      */
     public function onMollieReturn($container)
     {
@@ -295,6 +309,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * New Payment return url callback
      *
+     * @param mixed $container
+     * @return void
      */
     public function mollieReturnRedirect($container)
     {
@@ -308,6 +324,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     /**
      * @param WC_Order $order
+     * @param ContainerInterface $container
+     * @return void
      */
     public function onOrderDetails(WC_Order $order, ContainerInterface $container)
     {
@@ -341,6 +359,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * Ship all order lines and capture an order at Mollie.
      *
+     * @param mixed $order_id
+     * @return void
      */
     public function shipAndCaptureOrderAtMollie($order_id)
     {
@@ -431,6 +451,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
     /**
      * Cancel an order at Mollie.
      *
+     * @param mixed $order_id
+     * @return void
      */
     public function cancelOrderAtMollie($order_id)
     {
@@ -512,7 +534,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
 
     /**
      * Add/remove scheduled action to cancel orders on expiration date
-     * @param $paymentMethods
+     * @param mixed $paymentMethods
      * @return void
      */
     public function handleExpiryDateCancelation($paymentMethods)
@@ -530,14 +552,14 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 'mollie_woocommerce_cancel_unpaid_orders',
                 [$this, 'cancelOrderOnExpiryDate'],
                 11,
-                2
+                0
             );
         }
     }
 
     /**
      * Check if there is any payment method that has the expiry date enabled
-     * @param $paymentMethods
+     * @param mixed $paymentMethods
      * @return bool
      */
     public function IsExpiryDateEnabled($paymentMethods): bool
@@ -587,6 +609,10 @@ class PaymentModule implements ServiceModule, ExecutableModule
         return $order;
     }
 
+    /**
+     * @param array<mixed> $data
+     * @return mixed
+     */
     private function extractRemoteItemsIds(array $data)
     {
         if (empty($data['lines'])) {

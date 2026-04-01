@@ -21,8 +21,9 @@ class DataToPayPal
     /**
      * Sets the appropriate data to send to PayPal script
      * Data differs between product page and cart page
+     * @return array<mixed>
      */
-    public function paypalbuttonScriptData($isBlock = false): array
+    public function paypalbuttonScriptData(bool $isBlock = false): array
     {
         $paypalSettings = get_option('mollie_wc_gateway_paypal_settings', false);
         $minAmount = 0;
@@ -35,7 +36,8 @@ class DataToPayPal
             return $this->dataForBlockCartPage($minAmount);
         }
         if (is_product()) {
-            return $this->dataForProductPage($minAmount);
+            $productData = $this->dataForProductPage($minAmount);
+            return is_array($productData) ? $productData : [];
         }
         if (is_cart()) {
             return $this->dataForCartPage($minAmount);
@@ -77,10 +79,8 @@ class DataToPayPal
     }
 
     /**
-     *
-     * @param $minAmount
-     *
-     * @return array|bool
+     * @param mixed $minAmount
+     * @return array<mixed>|false
      */
     protected function dataForProductPage($minAmount)
     {
@@ -112,12 +112,10 @@ class DataToPayPal
     }
 
     /**
-     *
-     * @param $minAmount
-     *
-     * @return array
+     * @param mixed $minAmount
+     * @return array<mixed>
      */
-    protected function dataForCartPage($minAmount)
+    protected function dataForCartPage($minAmount): array
     {
         $cart = WC()->cart;
         return [
@@ -130,10 +128,8 @@ class DataToPayPal
     }
 
     /**
-     *
-     * @param $minAmount
-     *
-     * @return array
+     * @param mixed $minAmount
+     * @return array<mixed>
      */
     protected function dataForBlockCartPage($minAmount): array
     {

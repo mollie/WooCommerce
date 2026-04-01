@@ -28,6 +28,9 @@ class PageApiKeys extends AbstractPage
         return __('API keys', 'mollie-payments-for-woocommerce');
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function sections(): array
     {
         return [

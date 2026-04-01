@@ -9,6 +9,9 @@ use Mollie\WooCommerce\Payment\PaymentProcessor;
 
 class Advanced extends AbstractSection
 {
+    /**
+     * @return array<mixed>
+     */
     public function config(): array
     {
         $this->cleanDbIfRequested();
@@ -229,6 +232,9 @@ class Advanced extends AbstractSection
         );
     }
 
+    /**
+     * @return array<mixed>
+     */
     protected function paymentDescriptionLabels(): array
     {
 
@@ -257,6 +263,9 @@ class Advanced extends AbstractSection
         return ob_get_clean();
     }
 
+    /**
+     * @return void
+     */
     protected function cleanDbIfRequested()
     {
         if (

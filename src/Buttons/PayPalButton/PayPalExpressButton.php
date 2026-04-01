@@ -56,12 +56,18 @@ class PayPalExpressButton extends AbstractExpressButton
         return $this->isEnabledInSettings();
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function getAjaxHandlers(): array
     {
         // Delegate to the existing ajax requests handler
         return $this->ajaxRequests->getHandlers();
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function getScriptData(): array
     {
         return $this->dataPaypal->paypalbuttonScriptData(false);

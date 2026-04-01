@@ -10,5 +10,12 @@ use WC_Order;
 
 interface PaymentRedirectStrategyI
 {
+    /**
+     * @param PaymentMethodI $paymentMethod
+     * @param mixed          $order
+     * @param mixed          $paymentObject
+     * @param string         $redirectUrl
+     * @return mixed
+     */
     public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl);
 }

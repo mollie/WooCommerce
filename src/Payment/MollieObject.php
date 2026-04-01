@@ -11,22 +11,40 @@ use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Psr\Log\LoggerInterface as Logger;
 use WC_Order;
 use WC_Payment_Gateway;
-use Psr\Log\LoggerInterface as Logger;
 
 class MollieObject
 {
+    /**
+     * @var mixed
+     */
     protected $data;
     /**
      * @var string[]
      */
     protected const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
 
+    /**
+     * @var string|null
+     */
     protected static $paymentId;
+    /**
+     * @var string|null
+     */
     protected static $customerId;
+    /**
+     * @var \WC_Order|null
+     */
     protected static $order;
+    /**
+     * @var \Mollie\Api\Resources\Payment|\Mollie\Api\Resources\Order|null
+     */
     protected static $payment;
+    /**
+     * @var string
+     */
     protected static $shop_country;
     /**
      * @var Logger
@@ -36,9 +54,18 @@ class MollieObject
      * @var PaymentFactory
      */
     protected PaymentFactory $paymentFactory;
+    /**
+     * @var mixed
+     */
     protected $dataService;
+    /**
+     * @var \Mollie\WooCommerce\SDK\Api
+     */
     protected $apiHelper;
     protected Settings $settingsHelper;
+    /**
+     * @var \Mollie\WooCommerce\Shared\Data
+     */
     protected $dataHelper;
     /**
      * @var string
@@ -47,9 +74,14 @@ class MollieObject
     /**
      * @var null
      */
+    // phpstan:ignore [dead-code] typed @var null; kept as a placeholder — subclasses shadow this with properly typed versions
+    // @phpstan-ignore-next-line
     private $paymentMethod;
     protected RequestFactory $requestFactory;
 
+    /**
+     * @param mixed $data
+     */
     public function __construct(
         $data,
         Logger $logger,
@@ -72,11 +104,17 @@ class MollieObject
         $this->requestFactory = $requestFactory;
     }
 
+    /**
+     * @return mixed
+     */
     public function data()
     {
         return $this->data;
     }
 
+    /**
+     * @return string|null
+     */
     public function customerId()
     {
         return self::$customerId;
@@ -146,9 +184,9 @@ class MollieObject
     }
 
     /**
-     * @param $order
-     * @param $customerId
-     *
+     * @param mixed $order
+     * @param mixed $customerId
+     * @return array<mixed>|void
      */
     protected function getPaymentRequestData($order, $customerId)
     {
@@ -159,6 +197,7 @@ class MollieObject
      * @param string $new_status
      * @param string $note
      * @param bool $restore_stock
+     * @return void
      */
     public function updateOrderStatus(\WC_Order $order, $new_status, $note = '', $restore_stock = true)
     {
@@ -415,7 +454,7 @@ class MollieObject
                 );
             } catch (ApiException $exception) {
                 $this->logger->debug($exception->getMessage());
-                return;
+                return null;
             }
 
             return $this->getPaymentObjectPayment(
@@ -516,12 +555,20 @@ class MollieObject
         return ! empty($cancelled_payment_id);
     }
 
+    /**
+     * @return string|null
+     */
     public function getMolliePaymentIdFromPaymentObject()
     {
+        return null;
     }
 
+    /**
+     * @return string|null
+     */
     public function getMollieCustomerIdFromPaymentObject()
     {
+        return null;
     }
 
     /**
@@ -532,6 +579,7 @@ class MollieObject
      * @param object $paymentObject
      * @param null   $amount
      * @param string $reason
+     * @return void
      */
     public function refund(WC_Order $order, $orderId, $paymentObject, $amount = null, $reason = '')
     {
@@ -549,6 +597,7 @@ class MollieObject
     }
     /**
      * @param WC_Order $order
+     * @return void
      */
     public function deleteSubscriptionFromPending(WC_Order $order)
     {
@@ -565,8 +614,9 @@ class MollieObject
     }
 
     /**
-     * @param WC_Order       $order
-     * @param Order| Payment $payment
+     * @param WC_Order $order
+     * @param Order|Payment $payment
+     * @return void
      */
     public function addMandateIdMetaToFirstPaymentSubscriptionOrder(
         WC_Order $order,
@@ -591,8 +641,12 @@ class MollieObject
                     $subscriptions = wcs_get_subscriptions_for_renewal_order($order);
                 }
                 foreach ($subscriptions as $subscription) {
+                    // phpstan:ignore [mollie-stub] Mollie Payment object exposes id and mandateId as dynamic stdClass properties not covered by type definitions
+                    // @phpstan-ignore-next-line
                     $subscription->update_meta_data('_mollie_payment_id', $payment->id);
                     $subscription->update_meta_data('_mollie_mandate_id', $payment->mandateId);
+                    // phpstan:ignore [mollie-stub] Mollie Payment object exposes method as a dynamic property; also set_payment_method() may not be typed on WC_Subscription stubs
+                    // @phpstan-ignore-next-line
                     $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
                     $subscription->save();
                     $subscriptionParentOrder = $subscription->get_parent();
@@ -609,9 +663,8 @@ class MollieObject
     }
 
     /**
-     * @param $order
-     * @param $test_mode
-     * @return null|string
+     * @param \WC_Order $order
+     * @return string|null
      */
     protected function getUserMollieCustomerId($order)
     {
@@ -621,7 +674,8 @@ class MollieObject
         return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
     }
     /**
-     * @param $order
+     * @param \WC_Order $order
+     * @return void
      */
     public function deleteSubscriptionOrderFromPendingPaymentQueue($order)
     {
@@ -651,12 +705,13 @@ class MollieObject
         );
     }
     /**
-     * @param int                           $orderId
-     * @param \WC_Payment_Gateway           $gateway
-     * @param \WC_Order                     $order
-     * @param string                        $newOrderStatus
-     * @param string                        $paymentMethodTitle
-     * @param Payment|Order                 $payment
+     * @param int $orderId
+     * @param \WC_Payment_Gateway $gateway
+     * @param \WC_Order $order
+     * @param string $newOrderStatus
+     * @param string $paymentMethodTitle
+     * @param Payment|Order $payment
+     * @return void
      */
     public function failedSubscriptionProcess(
         $orderId,
@@ -720,6 +775,8 @@ class MollieObject
                 !empty($emails) && !empty($orderId)
                 && !empty($emails['WC_Email_Failed_Order'])
             ) {
+                // phpstan:ignore [wc-stub] WC_Email subclass accessed via mailer array; trigger() not typed on WC_Email base class in stubs
+                // @phpstan-ignore-next-line
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
         } elseif (mollieWooCommerceIsMollieGateway($gateway->id)) {
@@ -731,6 +788,9 @@ class MollieObject
         }
     }
 
+    /**
+     * @return void
+     */
     public function addPaypalTransactionIdToOrder(
         WC_Order $order
     ) {

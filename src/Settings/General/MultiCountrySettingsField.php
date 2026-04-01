@@ -12,6 +12,9 @@ class MultiCountrySettingsField implements SettingsFieldRendererInterface
      */
     private $paymentMethod;
 
+    /**
+     * @param mixed $paymentMethod
+     */
     public function __construct($paymentMethod)
     {
         $this->paymentMethod = $paymentMethod;
@@ -22,12 +25,18 @@ class MultiCountrySettingsField implements SettingsFieldRendererInterface
         return $this->multiSelectCountry($this->paymentMethod);
     }
 
+    /**
+     * @param mixed $paymentMethod
+     * @return mixed
+     */
     public function multiSelectCountry($paymentMethod)
     {
         $selections = (array)$paymentMethod->getProperty('allowed_countries', []);
         $gatewayId = $paymentMethod->getProperty('id');
         $id = 'woocommerce_mollie_wc_gateway_' . $gatewayId . '_allowed_countries';
         $title = __('Sell to specific countries', 'mollie-payments-for-woocommerce');
+        // phpstan:ignore [wc-stub] WC()->countries is WC_Countries|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $countries = WC()->countries->countries;
         asort($countries);
         ob_start();

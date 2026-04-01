@@ -7,6 +7,10 @@ namespace Mollie\WooCommerce\PaymentMethods;
 class Kbc extends AbstractPaymentMethod implements PaymentMethodI
 {
     protected const DEFAULT_ISSUERS_DROPDOWN = 'yes';
+
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -37,11 +41,15 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
+    public function getFormFields(array $generalFormFields): array
     {
         $searchKey = 'advanced';
         $keys = array_keys($generalFormFields);
-        $index = array_search($searchKey, $keys);
+        $index = (int)array_search($searchKey, $keys);
         $before = array_slice($generalFormFields, 0, $index + 1, true);
         $after = array_slice($generalFormFields, $index + 1, null, true);
         $paymentMethodFormFieds =   [

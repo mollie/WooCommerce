@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Directdebit extends AbstractPaymentMethod implements PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -35,7 +38,11 @@ class Directdebit extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
+    public function getFormFields(array $generalFormFields): array
     {
         unset($generalFormFields['display_logo']);
         unset($generalFormFields['description']);

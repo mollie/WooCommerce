@@ -10,7 +10,7 @@ class DataToAppleButtonScripts
      * Sets the appropriate data to send to ApplePay script
      * Data differs between product page and cart page
      *
-     * @return array
+     * @return array<mixed>
      */
     public function applePayScriptData(bool $isBlock = false): array
     {
@@ -18,7 +18,7 @@ class DataToAppleButtonScripts
             return [];
         }
         $base_location = wc_get_base_location();
-        $shopCountryCode = $base_location['country'];
+        $shopCountryCode = (string) ($base_location['country'] ?? '');
         $currencyCode = get_woocommerce_currency();
         $totalLabel = get_bloginfo('name');
         if (is_product()) {
@@ -41,11 +41,11 @@ class DataToAppleButtonScripts
     /**
      * Check if the product needs shipping
      *
-     * @param $product
+     * @param \WC_Product $product
      *
      * @return bool
      */
-    protected function checkIfNeedShipping($product)
+    protected function checkIfNeedShipping(\WC_Product $product): bool
     {
         if (
             !wc_shipping_enabled()
@@ -65,17 +65,17 @@ class DataToAppleButtonScripts
     }
 
     /**
-     * @param $shopCountryCode
-     * @param $currencyCode
-     * @param $totalLabel
+     * @param string $shopCountryCode
+     * @param string $currencyCode
+     * @param string $totalLabel
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function dataForProductPage(
-        $shopCountryCode,
-        $currencyCode,
-        $totalLabel
-    ) {
+        string $shopCountryCode,
+        string $currencyCode,
+        string $totalLabel
+    ): array {
 
         $product = wc_get_product(get_the_id());
         if (!$product) {
@@ -108,17 +108,17 @@ class DataToAppleButtonScripts
     }
 
     /**
-     * @param $shopCountryCode
-     * @param $currencyCode
-     * @param $totalLabel
+     * @param string $shopCountryCode
+     * @param string $currencyCode
+     * @param string $totalLabel
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function dataForCartPage(
-        $shopCountryCode,
-        $currencyCode,
-        $totalLabel
-    ) {
+        string $shopCountryCode,
+        string $currencyCode,
+        string $totalLabel
+    ): array {
 
         $cart = WC()->cart;
         $nonce = wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce', true, false);

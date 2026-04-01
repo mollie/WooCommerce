@@ -10,7 +10,6 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -26,11 +25,14 @@ class MolliePaymentGatewayHandler
      * @var bool
      */
     protected static $alreadyDisplayedAdminInstructions = false;
+    /**
+     * @var bool
+     */
     protected static $alreadyDisplayedCustomerInstructions = false;
     /**
      * Recurring total, zero does not define a recurring total
      *
-     * @var array
+     * @var array<float>
      */
     protected $recurring_totals = [];
     /**
@@ -112,6 +114,7 @@ class MolliePaymentGatewayHandler
         // Use gateway class name as gateway id
         $this->gatewayId();
 
+        // @phpstan-ignore-next-line
         $this->mollieOrderService->setGateway($this);
 
         add_action(
@@ -159,17 +162,17 @@ class MolliePaymentGatewayHandler
         return $this->paymentMethod;
     }
 
-    public function dataService()
+    public function dataService(): Data
     {
         return $this->dataService;
     }
 
-    public function pluginId()
+    public function pluginId(): string
     {
         return $this->pluginId;
     }
 
-    protected function gatewayId()
+    protected function gatewayId(): string
     {
         $paymentMethodId = $this->paymentMethod->getProperty('id');
         $this->id = 'mollie_wc_gateway_' . $paymentMethodId;
@@ -179,6 +182,7 @@ class MolliePaymentGatewayHandler
     /**
      * Check if the gateway is available for use
      *
+     * @param mixed $gateway
      * @return bool
      */
     public function is_available($gateway): bool
@@ -190,6 +194,8 @@ class MolliePaymentGatewayHandler
             return true;
         }
 
+        // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $order_total = WC()->cart ? WC()->cart->get_total('edit') : 0;
         $currency = $this->getCurrencyFromOrder();
         $billingCountry = $this->getBillingCountry();
@@ -217,11 +223,10 @@ class MolliePaymentGatewayHandler
     /**
      * Check if payment method is available in checkout based on amount, currency and sequenceType
      *
-     * @param $filters
-     *
+     * @param array<mixed> $filters
      * @return bool
      */
-    public function isAvailableMethodInCheckout($filters): bool
+    public function isAvailableMethodInCheckout(array $filters): bool
     {
         $useCache = true;
         $methods = $this->dataService->getApiPaymentMethods(
@@ -243,7 +248,7 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * @return array|false|int
+     * @return array<float>|false
      */
     public function get_recurring_total()
     {
@@ -268,10 +273,10 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * @param $order
-     * @param $payment
+     * @param WC_Order $order
+     * @param mixed $payment
      */
-    public function handlePaidOrderWebhook($order, $payment)
+    public function handlePaidOrderWebhook(WC_Order $order, $payment): void
     {
         // Duplicate webhook call
         $this->httpResponse->setHttpResponseCode(204);
@@ -303,6 +308,7 @@ class MolliePaymentGatewayHandler
             return $order->get_checkout_payment_url(false);
         }
 
+        // @phpstan-ignore-next-line
         $this->mollieOrderService->setGateway($this);
         if ($this->mollieOrderService->orderNeedsPayment($order)) {
             $hasCancelledMolliePayment = $this->paymentObject()
@@ -395,13 +401,13 @@ class MolliePaymentGatewayHandler
     /**
      * Retrieve the active payment object
      *
-     * @param $orderId
-     * @param $useCache
+     * @param int $orderId
+     * @param bool $useCache
      *
      * @return Payment
      * @throws UnexpectedValueException
      */
-    public function activePaymentObject($orderId, $useCache): Payment
+    public function activePaymentObject(int $orderId, bool $useCache): Payment
     {
         $paymentObject = $this->paymentObject();
         $activePaymentObject = $paymentObject->getActiveMolliePayment(
@@ -419,12 +425,12 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * @param      $title
-     * @param null $id
+     * @param string $title
+     * @param int|null $id
      *
-     * @return string|void
+     * @return string
      */
-    public function onOrderReceivedTitle($title, $id = null)
+    public function onOrderReceivedTitle(string $title, $id = null): string
     {
         if (is_order_received_page() && get_the_ID() === $id) {
             $order = false;
@@ -525,12 +531,12 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * @param          $text
-     * @param WC_Order| null $order
+     * @param string $text
+     * @param WC_Order|null $order
      *
-     * @return string|void
+     * @return string
      */
-    public function onOrderReceivedText($text, $order)
+    public function onOrderReceivedText(string $text, $order): string
     {
         if (!is_a($order, 'WC_Order')) {
             return $text;
@@ -583,6 +589,8 @@ class MolliePaymentGatewayHandler
      */
     public function getBillingCountry()
     {
+        // phpstan:ignore [wc-stub] WC()->customer is WC_Customer|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
         $fallbackToShopCountry = wc_get_base_location()['country'];
         $billingCountry = $customerExistsAndHasCountry ? WC()->customer->get_billing_country() : $fallbackToShopCountry;
@@ -622,6 +630,7 @@ class MolliePaymentGatewayHandler
      * In WooCommerce check if the gateway is available for use (WooCommerce settings)
      * but also check if is not direct debit as this should not be shown in checkout
      *
+     * @param mixed $gateway
      * @return bool
      */
     protected function checkEnabledNorDirectDebit($gateway): bool
@@ -642,6 +651,8 @@ class MolliePaymentGatewayHandler
      */
     protected function cartAmountAvailable()
     {
+        // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         return WC()->cart && WC()->cart->get_total('edit') > 0;
     }
 

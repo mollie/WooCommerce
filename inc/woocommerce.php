@@ -7,7 +7,7 @@ if (!function_exists('has_block')) {
      * @since WooCommerce 5.0
      * @return bool
      */
-    function has_block($blockName)
+    function has_block(string $blockName): bool
     {
         return false;
     }
@@ -30,11 +30,11 @@ if (!function_exists('is_order_received_page')) {
 
 if (!function_exists('untrailingslashit')) {
     /**
-     * @since WooCommerce 2.2.0
-     * @param string $string
+     * @param string|null $string
      * @return string
+     * @since WooCommerce 2.2.0
      */
-    function untrailingslashit($string)
+    function untrailingslashit(?string $string): string
     {
         if ($string === null) {
             return '';
@@ -43,7 +43,7 @@ if (!function_exists('untrailingslashit')) {
     }
 }
 
-function mollieWooCommerceSession()
+function mollieWooCommerceSession(): \WC_Session
 {
     return WC()->session;
 }
@@ -54,7 +54,10 @@ function mollieWooCommerceSession()
  *
  * @return bool
  */
-function mollieWooCommerceStringToBoolOption($string)
+/**
+ * @param mixed $string
+ */
+function mollieWooCommerceStringToBoolOption($string): bool
 {
     return is_bool($string) ? $string : ('yes' === strtolower(
         $string

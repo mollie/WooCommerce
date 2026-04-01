@@ -6,7 +6,7 @@ namespace Mollie\WooCommerce\SDK;
 
 class HttpResponse
 {
-    public function setHttpResponseCode($statusCode): void
+    public function setHttpResponseCode(int $statusCode): void
     {
         if (PHP_SAPI !== 'cli' && !headers_sent()) {
             if (function_exists("http_response_code")) {

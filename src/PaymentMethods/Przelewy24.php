@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class Przelewy24 extends AbstractPaymentMethod implements PaymentMethodI
 {
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -38,7 +41,11 @@ class Przelewy24 extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
+    public function getFormFields(array $generalFormFields): array
     {
         return $generalFormFields;
     }

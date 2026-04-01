@@ -46,16 +46,39 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      */
     protected $config = [];
     /**
-     * @var array
+     * @var array<mixed>
      */
     protected $settings = [];
 
+    /** @var Surcharge */
     protected $surcharge;
 
     /**
      * @var bool
      */
     protected bool $translationsInitialized = false;
+
+    /**
+     * @return array<mixed>
+     */
+    abstract protected function getConfig(): array;
+
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
+    abstract public function getFormFields(array $generalFormFields): array;
+
+    public function filtersOnBuild(): void
+    {
+    }
+
+    /**
+     * @param mixed $payment
+     */
+    public function debugGiftcardDetails($payment, \WC_Order $order): void
+    {
+    }
 
     public function __construct()
     {
@@ -85,6 +108,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $config['id'];
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function getUploadedImage(): array
     {
         $settings = $this->getSettings();
@@ -94,6 +120,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $svgPath && file_exists($svgPath) ? [$svgUrl] : [];
     }
 
+    /**
+     * @return bool|null
+     */
     public function isCreditCardSelectorEnabled()
     {
         $settings = $this->getSettings();
@@ -102,9 +131,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     /**
      * Access the payment method surcharge applied
-     * @return Surcharge
      */
-    public function surcharge()
+    public function surcharge(): Surcharge
     {
         return $this->surcharge;
     }
@@ -125,7 +153,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      */
     public function hasPaymentFields(): bool
     {
-        return $this->getProperty('paymentFields');
+        return (bool)$this->getProperty('paymentFields');
     }
 
     /**
@@ -140,7 +168,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     /**
      * Access the payment method processed description, surcharge included
-     * @return mixed|string
+     * @return mixed
      */
     public function getProcessedDescription()
     {
@@ -162,7 +190,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     /**
      * Retrieve the user's payment method settings or the default values
      * if there are no settings saved for this payment method it will save the defaults
-     * @return array
+     * @return array<mixed>
      */
     public function getSettings(): array
     {
@@ -176,7 +204,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     /**
      * Update the payment method's settings with defaults if not exist
-     * @return array
+     * @return array<mixed>
      */
     public function updateSettingsWithDefaults(ContainerInterface $container): array
     {
@@ -196,8 +224,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function getInitialOrderStatus(): string
     {
         if ($this->getProperty('confirmationDelayed')) {
-            return $this->getProperty('initial_order_status')
-                ?: SharedDataDictionary::STATUS_ON_HOLD;
+            return (string)($this->getProperty('initial_order_status')
+                ?: SharedDataDictionary::STATUS_ON_HOLD);
         }
 
         return SharedDataDictionary::STATUS_PENDING;
@@ -206,7 +234,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     /**
      * Retrieve the payment method's property from config or settings
      * @param string $propertyName
-     * @return false|mixed
+     * @return mixed
      */
     public function getProperty(string $propertyName)
     {
@@ -227,7 +255,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     /**
      * Merge settings with config properties
-     * @return array
+     * @return array<mixed>
      */
     public function getMergedProperties(): array
     {
@@ -237,7 +265,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     /**
      * Default values for the initial settings saved
      *
-     * @return array
+     * @return array<mixed>
      */
     public function defaultSettings(ContainerInterface $container): array
     {
@@ -274,7 +302,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             $apiIcon = $apiMethod["image"]->svg;
         }
 
-        return $apiIcon;
+        return (string)$apiIcon;
     }
 
     private function isUseApiTitleChecked(): bool
@@ -315,12 +343,12 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function description(ContainerInterface $container): string
     {
         $description = $this->getProcessedDescription();
-        return empty($description) ? '' : $description;
+        return empty($description) ? '' : (string)$description;
     }
 
     public function methodDescription(ContainerInterface $container): string
     {
-        return $this->getProperty('settingsDescription');
+        return (string)$this->getProperty('settingsDescription');
     }
 
     /**
@@ -337,7 +365,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     public function supports(ContainerInterface $container): array
     {
-        $supports = $this->getProperty('supports');
+        $supports = (array)$this->getProperty('supports');
         $paymentMethodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
         $isSepa = $this->getProperty('SEPA') === true && in_array(Constants::DIRECTDEBIT, $paymentMethodsEnabledAtMollie, true);
         $isSubscription = $this->getProperty('Subscription') === true;
@@ -465,6 +493,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return false;
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function blocksData(ContainerInterface $container): array
     {
         $title = $this->title($container);
@@ -477,6 +508,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             ], $iconProvider->provideIcons())
             : [];
 
+        // phpstan:ignore [wc-stub] WC()->customer is WC_Customer|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $billingCountry = WC()->customer ? WC()->customer->get_billing_country() : '';
         $allowedCountries = $this->getProperty('allowed_countries');
 
@@ -516,6 +549,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $data;
     }
 
+    /**
+     * @return array<mixed>|null
+     */
     protected function blocksExpressData(ContainerInterface $container): ?array
     {
         return null;

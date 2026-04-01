@@ -6,16 +6,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings;
 
+use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerce\Uninstall\CleanDb;
-use Inpsyde\Modularity\Module\ExecutableModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Inpsyde\Modularity\Module\ServiceModule;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 
@@ -178,7 +177,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 $this->maybeSaveDefaultSettings('mollie_components_', $testedOption, $defaultComponentsOptions);
             },
             10,
-            2
+            0
         );
         $this->isTestNoticePrinted = false;
         add_action('woocommerce_settings_saved', function () {
@@ -262,8 +261,8 @@ class SettingsModule implements ServiceModule, ExecutableModule
 
     /**
      * Add plugin action links
-     * @param array $links
-     * @return array
+     * @param array<mixed> $links
+     * @return array<mixed>
      */
     public function addPluginActionLinks(array $links): array
     {
@@ -308,8 +307,9 @@ class SettingsModule implements ServiceModule, ExecutableModule
 
     /**
      * Save default settings if not found
-     * @param $optionName
-     * @param $defaultOptions
+     * @param mixed $optionName
+     * @param mixed $testOption
+     * @param mixed $defaultOptions
      * @return void
      */
     public function maybeSaveDefaultSettings($optionName, $testOption, $defaultOptions): void

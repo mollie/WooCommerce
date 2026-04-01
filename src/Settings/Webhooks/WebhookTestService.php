@@ -193,7 +193,7 @@ class WebhookTestService
      * Create a test payment with Mollie
      *
      * @param string $testId Test identifier
-     * @return array|WP_Error Array with payment_id and checkout_url, or error
+     * @return array<mixed>|WP_Error Array with payment_id and checkout_url, or error
      */
     private function createTestPayment(string $testId)
     {
@@ -333,7 +333,7 @@ class WebhookTestService
      * Set test state in transient
      *
      * @param string $testId Test identifier
-     * @param array $state State data
+     * @param array<mixed> $state State data
      * @return bool Whether state was set successfully
      */
     private function setTestState(string $testId, array $state): bool
@@ -349,7 +349,7 @@ class WebhookTestService
      * Get test state from transient
      *
      * @param string $testId Test identifier
-     * @return array|false Test state or false if not found
+     * @return array<mixed>|false Test state or false if not found
      */
     private function getTestState(string $testId)
     {
@@ -360,7 +360,7 @@ class WebhookTestService
      * Update test state in transient
      *
      * @param string $testId Test identifier
-     * @param array $updates State updates
+     * @param array<mixed> $updates State updates
      * @return bool Whether state was updated successfully
      */
     private function updateTestState(string $testId, array $updates): bool
@@ -383,7 +383,7 @@ class WebhookTestService
     /**
      * Get human-readable test result message
      *
-     * @param array $testState Test state data
+     * @param array<mixed> $testState Test state data
      * @return string Result message
      */
     private function getTestResultMessage(array $testState): string

@@ -4,6 +4,13 @@ namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 trait DirectDebitInstructionTrait
 {
+    /**
+     * @param mixed $gateway
+     * @param mixed $payment
+     * @param mixed $order
+     * @param bool  $admin_instructions
+     * @return mixed
+     */
     public function executeDirectDebit(
         $gateway,
         $payment,

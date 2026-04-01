@@ -27,12 +27,21 @@ class AppleAjaxRequests
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var Api
+     */
     protected $apiHelper;
     /**
      * @var Settings
      */
     protected $settingsHelper;
+    /**
+     * @var bool
+     */
     private $reloadCart;
+    /**
+     * @var array<mixed>
+     */
     private $oldCartContents;
 
     /**
@@ -56,7 +65,7 @@ class AppleAjaxRequests
     /**
      * Adds all the Ajax actions to perform the whole workflow
      */
-    public function bootstrapAjaxRequest()
+    public function bootstrapAjaxRequest(): void
     {
         foreach ($this->getHandlers() as $action => $handler) {
             add_action('wp_ajax_' . $action, $handler);
@@ -67,7 +76,7 @@ class AppleAjaxRequests
     /**
      * Get the array of AJAX action handlers
      *
-     * @return array
+     * @return array<string, array<int, mixed>>
      */
     public function getHandlers(): array
     {
@@ -84,7 +93,7 @@ class AppleAjaxRequests
      * On fail triggers and option that shows an admin notice showing the error
      * On success returns the validation data to the script
      */
-    public function validateMerchant()
+    public function validateMerchant(): void
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         if (!$this->isNonceValid()) {
@@ -125,7 +134,7 @@ class AppleAjaxRequests
      * On error returns an array of errors to be handled by the script
      * On success returns the new contact data
      */
-    public function updateShippingContact()
+    public function updateShippingContact(): void
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         if (!$this->isNonceValid()) {
@@ -180,7 +189,7 @@ class AppleAjaxRequests
      * On error returns an array of errors to be handled by the script
      * On success returns the new contact data
      */
-    public function updateShippingMethod()
+    public function updateShippingMethod(): void
     {
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         if (!$this->isNonceValid()) {
@@ -204,7 +213,7 @@ class AppleAjaxRequests
      * @throws WC_Data_Exception
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    public function createWcOrder()
+    public function createWcOrder(): void
     {
         $this->responseAfterSuccessfulResult();
         $cart = WC()->cart;
@@ -214,8 +223,8 @@ class AppleAjaxRequests
         $applePayRequestDataObject->orderData('productDetail');
 
         $cartItemKey = $cart->add_to_cart(
-            filter_input(INPUT_POST, 'productId'),
-            (bool) filter_input(INPUT_POST, 'productQuantity', FILTER_VALIDATE_INT)
+            (int)filter_input(INPUT_POST, 'productId', FILTER_SANITIZE_NUMBER_INT),
+            (int)filter_input(INPUT_POST, 'productQuantity', FILTER_VALIDATE_INT)
         );
         $this->addAddressesToOrder($applePayRequestDataObject);
 
@@ -235,7 +244,7 @@ class AppleAjaxRequests
      * @throws WC_Data_Exception
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    public function createWcOrderFromCart()
+    public function createWcOrderFromCart(): void
     {
         $this->responseAfterSuccessfulResult();
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
@@ -258,7 +267,7 @@ class AppleAjaxRequests
      *
      * @return \WC_Countries
      */
-    protected function createWCCountries()
+    protected function createWCCountries(): \WC_Countries
     {
         return new \WC_Countries();
     }
@@ -266,12 +275,12 @@ class AppleAjaxRequests
     /**
      * Selector between product detail and cart page calculations
      *
-     * @param $applePayRequestDataObject
+     * @param ApplePayDataObjectHttp $applePayRequestDataObject
      *
-     * @return array|bool
+     * @return array<mixed>|false
      */
     protected function whichCalculateTotals(
-        $applePayRequestDataObject
+        ApplePayDataObjectHttp $applePayRequestDataObject
     ) {
 
         if ($applePayRequestDataObject->callerPage === 'productDetail') {
@@ -297,16 +306,17 @@ class AppleAjaxRequests
      * If no shippingMethodId provided will return the first available shipping
      * method
      *
-     * @param      $productId
-     * @param      $productQuantity
-     * @param      $customerAddress
-     * @param null $shippingMethod
+     * @param mixed $productId
+     * @param mixed $productQuantity
+     * @param array<mixed> $customerAddress
+     * @param array<mixed>|null $shippingMethod
+     * @return array<mixed>
      */
     protected function calculateTotalsSingleProduct(
         $productId,
         $productQuantity,
-        $customerAddress,
-        $shippingMethod = null
+        array $customerAddress,
+        ?array $shippingMethod = null
     ): array {
 
         $results = [];
@@ -370,8 +380,10 @@ class AppleAjaxRequests
      * Sets the customer address with ApplePay details to perform correct
      * calculations
      * If no parameter passed then it resets the customer to shop details
+     *
+     * @param array<string, string> $address
      */
-    protected function customerAddress(array $address = [])
+    protected function customerAddress(array $address = []): void
     {
         $base_location = wc_get_base_location();
         $shopCountryCode = $base_location['country'];
@@ -392,19 +404,22 @@ class AppleAjaxRequests
     /**
      * Add shipping methods to cart to perform correct calculations
      *
-     * @param $cart
-     * @param $customerAddress
-     * @param $shippingMethod
-     * @param $shippingMethodId
+     * @param \WC_Cart $cart
+     * @param array<mixed> $customerAddress
+     * @param array<mixed>|null $shippingMethod
+     * @param string|null $shippingMethodId
+     * @return array<mixed>
      */
     protected function cartShippingMethods(
-        $cart,
-        $customerAddress,
-        $shippingMethod,
-        $shippingMethodId
+        \WC_Cart $cart,
+        array $customerAddress,
+        ?array $shippingMethod,
+        ?string $shippingMethodId
     ): array {
 
         $shippingMethodsArray = [];
+        // phpstan:ignore [wc-stub] WC()->shipping is WC_Shipping|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $shippingMethods = WC()->shipping->calculate_shipping(
             $this->getShippingPackages(
                 $customerAddress,
@@ -440,17 +455,19 @@ class AppleAjaxRequests
 
     /**
      * Sets shipping packages for correct calculations
-     * @param $customerAddress
-     * @param $total
      *
-     * @return mixed|void|null
+     * @param array<mixed> $customerAddress
+     * @param mixed $total
+     * @return mixed
      */
-    protected function getShippingPackages($customerAddress, $total)
+    protected function getShippingPackages(array $customerAddress, $total)
     {
         // Packages array for storing 'carts'
         $packages = [];
         $packages[0]['contents'] = WC()->cart->cart_contents;
         $packages[0]['contents_cost'] = $total;
+        // phpstan:ignore [wc-stub] WC()->session exposes applied_coupon as a dynamic property; WC session stubs lack coverage
+        // @phpstan-ignore-next-line
         $packages[0]['applied_coupons'] = WC()->session->applied_coupon;
         $packages[0]['destination']['country'] = $customerAddress['country'];
         $packages[0]['destination']['state'] = '';
@@ -465,14 +482,15 @@ class AppleAjaxRequests
     /**
      * Returns the formatted results of the cart calculations
      *
-     * @param $cart
-     * @param $selectedShippingMethod
-     * @param $shippingMethodsArray
+     * @param \WC_Cart $cart
+     * @param array<mixed> $selectedShippingMethod
+     * @param array<mixed> $shippingMethodsArray
+     * @return array<mixed>
      */
     protected function cartCalculationResults(
-        $cart,
-        $selectedShippingMethod,
-        $shippingMethodsArray
+        \WC_Cart $cart,
+        array $selectedShippingMethod,
+        array $shippingMethodsArray
     ): array {
 
         $surcharge = new Surcharge();
@@ -515,12 +533,13 @@ class AppleAjaxRequests
      * If no shippingMethodId provided will return the first available shipping
      * method
      *
-     * @param      $customerAddress
-     * @param null $shippingMethodId
+     * @param array<mixed>|null $customerAddress
+     * @param array<mixed>|null $shippingMethodId
+     * @return array<mixed>
      */
     protected function calculateTotalsCartPage(
-        $customerAddress = null,
-        $shippingMethodId = null
+        ?array $customerAddress = null,
+        ?array $shippingMethodId = null
     ): array {
 
         $results = [];
@@ -571,12 +590,10 @@ class AppleAjaxRequests
      * Add address billing and shipping data to order
      *
      * @param ApplePayDataObjectHttp $applePayRequestDataObject
-     * @param                        $order
-     *
      */
     protected function addAddressesToOrder(
         ApplePayDataObjectHttp $applePayRequestDataObject
-    ) {
+    ): void {
 
         add_action(
             'woocommerce_checkout_create_order',
@@ -600,10 +617,9 @@ class AppleAjaxRequests
     /**
      * Checks if the nonce in the data object is valid
      *
-     *
-     * @return bool|int
+     * @return bool
      */
-    protected function isNonceValid()
+    protected function isNonceValid(): bool
     {
         $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
 
@@ -617,15 +633,15 @@ class AppleAjaxRequests
      * Calls Mollie API wallets to validate merchant session
      *
      * @param string $domain
-     * @param        $validationUrl
-     *
-     * @return false|string
+     * @param string $validationUrl
+     * @param string $apiKey
+     * @return mixed
      * @throws \Mollie\Api\Exceptions\ApiException
      */
     protected function validationApiWalletsEndpointCall(
-        $domain,
-        $validationUrl,
-        $apiKey
+        string $domain,
+        string $validationUrl,
+        string $apiKey
     ) {
 
         return $this->apiHelper
@@ -641,7 +657,7 @@ class AppleAjaxRequests
      * Empty the cart to use for calculations
      * while saving its contents in a field
      */
-    protected function emptyCurrentCart()
+    protected function emptyCurrentCart(): void
     {
         foreach ($this->oldCartContents as $cartItemKey => $value) {
             WC()->cart->remove_cart_item($cartItemKey);
@@ -689,7 +705,7 @@ class AppleAjaxRequests
                     wp_send_json_error(
                         $this->responseTemplates->authorizationResultResponse(
                             'STATUS_FAILURE',
-                            0,
+                            '0',
                             [['errorCode' => 'unknown']]
                         )
                     );

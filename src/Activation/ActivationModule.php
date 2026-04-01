@@ -17,8 +17,8 @@ class ActivationModule implements ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
-    private $baseFile;
-    private $pluginVersion;
+    private string $baseFile;
+    private string $pluginVersion;
 
     /**
      * @param ContainerInterface $container
@@ -43,7 +43,7 @@ class ActivationModule implements ExecutableModule
     /**
      *
      */
-    public function initDb()
+    public function initDb(): void
     {
         global $wpdb;
         global $EZSQL_ERROR;
@@ -91,7 +91,7 @@ class ActivationModule implements ExecutableModule
     /**
      *
      */
-    public function mollieWcNoticeApiKeyMissing()
+    public function mollieWcNoticeApiKeyMissing(): void
     {
         //if test/live keys are in db return
         $liveKeySet = get_option('mollie-payments-for-woocommerce_live_api_key');
@@ -117,7 +117,7 @@ class ActivationModule implements ExecutableModule
         $notice->addNotice('notice-error is-dismissible', $message);
     }
 
-    protected function markUpdatedOrNew()
+    protected function markUpdatedOrNew(): void
     {
         $dbVersionOption = get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '');
         $dbPluginOption = get_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, '');
@@ -139,7 +139,7 @@ class ActivationModule implements ExecutableModule
     /**
      *
      */
-    public function pluginInit()
+    public function pluginInit(): void
     {
         $this->markUpdatedOrNew();
         $this->initDb();

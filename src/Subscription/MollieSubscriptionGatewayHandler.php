@@ -7,15 +7,16 @@ namespace Mollie\WooCommerce\Subscription;
 use Exception;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
+use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
+use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\MollieSubscription;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
-use Mollie\WooCommerce\Notice\NoticeInterface;
-use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Payment\Request\Middleware\SelectedIssuerMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\UrlMiddleware;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -25,7 +26,6 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
-use Mollie\WooCommerce\PaymentMethods\Constants;
 use WC_Order;
 
 class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
@@ -43,8 +43,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         ];
     protected const DIRECTDEBIT = Constants::DIRECTDEBIT;
 
-    protected $apiHelper;
-    protected $settingsHelper;
+    protected Api $apiHelper;
+    protected ?Settings $settingsHelper = null;
     /**
      * @var MollieSubscription
      */
@@ -98,7 +98,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         );
     }
 
-    public function addSubscriptionFilters($gateway)
+    public function addSubscriptionFilters(\WC_Payment_Gateway $gateway): void
     {
 
         if (class_exists('WC_Subscriptions_Order')) {
@@ -108,7 +108,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
                     $this->scheduled_subscription_payment($renewal_total, $renewal_order, $gateway);
                 },
                 10,
-                3
+                2
             );
 
             // A resubscribe order to record a customer resubscribing to an expired or cancelled subscription.
@@ -125,7 +125,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
                     return $this->add_subscription_payment_meta($payment_meta, $subscription, $gateway);
                 },
                 10,
-                3
+                2
             );
             add_action(
                 'woocommerce_subscription_validate_payment_meta',
@@ -196,13 +196,11 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     /**
-     * @param          $renewal_total
-     * @param WC_Order $renewal_order
-     *
-     * @return array
+     * @param WC_Order|false $renewal_order
+     * @return array<string, string>
      * @throws InvalidApiKey
      */
-    public function scheduled_subscription_payment($renewal_total, WC_Order $renewal_order, $gateway)
+    public function scheduled_subscription_payment(float $renewal_total, $renewal_order, \WC_Payment_Gateway $gateway): array
     {
         if (! $renewal_order) {
             $this->logger->debug($this->id . ': Could not load renewal order or process renewal payment.');
@@ -447,7 +445,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         return ['result' => 'failure'];
     }
 
-    public function isTestModeEnabledForRenewalOrder($order)
+    public function isTestModeEnabledForRenewalOrder(WC_Order $order): bool
     {
         $result = false;
         $subscriptions = [];
@@ -479,7 +477,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      * @param \Mollie\Api\Resources\Payment        $payment
      *
      */
-    public function updateFirstPaymentMethodToRecurringPaymentMethod($renewal_order, $renewal_order_id, $payment)
+    public function updateFirstPaymentMethodToRecurringPaymentMethod(WC_Order $renewal_order, int $renewal_order_id, \Mollie\Api\Resources\Payment $payment): void
     {
         // Update first payment method to actual recurring payment method used for renewal order, this is
         // for subscriptions where the first order used methods like iDEAL as first payment and
@@ -511,10 +509,9 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     /**
-     * @param $order
      * @return mixed
      */
-    public function getOrderMollieCustomerId($order)
+    public function getOrderMollieCustomerId(WC_Order $order)
     {
         return $order->get_meta('_mollie_customer_id', true);
     }
@@ -524,7 +521,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      * @param $initial_order_status
      * @param $payment
      */
-    protected function updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment)
+    protected function updateScheduledPaymentOrder(WC_Order $renewal_order, string $initial_order_status, \Mollie\Api\Resources\Payment $payment): void
     {
         $this->mollieOrderService->updateOrderStatus(
             $renewal_order,
@@ -545,7 +542,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     /**
      * @param $resubscribe_order
      */
-    public function delete_resubscribe_meta($resubscribe_order)
+    public function delete_resubscribe_meta(WC_Order $resubscribe_order): void
     {
         $this->delete_renewal_meta($resubscribe_order);
     }
@@ -572,7 +569,11 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      * @return mixed
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    public function add_subscription_payment_meta($payment_meta, $subscription, $gateway)
+    /**
+     * @param array<mixed> $payment_meta
+     * @return mixed
+     */
+    public function add_subscription_payment_meta(array $payment_meta, \WC_Subscription $subscription, \WC_Payment_Gateway $gateway)
     {
         assert($subscription instanceof \WC_Subscription);
         assert($gateway instanceof \WC_Payment_Gateway);
@@ -614,11 +615,11 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     /**
-     * @param $payment_method_id
-     * @param $payment_meta
+     * @param string $payment_method_id
+     * @param array<mixed> $payment_meta
      * @throws Exception
      */
-    public function validate_subscription_payment_meta($payment_method_id, $payment_meta, $gateway)
+    public function validate_subscription_payment_meta(string $payment_method_id, array $payment_meta, \WC_Payment_Gateway $gateway): void
     {
         if ($gateway->id === $payment_method_id) {
             // Check that a Mollie Customer ID is entered
@@ -632,21 +633,17 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      * @param \WC_Subscription $subscription
      * @param \WC_Subscription $renewal_order
      */
-    public function update_failing_payment_method($subscription, $renewal_order)
+    public function update_failing_payment_method(\WC_Subscription $subscription, \WC_Subscription $renewal_order): void
     {
-        $subscription->update_meta_data('_mollie_customer_id', $renewal_order->mollie_customer_id);
-        $subscription->update_meta_data('_mollie_payment_id', $renewal_order->mollie_payment_id);
+        $subscription->update_meta_data('_mollie_customer_id', $renewal_order->get_meta('_mollie_customer_id', true));
+        $subscription->update_meta_data('_mollie_payment_id', $renewal_order->get_meta('_mollie_payment_id', true));
         $subscription->save();
     }
 
     /**
-     * @param $mollie_customer_id
-     * @param $mollie_payment_id
-     * @param $subscription
-     *
-     * @return array ['customer_id' => string, 'mandate_id' => string|null]
+     * @return array<string, string|null>
      */
-    public function restore_mollie_customer_id_and_mandate($mollie_customer_id, $mollie_payment_id, $subscription)
+    public function restore_mollie_customer_id_and_mandate(string $mollie_customer_id, string $mollie_payment_id, \WC_Subscription $subscription): array
     {
         try {
             // Get full payment object from Mollie API
@@ -749,6 +746,9 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      *
      * @return bool
      */
+    /**
+     * @param \WC_Payment_Gateway $gateway
+     */
     public function is_available($gateway): bool
     {
         if (!$this->checkEnabledNorDirectDebit($gateway)) {
@@ -766,6 +766,9 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     /**
      * @param $subscriptionParentOrder
      * @return bool
+     */
+    /**
+     * @param WC_Order|false $subscriptionParentOrder
      */
     protected function initialPaymentUsedOrderAPI($subscriptionParentOrder): bool
     {
@@ -790,15 +793,20 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      * @return array
      * @throws ApiException
      */
+    /**
+     * @param array<string, mixed> $data
+     * @return array<mixed>
+     * @throws ApiException
+     */
     protected function usePreviousMandate(
         int $renewal_order_id,
-        $customer_id,
+        string $customer_id,
         \Mollie\Api\MollieApiClient $mollieApiClient,
-        $mandateId,
+        string $mandateId,
         bool $isRenewalMethodDirectDebit,
-        $data,
+        array $data,
         bool $validMandate,
-        $gateway
+        \WC_Payment_Gateway $gateway
     ): array {
 
         $this->logger->debug(
@@ -824,14 +832,19 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      * @return array
      * @throws ApiException
      */
+    /**
+     * @param array<string, mixed> $data
+     * @return array<mixed>
+     * @throws ApiException
+     */
     protected function useAnyValidMandate(
         int $renewal_order_id,
-        $customer_id,
+        string $customer_id,
         \Mollie\Api\MollieApiClient $mollieApiClient,
         bool $validMandate,
-        $data,
-        $renewalOrderMethod,
-        $gateway
+        array $data,
+        string $renewalOrderMethod,
+        \WC_Payment_Gateway $gateway
     ): array {
 // Get all mandates for the customer ID
         $this->logger->debug(

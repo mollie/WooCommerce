@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\SDK;
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Exceptions\CurlConnectTimeoutException;
 use Mollie\Api\HttpAdapter\MollieHttpAdapterInterface;
 
 class WordPressHttpAdapter implements MollieHttpAdapterInterface
@@ -23,8 +22,8 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
     /**
      * @param string $httpMethod
      * @param string $url
-     * @param array $headers
-     * @param $httpBody
+     * @param array<string, string> $headers
+     * @param mixed $httpBody
      *
      * @throws ApiException
      */
@@ -43,7 +42,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
         $response = wp_remote_request($url, $args);
 
         if (is_wp_error($response)) {
-            $message =  $response->get_error_message() ?? 'Unknown error';
+            $message = $response->get_error_message();
             $code = is_int($response->get_error_code()) ? $response->get_error_code() : 0;
             // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new ApiException(esc_html($message), $code);
@@ -60,7 +59,8 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
     }
 
     /**
-     * @param $response
+     * @param mixed $response
+     * @return mixed
      * @throws ApiException
      */
     protected function parseResponse($response)
@@ -99,9 +99,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
                 $message .= ". Documentation: {$body->_links->documentation->href}";
             }
 
-            if ($httpBody) {
-                $message .= ". Request body: {$httpBody}";
-            }
+            $message .= ". Request body: {$httpBody}";
             // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new ApiException(esc_html($message), $statusCode, esc_html($field));
             // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped

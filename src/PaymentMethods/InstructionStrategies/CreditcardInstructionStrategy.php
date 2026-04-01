@@ -6,6 +6,13 @@ namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 class CreditcardInstructionStrategy implements InstructionStrategyI
 {
+    /**
+     * @param mixed $gateway
+     * @param mixed $payment
+     * @param mixed $order
+     * @param bool  $admin_instructions
+     * @return mixed
+     */
     public function execute(
         $gateway,
         $payment,

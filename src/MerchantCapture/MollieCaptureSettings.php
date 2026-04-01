@@ -6,6 +6,10 @@ namespace Mollie\WooCommerce\MerchantCapture;
 
 class MollieCaptureSettings
 {
+    /**
+     * @param array<mixed> $advancedSettings
+     * @return array<mixed>
+     */
     public function settings(array $advancedSettings, string $pluginName): array
     {
         $mollieCaptureSettings = [

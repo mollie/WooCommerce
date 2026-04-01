@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Gateway\Voucher;
 
-use Inpsyde\PaymentGateway\PaymentGateway;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
-use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\Voucher;
 
 class MaybeDisableGateway
@@ -16,9 +13,9 @@ class MaybeDisableGateway
      * in the cart
      * Disable if Payments API is selected in advanced settings
      *
-     * @param array $gateways
+     * @param array<string, mixed> $gateways
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function maybeDisableMealVoucherGateway(array $gateways): array
     {
@@ -45,6 +42,8 @@ class MaybeDisableGateway
         }
 
         $cart = WC()->cart;
+        // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         if (!$cart) {
             return false;
         }

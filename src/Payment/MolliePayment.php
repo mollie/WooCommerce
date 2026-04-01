@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
-use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use WC_Order;
-use WC_Subscriptions_Manager;
 use WP_Error;
 
 class MolliePayment extends MollieObject
@@ -64,19 +59,16 @@ class MolliePayment extends MollieObject
     }
 
     /**
-     * @param $order
-     * @param $customerId
+     * @param mixed $order
+     * @param mixed $customerId
      *
-     * @return array
+     * @return array<mixed>
      */
     public function getPaymentRequestData($order, $customerId)
     {
         return $this->requestFactory->createRequest('payment', $order, $customerId);
     }
 
-    /**
-     * @return void
-     */
     public function setActiveMolliePayment($orderId)
     {
         self::$paymentId = $this->getMolliePaymentIdFromPaymentObject();
@@ -87,6 +79,7 @@ class MolliePayment extends MollieObject
         self::$order->save();
 
         parent::setActiveMolliePayment($orderId);
+        return $this;
     }
 
     public function getMolliePaymentIdFromPaymentObject()
@@ -98,6 +91,10 @@ class MolliePayment extends MollieObject
         return null;
     }
 
+    /**
+     * @param mixed $payment
+     * @return string|null
+     */
     public function getMollieCustomerIdFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -113,6 +110,10 @@ class MolliePayment extends MollieObject
         return null;
     }
 
+    /**
+     * @param mixed $payment
+     * @return string|null
+     */
     public function getSequenceTypeFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -128,8 +129,8 @@ class MolliePayment extends MollieObject
         return null;
     }
     /**
-     * @param Payment $payment
-     *
+     * @param mixed $payment
+     * @return array<string, mixed>
      */
     public function getMollieCustomerIbanDetailsFromPaymentObject($payment = null)
     {
@@ -194,7 +195,7 @@ class MolliePayment extends MollieObject
             $refund = $this->apiHelper->getApiClient($apiKey)->payments->refund($paymentObject, [
                 'amount' =>  [
                     'currency' => $this->dataHelper->getOrderCurrency($order),
-                    'value' => $this->dataHelper->formatCurrencyValue($amount, $this->dataHelper->getOrderCurrency($order)),
+                    'value' => $this->dataHelper->formatCurrencyValue((float) $amount, $this->dataHelper->getOrderCurrency($order)),
                 ],
                 'description' => $reason,
             ]);
@@ -232,6 +233,10 @@ class MolliePayment extends MollieObject
         }
     }
 
+    /**
+     * @param mixed $data
+     * @return void
+     */
     public function setPayment($data)
     {
         $this->data = $data;

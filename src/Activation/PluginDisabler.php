@@ -6,8 +6,8 @@ namespace Mollie\WooCommerce\Activation;
 
 class PluginDisabler
 {
-    private $pluginSlug;
-    private $initFunctionName;
+    private string $pluginSlug;
+    private string $initFunctionName;
 
     /**
      * PluginConstraintsDisabler constructor.
@@ -27,7 +27,7 @@ class PluginDisabler
     /**
      * Disable the plugin if conditions apply
      */
-    public function disableAll()
+    public function disableAll(): void
     {
         $this->disableAutomaticUpdate();
         $this->disablePluginActivation($this->initFunctionName);
@@ -36,7 +36,7 @@ class PluginDisabler
     /**
      * Disable automatic updates of this plugin
      */
-    public function disableAutomaticUpdate()
+    public function disableAutomaticUpdate(): void
     {
         add_filter(
             'auto_update_plugin',
@@ -53,7 +53,7 @@ class PluginDisabler
      *
      * @param string $initFunctionName Name of the method that initiates the plugin.
      */
-    public function disablePluginActivation($initFunctionName)
+    public function disablePluginActivation(string $initFunctionName): void
     {
         remove_action('init', $initFunctionName);
     }
@@ -64,6 +64,11 @@ class PluginDisabler
      * @param $update
      * @param $item
      *
+     * @return bool|null
+     */
+    /**
+     * @param bool|null $update
+     * @param object $item
      * @return bool|null
      */
     public function notAutoUpdateThisPlugin($update, $item)

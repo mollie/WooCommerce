@@ -9,12 +9,10 @@ use DateTime;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Types\SequenceType;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -27,8 +25,8 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
 {
     const WAITING_CONFIRMATION_PERIOD_DAYS = '21';
 
-    protected $recurringMollieMethod = null;
-    protected $dataHelper;
+    protected ?PaymentMethodI $recurringMollieMethod = null;
+    protected ?Data $dataHelper = null;
 
     /**
      * AbstractSepaRecurring constructor.
@@ -67,7 +65,6 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
         if (isset($directDebitSettings['enabled']) && $directDebitSettings['enabled'] === 'yes') {
             $this->recurringMollieMethod = $directDebitPaymentMethod;
         }
-        return $this;
     }
 
     /**
@@ -101,7 +98,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
      * @param $initial_order_status
      * @param $payment
      */
-    protected function updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment)
+    protected function updateScheduledPaymentOrder(\WC_Order $renewal_order, string $initial_order_status, Payment $payment): void
     {
         $this->mollieOrderService->updateOrderStatus(
             $renewal_order,
@@ -135,7 +132,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
     /**
      * @param $renewal_order
      */
-    protected function addPendingPaymentOrder($renewal_order)
+    protected function addPendingPaymentOrder(\WC_Order $renewal_order): void
     {
         global $wpdb;
 
@@ -170,7 +167,11 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
      * @param $order
      * @param $payment
      */
-    public function handlePaidOrderWebhook($order, $payment)
+    /**
+     * @param \WC_Order $order
+     * @param Payment $payment
+     */
+    public function handlePaidOrderWebhook($order, $payment): void
     {
         $orderId = $order->get_id();
 

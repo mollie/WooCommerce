@@ -10,8 +10,8 @@ use WC_Order_Item_Fee;
 
 class GatewaySurchargeHandler
 {
-    protected $gatewayFeeLabel;
-    protected $surcharge;
+    protected string $gatewayFeeLabel;
+    protected Surcharge $surcharge;
 
     /**
      * GatewaySurchargeHandler constructor.
@@ -23,12 +23,12 @@ class GatewaySurchargeHandler
         add_action('init', [$this, 'surchargeActions']);
     }
 
-    public function initializeGatewayFeeLabel()
+    public function initializeGatewayFeeLabel(): void
     {
         $this->gatewayFeeLabel = $this->surchargeFeeOption();
     }
 
-    public function surchargeActions()
+    public function surchargeActions(): void
     {
         add_action('woocommerce_cart_calculate_fees', [$this, 'add_engraving_fees']);
         add_action('wp_enqueue_scripts', function () {
@@ -43,11 +43,11 @@ class GatewaySurchargeHandler
         add_action('woocommerce_order_item_meta_end', [$this, 'setHiddenOrderId'], 10, 4);
     }
 
-    public function setHiddenOrderId($item_id, $item, $order, $bool = false)
+    public function setHiddenOrderId(int $item_id, \WC_Order_Item $item, \WC_Order $order, bool $bool = false): void
     {
         $nonce = wp_create_nonce('mollie_surcharge_' . $order->get_id());
         ?>
-        <input type="hidden" name="mollie-woocommerce-orderId" value="<?php echo esc_attr($order->get_id()) ?>">
+        <input type="hidden" name="mollie-woocommerce-orderId" value="<?php echo esc_attr((string) $order->get_id()) ?>">
         <input type="hidden" name="mollie-surcharge-nonce" value="<?php echo esc_attr($nonce) ?>">
         <?php
     }
@@ -68,7 +68,7 @@ class GatewaySurchargeHandler
         );
     }
 
-    public function addSurchargeFeeProductPage($order, $gateway)
+    public function addSurchargeFeeProductPage(WC_Order $order, string $gateway): WC_Order
     {
         $gatewaySettings = $this->gatewaySettings($gateway);
         if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE) {
@@ -89,7 +89,7 @@ class GatewaySurchargeHandler
         return $order;
     }
 
-    public function updateSurchargeOrderPay()
+    public function updateSurchargeOrderPay(): void
     {
         if (!$this->verifyNonce()) {
             return;
@@ -120,7 +120,6 @@ class GatewaySurchargeHandler
                 'newTotal' => $order->get_total(),
             ];
             wp_send_json_success($data);
-            return;
         }
 
         $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
@@ -139,7 +138,7 @@ class GatewaySurchargeHandler
         }
     }
 
-    public function add_engraving_fees()
+    public function add_engraving_fees(): void
     {
         if (is_admin() && ! defined('DOING_AJAX')) {
             return;
@@ -190,6 +189,9 @@ class GatewaySurchargeHandler
         return (bool) wp_verify_nonce($nonce, 'mollie_surcharge_' . $orderId);
     }
 
+    /**
+     * @return string|false
+     */
     protected function chosenGateway()
     {
         $gateway = WC()->session->get('chosen_payment_method');
@@ -206,12 +208,15 @@ class GatewaySurchargeHandler
         return $gateway;
     }
 
-    protected function isMollieGateway($gateway): bool
+    protected function isMollieGateway(string $gateway): bool
     {
         return !empty($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false;
     }
 
-    private function gatewaySettings($gateway)
+    /**
+     * @return mixed
+     */
+    private function gatewaySettings(string $gateway)
     {
         $optionName = sprintf('%s_settings', $gateway);
         $allSettings = get_option($optionName, false);
@@ -226,7 +231,7 @@ class GatewaySurchargeHandler
      * @throws \Exception
      * @param wc_order $order
      */
-    protected function orderRemoveFee($order)
+    protected function orderRemoveFee(WC_Order $order): void
     {
         $fees = $order->get_fees();
         foreach ($fees as $fee) {
@@ -240,12 +245,12 @@ class GatewaySurchargeHandler
         }
     }
 
-    protected function orderAddFee($order, $amount, $surchargeName)
+    protected function orderAddFee(WC_Order $order, float $amount, string $surchargeName): void
     {
         $item_fee = new WC_Order_Item_Fee();
         $item_fee->set_name($surchargeName);
-        $item_fee->set_amount($amount);
-        $item_fee->set_total($amount);
+        $item_fee->set_amount((string) $amount);
+        $item_fee->set_total((string) $amount);
         $item_fee->set_tax_status('taxable');
         $order->add_item($item_fee);
         $order->calculate_totals();
@@ -253,6 +258,9 @@ class GatewaySurchargeHandler
 
     /**
      * Get and validate order with order key verification
+     */
+    /**
+     * @return WC_Order|false
      */
     protected function canProcessOrder()
     {
@@ -270,6 +278,9 @@ class GatewaySurchargeHandler
         return $order;
     }
 
+    /**
+     * @return string|false
+     */
     protected function canProcessGateway()
     {
         // phpcs:ignore WordPress.Security.NonceVerification
@@ -288,6 +299,9 @@ class GatewaySurchargeHandler
         return $gateway;
     }
 
+    /**
+     * @return mixed
+     */
     protected function surchargeFeeOption()
     {
         return get_option(

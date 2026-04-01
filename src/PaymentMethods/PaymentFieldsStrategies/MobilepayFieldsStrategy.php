@@ -34,7 +34,11 @@ class MobilepayFieldsStrategy extends AbstractPaymentFieldsRenderer implements P
         return $html;
     }
 
-    protected function phoneNumber($phoneValue)
+    /**
+     * @param string|false $phoneValue
+     * @return string
+     */
+    protected function phoneNumber($phoneValue): string
     {
         $phoneValue = $phoneValue ?: '';
         $country = WC()->customer->get_billing_country();
@@ -53,6 +57,11 @@ class MobilepayFieldsStrategy extends AbstractPaymentFieldsRenderer implements P
         return $html;
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return "";

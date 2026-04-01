@@ -23,6 +23,9 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
      */
     public const EXPIRY_DAYS_OPTION = 'order_dueDate';
 
+    /**
+     * @return array<mixed>
+     */
     protected function getConfig(): array
     {
         return [
@@ -53,6 +56,10 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
     public function getFormFields(array $generalFormFields): array
     {
         unset($generalFormFields['activate_expiry_days_setting']);
@@ -88,7 +95,7 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
         return array_merge($generalFormFields, $paymentMethodFormFields);
     }
 
-    public function filtersOnBuild()
+    public function filtersOnBuild(): void
     {
         add_filter('woocommerce_mollie_wc_gateway_' . $this->getProperty('id') . 'payment_args', function (array $args, \WC_Order $order): array {
             return $this->addPaymentArguments($args, $order);
@@ -96,10 +103,9 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
     }
 
     /**
-     * @param array $args
+     * @param array<mixed> $args
      * @param \WC_Order $order
-     *
-     * @return array
+     * @return array<mixed>
      */
     public function addPaymentArguments(array $args, \WC_Order $order): array
     {
@@ -107,7 +113,7 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
         $expiry_days = (int)$this->getProperty(self::EXPIRY_DAYS_OPTION) ?: self::EXPIRY_DEFAULT_DAYS;
 
         if ($expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS) {
-            $expiry_date = gmdate("Y-m-d", strtotime(sprintf('+%s days', $expiry_days)));
+            $expiry_date = gmdate("Y-m-d", (int)strtotime(sprintf('+%s days', $expiry_days)));
 
             // Add dueDate at the correct location
             if ($this->isExpiredDateSettingActivated()) {
@@ -128,6 +134,9 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
         return $args;
     }
 
+    /**
+     * @return mixed
+     */
     public function isExpiredDateSettingActivated()
     {
         $expiryDays = $this->getProperty(

@@ -44,7 +44,11 @@ class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
         return $html;
     }
 
-    protected function phoneNumber($phoneValue)
+    /**
+     * @param string|false $phoneValue
+     * @return string
+     */
+    protected function phoneNumber($phoneValue): string
     {
         $phoneValue = $phoneValue ?: '';
         $html = '<p class="form-row form-row-wide" id="billing_phone_field">';
@@ -62,6 +66,11 @@ class In3FieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
         return $html;
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return "";

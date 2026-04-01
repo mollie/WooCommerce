@@ -20,9 +20,9 @@ function mollieWooCommerceIsCheckoutContext()
 /**
  * ComponentsStyles Factory
  *
- * @return array
+ * @return array<string, mixed>
  */
-function mollieWooCommerceComponentsStylesForAvailableGateways()
+function mollieWooCommerceComponentsStylesForAvailableGateways(): array
 {
     $pluginPath = untrailingslashit(M4W_PLUGIN_DIR) . '/';
 
@@ -52,7 +52,7 @@ function mollieWooCommerceCardToken()
  * @param bool $default
  * @return bool
  */
-function mollieWooCommerceIsGatewayEnabled($gatewaySettingsName, $settingToCheck, $default = false)
+function mollieWooCommerceIsGatewayEnabled(string $gatewaySettingsName, string $settingToCheck, bool $default = false): bool
 {
 
     $gatewaySettings = get_option($gatewaySettingsName);
@@ -68,7 +68,7 @@ function mollieWooCommerceIsGatewayEnabled($gatewaySettingsName, $settingToCheck
  *
  * @return bool
  */
-function mollieWooCommerceisApplePayDirectEnabled($page)
+function mollieWooCommerceisApplePayDirectEnabled(string $page): bool
 {
     $pageToCheck = 'mollie_apple_pay_button_enabled_' . $page;
     return mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_applepay_settings', $pageToCheck);
@@ -80,7 +80,7 @@ function mollieWooCommerceisApplePayDirectEnabled($page)
  *
  * @return bool
  */
-function mollieWooCommerceIsPayPalButtonEnabled($page)
+function mollieWooCommerceIsPayPalButtonEnabled(string $page): bool
 {
     $payPalGatewayEnabled = mollieWooCommerceIsGatewayEnabled('mollie_wc_gateway_paypal_settings', 'enabled');
 
@@ -98,7 +98,7 @@ function mollieWooCommerceIsPayPalButtonEnabled($page)
  *
  * @return bool
  */
-function mollieWooCommerceCheckIfNeedShipping($product)
+function mollieWooCommerceCheckIfNeedShipping(\WC_Product $product): bool
 {
     if (
         !wc_shipping_enabled()
@@ -109,7 +109,7 @@ function mollieWooCommerceCheckIfNeedShipping($product)
         return false;
     }
     //variations might be virtual
-    if ($product->is_type('variable')) {
+    if ($product->is_type('variable') && $product instanceof \WC_Product_Variable) {
         $variations = $product->get_available_variations();
         foreach ($variations as $variation) {
             if ($variation["is_virtual"]) {
@@ -122,7 +122,13 @@ function mollieWooCommerceCheckIfNeedShipping($product)
     return $product->needs_shipping();
 }
 
-function checkIndexExistOrDefault($array, $key, $default)
+/**
+ * @param mixed $array
+ * @param string $key
+ * @param mixed $default
+ * @return mixed
+ */
+function checkIndexExistOrDefault($array, string $key, $default)
 {
     return isset($array[$key]) ? $array[$key] : $default;
 }
@@ -141,11 +147,11 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
 
 /**
  * Check if is a Mollie gateway
- * @param $gateway string
+ * @param \WC_Payment_Gateway|string $gateway
  *
  * @return bool
 */
-function mollieWooCommerceIsMollieGateway($gateway)
+function mollieWooCommerceIsMollieGateway($gateway): bool
 {
     if (
         (is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false)
@@ -161,11 +167,11 @@ function mollieWooCommerceIsMollieGateway($gateway)
  * with the required number of decimals
  * depending on the currency used
  *
- * @param $value
- * @param $currency
+ * @param float|int $value
+ * @param string $currency
  * @return string
  */
-function mollieWooCommerceFormatCurrencyValue($value, $currency)
+function mollieWooCommerceFormatCurrencyValue($value, string $currency): string
 {
     $currenciesWithNoDecimals = ["JPY", "ISK"];
     if (in_array($currency, $currenciesWithNoDecimals)) {

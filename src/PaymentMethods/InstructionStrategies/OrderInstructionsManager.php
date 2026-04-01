@@ -8,11 +8,17 @@ use WC_Order;
 
 class OrderInstructionsManager
 {
+    /** @var InstructionStrategyI */
     protected $strategy;
+    /** @var bool */
     protected static $alreadyDisplayedAdminInstructions = false;
+    /** @var bool */
     protected static $alreadyDisplayedCustomerInstructions = false;
 
-    public function setStrategy($deprecatedGatewayHelper)
+    /**
+     * @param mixed $deprecatedGatewayHelper
+     */
+    public function setStrategy($deprecatedGatewayHelper): void
     {
         if (!$deprecatedGatewayHelper->paymentMethod()->getProperty('instructions')) {
             $this->strategy = new DefaultInstructionStrategy();
@@ -22,6 +28,13 @@ class OrderInstructionsManager
         }
     }
 
+    /**
+     * @param mixed $paymentGateway
+     * @param mixed $payment
+     * @param mixed $order
+     * @param bool  $admin_instructions
+     * @return mixed
+     */
     public function executeStrategy(
         $paymentGateway,
         $payment,
@@ -35,11 +48,11 @@ class OrderInstructionsManager
     /**
      * Add content to the WC emails.
      *
+     * @param mixed    $paymentGateway
+     * @param mixed    $deprecatedGatewayHelper
      * @param WC_Order $order
-     * @param bool     $admin_instructions (default: false)
-     * @param bool     $plain_text         (default: false)
-     *
-     * @return void
+     * @param bool     $admin_instructions
+     * @param bool     $plain_text
      */
     public function displayInstructions(
         $paymentGateway,
@@ -47,7 +60,7 @@ class OrderInstructionsManager
         WC_Order $order,
         $admin_instructions = false,
         $plain_text = false
-    ) {
+    ): void {
 
         if (
             ($admin_instructions && !self::$alreadyDisplayedAdminInstructions)

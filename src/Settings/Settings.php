@@ -10,29 +10,32 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
+use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\General\MollieGeneralSettings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Mollie\WooCommerce\Shared\Status;
+use Mollie\WooCommerce\Uninstall\CleanDb;
 
 class Settings
 {
-    protected $pluginId;
-    protected $pluginVersion;
-    protected $pluginUrl;
-    protected $cleanDb;
-    protected $globalSettingsUrl;
-    protected $statusHelper;
-    protected $apiHelper;
+    protected string $pluginId;
+    protected string $pluginVersion;
+    protected string $pluginUrl;
+    protected CleanDb $cleanDb;
+    protected string $globalSettingsUrl;
+    protected Status $statusHelper;
+    protected Api $apiHelper;
 
     /**
      * Settings constructor.
      */
     public function __construct(
-        $pluginId,
-        $statusHelper,
-        $pluginVersion,
-        $pluginUrl,
-        $apiHelper,
-        $cleanDb
+        string $pluginId,
+        Status $statusHelper,
+        string $pluginVersion,
+        string $pluginUrl,
+        Api $apiHelper,
+        CleanDb $cleanDb
     ) {
 
         $this->pluginId = $pluginId;
@@ -44,20 +47,23 @@ class Settings
         $this->cleanDb = $cleanDb;
     }
 
-    public function cleanDb()
+    public function cleanDb(): CleanDb
     {
         return $this->cleanDb;
     }
 
-    public function getGlobalSettingsUrl()
+    public function getGlobalSettingsUrl(): string
     {
         return $this->globalSettingsUrl;
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function generalFormFields(
-        $defaultTitle,
-        $defaultDescription,
-        $paymentConfirmation
+        string $defaultTitle,
+        string $defaultDescription,
+        bool $paymentConfirmation
     ): array {
 
         $generalSettings = new MollieGeneralSettings();
@@ -69,7 +75,7 @@ class Settings
         );
     }
 
-    public function processSettings(string $gatewayId)
+    public function processSettings(string $gatewayId): void
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
@@ -86,7 +92,7 @@ class Settings
         }
     }
 
-    public function processAdminOptionCustomLogo(string $gatewayId)
+    public function processAdminOptionCustomLogo(string $gatewayId): void
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = $nonce && wp_verify_nonce($nonce, 'woocommerce-settings');
@@ -119,7 +125,7 @@ class Settings
         }
     }
 
-    public function processAdminOptionSurcharge(string $gatewayId)
+    public function processAdminOptionSurcharge(string $gatewayId): void
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce($nonce, 'woocommerce-settings');
@@ -169,13 +175,13 @@ class Settings
         return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER;
     }
     /**
-     * @param bool $overrideTestMode
+     * @param bool|null $overrideTestMode Pass null to use the current test mode setting.
      *
      * @return false|string
      */
-    public function getApiKey($overrideTestMode = 2)
+    public function getApiKey(?bool $overrideTestMode = null)
     {
-        $isTestModeEnabled = $overrideTestMode === 2 ? $this->isTestModeEnabled() : $overrideTestMode;
+        $isTestModeEnabled = $overrideTestMode === null ? $this->isTestModeEnabled() : $overrideTestMode;
         $settingId = $isTestModeEnabled ? 'test_api_key' : 'live_api_key';
         $apiKeyId = $this->getSettingId($settingId);
         $apiKey = get_option($apiKeyId);
@@ -204,7 +210,7 @@ class Settings
      * Deletes the selector transient when the Admin option changes
      *
      */
-    protected function processAdminOptionCreditcardSelector()
+    protected function processAdminOptionCreditcardSelector(): void
     {
         delete_transient('svg_creditcards_string');
     }
@@ -276,8 +282,8 @@ class Settings
     /**
      * Update the profileId option on update keys or on changing live/test mode
      *
-     * @param $optionValue
-     * @param $optionName
+     * @param mixed $optionValue
+     * @param mixed $optionName
      *
      * @return mixed
      */
@@ -310,11 +316,11 @@ class Settings
     /**
      * Called after the api keys are updated so we can update the profile Id
      *
-     * @param $oldValue
-     * @param $value
-     * @param $optionName
+     * @param mixed $oldValue
+     * @param mixed $value
+     * @param string $optionName
      */
-    public function updateMerchantIdAfterApiKeyChanges($oldValue, $value, $optionName)
+    public function updateMerchantIdAfterApiKeyChanges($oldValue, $value, string $optionName): void
     {
         $option = ['id' => $optionName];
         $this->updateMerchantIdOnApiKeyChanges($value, $option);
@@ -386,7 +392,7 @@ class Settings
             . '</div>';
     }
 
-    public function getPaymentConfirmationCheckTime()
+    public function getPaymentConfirmationCheckTime(): int
     {
         $time = strtotime(SharedDataDictionary::DEFAULT_TIME_PAYMENT_CONFIRMATION_CHECK);
         $date = new DateTime();
@@ -401,7 +407,7 @@ class Settings
         return $date->getTimestamp();
     }
 
-    public function getPluginId()
+    public function getPluginId(): string
     {
         return $this->pluginId;
     }
@@ -410,7 +416,7 @@ class Settings
      *
      * @return string
      */
-    public function getSettingId($setting)
+    public function getSettingId(string $setting): string
     {
         $setting_id = $this->pluginId . '_' . trim($setting);
         $setting_id_length = strlen($setting_id);
@@ -418,7 +424,15 @@ class Settings
         $max_option_name_length = 191;
 
         if ($setting_id_length > $max_option_name_length) {
-            trigger_error(sprintf('Setting id %s (%s) to long for database column wp_options.option_name which is varchar(%s).', esc_html($setting_id), esc_html($setting_id_length), esc_html($max_option_name_length)), E_USER_WARNING);
+            trigger_error(
+                sprintf(
+                    'Setting id %s (%s) to long for database column wp_options.option_name which is varchar(%s).',
+                    esc_html($setting_id),
+                    esc_html((string)$setting_id_length),
+                    esc_html((string)$max_option_name_length)
+                ),
+                E_USER_WARNING
+            );
         }
 
         return $setting_id;
@@ -485,9 +499,10 @@ class Settings
      * allowed language codes dictionary, if not it will try to retrieve the first one that
      * contains the country code.
      *
+     * @param array<string> $languageCodes
      * @return string
      */
-    protected function extractValidLanguageCode(array $languageCodes)
+    protected function extractValidLanguageCode(array $languageCodes): string
     {
         // TODO Need Assertion to ensure $languageCodes is not empty and contains only strings
 
@@ -526,9 +541,10 @@ class Settings
 
     /**
      * Init all the gateways and add to the db for the first time
-     * @param $gateway
+     *
+     * @param mixed $gateway
      */
-    protected function updateGatewaySettings($gateway)
+    protected function updateGatewaySettings($gateway): void
     {
         $gateway->settings['enabled'] = $gateway->is_available() ? 'yes' : 'no';
         update_option(
@@ -541,7 +557,7 @@ class Settings
      * If we are calling this the api key has been updated, we need a new api object
      * to retrieve a new profile id
      *
-     * @return CurrentProfile
+     * @return \Mollie\Api\Resources\CurrentProfile
      * @throws ApiException
      */
     protected function mollieWooCommerceMerchantProfile()
@@ -575,7 +591,7 @@ class Settings
             if (!$merchantProfileId) {
                 try {
                     $merchantProfile = $this->mollieWooCommerceMerchantProfile();
-                    $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
+                    $merchantProfileId = $merchantProfile->id;
                 } catch (ApiException $exception) {
                     $merchantProfileId = '';
                 }
@@ -636,7 +652,7 @@ class Settings
         return true;
     }
 
-    protected function processUploadedFile(string $name, string $tempName, string $gatewayId)
+    protected function processUploadedFile(string $name, string $tempName, string $gatewayId): void
     {
         $fileName = preg_replace(
             '#\s+#',

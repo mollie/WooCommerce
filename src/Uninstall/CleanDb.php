@@ -9,19 +9,22 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 class CleanDb
 {
     /**
-     * @var array
+     * @var array<string>
      */
-    protected $gatewayClassnames;
+    protected array $gatewayClassnames;
 
     /**
      * CleanDb constructor.
+     */
+    /**
+     * @param array<string> $gatewayClassnames
      */
     public function __construct(array $gatewayClassnames)
     {
         $this->gatewayClassnames = $gatewayClassnames;
     }
 
-    public function cleanAll()
+    public function cleanAll(): void
     {
 
         $options = $this->allMollieOptionNames();
@@ -30,7 +33,7 @@ class CleanDb
     }
 
     /**
-     * @param array $options
+     * @param array<string> $options
      */
     protected function deleteSiteOptions(array $options): void
     {
@@ -39,11 +42,14 @@ class CleanDb
         }
     }
 
-    protected function cleanScheduledJobs()
+    protected function cleanScheduledJobs(): void
     {
         as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
     }
 
+    /**
+     * @return array<string>
+     */
     protected function allMollieOptionNames(): array
     {
         $names = SharedDataDictionary::MOLLIE_OPTIONS_NAMES;

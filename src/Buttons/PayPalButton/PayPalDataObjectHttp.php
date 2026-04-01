@@ -25,7 +25,7 @@ class PayPalDataObjectHttp
      */
     protected $productQuantity;
     /**
-     * @var array
+     * @var array<mixed>
      */
     protected $errors = [];
     /**
@@ -44,7 +44,7 @@ class PayPalDataObjectHttp
     /**
      * Resets the errors array
      */
-    protected function resetErrors()
+    protected function resetErrors(): void
     {
         $this->errors = [];
     }
@@ -53,7 +53,7 @@ class PayPalDataObjectHttp
      * Returns if the object has any errors
      * @return bool
      */
-    public function hasErrors()
+    public function hasErrors(): bool
     {
         return !empty($this->errors);
     }
@@ -62,9 +62,9 @@ class PayPalDataObjectHttp
      * Set the object with the data relevant to PayPal
      * Required data depends on callerPage
      *
-     * @param       $callerPage
+     * @param string $callerPage
      */
-    public function orderData($callerPage)
+    public function orderData(string $callerPage): void
     {
         $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
@@ -75,6 +75,9 @@ class PayPalDataObjectHttp
             return;
         }
         $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+        if (!is_array($data)) {
+            return;
+        }
         $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
         $this->updateRequiredData(
             $data,
@@ -89,10 +92,11 @@ class PayPalDataObjectHttp
      * If not it adds an unknown error to the object's error list, as this errors
      * are not supported by ApplePay
      *
-     *
+     * @param array<mixed> $data
+     * @param array<mixed> $required
      * @return bool
      */
-    protected function hasRequiredFieldsValuesOrError(array $data, array $required)
+    protected function hasRequiredFieldsValuesOrError(array $data, array $required): bool
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
@@ -116,8 +120,10 @@ class PayPalDataObjectHttp
 
     /**
      * Sets the value to the appropriate field in the object
+     *
+     * @param array<mixed> $data
      */
-    protected function assignDataObjectValues(array $data)
+    protected function assignDataObjectValues(array $data): void
     {
         $allowedKeys = [
             PropertiesDictionary::NONCE,
@@ -135,8 +141,8 @@ class PayPalDataObjectHttp
 
     /**
      * Selector for the different filters to apply to each field
-     * @param $value
      *
+     * @param mixed $value
      * @return int|false
      */
     protected function filterType($value)
@@ -157,11 +163,12 @@ class PayPalDataObjectHttp
     }
 
     /**
-     * @param       $requiredProductFields
-     * @param       $requiredCartFields
+     * @param array<mixed> $data
+     * @param array<mixed> $requiredProductFields
+     * @param array<mixed> $requiredCartFields
      * @return bool
      */
-    protected function updateRequiredData(array $data, $requiredProductFields, $requiredCartFields)
+    protected function updateRequiredData(array $data, array $requiredProductFields, array $requiredCartFields): bool
     {
         $this->resetErrors();
         $requiredFields = $requiredProductFields;
@@ -182,16 +189,25 @@ class PayPalDataObjectHttp
         return true;
     }
 
+    /**
+     * @return mixed
+     */
     public function nonce()
     {
         return $this->nonce;
     }
 
+    /**
+     * @return mixed
+     */
     public function productId()
     {
         return $this->productId;
     }
 
+    /**
+     * @return mixed
+     */
     public function productQuantity()
     {
         return $this->productQuantity;

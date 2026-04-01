@@ -25,8 +25,8 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
 {
     const WAITING_CONFIRMATION_PERIOD_DAYS = '21';
 
-    protected $recurringMollieMethod = null;
-    protected $dataHelper;
+    protected ?PaymentMethodI $recurringMollieMethod = null;
+    protected ?Data $dataHelper = null;
 
     /**
      * AbstractSepaRecurring constructor.
@@ -98,7 +98,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
      * @param $initial_order_status
      * @param $payment
      */
-    protected function updateScheduledPaymentOrder($renewal_order, $initial_order_status, $payment)
+    protected function updateScheduledPaymentOrder(\WC_Order $renewal_order, string $initial_order_status, Payment $payment): void
     {
         $this->mollieOrderService->updateOrderStatus(
             $renewal_order,
@@ -132,7 +132,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
     /**
      * @param $renewal_order
      */
-    protected function addPendingPaymentOrder($renewal_order)
+    protected function addPendingPaymentOrder(\WC_Order $renewal_order): void
     {
         global $wpdb;
 
@@ -167,7 +167,7 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
      * @param $order
      * @param $payment
      */
-    public function handlePaidOrderWebhook($order, $payment)
+    public function handlePaidOrderWebhook(\WC_Order $order, Payment $payment): void
     {
         $orderId = $order->get_id();
 

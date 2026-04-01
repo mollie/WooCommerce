@@ -40,7 +40,7 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    public function getFormFields(array $generalFormFields): array
     {
         $componentFields = $this->includeMollieComponentsFields($generalFormFields);
         return $this->includeCreditCardIconSelector($componentFields);
@@ -52,8 +52,10 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
 
         /** @var Data $dataHelper */
         $dataHelper = $container->get('settings.data_helper');
-        $lockIcon = file_get_contents($dataHelper->pluginPath() . '/public/images/lock-icon.svg');
-        $mollieLogo = file_get_contents($dataHelper->pluginPath() . '/public/images/mollie-logo.svg');
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
+        $lockIcon = (string)file_get_contents($dataHelper->pluginPath() . '/public/images/lock-icon.svg');
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
+        $mollieLogo = (string)file_get_contents($dataHelper->pluginPath() . '/public/images/mollie-logo.svg');
         $description = __('Secure payments provided by', 'mollie-payments-for-woocommerce');
 
         $data['issuers'] = false;
@@ -70,7 +72,11 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
         return $componentsEnabled ? $componentsEnabled === 'yes' : $this->defaultComponentsEnabled() === 'yes';
     }
 
-    protected function includeMollieComponentsFields($generalFormFields)
+    /**
+     * @param array<mixed> $generalFormFields
+     * @return array<mixed>
+     */
+    protected function includeMollieComponentsFields(array $generalFormFields): array
     {
         $fields = [
             'mollie_components_enabled' => [
@@ -91,7 +97,10 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
         return array_merge($generalFormFields, $fields);
     }
 
-    protected function defaultComponentsEnabled()
+    /**
+     * @return string
+     */
+    protected function defaultComponentsEnabled(): string
     {
         $isNewInstall = get_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'yes');
         if ($isNewInstall === 'yes') {
@@ -103,8 +112,11 @@ class Creditcard extends AbstractPaymentMethod implements PaymentMethodI
     /**
      * Include the credit card icon selector customization in the credit card
      * settings page
+     *
+     * @param array<mixed> $componentFields
+     * @return array<mixed>
      */
-    protected function includeCreditCardIconSelector($componentFields)
+    protected function includeCreditCardIconSelector(array $componentFields): array
     {
         $fields = $this->creditcardIconsSelectorFields();
         $fields && ($componentFields = array_merge($componentFields, $fields));

@@ -21,6 +21,10 @@ class MollieSubscription extends MollieObject
     /**
      * Molliesubscription constructor.
      *
+     * @param string $pluginId
+     * @param \Mollie\WooCommerce\Settings\Settings $settingsHelper
+     * @param \Mollie\WooCommerce\Shared\Data $dataHelper
+     * @param MiddlewareHandler $middlewareHandler
      */
     public function __construct(
         $pluginId,

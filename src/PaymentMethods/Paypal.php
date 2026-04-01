@@ -39,7 +39,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    public function getFormFields(array $generalFormFields): array
     {
         $paymentMethodFormFieds =  [
             'mollie_paypal_button_enabled_cart' => [

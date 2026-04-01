@@ -1,5 +1,5 @@
 parameters:
-  level: 5
+  level: 6
   dynamicConstantNames:
     - M4W_PLUGIN_DIR
     - M4W_FILE

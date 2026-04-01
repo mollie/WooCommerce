@@ -17,6 +17,9 @@ use WC_Order;
 
 class MollieOrderService
 {
+    /**
+     * @var \WC_Payment_Gateway|null
+     */
     protected $gateway;
     /**
      * @var HttpResponse
@@ -34,6 +37,9 @@ class MollieOrderService
      * @var Data
      */
     protected $data;
+    /**
+     * @var string
+     */
     protected $pluginId;
     private ContainerInterface $container;
     // phpstan:ignore [dead-code] declared but never assigned after construction; likely a concurrency guard placeholder
@@ -63,11 +69,18 @@ class MollieOrderService
         $this->webhookHandler = $webhookHandler;
     }
 
+    /**
+     * @param \WC_Payment_Gateway $gateway
+     * @return void
+     */
     public function setGateway($gateway)
     {
         $this->gateway = $gateway;
     }
 
+    /**
+     * @return void
+     */
     public function onWebhookAction()
     {
         // Webhook test by Mollie
@@ -196,7 +209,7 @@ class MollieOrderService
      * @param \WC_Order $order The order object for which the payment is being processed.
      * @return bool Returns true if the payment was successfully processed, false otherwise.
      */
-    public function doPaymentForOrder(\WC_Order $order, $payment_object_id = ''): bool
+    public function doPaymentForOrder(\WC_Order $order, string $payment_object_id = ''): bool
     {
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$gateway || !mollieWooCommerceIsMollieGateway($gateway->id)) {
@@ -280,7 +293,8 @@ class MollieOrderService
 
     /**
      * @param \WC_Order $order
-     * @param $payment
+     * @param mixed $payment
+     * @return void
      */
     public function handlePaidOrderWebhook(\WC_Order $order, $payment)
     {
@@ -371,6 +385,7 @@ class MollieOrderService
     /**
      * @param WC_Order $order
      * @param Payment|Order $payment
+     * @return void
      */
     protected function processRefunds(WC_Order $order, $payment)
     {
@@ -442,6 +457,7 @@ class MollieOrderService
     /**
      * @param WC_Order $order
      * @param Payment|Order $payment
+     * @return void
      */
     protected function processChargebacks(WC_Order $order, $payment)
     {
@@ -665,7 +681,7 @@ class MollieOrderService
     /**
      * Check if there is a refund inside an order line
      *
-     * @param $payment
+     * @param mixed $payment
      * @return bool
      */
     protected function hasLineRefund($payment): bool
@@ -676,8 +692,8 @@ class MollieOrderService
     /**
      * Find the Ids of the refunds
      *
-     * @param $payment
-     * @return array
+     * @param mixed $payment
+     * @return array<mixed>
      */
     protected function findRefundIds($payment): array
     {
@@ -690,8 +706,8 @@ class MollieOrderService
     /**
      * Find refund ids inside an order line
      *
-     * @param $payment
-     * @return array
+     * @param mixed $payment
+     * @return array<mixed>
      */
     protected function findRefundIdsByLine($payment): array
     {
@@ -703,7 +719,7 @@ class MollieOrderService
     /**
      * calculate refund amount inside order lines
      *
-     * @param $payment
+     * @param mixed $payment
      * @return float
      */
     protected function calculateRefundByLine($payment): float
@@ -719,8 +735,8 @@ class MollieOrderService
     /**
      * Check if there is a refund inside an order line
      *
-     * @param $payment
-     * @return array
+     * @param mixed $payment
+     * @return array<mixed>
      */
     protected function findRefundIdsByLinks($payment): array
     {
@@ -742,8 +758,9 @@ class MollieOrderService
     }
 
     /**
-     * @param Order $payment
+     * @param mixed $payment
      * @param WC_Order $order
+     * @return void
      */
     protected function setBillingAddressAfterPayment($payment, $order)
     {
@@ -779,6 +796,7 @@ class MollieOrderService
     /**
      * @param WC_Order $order
      * @param Payment|Order $payment
+     * @return void
      */
     protected function processUpdateStateRefund(WC_Order $order, $payment)
     {
@@ -795,8 +813,9 @@ class MollieOrderService
     /**
      * @param WC_Order $order
      * @param Payment|Order $payment
-     * @param                                                         $newOrderStatus
-     * @param                                                         $refundType
+     * @param string $newOrderStatus
+     * @param string $refundType
+     * @return void
      */
     protected function updateStateRefund(
         WC_Order $order,
@@ -826,8 +845,8 @@ class MollieOrderService
     }
 
     /**
-     * @param $payment
-     * @param $refundType
+     * @param mixed $payment
+     * @param string $refundType
      *
      * @return string
      */
@@ -849,6 +868,10 @@ class MollieOrderService
         );
     }
 
+    /**
+     * @param mixed $payment
+     * @return string
+     */
     protected function paymentTestModeNote($payment)
     {
         $note = __('test mode', 'mollie-payments-for-woocommerce');
@@ -860,7 +883,7 @@ class MollieOrderService
     //refactor
 
     /**
-     * @param $payment
+     * @param mixed $payment
      * @return string
      */
     protected function getPaymentMethodTitle($payment)
@@ -878,6 +901,7 @@ class MollieOrderService
      * @param string $new_status
      * @param string $note
      * @param bool $restore_stock
+     * @return void
      */
     public function updateOrderStatus(\WC_Order $order, $new_status, $note = '', $restore_stock = true)
     {
@@ -934,11 +958,11 @@ class MollieOrderService
     }
 
     /**
-     * @param array $refundsToProcess
+     * @param array<mixed> $refundsToProcess
      * @param string $logId
-     * @param $order
-     * @param $processedRefundIds
-     * @return mixed
+     * @param \WC_Order $order
+     * @param array<mixed> $processedRefundIds
+     * @return array<mixed>
      */
     protected function notifyProcessedRefunds(array $refundsToProcess, string $logId, $order, $processedRefundIds)
     {
@@ -977,7 +1001,7 @@ class MollieOrderService
         return $order->get_meta('_mollie_payment_method_button') === 'PayPalButton';
     }
 
-    public function getKeyFromRedirectUrl($redirectUrl): string
+    public function getKeyFromRedirectUrl(string $redirectUrl): string
     {
         $parsedUrl = wp_parse_url($redirectUrl);
 
@@ -990,7 +1014,7 @@ class MollieOrderService
         return isset($queryParams['key']) ? sanitize_text_field($queryParams['key']) : '';
     }
 
-    public function getOrderIdFromRedirectUrl($redirectUrl): string
+    public function getOrderIdFromRedirectUrl(string $redirectUrl): string
     {
         $parsedUrl = wp_parse_url($redirectUrl);
 
@@ -1003,7 +1027,7 @@ class MollieOrderService
         return isset($queryParams['order_id']) ? sanitize_text_field($queryParams['order_id']) : '';
     }
 
-    public function getRedirectUrlFromPaymentObject($transactionID): string
+    public function getRedirectUrlFromPaymentObject(string $transactionID): string
     {
         try {
             $payment_object = $this->paymentFactory->getPaymentObject(

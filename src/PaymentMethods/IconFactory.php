@@ -6,13 +6,16 @@ namespace Mollie\WooCommerce\PaymentMethods;
 
 class IconFactory
 {
+    /** @var mixed */
     protected $pluginUrl;
+    /** @var mixed */
     protected $pluginPath;
 
     /**
      * IconFactory constructor.
      *
-     * @param $pluginUrl
+     * @param mixed $pluginUrl
+     * @param mixed $pluginPath
      */
     public function __construct($pluginUrl, $pluginPath)
     {

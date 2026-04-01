@@ -79,7 +79,7 @@ class MollieSettingsPage extends WC_Settings_Page
         });
     }
 
-    public function outputSections()
+    public function outputSections(): void
     {
         add_action(
             'woocommerce_sections_' . $this->id,
@@ -87,6 +87,9 @@ class MollieSettingsPage extends WC_Settings_Page
         );
     }
 
+    /**
+     * @return array<class-string>
+     */
     protected function pages(): array
     {
         return [
@@ -97,6 +100,10 @@ class MollieSettingsPage extends WC_Settings_Page
         ];
     }
 
+    /**
+     * @param string $currentSection
+     * @return array<mixed>|null
+     */
     public function get_settings($currentSection = '')
     {
         $defaultSection = $currentSection;
@@ -141,11 +148,10 @@ class MollieSettingsPage extends WC_Settings_Page
     }
 
     /**
-     * @param $settings
-     *
-     * @return array
+     * @param array<mixed> $settings
+     * @return array<mixed>
      */
-    protected function hideKeysIntoStars($settings): array
+    protected function hideKeysIntoStars(array $settings): array
     {
         $liveKeyName = 'mollie-payments-for-woocommerce_live_api_key';
         $testKeyName = 'mollie-payments-for-woocommerce_test_api_key';
@@ -172,7 +178,7 @@ class MollieSettingsPage extends WC_Settings_Page
      *
      * @since 1.0
      */
-    public function save()
+    public function save(): void
     {
         global $current_section;
 
@@ -182,11 +188,10 @@ class MollieSettingsPage extends WC_Settings_Page
     }
 
     /**
-     * @param $settings
-     *
-     * @return array
+     * @param array<mixed> $settings
+     * @return array<mixed>
      */
-    protected function saveApiKeys($settings)
+    protected function saveApiKeys(array $settings): array
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
@@ -224,12 +229,11 @@ class MollieSettingsPage extends WC_Settings_Page
     }
 
     /**
-     * @param       $pattern
-     * @param       $value
-     * @param       $keyName
-     *
+     * @param string $pattern
+     * @param string $value
+     * @param string $keyName
      */
-    protected function validateApiKeyOrRemove($pattern, $value, $keyName)
+    protected function validateApiKeyOrRemove(string $pattern, string $value, string $keyName): void
     {
         $nonce = filter_input(INPUT_POST, '_wpnonce', FILTER_SANITIZE_SPECIAL_CHARS);
         $isNonceValid = wp_verify_nonce(
@@ -246,11 +250,11 @@ class MollieSettingsPage extends WC_Settings_Page
     }
 
     /**
-     * @param $id
-     * @param array $apiKey
+     * @param string $id
+     * @param array<string, mixed> $apiKey
      * @return void
      */
-    public function processApiKeys($id, array $apiKey): void
+    public function processApiKeys(string $id, array $apiKey): void
     {
         if ($id === $apiKey['keyName']) {
             if ($apiKey['postedValue'] === '**********') {

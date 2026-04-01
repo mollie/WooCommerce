@@ -62,10 +62,9 @@ class PaymentMethodsIconUrl
      * composed
      *
      * @param string $paymentMethodName
-     *
-     * @return array|string[]
+     * @return string[]
      */
-    public function svgUrlForPaymentMethod(string $paymentMethodName)
+    public function svgUrlForPaymentMethod(string $paymentMethodName): array
     {
         if ($paymentMethodName === PaymentMethod::CREDITCARD && !is_admin()) {
             return $this->getCreditcardIcon();
@@ -92,6 +91,9 @@ class PaymentMethodsIconUrl
         return [$svgUrl];
     }
 
+    /**
+     * @param mixed $gatewaySettings
+     */
     protected function canShowCustomLogo($gatewaySettings): bool
     {
         if (!$gatewaySettings) {

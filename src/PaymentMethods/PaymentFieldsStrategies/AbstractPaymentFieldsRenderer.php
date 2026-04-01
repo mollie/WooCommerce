@@ -13,6 +13,11 @@ class AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
     protected string $gatewayDescription;
     protected Data $dataHelper;
 
+    /**
+     * @param mixed $deprecatedHelperGateway
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     */
     public function __construct($deprecatedHelperGateway, $gateway, $dataHelper)
     {
 
@@ -29,6 +34,11 @@ class AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
         return '';
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return '';

@@ -25,11 +25,14 @@ class MolliePaymentGatewayHandler
      * @var bool
      */
     protected static $alreadyDisplayedAdminInstructions = false;
+    /**
+     * @var bool
+     */
     protected static $alreadyDisplayedCustomerInstructions = false;
     /**
      * Recurring total, zero does not define a recurring total
      *
-     * @var array
+     * @var array<float>
      */
     protected $recurring_totals = [];
     /**
@@ -158,17 +161,17 @@ class MolliePaymentGatewayHandler
         return $this->paymentMethod;
     }
 
-    public function dataService()
+    public function dataService(): Data
     {
         return $this->dataService;
     }
 
-    public function pluginId()
+    public function pluginId(): string
     {
         return $this->pluginId;
     }
 
-    protected function gatewayId()
+    protected function gatewayId(): string
     {
         $paymentMethodId = $this->paymentMethod->getProperty('id');
         $this->id = 'mollie_wc_gateway_' . $paymentMethodId;
@@ -178,6 +181,7 @@ class MolliePaymentGatewayHandler
     /**
      * Check if the gateway is available for use
      *
+     * @param mixed $gateway
      * @return bool
      */
     public function is_available($gateway): bool
@@ -218,11 +222,10 @@ class MolliePaymentGatewayHandler
     /**
      * Check if payment method is available in checkout based on amount, currency and sequenceType
      *
-     * @param $filters
-     *
+     * @param array<mixed> $filters
      * @return bool
      */
-    public function isAvailableMethodInCheckout($filters): bool
+    public function isAvailableMethodInCheckout(array $filters): bool
     {
         $useCache = true;
         $methods = $this->dataService->getApiPaymentMethods(
@@ -244,7 +247,7 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * @return array|false|int
+     * @return array<float>|false
      */
     public function get_recurring_total()
     {
@@ -269,10 +272,10 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * @param $order
-     * @param $payment
+     * @param WC_Order $order
+     * @param mixed $payment
      */
-    public function handlePaidOrderWebhook($order, $payment)
+    public function handlePaidOrderWebhook(WC_Order $order, $payment): void
     {
         // Duplicate webhook call
         $this->httpResponse->setHttpResponseCode(204);
@@ -396,13 +399,13 @@ class MolliePaymentGatewayHandler
     /**
      * Retrieve the active payment object
      *
-     * @param $orderId
-     * @param $useCache
+     * @param int $orderId
+     * @param bool $useCache
      *
      * @return Payment
      * @throws UnexpectedValueException
      */
-    public function activePaymentObject($orderId, $useCache): Payment
+    public function activePaymentObject(int $orderId, bool $useCache): Payment
     {
         $paymentObject = $this->paymentObject();
         $activePaymentObject = $paymentObject->getActiveMolliePayment(
@@ -420,12 +423,12 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * @param      $title
-     * @param null $id
+     * @param string $title
+     * @param int|null $id
      *
      * @return string
      */
-    public function onOrderReceivedTitle($title, $id = null)
+    public function onOrderReceivedTitle(string $title, $id = null): string
     {
         // phpstan:ignore [wc-stub] get_the_ID() returns int|false; comparison with nullable $id triggers a false-positive
         // @phpstan-ignore-next-line
@@ -528,12 +531,12 @@ class MolliePaymentGatewayHandler
     }
 
     /**
-     * @param          $text
+     * @param string $text
      * @param WC_Order|null $order
      *
      * @return string
      */
-    public function onOrderReceivedText($text, $order)
+    public function onOrderReceivedText(string $text, $order): string
     {
         if (!is_a($order, 'WC_Order')) {
             return $text;
@@ -627,6 +630,7 @@ class MolliePaymentGatewayHandler
      * In WooCommerce check if the gateway is available for use (WooCommerce settings)
      * but also check if is not direct debit as this should not be shown in checkout
      *
+     * @param mixed $gateway
      * @return bool
      */
     protected function checkEnabledNorDirectDebit($gateway): bool

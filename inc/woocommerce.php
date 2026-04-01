@@ -7,7 +7,7 @@ if (!function_exists('has_block')) {
      * @since WooCommerce 5.0
      * @return bool
      */
-    function has_block($blockName)
+    function has_block(string $blockName): bool
     {
         return false;
     }
@@ -43,7 +43,7 @@ if (!function_exists('untrailingslashit')) {
     }
 }
 
-function mollieWooCommerceSession()
+function mollieWooCommerceSession(): ?\WC_Session
 {
     return WC()->session;
 }
@@ -54,7 +54,10 @@ function mollieWooCommerceSession()
  *
  * @return bool
  */
-function mollieWooCommerceStringToBoolOption($string)
+/**
+ * @param mixed $string
+ */
+function mollieWooCommerceStringToBoolOption($string): bool
 {
     return is_bool($string) ? $string : ('yes' === strtolower(
         $string

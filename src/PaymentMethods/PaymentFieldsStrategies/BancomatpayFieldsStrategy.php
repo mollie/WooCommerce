@@ -31,6 +31,9 @@ class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements
         return $this->gatewayDescription;
     }
 
+    /**
+     * @return \WC_Order|false
+     */
     protected function getOrderIdOnPayForOrderPage()
     {
         global $wp;
@@ -38,7 +41,11 @@ class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements
         return wc_get_order($orderId);
     }
 
-    protected function phoneNumber($phoneValue)
+    /**
+     * @param string|false $phoneValue
+     * @return string
+     */
+    protected function phoneNumber($phoneValue): string
     {
         $phoneValue = $phoneValue ?: '';
         return '
@@ -61,6 +68,11 @@ class BancomatpayFieldsStrategy extends AbstractPaymentFieldsRenderer implements
             </p>';
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return "";

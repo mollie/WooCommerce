@@ -34,7 +34,11 @@ class BizumFieldsStrategy extends AbstractPaymentFieldsRenderer implements Payme
         return $html;
     }
 
-    protected function phoneNumber($phoneValue)
+    /**
+     * @param string|false $phoneValue
+     * @return string
+     */
+    protected function phoneNumber($phoneValue): string
     {
         $phoneValue = $phoneValue ?: '';
         $country = WC()->customer->get_billing_country();
@@ -57,6 +61,11 @@ class BizumFieldsStrategy extends AbstractPaymentFieldsRenderer implements Payme
         return $html;
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return "";

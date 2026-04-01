@@ -6,9 +6,12 @@ namespace Mollie\WooCommerce\Buttons;
 
 abstract class AbstractExpressButton implements ExpressButtonInterface
 {
+    /**
+     * @var mixed
+     */
     protected $ajaxRequests;
 
-    public function bootstrap()
+    public function bootstrap(): void
     {
         if (!$this->canShow()) {
             return;
@@ -22,7 +25,7 @@ abstract class AbstractExpressButton implements ExpressButtonInterface
     {
     }
 
-    protected function registerAjaxHandlers()
+    protected function registerAjaxHandlers(): void
     {
         foreach ($this->getAjaxHandlers() as $action => $callback) {
             add_action("wp_ajax_{$action}", $callback);

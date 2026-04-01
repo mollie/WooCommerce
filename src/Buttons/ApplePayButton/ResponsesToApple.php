@@ -20,6 +20,8 @@ class ResponsesToApple
 
     /**
      * ResponsesToApple constructor.
+     *
+     * @param mixed $deprecatedAppleHelper
      */
     public function __construct(Logger $logger, $deprecatedAppleHelper)
     {
@@ -32,17 +34,17 @@ class ResponsesToApple
      * Adds the error list if provided to be handled by the script
      * On success it adds the redirection url
      *
-     * @param        $status 0 => success, 1 => error
+     * @param string $status 0 => success, 1 => error
      * @param string $orderId
-     * @param array  $errorList
+     * @param array<mixed>  $errorList
      *
-     * @return array
+     * @return array<mixed>
      */
     public function authorizationResultResponse(
-        $status,
-        $orderId = '',
-        $errorList = []
-    ) {
+        string $status,
+        string $orderId = '',
+        array $errorList = []
+    ): array {
 
         $response = [];
         if ($status === 'STATUS_SUCCESS') {
@@ -63,11 +65,11 @@ class ResponsesToApple
     /**
      * Returns an error response to be handled by the script
      *
-     * @param array $errorList [['errorCode'=>required, 'contactField'=>'']]
+     * @param array<mixed> $errorList [['errorCode'=>required, 'contactField'=>'']]
      *
      * @return void
      */
-    public function responseWithDataErrors($errorList)
+    public function responseWithDataErrors(array $errorList): void
     {
         $response = [];
         $response['errors'] = $this->applePayError($errorList);
@@ -81,10 +83,11 @@ class ResponsesToApple
     /**
      * Creates a response formatted for ApplePay
      *
-     *
-     * @return array
+     * @param array<mixed> $paymentDetails
+     * @param ApplePayDataObjectHttp $applePayRequestDataObject
+     * @return array<mixed>
      */
-    public function appleFormattedResponse(array $paymentDetails, $applePayRequestDataObject)
+    public function appleFormattedResponse(array $paymentDetails, ApplePayDataObjectHttp $applePayRequestDataObject): array
     {
         $response = [];
         if ($paymentDetails['shippingMethods']) {
@@ -128,8 +131,10 @@ class ResponsesToApple
 
     /**
      * Returns a success response to be handled by the script
+     *
+     * @param array<mixed> $response
      */
-    public function responseSuccess(array $response)
+    public function responseSuccess(array $response): void
     {
         wp_send_json_success($response);
     }
@@ -137,12 +142,12 @@ class ResponsesToApple
     /**
      * Creates an array of errors formatted
      *
-     * @param array $errorList
-     * @param array $errors
+     * @param array<mixed> $errorList
+     * @param array<mixed> $errors
      *
-     * @return array
+     * @return array<mixed>
      */
-    protected function applePayError($errorList, $errors = [])
+    protected function applePayError(array $errorList, array $errors = []): array
     {
         foreach ($errorList as $error) {
             $errors[] = [
@@ -159,11 +164,10 @@ class ResponsesToApple
     /**
      * Creates NewTotals line
      *
-     * @param        $total
-     *
+     * @param mixed $total
      * @param string $type
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function appleNewTotalResponse($total, string $type = 'final'): array
     {
@@ -177,11 +181,11 @@ class ResponsesToApple
     /**
      * Creates item line
      *
-     * @param $subtotalLabel
-     * @param $subtotal
-     * @param $type
+     * @param mixed $subtotalLabel
+     * @param mixed $subtotal
+     * @param mixed $type
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function appleItemFormat($subtotalLabel, $subtotal, $type): array
     {
@@ -195,8 +199,8 @@ class ResponsesToApple
     /**
      * Creates NewLineItems line
      *
-     *
-     * @return array[]
+     * @param array<mixed> $paymentDetails
+     * @return array<mixed>
      */
     protected function appleNewLineItemsResponse(array $paymentDetails): array
     {
@@ -230,11 +234,11 @@ class ResponsesToApple
     /**
      * Returns the redirect url to use on successful payment
      *
-     * @param $orderId
+     * @param string $orderId
      *
      * @return string
      */
-    protected function redirectUrlOnSuccessfulPayment($orderId)
+    protected function redirectUrlOnSuccessfulPayment(string $orderId): string
     {
         $order = wc_get_order($orderId);
         $redirect_url = $this->deprecatedAppleHelper->getReturnRedirectUrlForOrder($order);

@@ -55,7 +55,7 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    public function getFormFields(array $generalFormFields): array
     {
         unset($generalFormFields['activate_expiry_days_setting']);
         unset($generalFormFields['order_dueDate']);
@@ -97,16 +97,17 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         }, 10, 2);
     }
     /**
+     * @param array<mixed>  $args
      * @param WC_Order $order
-     * @return array
+     * @return array<mixed>
      */
-    public function addPaymentArguments(array $args, WC_Order $order)
+    public function addPaymentArguments(array $args, WC_Order $order): array
     {
         // Expiry date
         $expiry_days = (int)$this->getProperty(self::EXPIRY_DAYS_OPTION) ?: self::EXPIRY_DEFAULT_DAYS;
 
         if ($expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS) {
-            $expiry_date = gmdate("Y-m-d", strtotime(sprintf('+%s days', $expiry_days)));
+            $expiry_date = gmdate("Y-m-d", (int)strtotime(sprintf('+%s days', $expiry_days)));
 
             // Add dueDate at the correct location
             if ($this->isExpiredDateSettingActivated()) {
@@ -127,6 +128,9 @@ class Banktransfer extends AbstractPaymentMethod implements PaymentMethodI
         return $args;
     }
 
+    /**
+     * @return mixed
+     */
     public function isExpiredDateSettingActivated()
     {
         $expiryDays = $this->getProperty(

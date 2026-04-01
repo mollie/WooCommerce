@@ -6,6 +6,13 @@ namespace Mollie\WooCommerce\PaymentMethods\InstructionStrategies;
 
 class BanktransferInstructionStrategy implements InstructionStrategyI
 {
+    /**
+     * @param mixed $gateway
+     * @param mixed $payment
+     * @param mixed $order
+     * @param bool  $admin_instructions
+     * @return mixed
+     */
     public function execute(
         $gateway,
         $payment,
@@ -54,7 +61,7 @@ class BanktransferInstructionStrategy implements InstructionStrategyI
 
             if (!empty($payment->expiresAt)) {
                 $expiryDate = $payment->expiresAt;
-                $expiryDate = date_i18n(wc_date_format(), strtotime($expiryDate));
+                $expiryDate = date_i18n(wc_date_format(), (int)strtotime($expiryDate));
 
                 if ($admin_instructions) {
                     $instructions .= "\n" . sprintf(

@@ -23,6 +23,11 @@ class KbcFieldsStrategy extends AbstractPaymentFieldsRenderer implements Payment
         return $this->gatewayDescription . $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         if (!$this->dropDownEnabled($gateway)) {

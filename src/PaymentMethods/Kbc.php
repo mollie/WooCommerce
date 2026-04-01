@@ -37,11 +37,11 @@ class Kbc extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    public function getFormFields(array $generalFormFields): array
     {
         $searchKey = 'advanced';
         $keys = array_keys($generalFormFields);
-        $index = array_search($searchKey, $keys);
+        $index = (int)array_search($searchKey, $keys);
         $before = array_slice($generalFormFields, 0, $index + 1, true);
         $after = array_slice($generalFormFields, $index + 1, null, true);
         $paymentMethodFormFieds =   [

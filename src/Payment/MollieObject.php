@@ -17,16 +17,34 @@ use WC_Payment_Gateway;
 
 class MollieObject
 {
+    /**
+     * @var mixed
+     */
     protected $data;
     /**
      * @var string[]
      */
     protected const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
 
+    /**
+     * @var string|null
+     */
     protected static $paymentId;
+    /**
+     * @var string|null
+     */
     protected static $customerId;
+    /**
+     * @var \WC_Order|null
+     */
     protected static $order;
+    /**
+     * @var \Mollie\Api\Resources\Payment|\Mollie\Api\Resources\Order|null
+     */
     protected static $payment;
+    /**
+     * @var string
+     */
     protected static $shop_country;
     /**
      * @var Logger
@@ -36,9 +54,18 @@ class MollieObject
      * @var PaymentFactory
      */
     protected PaymentFactory $paymentFactory;
+    /**
+     * @var mixed
+     */
     protected $dataService;
+    /**
+     * @var \Mollie\WooCommerce\SDK\Api
+     */
     protected $apiHelper;
     protected Settings $settingsHelper;
+    /**
+     * @var \Mollie\WooCommerce\Shared\Data
+     */
     protected $dataHelper;
     /**
      * @var string
@@ -52,6 +79,9 @@ class MollieObject
     private $paymentMethod;
     protected RequestFactory $requestFactory;
 
+    /**
+     * @param mixed $data
+     */
     public function __construct(
         $data,
         Logger $logger,
@@ -74,11 +104,17 @@ class MollieObject
         $this->requestFactory = $requestFactory;
     }
 
+    /**
+     * @return mixed
+     */
     public function data()
     {
         return $this->data;
     }
 
+    /**
+     * @return string|null
+     */
     public function customerId()
     {
         return self::$customerId;
@@ -148,9 +184,9 @@ class MollieObject
     }
 
     /**
-     * @param $order
-     * @param $customerId
-     *
+     * @param mixed $order
+     * @param mixed $customerId
+     * @return array<mixed>|void
      */
     protected function getPaymentRequestData($order, $customerId)
     {
@@ -161,6 +197,7 @@ class MollieObject
      * @param string $new_status
      * @param string $note
      * @param bool $restore_stock
+     * @return void
      */
     public function updateOrderStatus(\WC_Order $order, $new_status, $note = '', $restore_stock = true)
     {
@@ -518,10 +555,16 @@ class MollieObject
         return ! empty($cancelled_payment_id);
     }
 
+    /**
+     * @return string|null
+     */
     public function getMolliePaymentIdFromPaymentObject()
     {
     }
 
+    /**
+     * @return string|null
+     */
     public function getMollieCustomerIdFromPaymentObject()
     {
     }
@@ -534,6 +577,7 @@ class MollieObject
      * @param object $paymentObject
      * @param null   $amount
      * @param string $reason
+     * @return void
      */
     public function refund(WC_Order $order, $orderId, $paymentObject, $amount = null, $reason = '')
     {
@@ -551,6 +595,7 @@ class MollieObject
     }
     /**
      * @param WC_Order $order
+     * @return void
      */
     public function deleteSubscriptionFromPending(WC_Order $order)
     {
@@ -567,8 +612,9 @@ class MollieObject
     }
 
     /**
-     * @param WC_Order       $order
-     * @param Order| Payment $payment
+     * @param WC_Order $order
+     * @param Order|Payment $payment
+     * @return void
      */
     public function addMandateIdMetaToFirstPaymentSubscriptionOrder(
         WC_Order $order,
@@ -615,9 +661,8 @@ class MollieObject
     }
 
     /**
-     * @param $order
-     * @param $test_mode
-     * @return null|string
+     * @param \WC_Order $order
+     * @return string|null
      */
     protected function getUserMollieCustomerId($order)
     {
@@ -627,7 +672,8 @@ class MollieObject
         return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
     }
     /**
-     * @param $order
+     * @param \WC_Order $order
+     * @return void
      */
     public function deleteSubscriptionOrderFromPendingPaymentQueue($order)
     {
@@ -657,12 +703,13 @@ class MollieObject
         );
     }
     /**
-     * @param int                           $orderId
-     * @param \WC_Payment_Gateway           $gateway
-     * @param \WC_Order                     $order
-     * @param string                        $newOrderStatus
-     * @param string                        $paymentMethodTitle
-     * @param Payment|Order                 $payment
+     * @param int $orderId
+     * @param \WC_Payment_Gateway $gateway
+     * @param \WC_Order $order
+     * @param string $newOrderStatus
+     * @param string $paymentMethodTitle
+     * @param Payment|Order $payment
+     * @return void
      */
     public function failedSubscriptionProcess(
         $orderId,
@@ -739,6 +786,9 @@ class MollieObject
         }
     }
 
+    /**
+     * @return void
+     */
     public function addPaypalTransactionIdToOrder(
         WC_Order $order
     ) {

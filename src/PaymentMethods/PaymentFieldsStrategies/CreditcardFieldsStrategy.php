@@ -24,21 +24,26 @@ class CreditcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements 
                 '%1$s Secure payments provided by %2$s',
                 'mollie-payments-for-woocommerce'
             ),
-            wp_kses($this->lockIcon($this->dataHelper), $allowedHtml),
-            wp_kses($this->mollieLogo($this->dataHelper), $allowedHtml)
+            wp_kses((string)$this->lockIcon($this->dataHelper), $allowedHtml),
+            wp_kses((string)$this->mollieLogo($this->dataHelper), $allowedHtml)
         );
         $output .= '</p>';
 
         return $output;
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         if (!$this->isMollieComponentsEnabled($gateway->paymentMethod())) {
             return false;
         }
         $descriptionTranslated = __('Secure payments provided by', 'mollie-payments-for-woocommerce');
-        $componentsDescription = "{$this->lockIcon($dataHelper)} {$descriptionTranslated} {$this->mollieLogo($dataHelper)}";
+        $componentsDescription = ((string)$this->lockIcon($dataHelper)) . " {$descriptionTranslated} " . ((string)$this->mollieLogo($dataHelper));
         return "<div class='payment_method_mollie_wc_gateway_creditcard'><div class='mollie-components'></div><p class='mollie-components-description'>{$componentsDescription}</p></div>";
     }
 
@@ -48,6 +53,10 @@ class CreditcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements 
         return $hasComponentsEnabled === 'yes';
     }
 
+    /**
+     * @param mixed $dataHelper
+     * @return string|false
+     */
     protected function lockIcon($dataHelper)
     {
         // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.
@@ -56,6 +65,10 @@ class CreditcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements 
         );
     }
 
+    /**
+     * @param mixed $dataHelper
+     * @return string|false
+     */
     protected function mollieLogo($dataHelper)
     {
         // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local file is OK.

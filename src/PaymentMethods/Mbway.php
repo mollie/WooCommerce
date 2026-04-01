@@ -34,7 +34,7 @@ class Mbway extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    public function getFormFields(array $generalFormFields): array
     {
         return $generalFormFields;
     }

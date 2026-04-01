@@ -43,7 +43,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    public function getFormFields(array $generalFormFields): array
     {
 
         $checkout_page_id = wc_get_page_id('checkout');

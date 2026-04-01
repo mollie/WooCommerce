@@ -41,7 +41,7 @@ class PayPalAjaxRequests
     /**
      * Adds all the Ajax actions to perform the whole workflow
      */
-    public function bootstrapAjaxRequest()
+    public function bootstrapAjaxRequest(): void
     {
         foreach ($this->getHandlers() as $action => $handler) {
             add_action('wp_ajax_' . $action, $handler);
@@ -52,7 +52,7 @@ class PayPalAjaxRequests
     /**
      * Get the array of AJAX action handlers
      *
-     * @return array
+     * @return array<string, array<int, mixed>>
      */
     public function getHandlers(): array
     {
@@ -72,7 +72,7 @@ class PayPalAjaxRequests
      * @throws WC_Data_Exception
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    public function createWcOrder()
+    public function createWcOrder(): void
     {
         $payPalRequestDataObject = $this->payPalDataObjectHttp();
         if (!$this->isNonceValid()) {
@@ -125,7 +125,7 @@ class PayPalAjaxRequests
      * @throws WC_Data_Exception
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    public function createWcOrderFromCart()
+    public function createWcOrderFromCart(): void
     {
         if (!$this->isNonceValid()) {
             return;
@@ -160,7 +160,7 @@ class PayPalAjaxRequests
         }
     }
 
-    public function updateAmount()
+    public function updateAmount(): void
     {
         if (!$this->isNonceValid()) {
             wp_send_json_error('no nonce');
@@ -194,10 +194,10 @@ class PayPalAjaxRequests
     /**
      * Update order post meta
      *
-     * @param string $orderId
-     * @param        $order
+     * @param int $orderId
+     * @param \WC_Order $order
      */
-    protected function updateOrderPostMeta($orderId, $order)
+    protected function updateOrderPostMeta(int $orderId, \WC_Order $order): void
     {
         $order->update_meta_data('_customer_user', get_current_user_id());
         $order->update_meta_data('_payment_method', 'mollie_wc_gateway_paypal');
@@ -216,10 +216,10 @@ class PayPalAjaxRequests
      *
      * @param int $orderId
      *
-     * @return array|string[]
+     * @return array<mixed>
      * @throws \Mollie\Api\Exceptions\ApiException
      */
-    protected function processOrderPayment($orderId)
+    protected function processOrderPayment(int $orderId): array
     {
         return $this->gateway->process_payment($orderId);
     }
@@ -227,10 +227,10 @@ class PayPalAjaxRequests
     /**
      * Handles the order creation in cart page
      *
-     * @return array
+     * @return array<mixed>
      * @throws \Exception
      */
-    protected function createOrderFromCart()
+    protected function createOrderFromCart(): array
     {
         $cart = WC()->cart;
         $checkout = WC()->checkout();

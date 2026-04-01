@@ -25,10 +25,25 @@ class MollieOrder extends MollieObject
     public const ACTION_AFTER_REFUND_AMOUNT_CREATED = 'mollie-payments-for-woocommerce' . '_refund_amount_created';
     public const ACTION_AFTER_REFUND_ORDER_CREATED = 'mollie-payments-for-woocommerce' . '_refund_order_created';
 
+    /**
+     * @var string|null
+     */
     protected static $paymentId;
+    /**
+     * @var string|null
+     */
     protected static $customerId;
+    /**
+     * @var \WC_Order|null
+     */
     protected static $order;
+    /**
+     * @var \Mollie\Api\Resources\Payment|\Mollie\Api\Resources\Order|null
+     */
     protected static $payment;
+    /**
+     * @var string
+     */
     protected static $shop_country;
 
     /**
@@ -40,7 +55,7 @@ class MollieOrder extends MollieObject
     /**
      * MollieOrder constructor.
      * @param OrderItemsRefunder $orderItemsRefunder
-     * @param $data
+     * @param mixed $data
      */
     public function __construct(
         OrderItemsRefunder $orderItemsRefunder,
@@ -79,10 +94,9 @@ class MollieOrder extends MollieObject
     }
 
     /**
-     * @param $order
-     * @param $customerId
-     *
-     * @return array
+     * @param mixed $order
+     * @param mixed $customerId
+     * @return array<mixed>
      */
     public function getPaymentRequestData($order, $customerId)
     {
@@ -102,6 +116,9 @@ class MollieOrder extends MollieObject
         return parent::setActiveMolliePayment($orderId);
     }
 
+    /**
+     * @return string|null
+     */
     public function getMolliePaymentIdFromPaymentObject()
     {
         $payment = $this->getPaymentObject($this->data->id);
@@ -111,6 +128,10 @@ class MollieOrder extends MollieObject
         }
     }
 
+    /**
+     * @param mixed $payment
+     * @return string|null
+     */
     public function getMollieCustomerIdFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -124,6 +145,10 @@ class MollieOrder extends MollieObject
         }
     }
 
+    /**
+     * @param mixed $payment
+     * @return string|null
+     */
     public function getSequenceTypeFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -137,6 +162,10 @@ class MollieOrder extends MollieObject
         }
     }
 
+    /**
+     * @param mixed $payment
+     * @return array<string, string>
+     */
     public function getMollieCustomerIbanDetailsFromPaymentObject($payment = null)
     {
         if ($payment === null) {
@@ -274,12 +303,12 @@ class MollieOrder extends MollieObject
     }
 
     /**
-     * @param $order
-     * @param $orderId
-     * @param $amount
-     * @param $items
-     * @param $paymentObject
-     * @param $reason
+     * @param mixed $order
+     * @param mixed $orderId
+     * @param mixed $amount
+     * @param mixed $items
+     * @param mixed $paymentObject
+     * @param mixed $reason
      *
      * @return bool
      * @throws ApiException
@@ -351,14 +380,13 @@ class MollieOrder extends MollieObject
     }
 
     /**
-     * @param $order
-     * @param $order_id
-     * @param $amount
-     * @param $paymentObject
-     * @param $reason
+     * @param \WC_Order $order
+     * @param mixed $amount
+     * @param mixed $paymentObject
+     * @param mixed $reason
      *
      * @return bool
-     * @throws ApiException|Exception
+     * @throws ApiException|\Exception
      */
     public function refund_amount($order, $amount, $paymentObject, $reason)
     {
@@ -431,7 +459,8 @@ class MollieOrder extends MollieObject
 
     /**
      * @param Order $order
-     * @param int                     $orderId
+     * @param int $orderId
+     * @return void
      */
     public function updatePaymentDataWithOrderData($order, $orderId)
     {
@@ -444,14 +473,14 @@ class MollieOrder extends MollieObject
     }
 
     /**
-     * @param $paymentObject
-     * @param $item
-     * @param $line
-     * @param $order
-     * @param $orderId
-     * @param $itemRefundAmount
-     * @param $reason
-     * @param $items
+     * @param mixed $paymentObject
+     * @param mixed $item
+     * @param mixed $line
+     * @param mixed $order
+     * @param mixed $orderId
+     * @param mixed $itemRefundAmount
+     * @param mixed $reason
+     * @param mixed $items
      *
      * @throws ApiException
      */
@@ -578,6 +607,10 @@ class MollieOrder extends MollieObject
         unset($items[$item->get_id()]);
     }
 
+    /**
+     * @param mixed $data
+     * @return void
+     */
     public function setOrder($data)
     {
         $this->data = $data;

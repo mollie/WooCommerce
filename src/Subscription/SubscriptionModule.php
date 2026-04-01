@@ -49,7 +49,7 @@ class SubscriptionModule implements ExecutableModule
     /**
      * WCSubscription related.
      */
-    public function schedulePendingPaymentOrdersExpirationCheck()
+    public function schedulePendingPaymentOrdersExpirationCheck(): void
     {
         if (class_exists('WC_Subscriptions_Order')) {
             $settings_helper = $this->settingsHelper;
@@ -75,7 +75,7 @@ class SubscriptionModule implements ExecutableModule
     /**
      *
      */
-    public function checkPendingPaymentOrdersExpiration()
+    public function checkPendingPaymentOrdersExpiration(): void
     {
         global $wpdb;
         $currentDate = new DateTime();
@@ -88,7 +88,7 @@ class SubscriptionModule implements ExecutableModule
 
             // Check that order actually exists
             if ($order === false) {
-                return false;
+                return;
             }
 
             if ($order->get_status() === SharedDataDictionary::STATUS_COMPLETED) {

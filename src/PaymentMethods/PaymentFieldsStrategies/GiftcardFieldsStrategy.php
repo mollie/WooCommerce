@@ -40,6 +40,11 @@ class GiftcardFieldsStrategy extends AbstractPaymentFieldsRenderer implements Pa
         return $this->gatewayDescription . $this->renderIssuers($this->deprecatedHelperGateway, $issuers, $selectedIssuer);
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         if (!$this->dropDownEnabled($gateway)) {

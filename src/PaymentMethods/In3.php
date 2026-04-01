@@ -45,7 +45,7 @@ class In3 extends AbstractPaymentMethod implements PaymentMethodI
         $this->translationsInitialized = true;
     }
 
-    public function getFormFields($generalFormFields): array
+    public function getFormFields(array $generalFormFields): array
     {
         /**
          * This payment method requires line items to be sent

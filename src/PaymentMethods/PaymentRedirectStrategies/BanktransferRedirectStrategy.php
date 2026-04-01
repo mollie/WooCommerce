@@ -12,10 +12,10 @@ class BanktransferRedirectStrategy implements PaymentRedirectStrategyI
      * Redirect location after successfully completing process_payment
      *
      * @param PaymentMethodI $paymentMethod
-     * @param \WC_Order $order
-     * @param $paymentObject
-     * @param string $redirectUrl
-     * @return string|null
+     * @param mixed          $order
+     * @param mixed          $paymentObject
+     * @param string         $redirectUrl
+     * @return mixed
      */
     public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl)
     {

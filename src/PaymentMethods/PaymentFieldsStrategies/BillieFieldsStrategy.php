@@ -16,7 +16,7 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
 
         if (is_checkout_pay_page()) {
             $order = $this->getOrderIdOnPayForOrderPage();
-            $showCompanyField = empty($order->get_billing_company());
+            $showCompanyField = $order && empty($order->get_billing_company());
         }
 
         $companyFieldIsRequiredByWoo = $this->isCompanyFieldIsRequiredByWoo();
@@ -32,6 +32,9 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
         return $this->gatewayDescription;
     }
 
+    /**
+     * @return \WC_Order|false
+     */
     protected function getOrderIdOnPayForOrderPage()
     {
         global $wp;
@@ -61,6 +64,11 @@ class BillieFieldsStrategy extends AbstractPaymentFieldsRenderer implements Paym
     </p>';
     }
 
+    /**
+     * @param mixed $gateway
+     * @param mixed $dataHelper
+     * @return mixed
+     */
     public function getFieldMarkup($gateway, $dataHelper)
     {
         return '';

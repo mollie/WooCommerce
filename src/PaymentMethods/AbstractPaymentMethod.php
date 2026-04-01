@@ -50,6 +50,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      */
     protected $settings = [];
 
+    /** @var Surcharge */
     protected $surcharge;
 
     /**
@@ -106,6 +107,9 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $svgPath && file_exists($svgPath) ? [$svgUrl] : [];
     }
 
+    /**
+     * @return bool|null
+     */
     public function isCreditCardSelectorEnabled()
     {
         $settings = $this->getSettings();
@@ -114,9 +118,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     /**
      * Access the payment method surcharge applied
-     * @return Surcharge
      */
-    public function surcharge()
+    public function surcharge(): Surcharge
     {
         return $this->surcharge;
     }
@@ -137,7 +140,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      */
     public function hasPaymentFields(): bool
     {
-        return $this->getProperty('paymentFields');
+        return (bool)$this->getProperty('paymentFields');
     }
 
     /**
@@ -152,7 +155,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     /**
      * Access the payment method processed description, surcharge included
-     * @return mixed|string
+     * @return mixed
      */
     public function getProcessedDescription()
     {
@@ -208,8 +211,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function getInitialOrderStatus(): string
     {
         if ($this->getProperty('confirmationDelayed')) {
-            return $this->getProperty('initial_order_status')
-                ?: SharedDataDictionary::STATUS_ON_HOLD;
+            return (string)($this->getProperty('initial_order_status')
+                ?: SharedDataDictionary::STATUS_ON_HOLD);
         }
 
         return SharedDataDictionary::STATUS_PENDING;
@@ -286,7 +289,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             $apiIcon = $apiMethod["image"]->svg;
         }
 
-        return $apiIcon;
+        return (string)$apiIcon;
     }
 
     private function isUseApiTitleChecked(): bool
@@ -327,12 +330,12 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     public function description(ContainerInterface $container): string
     {
         $description = $this->getProcessedDescription();
-        return empty($description) ? '' : $description;
+        return empty($description) ? '' : (string)$description;
     }
 
     public function methodDescription(ContainerInterface $container): string
     {
-        return $this->getProperty('settingsDescription');
+        return (string)$this->getProperty('settingsDescription');
     }
 
     /**
@@ -349,7 +352,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     public function supports(ContainerInterface $container): array
     {
-        $supports = $this->getProperty('supports');
+        $supports = (array)$this->getProperty('supports');
         $paymentMethodsEnabledAtMollie = $container->get('gateway.paymentMethodsEnabledAtMollie');
         $isSepa = $this->getProperty('SEPA') === true && in_array(Constants::DIRECTDEBIT, $paymentMethodsEnabledAtMollie, true);
         $isSubscription = $this->getProperty('Subscription') === true;

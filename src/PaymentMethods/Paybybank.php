@@ -107,7 +107,7 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
         $expiry_days = (int)$this->getProperty(self::EXPIRY_DAYS_OPTION) ?: self::EXPIRY_DEFAULT_DAYS;
 
         if ($expiry_days >= self::EXPIRY_MIN_DAYS && $expiry_days <= self::EXPIRY_MAX_DAYS) {
-            $expiry_date = gmdate("Y-m-d", strtotime(sprintf('+%s days', $expiry_days)));
+            $expiry_date = gmdate("Y-m-d", (int)strtotime(sprintf('+%s days', $expiry_days)));
 
             // Add dueDate at the correct location
             if ($this->isExpiredDateSettingActivated()) {
@@ -128,6 +128,9 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
         return $args;
     }
 
+    /**
+     * @return mixed
+     */
     public function isExpiredDateSettingActivated()
     {
         $expiryDays = $this->getProperty(

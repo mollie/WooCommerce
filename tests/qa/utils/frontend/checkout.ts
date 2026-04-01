@@ -53,6 +53,8 @@ export class Checkout extends CheckoutBase {
 		this.page.locator( '#billing-phone-mollie_wc_gateway_vipps' );
 	mobilepayPhoneInput = () =>
 		this.page.locator( '#billing-phone-mollie_wc_gateway_mobilepay' );
+	bizumPhoneInput = () =>
+		this.page.locator( '#billing-phone-mollie_wc_gateway_bizum' );
 	paymentOptionLabel = ( slug ) =>
 		this.paymentOptionsContainer().locator(
 			`label[for="radio-control-wc-payment-method-options-mollie_wc_gateway_${ slug }"]`
@@ -214,6 +216,14 @@ export class Checkout extends CheckoutBase {
 				'Assert mobilepay phone input is visible'
 			).toBeVisible();
 			await phoneInput.fill( customer.billing.phone );
+		}
+		if ( gateway.slug === 'bizum' ) {
+			const phoneInput = this.bizumPhoneInput();
+			await expect(
+				phoneInput,
+				'Assert bizum phone input is visible'
+			).toBeVisible();
+			await phoneInput.fill( '+34612345678' );
 		}
 	};
 

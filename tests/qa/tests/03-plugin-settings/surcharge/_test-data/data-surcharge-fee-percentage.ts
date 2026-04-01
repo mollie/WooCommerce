@@ -17,7 +17,7 @@ export const surchargePercentage: MollieTestData.SurchargeTestsGroup = {
 	},
 	tests: [
 		// { testId: 'C420311', gateway: 'applepay' },
-		{ testId: 'C89351', gateway: 'creditcard' },
+		{ testId: 'C89351', gateway: 'creditcard', testLabel: '@Critical' },
 		{ testId: 'C130898', gateway: 'giftcard' },
 		{
 			testId: 'C129815',
@@ -28,7 +28,7 @@ export const surchargePercentage: MollieTestData.SurchargeTestsGroup = {
 		{ testId: 'C138013', gateway: 'belfius' },
 		{ testId: 'C354666', gateway: 'billie' },
 		{ testId: 'C133660', gateway: 'eps' },
-		{ testId: 'C130858', gateway: 'ideal' },
+		{ testId: 'C130858', gateway: 'ideal', testLabel: '@Critical' },
 		{ testId: 'C133670', gateway: 'kbc' },
 		{ testId: 'C420321', gateway: 'mybank' },
 		{ testId: 'C130888', gateway: 'paypal' },
@@ -40,5 +40,6 @@ export const surchargePercentage: MollieTestData.SurchargeTestsGroup = {
 		{ testId: 'C4237526', gateway: 'mbway' },
 		{ testId: 'C4237517', gateway: 'multibanco' },
 		{ testId: 'C4237548', gateway: 'swish' },
+		{ testId: 'C4257949', gateway: 'bizum' },
 	],
 };

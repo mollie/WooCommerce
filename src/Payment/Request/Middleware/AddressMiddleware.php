@@ -49,10 +49,9 @@ class AddressMiddleware implements RequestMiddlewareInterface
         ) {
             $requestData['billingAddress'] = $billingAddress;
         }
-        //set billingAddress email when no billing address is set for payment API
-        if (empty($requestData['billingAddress']) && $context === 'payment' && !empty($billingAddress->email)) {
-            $requestData['billingAddress'] = new stdClass();
-            $requestData['billingAddress']->email = $billingAddress->email;
+        //set billingAddress email or phone when no billing address is set for payment API
+        if ($this->shouldAddMinimalBillingAddress($requestData, $context, $billingAddress)) {
+            $requestData['billingAddress'] = $this->createMinimalBillingAddress($billingAddress);
         }
         // Only add shippingAddress if all required fields are set
         if (
@@ -207,6 +206,42 @@ class AddressMiddleware implements RequestMiddlewareInterface
             ? null
             : $this->getFormatedPhoneNumber($shippingPhone, $shippingAddress->country);
         return $shippingAddress;
+    }
+
+    /**
+     * Check if minimal billing address should be added.
+     *
+     * @param array<string, mixed> $requestData The request data.
+     * @param mixed $context The context.
+     * @param stdClass $billingAddress The billing address object.
+     * @return bool True if minimal billing address should be added.
+     */
+    private function shouldAddMinimalBillingAddress(array $requestData, $context, stdClass $billingAddress): bool
+    {
+        return empty($requestData['billingAddress'])
+            && $context === 'payment'
+            && (!empty($billingAddress->email) || !empty($billingAddress->phone));
+    }
+
+    /**
+     * Create minimal billing address with only email and/or phone.
+     *
+     * @param stdClass $billingAddress The billing address object.
+     * @return stdClass The minimal billing address object.
+     */
+    private function createMinimalBillingAddress(stdClass $billingAddress): stdClass
+    {
+        $minimalAddress = new stdClass();
+
+        if (!empty($billingAddress->email)) {
+            $minimalAddress->email = $billingAddress->email;
+        }
+
+        if (!empty($billingAddress->phone)) {
+            $minimalAddress->phone = $billingAddress->phone;
+        }
+
+        return $minimalAddress;
     }
 
     /**

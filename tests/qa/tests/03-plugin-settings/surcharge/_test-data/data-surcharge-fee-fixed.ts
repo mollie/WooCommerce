@@ -17,7 +17,7 @@ export const surchargeFixed: MollieTestData.SurchargeTestsGroup = {
 	},
 	tests: [
 		// { testId: 'C420310', gateway: 'applepay' },
-		{ testId: 'C94865', gateway: 'creditcard' },
+		{ testId: 'C94865', gateway: 'creditcard', testLabel: '@Critical' },
 		{ testId: 'C130897', gateway: 'giftcard' },
 		{
 			testId: 'C129814',
@@ -28,7 +28,7 @@ export const surchargeFixed: MollieTestData.SurchargeTestsGroup = {
 		{ testId: 'C138012', gateway: 'belfius' },
 		{ testId: 'C354665', gateway: 'billie' },
 		{ testId: 'C133659', gateway: 'eps' },
-		{ testId: 'C130857', gateway: 'ideal' },
+		{ testId: 'C130857', gateway: 'ideal', testLabel: '@Critical' },
 		{ testId: 'C133669', gateway: 'kbc' },
 		{ testId: 'C420320', gateway: 'mybank' },
 		{ testId: 'C130887', gateway: 'paypal' },
@@ -46,7 +46,9 @@ export const surchargeFixed: MollieTestData.SurchargeTestsGroup = {
 		{
 			testId: 'C4237551',
 			gateway: 'swish',
+			
 			expectedFeeText: '+ kr 10 fee might apply (excl. VAT)',
 		},
+		{ testId: 'C4257946', gateway: 'bizum' },
 	],
 };

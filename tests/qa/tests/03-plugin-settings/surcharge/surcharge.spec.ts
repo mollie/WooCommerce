@@ -52,8 +52,10 @@ test.beforeAll( async ( { utils } ) => {
 
 for ( const surcharge of allTests ) {
 	test.describe( surcharge.describeTitle, () => {
-		for ( const tested of surcharge.tests ) {
-			const gateway = gateways[ tested.gateway ];
+		for ( const testData of surcharge.tests ) {
+			const gateway = gateways[ testData.gateway ];
+			const { testId, testLabel } = testData;
+			const label = testLabel ? ` ${ testLabel }` : '';
 
 			// exclude tests for payment methods if not available for tested API
 			if (
@@ -63,11 +65,11 @@ for ( const surcharge of allTests ) {
 			}
 
 			const country = gateway.country;
-			const product = tested.product || products.mollieSimple100;
+			const product = testData.product || products.mollieSimple100;
 			const expectedFeeText =
-				tested.expectedFeeText || surcharge.expectedFeeText;
+				testData.expectedFeeText || surcharge.expectedFeeText;
 
-			test( `${ tested.testId } | ${ surcharge.testTitle } ${ gateway.name }`, async ( {
+			test( `${ testId } | ${ surcharge.testTitle } ${ gateway.name }${ label }`, async ( {
 				wooCommerceApi,
 				mollieApi,
 				utils,

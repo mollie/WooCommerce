@@ -563,15 +563,9 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     /**
-     * @param $payment_meta
-     * @param $subscription
-     *
-     * @return mixed
-     * @throws \Mollie\Api\Exceptions\ApiException
-     */
-    /**
      * @param array<mixed> $payment_meta
      * @return mixed
+     * @throws \Mollie\Api\Exceptions\ApiException
      */
     public function add_subscription_payment_meta(array $payment_meta, \WC_Subscription $subscription, \WC_Payment_Gateway $gateway)
     {
@@ -744,10 +738,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      * TODO this is still used in the service callback
      * Check if the gateway is available in checkout
      *
-     * @return bool
-     */
-    /**
      * @param \WC_Payment_Gateway $gateway
+     * @return bool
      */
     public function is_available($gateway): bool
     {
@@ -764,11 +756,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     }
 
     /**
-     * @param $subscriptionParentOrder
-     * @return bool
-     */
-    /**
      * @param WC_Order|false $subscriptionParentOrder
+     * @return bool
      */
     protected function initialPaymentUsedOrderAPI($subscriptionParentOrder): bool
     {
@@ -784,17 +773,12 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 
     /**
      * @param int $renewal_order_id
-     * @param $customer_id
+     * @param string $customer_id
      * @param \Mollie\Api\MollieApiClient $mollieApiClient
-     * @param $mandateId
+     * @param string $mandateId
      * @param bool $isRenewalMethodDirectDebit
-     * @param $data
-     * @param bool $validMandate
-     * @return array
-     * @throws ApiException
-     */
-    /**
      * @param array<string, mixed> $data
+     * @param bool $validMandate
      * @return array<mixed>
      * @throws ApiException
      */
@@ -824,16 +808,11 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 
     /**
      * @param int $renewal_order_id
-     * @param $customer_id
+     * @param string $customer_id
      * @param \Mollie\Api\MollieApiClient $mollieApiClient
      * @param bool $validMandate
-     * @param $data
-     * @param $renewalOrderMethod
-     * @return array
-     * @throws ApiException
-     */
-    /**
      * @param array<string, mixed> $data
+     * @param string $renewalOrderMethod
      * @return array<mixed>
      * @throws ApiException
      */

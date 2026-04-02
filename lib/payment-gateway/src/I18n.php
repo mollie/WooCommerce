@@ -22,9 +22,6 @@ class I18n
     }
 
     /**
-     * @throws Exception
-     */
-    /**
      * @param array<mixed> $params
      * @throws Exception
      */

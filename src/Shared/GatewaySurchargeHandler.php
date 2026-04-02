@@ -258,8 +258,7 @@ class GatewaySurchargeHandler
 
     /**
      * Get and validate order with order key verification
-     */
-    /**
+     *
      * @return WC_Order|false
      */
     protected function canProcessOrder()

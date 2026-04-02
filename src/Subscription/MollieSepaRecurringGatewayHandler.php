@@ -164,10 +164,6 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
     }
 
     /**
-     * @param $order
-     * @param $payment
-     */
-    /**
      * @param \WC_Order $order
      * @param Payment $payment
      */

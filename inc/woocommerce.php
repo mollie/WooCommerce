@@ -50,12 +50,9 @@ function mollieWooCommerceSession(): \WC_Session
 
 /**
  * Mimics wc_string_to_bool
- * @param $string
  *
- * @return bool
- */
-/**
  * @param mixed $string
+ * @return bool
  */
 function mollieWooCommerceStringToBoolOption($string): bool
 {

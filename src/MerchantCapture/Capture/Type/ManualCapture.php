@@ -24,18 +24,13 @@ class ManualCapture
     }
 
     /**
-     * @param ?array $actions
-     * @param ?\WC_Order $order
-     * @return array|mixed
+     * @param array<mixed>|null $actions
+     * @param mixed $order
+     * @return array<mixed>
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      * @psalm-suppress PossiblyNullArgument
      * @psalm-suppress MissingParamType
-     */
-    /**
-     * @param array<mixed>|null $actions
-     * @param mixed $order
-     * @return array<mixed>
      */
     public function enableOrderCaptureButton($actions, $order)
     {

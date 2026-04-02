@@ -61,12 +61,6 @@ class PluginDisabler
     /**
      * Remove the plugin from the auto-update list
      *
-     * @param $update
-     * @param $item
-     *
-     * @return bool|null
-     */
-    /**
      * @param bool|null $update
      * @param object $item
      * @return bool|null

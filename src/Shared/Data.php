@@ -249,10 +249,6 @@ class Data
         return $filters;
     }
     /**
-     * @param $orderTotal
-     * @param $currency
-     */
-    /**
      * @param float|int $orderTotal
      */
     protected function getAmountValue($orderTotal, string $currency): string
@@ -323,13 +319,9 @@ class Data
     }
 
     /**
+     * @param string|false $apiKey
      * @param bool $testMode
      * @param bool $useCache
-     *
-     * @return array|mixed|\Mollie\Api\Resources\Method[]|\Mollie\Api\Resources\MethodCollection
-     */
-    /**
-     * @param string|false $apiKey
      * @return array<mixed>
      */
     public function getRegularPaymentMethods($apiKey, bool $testMode = false, bool $useCache = true)
@@ -434,11 +426,6 @@ class Data
         }
     }
 
-    /**
-     * @param      $method
-     *
-     * @return mixed|\Mollie\Api\Resources\Method|null
-     */
     /**
      * @return mixed
      */
@@ -694,12 +681,8 @@ class Data
     /**
      * Format currency value into Mollie API v2 format
      *
-     * @param float|string $value
-     *
-     * @return string
-     */
-    /**
      * @param float|int $value
+     * @return string
      */
     public function formatCurrencyValue($value, string $currency): string
     {
@@ -796,14 +779,9 @@ class Data
     }
 
     /**
-     * @param $apiKey
+     * @param string|false $apiKey
      * @param bool $testMode
      * @param bool $useCache
-     * @param $result
-     * @return mixed
-     */
-    /**
-     * @param string|false $apiKey
      * @param array<mixed> $result
      * @return array<mixed>
      */

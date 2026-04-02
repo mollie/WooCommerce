@@ -2,10 +2,7 @@
  * External dependencies
  */
 import { Locator, expect } from '@playwright/test';
-import {
-	WooCommerceOrderEdit as wooCommerceOrderEditBase,
-	formatMoney,
-} from '@inpsyde/playwright-utils/build';
+import { WooCommerceOrderEdit as wooCommerceOrderEditBase } from '@inpsyde/playwright-utils/build';
 
 const { WLOP_NAME } = process.env;
 
@@ -103,12 +100,12 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	};
 
 	// Assertions
-	
+
 	/**
 	 * Asserts the order status combobox value on the order edit page.
 	 * Retries every 5 sec during 1 min.
-	 * 
-	 * @param expectedStatus 
+	 *
+	 * @param expectedStatus
 	 */
 	assertOrderStatus = async (
 		expectedStatus: WooCommerce.OrderStatus = 'processing'
@@ -116,23 +113,24 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		const orderStatus = this.getOrderStatusLabel( expectedStatus );
 		let isFirstAttempt = true;
 
-		await expect.soft(
-			async () => {
+		await expect
+			.soft( async () => {
 				if ( isFirstAttempt ) {
 					isFirstAttempt = false;
 				} else {
 					await this.page.reload();
 				}
-				await expect.soft(
-					this.statusCombobox(),
-					'Assert order status combobox'
-				).toHaveText( orderStatus );
-			},
-			'Assert order status combobox with retries',
-		).toPass( {
-			timeout: 60_000,
-			intervals: [ 5_000 ],
-		} );
+				await expect
+					.soft(
+						this.statusCombobox(),
+						'Assert order status combobox'
+					)
+					.toHaveText( orderStatus );
+			}, 'Assert order status combobox with retries' )
+			.toPass( {
+				timeout: 60_000,
+				intervals: [ 5_000 ],
+			} );
 	};
 
 	/**
@@ -150,17 +148,21 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 		const { gateway } = orderData.payment;
 
 		// Payment via text
-		await expect.soft(
-			this.paymentVia( gateway.name ),
-			'Assert payment via method'
-		).toBeVisible();
+		await expect
+			.soft(
+				this.paymentVia( gateway.name ),
+				'Assert payment via method'
+			)
+			.toBeVisible();
 
 		// Transaction ID
 		if ( transactionId ) {
-			await expect.soft(
-				this.transactionIdLink( transactionId ),
-				'Assert transaction ID link'
-			).toBeVisible();
+			await expect
+				.soft(
+					this.transactionIdLink( transactionId ),
+					'Assert transaction ID link'
+				)
+				.toBeVisible();
 		}
 	};
 

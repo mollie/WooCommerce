@@ -23,7 +23,7 @@ import {
 	molliePlugin,
 	enableBizumPlugin,
 	mollieApiKeys,
-	subscriptionsPlugin,
+	woocommerceSubscriptionsPlugin,
 	ShopConfig,
 } from '../resources';
 
@@ -104,9 +104,8 @@ export class Utils {
 	 * @param products
 	 */
 	fillVisitorsCart = async ( products: WooCommerce.CreateProduct[] ) => {
-		const cartProducts = await this.wooCommerceUtils.createCartProducts(
-			products
-		);
+		const cartProducts =
+			await this.wooCommerceUtils.createCartProducts( products );
 		await this.visitorWooCommerceApi.clearCart();
 		await this.visitorWooCommerceApi.addProductsToCart( cartProducts );
 	};
@@ -152,12 +151,12 @@ export class Utils {
 		}: ShopConfig = data;
 
 		if ( enableSubscriptionsPlugin === true ) {
-			await this.requestUtils.activatePlugin( subscriptionsPlugin.slug );
+			await this.requestUtils.activatePlugin( woocommerceSubscriptionsPlugin.slug );
 		}
 
 		if ( enableSubscriptionsPlugin === false ) {
 			await this.requestUtils.deactivatePlugin(
-				subscriptionsPlugin.slug
+				woocommerceSubscriptionsPlugin.slug
 			);
 		}
 

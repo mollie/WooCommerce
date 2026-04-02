@@ -17,9 +17,6 @@ class I18n
         $this->serviceLocator = $serviceLocator;
     }
     /**
-     * @throws Exception
-     */
-    /**
      * @param array<mixed> $params
      * @throws Exception
      */

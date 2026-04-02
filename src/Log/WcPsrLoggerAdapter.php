@@ -85,8 +85,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
      * Interpolates the given values into the message placeholders.
      * based on
      * {@link https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md#12-message}
-     */
-    /**
+     *
      * @param array<mixed> $replace
      */
     protected function interpolate(string $message, array $replace): string

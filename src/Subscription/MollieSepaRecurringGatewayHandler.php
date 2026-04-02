@@ -106,10 +106,6 @@ class MollieSepaRecurringGatewayHandler extends \Mollie\WooCommerce\Subscription
         return $payment_method_title;
     }
     /**
-     * @param $order
-     * @param $payment
-     */
-    /**
      * @param \WC_Order $order
      * @param Payment $payment
      */

@@ -12,8 +12,7 @@ class CleanDb
     protected array $gatewayClassnames;
     /**
      * CleanDb constructor.
-     */
-    /**
+     *
      * @param array<string> $gatewayClassnames
      */
     public function __construct(array $gatewayClassnames)

@@ -12,14 +12,14 @@ on:
           - e2e:test:critical
           - e2e:test:refund
           - e2e:test:all
-  pull_request:
-    branches: [dev/develop]
-    paths:
-      - 'src/**'
-      - 'lib/**'
-      - 'public/**'
-      - 'package.json'
-      - 'composer.json'
+#  pull_request:
+#    branches: [dev/develop]
+#    paths:
+#      - 'src/**'
+#      - 'lib/**'
+#      - 'public/**'
+#      - 'package.json'
+#      - 'composer.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

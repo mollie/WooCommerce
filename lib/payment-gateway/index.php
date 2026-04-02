@@ -7,8 +7,8 @@ namespace Mollie;
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version: 8.1.4+piwoo-714-introduce-phpstan-at-level-6.edfd86c
- * SHA: edfd86c06966082430cce608d4ffd578853a0494
+ * Version: 8.1.4+piwoo-714-introduce-phpstan-at-level-6.8089ebf
+ * SHA: 8089ebfa889999adfa305ceaf520c7023e73fe66
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3

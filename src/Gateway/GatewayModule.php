@@ -168,7 +168,10 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 $mollieOrderService->checkPaymentForUnpaidOrder($order);
             }
         }, \PHP_INT_MAX);
-        add_filter('woocommerce_order_actions', static function ($actions, \WC_Order $order) {
+        add_filter('woocommerce_order_actions', static function ($actions, $order) {
+            if (!$order instanceof \WC_Order) {
+                return $actions;
+            }
             if ($order->is_paid() || !$order->has_status('pending') || strpos($order->get_payment_method(), 'mollie_wc_gateway_') === \false) {
                 return $actions;
             }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "526ff6159c54c2556194a5324ff22f53",
+    "content-hash": "ed3e20f78e98d09e3f91abbee50d6941",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2194,16 +2194,16 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v10.6.1",
+            "version": "v10.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "ef96143054f60a2f0b2cfe8351f5d78448729e98"
+                "reference": "2cc4a2e110a4c6c93c2d4d06c786afa1faa2e9b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/ef96143054f60a2f0b2cfe8351f5d78448729e98",
-                "reference": "ef96143054f60a2f0b2cfe8351f5d78448729e98",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/2cc4a2e110a4c6c93c2d4d06c786afa1faa2e9b8",
+                "reference": "2cc4a2e110a4c6c93c2d4d06c786afa1faa2e9b8",
                 "shasum": ""
             },
             "require": {
@@ -2232,9 +2232,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.6.1"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.6.2"
             },
-            "time": "2026-03-12T19:28:12+00:00"
+            "time": "2026-03-31T18:29:22+00:00"
         },
         {
             "name": "php-stubs/woocommerce-subscriptions-stubs",

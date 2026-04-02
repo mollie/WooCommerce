@@ -232,10 +232,12 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 if (!$order instanceof \WC_Order) {
                     return $actions;
                 }
-                if ($order->is_paid() || !$order->has_status('pending') || strpos(
+                if (
+                    $order->is_paid() || !$order->has_status('pending') || strpos(
                         $order->get_payment_method(),
                         'mollie_wc_gateway_'
-                    ) === false) {
+                    ) === false
+                ) {
                     return $actions;
                 }
                 $actions['mollie_wc_check_payment_for_unpaid_order'] = __(

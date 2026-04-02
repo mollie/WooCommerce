@@ -67,6 +67,8 @@ class PaymentGateway extends WC_Payment_Gateway
         unset($this->form_fields);
         unset($this->enabled);
 
+        // phpstan:ignore [wc-stub] process_admin_options is inherited from WC_Payment_Gateway but absent from stubs
+        // @phpstan-ignore-next-line
         add_action(
             'woocommerce_update_options_payment_gateways_' . $this->id,
             [$this, 'process_admin_options']
@@ -420,7 +422,7 @@ class PaymentGateway extends WC_Payment_Gateway
                 sprintf('Field "%1$s" is invalid: %2$s', $key, $exception->getMessage())
             );
 
-            return null;
+            return '';
         }
     }
 

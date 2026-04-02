@@ -57,6 +57,18 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      */
     protected bool $translationsInitialized = false;
 
+    abstract protected function getConfig(): array;
+
+    abstract public function getFormFields(array $generalFormFields): array;
+
+    public function filtersOnBuild(): void
+    {
+    }
+
+    public function debugGiftcardDetails($payment, \WC_Order $order): void
+    {
+    }
+
     public function __construct()
     {
         $this->config = $this->getConfig();
@@ -477,6 +489,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             ], $iconProvider->provideIcons())
             : [];
 
+        // phpstan:ignore [wc-stub] WC()->customer is WC_Customer|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $billingCountry = WC()->customer ? WC()->customer->get_billing_country() : '';
         $allowedCountries = $this->getProperty('allowed_countries');
 

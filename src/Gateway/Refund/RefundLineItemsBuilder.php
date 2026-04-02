@@ -106,10 +106,9 @@ class RefundLineItemsBuilder
     ) {
 
         $toRefundItemQuantity = abs((int) $toRefundItem->get_quantity());
-        $toRefundItemAmount = number_format(
-            abs($toRefundItem->get_total() + $toRefundItem->get_total_tax()),
-            2
-        );
+        // @phpstan-ignore-next-line
+        $toRefundItemTotal = (float)$toRefundItem->get_total() + (float)$toRefundItem->get_total_tax();
+        $toRefundItemAmount = number_format(abs($toRefundItemTotal), 2);
         $toRefundRemoteItemPrice = property_exists($toRefundRemoteItem->unitPrice, 'value') && $toRefundRemoteItem->unitPrice->value !== null
             ? $toRefundRemoteItem->unitPrice->value
             : 0;

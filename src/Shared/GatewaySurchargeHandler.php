@@ -120,7 +120,6 @@ class GatewaySurchargeHandler
                 'newTotal' => $order->get_total(),
             ];
             wp_send_json_success($data);
-            return;
         }
 
         $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);

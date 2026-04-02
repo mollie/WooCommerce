@@ -30,11 +30,11 @@ if (!function_exists('is_order_received_page')) {
 
 if (!function_exists('untrailingslashit')) {
     /**
-     * @since WooCommerce 2.2.0
-     * @param string $string
+     * @param string|null $string
      * @return string
+     * @since WooCommerce 2.2.0
      */
-    function untrailingslashit($string)
+    function untrailingslashit(?string $string): string
     {
         if ($string === null) {
             return '';

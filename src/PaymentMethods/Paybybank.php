@@ -88,7 +88,7 @@ class Paybybank extends AbstractPaymentMethod implements PaymentMethodI
         return array_merge($generalFormFields, $paymentMethodFormFields);
     }
 
-    public function filtersOnBuild()
+    public function filtersOnBuild(): void
     {
         add_filter('woocommerce_mollie_wc_gateway_' . $this->getProperty('id') . 'payment_args', function (array $args, \WC_Order $order): array {
             return $this->addPaymentArguments($args, $order);

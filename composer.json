@@ -63,6 +63,7 @@
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",
     "phpstan": "vendor/bin/phpstan analyse",
+    "phpstan:raw": "vendor/bin/phpstan analyse --no-progress --error-format=raw",
     "check-psalm": "vendor/bin/psalm",
     "check-psalm:no-cache": "vendor/bin/psalm --no-cache"
   },

@@ -54,7 +54,7 @@ class PaymentMethods extends AbstractSection
         $activatedGateways = '';
         $deactivatedGateways = '';
 
-        /** @var AbstractPaymentMethod $paymentMethod */
+        /** @var AbstractPaymentMethod[] $paymentMethods */
         $paymentMethods = $this->container->get('gateway.paymentMethods');
         $enabledMethods =  $this->container->get('gateway.paymentMethodsEnabledAtMollie');
         if (!in_array(Constants::DIRECTDEBIT, $enabledMethods, true)) {
@@ -200,7 +200,7 @@ class PaymentMethods extends AbstractSection
                 'enabled',
                 'mollie-payments-for-woocommerce'
             )) . '</span>';
-        } elseif ($enabledInMollie && !$enabledInWoo) {
+        } elseif (!$enabledInWoo) {
             $messageOrLink = '<span class="mollie-settings-pm__status mollie-settings-pm__status--disabled">' . esc_html(__(
                 'disabled',
                 'mollie-payments-for-woocommerce'

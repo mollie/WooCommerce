@@ -6,6 +6,9 @@ import { restLogin, guestStorageState } from '@inpsyde/playwright-utils/build';
 
 async function globalSetup( config: FullConfig ) {
 	const projectUse = config.projects[ 0 ].use;
+	const extraHTTPHeaders = process.env.WP_BASE_URL.includes( 'ngrok' )
+		? { 'ngrok-skip-browser-warning': '1' }
+		: {};
 
 	await restLogin( {
 		baseURL: projectUse.baseURL,
@@ -17,18 +20,14 @@ async function globalSetup( config: FullConfig ) {
 			// @ts-ignore
 			password: process.env.WP_PASSWORD,
 		},
-		extraHTTPHeaders: process.env.WP_BASE_URL.includes('ngrok')
-			? { 'ngrok-skip-browser-warning': '1' }
-			: {},
+		extraHTTPHeaders,
 	} );
 
 	await guestStorageState( {
 		baseURL: projectUse.baseURL,
 		httpCredentials: projectUse.httpCredentials,
 		storageStatePath: `${ process.env.STORAGE_STATE_PATH }/guest.json`,
-		extraHTTPHeaders: process.env.WP_BASE_URL.includes('ngrok')
-			? { 'ngrok-skip-browser-warning': '1' }
-			: {},
+		extraHTTPHeaders,
 	} );
 }
 

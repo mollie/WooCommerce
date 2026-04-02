@@ -8,8 +8,8 @@ import path from 'path';
 /**
  * Internal dependencies
  */
-import { MollieSettings } from './resources';
-import { TestBaseExtend } from './utils';
+import { MollieSettings } from './tests/qa/resources';
+import { TestBaseExtend } from './tests/qa/utils';
 
 const dotenvPath = process.env.CI
     ? path.resolve( __dirname, '.env.ci' )
@@ -17,7 +17,7 @@ const dotenvPath = process.env.CI
 dotenv.config( { path: dotenvPath } );
 
 export default defineConfig< TestBaseExtend >( {
-	testDir: 'tests',
+	testDir: 'tests/qa/tests',
 	expect: {
 		timeout: 10_000,
 	},
@@ -55,7 +55,7 @@ export default defineConfig< TestBaseExtend >( {
 		  ],
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 
-	globalSetup: require.resolve( './global-setup' ),
+	globalSetup: require.resolve( './tests/qa/global-setup' ),
 
 	use: {
 		baseURL: process.env.WP_BASE_URL,

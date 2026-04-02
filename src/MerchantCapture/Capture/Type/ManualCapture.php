@@ -19,7 +19,7 @@ class ManualCapture
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        add_action('woocommerce_order_actions', [$this, 'enableOrderCaptureButton'], 10, 2);
+        add_filter('woocommerce_order_actions', [$this, 'enableOrderCaptureButton'], 10, 2);
         add_action('woocommerce_order_action_' . self::MOLLIE_MANUAL_CAPTURE_ACTION, [$this, 'manualCapture']);
         add_filter('woocommerce_mollie_wc_gateway_creditcard_args', [$this, 'sendManualCaptureMode']);
     }

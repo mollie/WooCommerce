@@ -63,30 +63,34 @@ jobs:
           rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/
         )
 
-        # 2. Setup wp-env default hosts
+        # 2. Add private composer repository and download WooCommerce Subscriptions
+        composer config repositories.repo-name composer https://repo.packagist.com/inpsyde/payment-gateways/
+        composer require inpsyde-mirror/woocommerce-subscriptions
+
+        # 3. Setup wp-env default hosts
         npm run e2e:setup:hosts
 
-        # 3. Install ngrok
+        # 4. Install ngrok
         curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
         echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
         sudo apt-get update && sudo apt-get install -y ngrok
 
-        # 4. Configure ngrok auth (token sourced from .env.ci)
+        # 5. Configure ngrok auth (token sourced from .env.ci)
         ngrok config add-authtoken $NGROK_AUTHTOKEN
 
-        # 5. Start ngrok tunnel in background (tests environment port 80)
+        # 6. Start ngrok tunnel in background (tests environment port 80)
         ngrok http 80 --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
 
-        # 6. Wait for tunnel to be ready and grab the public URL
+        # 7. Wait for tunnel to be ready and grab the public URL
         sleep 3
         NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
         echo "Ngrok URL: $NGROK_URL"
 
-        # 7. Update WordPress site URLs to ngrok (tests environment)
+        # 8. Update WordPress site URLs to ngrok (tests environment)
         wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
         wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
 
-        # 8. Override WP_BASE_URL for Playwright
+        # 9. Override WP_BASE_URL for Playwright
         sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}

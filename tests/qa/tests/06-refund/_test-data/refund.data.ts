@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { MollieTestData, gateways, cards, customers } from '../../../resources';
+import { MollieTestData, gateways, cards } from '../../../resources';
 import { baseOrder } from './refund-base-order.data';
 
 export const refundViaWooCommerce: MollieTestData.ShopRefund[] = [

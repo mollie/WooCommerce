@@ -17,7 +17,7 @@ export class MollieHostedCheckout extends WpPage {
 	mollieUrlRegex = /mollie\.com\/checkout/;
 	testModeUrlRegex = /checkout\/test-mode/;
 	issuerSelectionUrlRegex = /select-issuer/;
-	creditCardUrlRegex = /credit-card\/embedded/;
+	creditCardUrlRegex = /credit-card\/session/;
 	expiredUrlRegex = /test-mode\/completed/;
 
 	// Locators
@@ -27,23 +27,17 @@ export class MollieHostedCheckout extends WpPage {
 		this.page.locator( 'ul.payment-method-list' ).getByText( bankIssuer );
 	paymentStatusRadio = ( paymentStatus: MolliePaymentStatus ) =>
 		this.page.locator( `input[type="radio"][value="${ paymentStatus }"]` );
+	cardIframe = () => this.page.frameLocator( '[title="Pay with card"]' );
 	cardNumberInput = () =>
-		this.page
-			.frameLocator( '[title="cardNumber input"]' )
-			.locator( '#cardNumber' );
+		this.cardIframe().locator( '#cardNumber' );
 	cardHolderInput = () =>
-		this.page
-			.frameLocator( '[title="cardHolder input"]' )
-			.locator( '#cardHolder' );
+		this.cardIframe().locator( '#cardHolder' );
 	cardExpiryDateInput = () =>
-		this.page
-			.frameLocator( '[title="expiryDate input"]' )
-			.locator( '#expiryDate' );
+		this.cardIframe().locator( '#cardExpiryDate' );
 	cardVerificationCodeInput = () =>
-		this.page
-			.frameLocator( '[title="verificationCode input"]' )
-			.locator( '#verificationCode' );
-	payButton = () => this.page.locator( '#submit-button' );
+		this.cardIframe().locator( '#cardCvv' );
+	payButton = () =>
+		this.cardIframe().getByRole( 'button', { name: 'Pay with card' } );
 	continueButton = () => this.page.locator( 'button[name="submit"]' );
 	
 

@@ -52,20 +52,6 @@ const applepay: MollieGateway = {
 	},
 };
 
-const bacs: MollieGateway = {
-	country: 'uk',
-	minAmount: '1.00',
-	slug: 'bacs',
-	name: 'BACS Direct Debit',
-	currency: 'GBP',
-	availableForApiMethods: [ 'order', 'payment' ],
-	settings: {
-		...defaultGatewaySettings,
-		id: 'mollie_wc_gateway_bacs',
-		title: 'BACS Direct Debit',
-	},
-};
-
 const bancomatpay: MollieGateway = {
 	country: 'italy',
 	minAmount: '0.01',
@@ -365,19 +351,6 @@ const paybybank: MollieGateway = {
 	},
 };
 
-const payconiq: MollieGateway = {
-	country: 'belgium',
-	minAmount: '0.01',
-	slug: 'payconiq',
-	name: 'Payconiq',
-	availableForApiMethods: [ 'order', 'payment' ],
-	settings: {
-		...defaultGatewaySettings,
-		id: 'mollie_wc_gateway_payconiq',
-		title: 'Payconiq',
-	},
-};
-
 const paypal: MollieGateway = {
 	country: 'germany', // Global availability
 	minAmount: '0.01',
@@ -406,19 +379,6 @@ const paysafecard: MollieGateway = {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_paysafecard',
 		title: 'paysafecard',
-	},
-};
-
-const pointofsale: MollieGateway = {
-	country: 'germany',
-	minAmount: '1.00',
-	slug: 'pointofsale',
-	name: 'Point of sale',
-	availableForApiMethods: [ 'order', 'payment' ],
-	settings: {
-		...defaultGatewaySettings,
-		id: 'mollie_wc_gateway_',
-		title: 'Point of sale',
 	},
 };
 
@@ -481,12 +441,12 @@ const trustly: MollieGateway = {
 	country: 'germany', // Europe
 	minAmount: '1.00',
 	slug: 'trustly',
-	name: 'Pay By Bank',//'Trustly',// // known bug https://mollie.atlassian.net/browse/PIWOO-683 tolerated by client
+	name: 'Pay By Bank', //'Trustly',// // known bug https://mollie.atlassian.net/browse/PIWOO-683 tolerated by client
 	availableForApiMethods: [ 'order', 'payment' ],
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_trustly',
-		title: 'Pay By Bank',//'Trustly',//
+		title: 'Pay By Bank', //'Trustly',//
 		initial_order_status: 'on-hold',
 	},
 };
@@ -538,8 +498,7 @@ export const gateways: {
 	[ key: string ]: MollieGateway;
 } = {
 	alma, // >50.00
-	// applepay,
-	// bacs, // currency: GBP
+	applepay,
 	bancomatpay,
 	bancontact,
 	banktransfer,
@@ -560,10 +519,8 @@ export const gateways: {
 	multibanco,
 	mybank,
 	paybybank, // currency: GBP
-	// payconiq, // excluded by client on 04/12/2025
 	paypal,
 	paysafecard,
-	// pointofsale,
 	przelewy24,
 	riverty, // >50.00
 	satispay,

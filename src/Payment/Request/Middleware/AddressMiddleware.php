@@ -40,8 +40,8 @@ class AddressMiddleware implements \Mollie\WooCommerce\Payment\Request\Middlewar
         if ($context === 'order' || !empty($billingAddress->streetAndNumber) && !empty($billingAddress->postalCode) && !empty($billingAddress->city) && !empty($billingAddress->country)) {
             $requestData['billingAddress'] = $billingAddress;
         }
-        //set billingAddress email or phone when no billing address is set for payment API
-        if ($this->shouldAddMinimalBillingAddress($requestData, $context, $billingAddress)) {
+        //set billingAddress email or phone when no billing address is set for payment API and information available
+        if ($billingAddress instanceof stdClass && $this->shouldAddMinimalBillingAddress($requestData, $context, $billingAddress)) {
             $requestData['billingAddress'] = $this->createMinimalBillingAddress($billingAddress);
         }
         // Only add shippingAddress if all required fields are set

@@ -26,13 +26,13 @@
     "url": "git@github.com:mollie/WooCommerce.git"
   },
   "devDependencies": {
+    "@inpsyde/playwright-utils": "^5.0.0",
     "@playwright/test": "^1.50",
     "@woocommerce/dependency-extraction-webpack-plugin": "3.0.1",
     "@wordpress/scripts": "^30.24.0",
     "wp-pot": "^1.10.2",
     "dotenv": "^16.3.1",
     "mollie-api-typescript": "^1.0.2",
-    "playwright": "^1.40.1",
     "yarn": "^1.22.21",
     "@types/node": "^20.8.4",
     "@wordpress/env": "^10.30.0"

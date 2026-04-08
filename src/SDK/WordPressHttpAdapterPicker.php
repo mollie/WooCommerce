@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\SDK;
 
 use Mollie\Api\HttpAdapter\MollieHttpAdapterPickerInterface;
-
 class WordPressHttpAdapterPicker implements MollieHttpAdapterPickerInterface
 {
     /**
@@ -14,7 +12,7 @@ class WordPressHttpAdapterPicker implements MollieHttpAdapterPickerInterface
     public function pickHttpAdapter($httpClient)
     {
         if ($httpClient === null) {
-            return new WordPressHttpAdapter();
+            return new \Mollie\WooCommerce\SDK\WordPressHttpAdapter();
         }
         return $httpClient;
     }

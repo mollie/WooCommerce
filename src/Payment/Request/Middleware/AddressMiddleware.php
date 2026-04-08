@@ -49,8 +49,8 @@ class AddressMiddleware implements RequestMiddlewareInterface
         ) {
             $requestData['billingAddress'] = $billingAddress;
         }
-        //set billingAddress email or phone when no billing address is set for payment API
-        if ($this->shouldAddMinimalBillingAddress($requestData, $context, $billingAddress)) {
+        //set billingAddress email or phone when no billing address is set for payment API and information available
+        if ($billingAddress instanceof stdClass && $this->shouldAddMinimalBillingAddress($requestData, $context, $billingAddress)) {
             $requestData['billingAddress'] = $this->createMinimalBillingAddress($billingAddress);
         }
         // Only add shippingAddress if all required fields are set
@@ -207,7 +207,6 @@ class AddressMiddleware implements RequestMiddlewareInterface
             : $this->getFormatedPhoneNumber($shippingPhone, $shippingAddress->country);
         return $shippingAddress;
     }
-
 
     /**
      * Check if minimal billing address should be added.

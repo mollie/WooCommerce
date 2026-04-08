@@ -5,7 +5,7 @@ namespace Mollie\WooCommerceTests\Functional\Payment;
 
 use Mockery;
 use Mollie\Api\MollieApiClient;
-use Mollie\WooCommerce\Payment\OrderLines;
+use Mollie\WooCommerce\Payment\LineItems\OrderLines;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Payment\Request\Middleware\OrderLinesMiddleware;
 use Mollie\WooCommerce\Payment\Request\Strategies\OrderRequestStrategy;

@@ -14,7 +14,7 @@ use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
-use Mollie\WooCommerce\Payment\OrderLines;
+use Mollie\WooCommerce\Payment\LineItems\OrderLines;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentProcessor;

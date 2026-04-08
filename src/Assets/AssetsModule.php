@@ -6,97 +6,35 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Assets;
 
-use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
-use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
-use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
 use Mollie\WooCommerce\Components\ComponentDataService;
-use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
 
-class AssetsModule implements ExecutableModule
+class AssetsModule implements ExecutableModule, ServiceModule
 {
     use ModuleClassNameIdTrait;
+
+    public function services(): array
+    {
+        return [
+            DataToAppleButtonScripts::class => static function (ContainerInterface $container): DataToAppleButtonScripts {
+                return new DataToAppleButtonScripts();
+            },
+            DataToPayPal::class => static function (ContainerInterface $container): DataToPayPal {
+                $pluginUrl = $container->get('shared.plugin_url');
+                return new DataToPayPal($pluginUrl);
+            },
+        ];
+    }
 
     public function run(ContainerInterface $container): bool
     {
         $this->setupModuleActions($container);
         return true;
-    }
-
-    public function enqueueBlockCheckoutScripts(Data $dataService, array $gatewayInstances, ContainerInterface $container): void
-    {
-        if (!has_block('woocommerce/checkout')) {
-            return;
-        }
-        wp_enqueue_script(MollieCheckoutBlocksSupport::getScriptHandle());
-        wp_enqueue_style('mollie-gateway-icons');
-        wp_enqueue_style('mollie-block-custom-field');
-
-        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);
-    }
-
-    public function registerButtonsBlockScripts(string $pluginUrl, string $pluginPath): void
-    {
-        add_action('woocommerce_blocks_enqueue_cart_block_scripts_after', function () use ($pluginUrl, $pluginPath) {
-            $cart = WC()->cart;
-            $shouldShow = !$cart->needs_shipping();
-            $shouldShow = !$this->cartHasSubscription($cart) && $shouldShow;
-            if (mollieWooCommerceIsPayPalButtonEnabled('cart') && $shouldShow) {
-                wp_register_script(
-                    'mollie_paypalButtonBlock',
-                    $this->getPluginUrl(
-                        $pluginUrl,
-                        '/public/js/paypalButtonBlockComponent.min.js'
-                    ),
-                    [],
-                    (string) filemtime(
-                        $this->getPluginPath(
-                            $pluginPath,
-                            '/public/js/paypalButtonBlockComponent.min.js'
-                        )
-                    )
-                );
-                $dataToScripts = new DataToPayPal($pluginUrl);
-                wp_enqueue_style('unabledButton');
-                wp_enqueue_script('mollie_paypalButtonBlock');
-                wp_localize_script(
-                    'mollie_paypalButtonBlock',
-                    'molliepaypalButtonCart',
-                    $dataToScripts->paypalbuttonScriptData(true)
-                );
-            }
-            if (mollieWooCommerceIsApplePayDirectEnabled('cart') && !$this->cartHasSubscription($cart)) {
-                wp_register_script(
-                    'mollie_applepayButtonBlock',
-                    $this->getPluginUrl(
-                        $pluginUrl,
-                        '/public/js/applepayButtonBlock.min.js'
-                    ),
-                    [],
-                    (string) filemtime(
-                        $this->getPluginPath(
-                            $pluginPath,
-                            '/public/js/applepayButtonBlock.min.js'
-                        )
-                    ),
-                    true
-                );
-                $dataToScripts = new DataToAppleButtonScripts();
-                wp_enqueue_style('mollie-applepaydirect');
-                wp_enqueue_script('mollie_applepayButtonBlock');
-                wp_localize_script(
-                    'mollie_applepayButtonBlock',
-                    'mollieApplePayBlockDataCart',
-                    $dataToScripts->applePayScriptData(true)
-                );
-            }
-        });
     }
 
     /**
@@ -220,6 +158,7 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/applepayDirect.min.js')),
             true
         );
+        //paypal in product page
         wp_register_script(
             'mollie_paypalButton',
             $this->getPluginUrl($pluginUrl, '/public/js/paypalButton.min.js'),
@@ -227,6 +166,7 @@ class AssetsModule implements ExecutableModule
             (string) filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButton.min.js')),
             true
         );
+        //paypal in classic cart page
         wp_register_script(
             'mollie_paypalButtonCart',
             $this->getPluginUrl($pluginUrl, '/public/js/paypalButtonCart.min.js'),
@@ -274,21 +214,32 @@ class AssetsModule implements ExecutableModule
 
     public function registerBlockScripts(string $pluginUrl, string $pluginPath, ContainerInterface $container): void
     {
+        $assetFilePath = $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.asset.php');
+        $assetData = file_exists($assetFilePath)
+            ? require $assetFilePath
+            : ['dependencies' => [], 'version' => '1.0.0'];
+
+        // Runtime globals not detectable by webpack's dependency extraction
+        $runtimeDependencies = ['jquery', 'mollie'];
+
         wp_register_script(
             'mollie_block_index',
             $this->getPluginUrl($pluginUrl, '/public/js/mollieBlockIndex.min.js'),
-            ['wc-blocks-registry', 'underscore', 'jquery', 'mollie'],
-            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')),
+            array_unique(array_merge($assetData['dependencies'], $runtimeDependencies)),
+            (string)($assetData['version'] ?? filemtime(
+                $this->getPluginPath($pluginPath, '/public/js/mollieBlockIndex.min.js')
+            )),
             true
         );
 
-        /**
-         * Ensure localized data via static method call
-         * TODO rework the static method call
-         */
-        $dataService = $container->get('settings.data_helper');
-        $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-        MollieCheckoutBlocksSupport::localizeWCBlocksData($dataService, $gatewayInstances, $container);
+        // Localize the gateway list on our handle so it's available before the
+        // library's script runs. The library will set the same global again on
+        // inpsyde-blocks — that's harmless, same data.
+        wp_localize_script(
+            'mollie_block_index',
+            'inpsydeGateways',
+            $container->get('payment_gateways.methods_supporting_blocks')
+        );
 
         wp_register_style(
             'mollie-block-custom-field',
@@ -474,18 +425,12 @@ class AssetsModule implements ExecutableModule
      */
     protected function setupModuleActions(ContainerInterface $container): void
     {
-        /** @var Data */
-        $dataService = $container->get('settings.data_helper');
-        $hasBlocksEnabled = $dataService->isBlockPluginActive();
         /** @var string */
         $pluginVersion = $container->get('shared.plugin_version');
         /** @var string */
         $pluginUrl = $container->get('shared.plugin_url');
         /** @var string */
         $pluginPath = $container->get('shared.plugin_path');
-        /** @var Settings */
-        $settingsHelper = $container->get('settings.settings_helper');
-        $gatewayInstances = $container->get('__deprecated.gateway_helpers');
 
         add_action('woocommerce_blocks_loaded', static function () {
             woocommerce_store_api_register_update_callback(
@@ -500,7 +445,7 @@ class AssetsModule implements ExecutableModule
 
         add_action(
             'woocommerce_init',
-            function () use ($container, $hasBlocksEnabled, $settingsHelper, $pluginUrl, $pluginPath, $dataService) {
+            function () use ($container, $pluginUrl, $pluginPath) {
                 self::registerFrontendScripts($pluginUrl, $pluginPath);
 
                 $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
@@ -513,9 +458,16 @@ class AssetsModule implements ExecutableModule
                     if(!mollieWooCommerceIsCheckoutContext()) {
                         return;
                     }
-                    /** @var ComponentDataService */
                     $componentDataService = $container->get('components.data_service');
                     assert($componentDataService instanceof ComponentDataService);
+                    wp_localize_script(
+                        'mollie_block_index',
+                        'mollieServerData',
+                        [
+                            'isOrderPayPage' => is_checkout_pay_page(),
+                            'componentData' => $componentDataService->getComponentData(),
+                        ]
+                    );
                     $this->enqueueComponentsAssets($componentDataService);
                 });
                 add_action('wp_enqueue_scripts', [$this, 'enqueueApplePayDirectScripts']);
@@ -523,29 +475,16 @@ class AssetsModule implements ExecutableModule
                     $this->enqueuePayPalButtonScripts($pluginUrl);
                 });
 
-                add_filter('inpsyde_payment_gateway_blocks_dependencies', function($dependencies) {
+                add_filter('inpsyde_payment_gateway_blocks_dependencies', function ($dependencies) {
                     $dependencies[] = 'mollie_block_index';
                     return $dependencies;
                 });
 
-                /** @var array */
-                $gatewayInstances = $container->get('__deprecated.gateway_helpers');
-
-                add_action(
-                    'wp_enqueue_scripts',
-                    function () use ($dataService, $gatewayInstances, $container, $pluginUrl, $pluginPath) {
-                        if (!wp_script_is('mollie_block_index', 'registered')) {
-                            $this->registerBlockScripts($pluginUrl, $pluginPath, $container);
-                        }
-                        $this->enqueueBlockCheckoutScripts($dataService, $gatewayInstances, $container);
-                    }
-                );
-                $this->registerButtonsBlockScripts($pluginUrl, $pluginPath);
             }
         );
         add_action(
             'admin_init',
-            function () use ($container, $hasBlocksEnabled, $pluginVersion, $dataService, $pluginUrl) {
+            function () use ($container, $pluginVersion, $pluginUrl) {
                 if (is_admin()) {
                     global $current_section;
                     wp_register_script(

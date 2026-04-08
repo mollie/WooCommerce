@@ -13,29 +13,29 @@ import {
 	products,
 	coupons,
 	customers,
-	disableNoncePlugin,
-	subscriptionsPlugin,
-	disableWcSetupWizard,
+	disableNonceCheckPlugin,
+	woocommerceSubscriptionsPlugin,
+	disableWcSetupWizardPlugin,
 } from '../../resources';
 
-if( ! process.env.CI ) {
+if ( ! process.env.CI ) {
 	setup( 'Setup Permalinks', async ( { requestUtils } ) => {
 		await requestUtils.setPermalinks( '/%postname%/' );
 	} );
 
 	setup(
-		'Setup Disable Nonce plugin (inactive)',
+		'Setup Disable Nonce plugin (active)',
 		async ( { requestUtils, plugins } ) => {
 			if (
 				! ( await requestUtils.isPluginInstalled(
-					disableNoncePlugin.slug
+					disableNonceCheckPlugin.slug
 				) )
 			) {
 				await plugins.installPluginFromFile(
-					disableNoncePlugin.zipFilePath
+					disableNonceCheckPlugin.zipFilePath
 				);
 			}
-			await requestUtils.activatePlugin( disableNoncePlugin.slug );
+			await requestUtils.activatePlugin( disableNonceCheckPlugin.slug );
 		}
 	);
 
@@ -44,14 +44,16 @@ if( ! process.env.CI ) {
 		async ( { requestUtils, plugins } ) => {
 			if (
 				! ( await requestUtils.isPluginInstalled(
-					disableWcSetupWizard.slug
+					disableWcSetupWizardPlugin.slug
 				) )
 			) {
 				await plugins.installPluginFromFile(
-					disableWcSetupWizard.zipFilePath
+					disableWcSetupWizardPlugin.zipFilePath
 				);
 			}
-			await requestUtils.activatePlugin( disableWcSetupWizard.slug );
+			await requestUtils.activatePlugin(
+				disableWcSetupWizardPlugin.slug
+			);
 		}
 	);
 
@@ -67,14 +69,16 @@ if( ! process.env.CI ) {
 		async ( { requestUtils, plugins } ) => {
 			if (
 				! ( await requestUtils.isPluginInstalled(
-					subscriptionsPlugin.slug
+					woocommerceSubscriptionsPlugin.slug
 				) )
 			) {
 				await plugins.installPluginFromFile(
-					subscriptionsPlugin.zipFilePath
+					woocommerceSubscriptionsPlugin.zipFilePath
 				);
 			}
-			await requestUtils.deactivatePlugin( subscriptionsPlugin.slug );
+			await requestUtils.deactivatePlugin(
+				woocommerceSubscriptionsPlugin.slug
+			);
 		}
 	);
 
@@ -179,7 +183,7 @@ setup( 'Setup coupons', async ( { wooCommerceUtils } ) => {
 	const couponItems = {};
 	const couponEntries = Object.entries( coupons );
 	await Promise.all(
-		couponEntries.map( async ( [ key, coupon ] ) => {
+		couponEntries.map( async ( [ , coupon ] ) => {
 			const createdCoupon = await wooCommerceUtils.createCoupon( coupon );
 			couponItems[ coupon.code ] = { id: createdCoupon.id };
 		} )
@@ -193,12 +197,11 @@ setup( 'Setup products', async ( { wooCommerceUtils } ) => {
 	const cartItems = {};
 	const productEntries = Object.entries( products );
 	await Promise.all(
-		productEntries.map( async ( [ key, product ] ) => {
+		productEntries.map( async ( [ , product ] ) => {
 			// check if not subscription product - requires Supscriptions plugin
 			if ( ! product.slug.includes( 'subscription' ) ) {
-				const createdProduct = await wooCommerceUtils.createProduct(
-					product
-				);
+				const createdProduct =
+					await wooCommerceUtils.createProduct( product );
 				cartItems[ product.slug ] = { id: createdProduct.id };
 			}
 		} )

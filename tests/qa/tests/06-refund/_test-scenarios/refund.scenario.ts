@@ -76,7 +76,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			let refundMeta: { key: string; value: any };
 			let statusAfterRefund: string;
 			// Preconditions
-			await test.step( 'Precondition: create WooCommerce order', async step => {
+			await test.step( 'Precondition: create WooCommerce order', async () => {
 				await updateCurrencyIfNeeded( wooCommerceApi, currency );
 
 				const orderTotals = await countTotals( testData );
@@ -113,7 +113,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 
 			// Make refund via Mollie client API
 			if ( isMollieClientApiRefund ) {
-				await test.step( 'Make refund via Mollie client API', async step => {
+				await test.step( 'Make refund via Mollie client API', async () => {
 					const idempotencyKey = `${ transactionId }-refund-${ orderId }`;
 					await mollieClientApi.refunds.create( {
 						paymentId: transactionId,
@@ -132,7 +132,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			}
 			// Make refund via WooCommerce admin
 			else {
-				await test.step( 'Make refund via WooCommerce', async step => {
+				await test.step( 'Make refund via WooCommerce', async () => {
 					await wooCommerceOrderEdit.visit( orderId );
 					await wooCommerceOrderEdit.refundButton().click();
 
@@ -160,7 +160,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				} );
 			}
 
-			await test.step( 'Wait for webhook and assert refund meta ~10 min', async step => {
+			await test.step( 'Wait for webhook and assert refund meta ~10 min', async () => {
 				// Assert via API WooCommerce Order refund status and presence of refunds
 				// Delayed webhooks cause following values to arrive in ~10 minutes after refund creation
 				await expect( async () => {
@@ -188,9 +188,12 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				).toHaveLength( 1 );
 				refundTransactionId = refundMeta.value[ 0 ];
 			} );
-			
-			await test.step( 'Assert refund details', async step => {
-				step.skip( isMolliePartialRefund, 'Not availabe for partial refund via Mollie dashboard' );
+
+			await test.step( 'Assert refund details', async ( step ) => {
+				step.skip(
+					isMolliePartialRefund,
+					'Not availabe for partial refund via Mollie dashboard'
+				);
 
 				await expect(
 					refunds,
@@ -224,8 +227,9 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			} );
 
 			// Assert order notes via WC API
-			await test.step( 'Assert refund Order Notes', async step => {
-				const formattedRefundAmount = parseFloat( refundAmount ).toString();
+			await test.step( 'Assert refund Order Notes', async () => {
+				const formattedRefundAmount =
+					parseFloat( refundAmount ).toString();
 				let expectedNotes = [];
 				if ( isWooCommerceFullRefund ) {
 					expectedNotes = [
@@ -262,7 +266,11 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 					];
 				}
 
-				await assertOrderNotes( wooCommerceApi, orderId, expectedNotes );
+				await assertOrderNotes(
+					wooCommerceApi,
+					orderId,
+					expectedNotes
+				);
 			} );
 		}
 	);

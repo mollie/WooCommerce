@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "php": ">=7.4",
+    "php": "^7.4 | ^8.0",
     "ext-intl": "*",
     "ext-json": "*",
     "mollie/mollie-api-php": "^v2.40",
@@ -69,7 +69,11 @@
     }
   ],
   "extra": {
-    "installer-disable": true,
+    "installer-paths": {
+      "tests/qa/resources/plugins/{$name}/": [
+        "inpsyde-mirror/woocommerce-subscriptions"
+      ]
+    },
     "composer-asset-compiler": {
       "auto-run": false,
       "dependencies": "install",
@@ -85,6 +89,9 @@
     }
   },
   "config": {
+    "platform": {
+      "php": "7.4"
+    },
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "composer/package-versions-deprecated": true,

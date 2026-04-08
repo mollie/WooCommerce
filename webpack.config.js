@@ -2,6 +2,7 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const defaultConfig = require('@wordpress/scripts/config/webpack.config');
+const WooCommerceDependencyExtractionWebpackPlugin = require('@woocommerce/dependency-extraction-webpack-plugin');
 
 module.exports = (env = {}, argv = {}) => {
     const mode = argv.mode || process.env.NODE_ENV || 'development';
@@ -17,10 +18,19 @@ module.exports = (env = {}, argv = {}) => {
         },
     };
 
+    // Replace default DependencyExtractionWebpackPlugin with WooCommerce-aware version
+    const jsPlugins = [
+        ...defaultConfig.plugins.filter(
+            (plugin) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
+        ),
+        new WooCommerceDependencyExtractionWebpackPlugin(),
+    ];
+
     // --- JS bundle config ---
     const jsConfig = {
         ...defaultConfig,
         name: 'javascript-configuration',
+        plugins: jsPlugins,
         entry: {
             'applepay.min': './resources/js/src/features/apple-pay/applepay.js',
             'applepayDirect.min': './resources/js/src/features/apple-pay/applepayDirect.js',
@@ -32,10 +42,7 @@ module.exports = (env = {}, argv = {}) => {
             'advancedSettings.min': './resources/js/src/admin/settings/advancedSettings.js',
             'gatewaySurcharge.min': './resources/js/src/features/surcharge/gatewaySurcharge.js',
             'mollie-components.min': './resources/js/src/checkout/legacy/components/mollie-components.js',
-            'mollieBlockIndex.min': './resources/js/src/checkout/blocks/mollieBlockIndex.js',
-            'paypalButtonBlockComponent.min':
-                './resources/js/src/checkout/blocks/components/expressPayments/paypalButtonBlockComponent.js',
-            'applepayButtonBlock.min': './resources/js/src/checkout/blocks/applepayButtonBlock.js',
+            'mollieBlockIndex.min': './resources/js/src/checkout/blocks/index.js',
             'rivertyCountryPlaceholder.min':
                 './resources/js/src/features/regional/rivertyCountryPlaceholder.js',
             'mollie-settings-2024.min':

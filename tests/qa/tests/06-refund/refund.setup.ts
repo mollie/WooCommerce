@@ -8,7 +8,7 @@ setup( 'Setup Mollie', async ( { utils, wooCommerceApi }, testInfo ) => {
 	if ( ! [ 'setup-refund', 'refund' ].includes( testInfo.project.name ) ) {
 		return;
 	}
-	
+
 	await utils.configureStore( {
 		...shopConfigGermany,
 		enableClassicPages: true,

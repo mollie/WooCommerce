@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Psr\Container\ContainerInterface;
+
 class Applepay extends AbstractPaymentMethod implements PaymentMethodI
 {
     protected function getConfig(): array
@@ -94,5 +96,24 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
             ],
         ];
         return array_merge($notice, $generalFormFields, $paymentMethodFormFieds);
+    }
+
+    public function isExpressCheckoutEnabled(): bool
+    {
+        return $this->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes';
+    }
+
+    protected function blocksExpressData(ContainerInterface $container): ?array
+    {
+        $baseLocation = wc_get_base_location();
+
+        return [
+            'shop' => [
+                'countryCode' => $baseLocation['country'],
+                'totalLabel' => get_bloginfo('name'),
+            ],
+            'nonce' => wp_create_nonce('mollie_apple_pay_blocks'),
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+        ];
     }
 }

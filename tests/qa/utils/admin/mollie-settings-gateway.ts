@@ -210,7 +210,7 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 
 		if ( data.enable_custom_logo === 'yes' && data.custom_logo_path ) {
 			await this.uploadCustomLogoButton().setInputFiles(
-				'./resources/files/mollie-test-logo.png'
+				'./tests/qa/resources/files/mollie-test-logo.png'
 			);
 		}
 

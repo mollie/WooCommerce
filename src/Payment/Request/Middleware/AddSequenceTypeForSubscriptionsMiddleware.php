@@ -1,28 +1,24 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
-
 /**
  * Middleware to add sequence type for subscription payments.
  */
-class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInterface
+class AddSequenceTypeForSubscriptionsMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * @var Data Helper class for data operations.
      */
     private Data $dataHelper;
-
     /**
      * @var string Plugin ID.
      */
     private string $pluginId;
-
     /**
      * Constructor.
      *
@@ -34,7 +30,6 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
         $this->dataHelper = $dataHelper;
         $this->pluginId = $pluginId;
     }
-
     /**
      * Invoke the middleware.
      *
@@ -52,7 +47,6 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
         }
         return $next($requestData, $order, $context);
     }
-
     /**
      * Add sequence type for the first payments of subscriptions.
      *
@@ -65,16 +59,14 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
     private function addSequenceTypeForSubscriptionsFirstPayments($orderId, $gateway, $requestData, $context): array
     {
         if ($this->dataHelper->isSubscription($orderId) || $this->dataHelper->isWcSubscription($orderId)) {
-            $disable_automatic_payments = apply_filters($this->pluginId . '_is_automatic_payment_disabled', false);
+            $disable_automatic_payments = apply_filters($this->pluginId . '_is_automatic_payment_disabled', \false);
             $supports_subscriptions = $gateway->supports('subscriptions');
-
-            if ($supports_subscriptions == true && $disable_automatic_payments == false) {
+            if ($supports_subscriptions == \true && $disable_automatic_payments == \false) {
                 $requestData = $this->addSequenceTypeFirst($requestData, $context);
             }
         }
         return $requestData;
     }
-
     /**
      * Add the sequence type 'first' to the request data.
      *

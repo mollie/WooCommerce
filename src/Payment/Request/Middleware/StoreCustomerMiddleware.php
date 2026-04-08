@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Settings\Settings;
 use WC_Order;
-
 /**
  * Class StoreCustomerMiddleware
  *
@@ -14,13 +12,12 @@ use WC_Order;
  *
  * @package Mollie\WooCommerce\Payment\Request\Middleware
  */
-class StoreCustomerMiddleware implements RequestMiddlewareInterface
+class StoreCustomerMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * @var Settings The settings helper instance.
      */
     private Settings $settingsHelper;
-
     /**
      * StoreCustomerMiddleware constructor.
      *
@@ -30,7 +27,6 @@ class StoreCustomerMiddleware implements RequestMiddlewareInterface
     {
         $this->settingsHelper = $settingsHelper;
     }
-
     /**
      * Invoke the middleware.
      *

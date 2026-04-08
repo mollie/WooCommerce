@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies;
 
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use WC_Order;
-
-class DefaultRedirectStrategy implements PaymentRedirectStrategyI
+class DefaultRedirectStrategy implements \Mollie\WooCommerce\PaymentMethods\PaymentRedirectStrategies\PaymentRedirectStrategyI
 {
     /**
      * Redirect location after successfully completing process_payment
@@ -20,6 +18,6 @@ class DefaultRedirectStrategy implements PaymentRedirectStrategyI
      */
     public function execute(PaymentMethodI $paymentMethod, $order, $paymentObject, string $redirectUrl)
     {
-            return $paymentObject->getCheckoutUrl();
+        return $paymentObject->getCheckoutUrl();
     }
 }

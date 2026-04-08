@@ -245,6 +245,7 @@ export type MolliePayment = {
 export namespace MollieTestData {
 	export type SurchargeTest = {
 		testId: string;
+		testLabel?: string;
 		gateway: string;
 		product?: WooCommerce.CreateProduct;
 		expectedFeeText?: string;

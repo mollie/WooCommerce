@@ -8,7 +8,6 @@ import {
 	WooCommerceUtils,
 	restLogin,
 } from '@inpsyde/playwright-utils/build';
-import path from 'path';
 /**
  * Internal dependencies
  */
@@ -21,7 +20,6 @@ import {
 import {
 	MollieSettings,
 	molliePlugin,
-	enableBizumPlugin,
 	mollieApiKeys,
 	woocommerceSubscriptionsPlugin,
 	ShopConfig,
@@ -72,16 +70,6 @@ export class Utils {
 		}
 		await this.requestUtils.activatePlugin( molliePlugin.slug );
 	};
-	installAndActivateBizum = async () => {
-	if (
-		! ( await this.requestUtils.isPluginInstalled( enableBizumPlugin.slug ) )
-	) {
-		await this.plugins.installPluginFromFile(
-			path.resolve( __dirname, '../resources/files/enable-bizum.zip' )
-		);
-	}
-	await this.requestUtils.activatePlugin( 'enable-bizum' );
-};
 
 	/**
 	 * Resets and reconnects Mollie:

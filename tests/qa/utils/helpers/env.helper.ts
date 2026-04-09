@@ -6,20 +6,31 @@ import { restLogin } from '@inpsyde/playwright-utils/build';
 import { execFileSync } from 'node:child_process';
 
 /**
+ * Throw if any of the listed env vars are missing.
+ */
+const checkEnvVars = ( names: string[] ): void => {
+	const missing = names.filter( ( name ) => ! process.env[ name ] );
+	if ( missing.length ) {
+		throw new Error(
+			`Missing required environment variable(s): ${ missing.join( ', ' ) }`
+		);
+	}
+};
+
+/**
  * Reset the WordPress environment to a clean state.
  * Supports 'localhost' (PowerShell/XAMPP) and 'ssh' env types.
  */
 export const resetEnvironment = async (): Promise< void > => {
+	checkEnvVars( [ 'WPCLI_ENV_TYPE' ] );
 	const envType = process.env.WPCLI_ENV_TYPE as WpCliEnvType;
 
 	let command: string;
 	let args: string[];
 
-	if ( ! process.env.WP_BASE_URL ) {
-		throw new Error( 'WP_BASE_URL is required' );
-	}
-
 	if ( envType === 'localhost' ) {
+		checkEnvVars( [ 'WPCLI_PATH', 'WP_BASE_URL' ] );
+
 		const psCommand = [
 			'$env:PATH += ";C:\\xampp\\mysql\\bin"',
 			`cd ${ process.env.WPCLI_PATH }`,
@@ -35,6 +46,8 @@ export const resetEnvironment = async (): Promise< void > => {
 		command = 'powershell';
 		args = [ '-NoProfile', '-Command', psCommand ];
 	} else if ( envType === 'ssh' ) {
+		checkEnvVars( [ 'SSH_LOGIN', 'SSH_HOST', 'SSH_PORT' ] );
+
 		const WP_VERSION = process.env.WP_VERSION ?? '6.9';
 		const WP_TYPE = process.env.WP_TYPE ?? 'single';
 		const remoteCmd = `$HOME/bin/reset-wp.sh --wp-version=${ WP_VERSION } --wp-type=${ WP_TYPE }`;
@@ -56,12 +69,19 @@ export const resetEnvironment = async (): Promise< void > => {
 		stdio: 'inherit',
 		timeout: 60_000,
 	} );
-}
+};
 
 /**
  * Create admin and guest storage states.
  */
 export const createStorageStates = async (): Promise< void > => {
+	checkEnvVars( [
+		'WP_BASE_URL',
+		'STORAGE_STATE_PATH_ADMIN',
+		'WP_USERNAME',
+		'WP_PASSWORD',
+	] );
+
 	await restLogin( {
 		baseURL: process.env.WP_BASE_URL!,
 		storageStatePath: process.env.STORAGE_STATE_PATH_ADMIN,
@@ -74,4 +94,4 @@ export const createStorageStates = async (): Promise< void > => {
 			password: process.env.WP_PASSWORD,
 		},
 	} );
-}
+};

@@ -5,12 +5,12 @@ import { OrderReceived, PayForOrder } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
-import { expect, MollieHostedCheckout } from '.';
+import { expect, MollieHostedCheckout } from '..';
 import {
 	MolliePaymentStatus,
 	MollieSettings,
 	MollieGateway,
-} from '../resources';
+} from '../../resources';
 
 const testedApiMethod =
 	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';

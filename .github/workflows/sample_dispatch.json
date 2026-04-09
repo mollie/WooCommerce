@@ -1,6 +1,0 @@
-{
-  "action": "workflow_dispatch",
-  "inputs": {
-    "PACKAGE_VERSION": "0.0.1"
-  }
-}

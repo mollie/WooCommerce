@@ -19,8 +19,6 @@ import {
 	enableBizumPlugin,
 } from '../../resources';
 
-const country = process.env.WC_DEFAULT_COUNTRY || 'usa';
-
 const installPluginResolveActiveState = async ( {
 	requestUtils,
 	plugins,

@@ -138,7 +138,6 @@ export default defineConfig< TestBaseExtend >( {
 		},
 		{
 			name: 'setup-multistep',
-			dependencies: [ 'setup-woocommerce' ],
 			testMatch: /multistep\.setup\.ts/,
 			fullyParallel: false,
 		},

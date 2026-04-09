@@ -53,12 +53,19 @@
     "e2e:setup:env": "npm run e2e:setup:hosts && npm install && npx wp-env start --update",
     "e2e:setup:tests": "npm install && npx playwright install",
     "e2e:watch:utils": "npm run e2e:setup:tests && cd .tests/qa/playwright-utils && yarn devLocal",
-    "e2e:setup:wc:default": "npx playwright test woocommerce.setup",
-    "e2e:setup:checkout:block": "npx playwright test --grep=\"setup:checkout:block;\"",
-    "e2e:setup:checkout:classic": "npx playwright test --grep=\"setup:checkout:classic;\"",
-    "e2e:setup:tax:inc": "npx playwright test --grep=\"setup:tax:inc;\"",
-    "e2e:setup:tax:exc": "npx playwright test --grep=\"setup:tax:exc;\"",
-    "e2e:setup:mollie:germany": "npx playwright test --grep \"setup:mollie:germany;\"",
+
+    "env:reset": "npx playwright test --grep=\"env:reset;\"",
+    "env:reset:mollie": "npx playwright test --grep=\"env:reset;|setup:mollie:germany;\"",
+    "env:reset:mollie:multistep": "npx playwright test --grep=\"env:reset;|setup:mollie:germany;|setup:multistep:checkout;\"",
+
+    "env:setup:wc": "npx playwright test woocommerce.setup",
+    "env:setup:mollie": "npx playwright test --grep=\"setup:mollie:germany;\"",
+    "env:setup:multistep": "npx playwright test --grep=\"setup:multistep:checkout;\"",
+    "env:setup:checkout:block": "npx playwright test --grep=\"setup:checkout:block;\"",
+    "env:setup:checkout:classic": "npx playwright test --grep=\"setup:checkout:classic;\"",
+    "env:setup:tax:inc": "npx playwright test --grep=\"setup:tax:inc;\"",
+    "env:setup:tax:exc": "npx playwright test --grep=\"setup:tax:exc;\"",
+
     "e2e:test:all": "npx playwright test --project=all --workers=1",
     "e2e:test:critical": "npx playwright test --project=all --workers=1 --grep \"@Critical\"",
     "e2e:test:refund": "npx playwright test --project=refund --workers=4"

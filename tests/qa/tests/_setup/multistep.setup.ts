@@ -11,14 +11,13 @@ setup(
 	'setup:multistep:checkout;',
 	async ( { requestUtils, plugins } ) => {
 		
-		setup.setTimeout( 1.5 * 60_000 );
+		setup.setTimeout( 2 * 60_000 );
 
 		await setup.step(
 			`Setup ${ germanizedPlugin.name } plugin (active)`,
 			async () => {
 				if ( ! ( await requestUtils.isPluginInstalled( germanizedPlugin.slug ) ) ) {
 					await plugins.installPlugin( germanizedPlugin.name );
-					await plugins.page.pause();
 				}
 				await requestUtils.activatePlugin( germanizedPlugin.slug );
 				await plugins.visit( urls.admin.plugins.home );

@@ -61,7 +61,8 @@
     "e2e:setup:mollie:germany": "npx playwright test --grep \"setup:mollie:germany;\"",
     "e2e:test:all": "npx playwright test --project=all --workers=1",
     "e2e:test:critical": "npx playwright test --project=all --workers=1 --grep \"@Critical\"",
-    "e2e:test:refund": "npx playwright test --project=refund --workers=4"
+    "e2e:test:refund": "npx playwright test --project=refund --workers=4",
+    "e2e:test:multistep": "npx playwright test multistep.setup.ts --workers=1"
   },
   "eslintConfig": {
     "extends": [

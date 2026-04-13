@@ -2,12 +2,12 @@
  * Internal dependencies
  */
 import { test as setup } from '../../utils';
-import { shopConfigGermany } from '../../resources';
+import { shopConfigDefault } from '../../resources';
 
 // --- Mollie Germany ---
 
 setup( 'setup:mollie;', async ( { utils } ) => {
-	await utils.configureStore( shopConfigGermany );
+	await utils.configureStore( shopConfigDefault );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );

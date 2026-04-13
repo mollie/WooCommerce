@@ -12,10 +12,10 @@ import {
 	creditCardDisabledMollieComponentsCheckout,
 	creditCardDisabledMollieComponentsPayForOrder,
 } from './_test-data';
-import { shopConfigGermany } from '../../resources';
+import { shopConfigDefault } from '../../resources';
 
 test.beforeAll( async ( { utils, mollieApi } ) => {
-	await utils.configureStore( shopConfigGermany );
+	await utils.configureStore( shopConfigDefault );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 	await mollieApi.updateMollieGateway( 'creditcard', {

@@ -77,10 +77,3 @@ setup(
 		).toBeOK();
 	}
 );
-
-setup(
-	'Germanized should be installed',
-	async ( { requestUtils } ) => {
-		console.log( 'Checking if Germanized is installed...', await requestUtils.getPluginsMap( true ) );
-	}
-);

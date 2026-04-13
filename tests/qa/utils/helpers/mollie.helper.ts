@@ -12,20 +12,16 @@ import {
 	MollieGateway,
 } from '../../resources';
 
-const testedApiMethod =
-	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
-
 export const getOrderStatusFromMollieStatus = (
-	paymentStatus: MolliePaymentStatus
+	paymentStatus: MolliePaymentStatus,
+	mollieApiMethod: MollieSettings.ApiMethod = 'payment',
 ): WooCommerce.OrderStatus => {
-	const isPaymentApiMethod = testedApiMethod === 'payment';
-
 	const statusConversion = {
 		paid: 'processing',
 		authorized: 'processing',
 		canceled: 'pending',
-		expired: isPaymentApiMethod ? 'cancelled' : 'pending',
-		failed: isPaymentApiMethod ? 'failed' : 'pending',
+		expired: mollieApiMethod === 'payment' ? 'cancelled' : 'pending',
+		failed: mollieApiMethod === 'payment' ? 'failed' : 'pending',
 		open: 'pending',
 		pending: 'pending',
 	} as Record< MolliePaymentStatus, WooCommerce.OrderStatus >;

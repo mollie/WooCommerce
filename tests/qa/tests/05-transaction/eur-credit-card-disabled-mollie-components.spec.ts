@@ -12,17 +12,10 @@ import {
 	creditCardDisabledMollieComponentsCheckout,
 	creditCardDisabledMollieComponentsPayForOrder,
 } from './_test-data';
-import { MollieSettings, shopSettings } from '../../resources';
-
-const testedApiMethod =
-	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
+import { shopConfigGermany } from '../../resources';
 
 test.beforeAll( async ( { utils, mollieApi } ) => {
-	await utils.configureStore( {
-		settings: {
-			general: shopSettings.germany.general,
-		},
-	} );
+	await utils.configureStore( shopConfigGermany );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 	await mollieApi.updateMollieGateway( 'creditcard', {
@@ -48,24 +41,10 @@ test.describe( () => {
 	} );
 
 	for ( const testData of creditCardDisabledMollieComponentsCheckout ) {
-		// exclude tests for payment methods if not available for tested API
-		const availableForApiMethods =
-			testData.payment.gateway.availableForApiMethods;
-		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
-			continue;
-		}
-
 		testPaymentStatusOnCheckout( testData );
 	}
 
 	for ( const testData of creditCardDisabledMollieComponentsPayForOrder ) {
-		// exclude tests for payment methods if not available for tested API
-		const availableForApiMethods =
-			testData.payment.gateway.availableForApiMethods;
-		if ( ! availableForApiMethods.includes( testedApiMethod ) ) {
-			continue;
-		}
-
 		testPaymentStatusOnPayForOrder( testData );
 	}
 } );

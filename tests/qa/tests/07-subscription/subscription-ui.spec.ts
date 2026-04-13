@@ -7,15 +7,12 @@ import {
 	gateways,
 	guests,
 	products,
-	shopSettings,
+	shopConfigClassic,
 } from '../../resources';
 
 test.beforeAll( async ( { utils, wooCommerceUtils } ) => {
 	await utils.configureStore( {
-		settings: {
-			general: shopSettings.germany.general,
-		},
-		enableClassicPages: true,
+		...shopConfigClassic,
 		enableSubscriptionsPlugin: true,
 	} );
 	await wooCommerceUtils.createProduct( products.mollieSubscription100 );

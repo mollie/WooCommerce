@@ -6,12 +6,13 @@ on:
       TEST_SUITE:
         description: 'Test suite'
         required: true
-        default: 'critical'
+        default: 'e2e:test:multistep'
         type: choice
         options:
           - e2e:test:critical
           - e2e:test:refund
           - e2e:test:all
+          - e2e:test:multistep
 #  pull_request:
 #    branches: [dev/develop]
 #    paths:

@@ -54,7 +54,7 @@
     "e2e:setup:tests": "npm install && npx playwright install",
     "e2e:watch:utils": "npm run e2e:setup:tests && cd .tests/qa/playwright-utils && yarn devLocal",
 
-    "env:reset": "npx playwright test --grep=\"env:reset;\"",
+    "env:reset:wc": "npx playwright test --grep=\"env:reset;\"",
     "env:reset:mollie": "npx playwright test --grep=\"env:reset;|setup:mollie;\"",
     "env:reset:mollie:multistep": "npx playwright test --grep=\"env:reset;|setup:mollie;|setup:multistep:checkout;\"",
 

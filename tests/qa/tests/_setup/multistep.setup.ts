@@ -7,22 +7,29 @@ import {
 	germanizedProPlugin,
 } from '../../resources/e2e-plugins';
 
-const germanizedSlugs = [ germanizedPlugin, germanizedProPlugin ];
-
-for ( const plugin of germanizedSlugs ) {
-	setup(
-		`Setup ${ plugin.slug } plugin (active)`,
-		async ( { requestUtils, plugins } ) => {
-			if ( ! ( await requestUtils.isPluginInstalled( plugin.slug ) ) ) {
-				await plugins.installPluginFromFile( plugin.zipFilePath );
-			}
-			await requestUtils.activatePlugin( plugin.slug );
-			// additional visits to avoid Germanized welcome wizard page
-			await plugins.visit( urls.admin.plugins.home );
-			await plugins.visit( urls.admin.plugins.installed );
+setup( `Setup ${ germanizedPlugin.name } plugin (active)`,
+	async ( { requestUtils, plugins } ) => {
+		if ( ! ( await requestUtils.isPluginInstalled( germanizedPlugin.slug ) ) ) {
+			await plugins.installPlugin( germanizedPlugin.name );
 		}
-	);
-}
+		await requestUtils.activatePlugin( germanizedPlugin.slug );
+		await plugins.visit( urls.admin.plugins.home );
+		await plugins.visit( urls.admin.plugins.installed );
+	}
+);
+
+setup(
+	`Setup ${ germanizedProPlugin.slug } plugin (active)`,
+	async ( { requestUtils, plugins } ) => {
+		if ( ! ( await requestUtils.isPluginInstalled( germanizedProPlugin.slug ) ) ) {
+			await plugins.installPluginFromFile( germanizedProPlugin.zipFilePath );
+		}
+		await requestUtils.activatePlugin( germanizedProPlugin.slug );
+		// additional visits to avoid Germanized welcome wizard page
+		await plugins.visit( urls.admin.plugins.home );
+		await plugins.visit( urls.admin.plugins.installed );
+	}
+);
 
 setup( 'Setup Multistep checkout', async ( { requestUtils } ) => {
 	const security = await requestUtils.getRegexMatchValueOnPage(

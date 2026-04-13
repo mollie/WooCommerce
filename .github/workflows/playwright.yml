@@ -66,6 +66,7 @@ jobs:
         # 2. Add private composer repository and download WooCommerce Subscriptions
         composer config repositories.repo-name composer https://repo.packagist.com/inpsyde/payment-gateways/
         composer require inpsyde-mirror/woocommerce-subscriptions
+        composer require inpsyde-mirror/woocommerce-germanized-pro
 
         # 3. Setup wp-env default hosts
         npm run e2e:setup:hosts

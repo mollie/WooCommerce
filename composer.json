@@ -71,7 +71,8 @@
   "extra": {
     "installer-paths": {
       "tests/qa/resources/plugins/{$name}/": [
-        "inpsyde-mirror/woocommerce-subscriptions"
+        "inpsyde-mirror/woocommerce-subscriptions",
+        "inpsyde-mirror/woocommerce-germanized-pro"
       ]
     },
     "composer-asset-compiler": {

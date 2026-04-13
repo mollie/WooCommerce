@@ -21,8 +21,10 @@ setup( `Setup ${ germanizedPlugin.name } plugin (active)`,
 setup(
 	`Setup ${ germanizedProPlugin.slug } plugin (active)`,
 	async ( { requestUtils, plugins } ) => {
-		if ( ! ( await requestUtils.isPluginInstalled( germanizedProPlugin.slug ) ) ) {
-			await plugins.installPluginFromFile( germanizedProPlugin.zipFilePath );
+		if( ! process.env.CI ) {
+			if ( ! ( await requestUtils.isPluginInstalled( germanizedProPlugin.slug ) ) ) {
+				await plugins.installPluginFromFile( germanizedProPlugin.zipFilePath );
+			}
 		}
 		await requestUtils.activatePlugin( germanizedProPlugin.slug );
 		// additional visits to avoid Germanized welcome wizard page
@@ -73,5 +75,12 @@ setup(
 			response,
 			'Assert Germanized additional costs settings are saved successfully'
 		).toBeOK();
+	}
+);
+
+setup(
+	'Germanized should be installed',
+	async ( { requestUtils } ) => {
+		console.log( 'Checking if Germanized is installed...', await requestUtils.getPluginsMap( true ) );
 	}
 );

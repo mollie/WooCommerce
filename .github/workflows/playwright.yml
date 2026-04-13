@@ -64,9 +64,11 @@ jobs:
           rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/
         )
 
-        # 2. Add private composer repository and download WooCommerce Subscriptions
+        # 2. Add private composer repository and download WooCommerce Subscriptions and Germanized Pro
         composer config repositories.repo-name composer https://repo.packagist.com/inpsyde/payment-gateways/
         composer require inpsyde-mirror/woocommerce-subscriptions
+        
+        composer config repositories.inpsyde composer https://repo.packagist.com/inpsyde/
         composer require inpsyde-mirror/woocommerce-germanized-pro
 
         # 3. Setup wp-env default hosts

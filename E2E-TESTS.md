@@ -134,7 +134,7 @@ _Multistep Checkout_ requires installation of both Germanized and Germanized Pro
 
 Additional actions for local execution:
 
-1. Add Germanized Pro plugin `.zip` file into `/tests/qa/resources/files/` as `germanized-for-woocommerce-pro.zip`.
+1. Add Germanized Pro plugin `.zip` file into `/tests/qa/resources/files/` as `germanized-for-woocommerce-pro.zip`. Germanized Pro can be downloaded from [Inpsyde Packagist](https://packagist.com/orgs/inpsyde/packages/4592207).
 
 2. Multistep setup might require env reset. Use one of the following commands:
 

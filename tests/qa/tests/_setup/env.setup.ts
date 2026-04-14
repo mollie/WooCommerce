@@ -16,8 +16,6 @@ setup.describe( 'env:reset;', async () => {
 	setup( 'Setup: Create storage state', async () => {
 		await createStorageStates();
 	} );
-
-	await setupWooCommerce();
 } );
 
 // --- Checkout layout ---

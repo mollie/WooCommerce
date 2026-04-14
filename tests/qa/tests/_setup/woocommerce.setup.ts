@@ -4,6 +4,6 @@
 import { test as setup } from '../../utils';
 import { setupWooCommerce } from '../../utils/helpers/';
 
-setup.describe( async () => {
+setup.describe( 'setup:wc;', async () => {
 	await setupWooCommerce();
 } );

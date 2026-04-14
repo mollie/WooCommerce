@@ -54,11 +54,12 @@
     "e2e:setup:tests": "npm install && npx playwright install",
     "e2e:watch:utils": "npm run e2e:setup:tests && cd .tests/qa/playwright-utils && yarn devLocal",
 
-    "env:reset:wc": "npx playwright test --grep=\"env:reset;\"",
-    "env:reset:mollie": "npx playwright test --grep=\"env:reset;|setup:mollie;\"",
-    "env:reset:mollie:multistep": "npx playwright test --grep=\"env:reset;|setup:mollie;|setup:multistep:checkout;\"",
+    "env:reset": "npx playwright test --grep=\"env:reset;\"",
+    "env:reset:wc": "npx playwright test --grep=\"env:reset;|setup:wc;\"",
+    "env:reset:mollie": "npx playwright test --grep=\"env:reset;|setup:wc;|setup:mollie;\"",
+    "env:reset:mollie:multistep": "npx playwright test --grep=\"env:reset;|setup:wc;|setup:mollie;|setup:multistep:checkout;\"",
 
-    "env:setup:wc": "npx playwright test woocommerce.setup",
+    "env:setup:wc": "npx playwright test --grep=\"setup:wc;\"",
     "env:setup:mollie": "npx playwright test --grep=\"setup:mollie;\"",
     "env:setup:payment-api": "npx playwright test --grep=\"setup:payment-api;\"",
     "env:setup:order-api": "npx playwright test --grep=\"setup:order-api;\"",

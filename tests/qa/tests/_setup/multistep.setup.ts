@@ -28,10 +28,12 @@ setup(
 		await setup.step(
 			`Setup ${ germanizedProPlugin.name } plugin (active)`,
 			async () => {
-				if (
-					! ( await requestUtils.isPluginInstalled( germanizedProPlugin.slug ) )
-				) {
-					await plugins.installPluginFromFile( germanizedProPlugin.zipFilePath );
+				if( ! process.env.CI ) {
+					if (
+						! ( await requestUtils.isPluginInstalled( germanizedProPlugin.slug ) )
+					) {
+						await plugins.installPluginFromFile( germanizedProPlugin.zipFilePath );
+					}
 				}
 				await requestUtils.activatePlugin( germanizedProPlugin.slug );
 				await plugins.visit( urls.admin.plugins.home );

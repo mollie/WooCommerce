@@ -135,13 +135,16 @@ function registerExpressPaymentMethodHooks(mollieGateways) {
                     content: <PayPalButtonComponent buttonData={settings.expressButtonData}/>,
                     edit: <PayPalButtonEditorComponent/>,
                     ariaLabel: 'PayPal',
-                    canMakePayment: ({cartItems = []} = {}) => {
+                    canMakePayment: () => {
                         if (isEditorContext()) {
                             return true;
                         }
                         if (!PayPalUtils.canRegisterPayPal()) {
                             return false;
                         }
+                        // cartItems from the canMakePayment argument does not carry
+                        // Store API extension data; read directly from the store instead.
+                        const cartItems = select('wc/store/cart')?.getCartData()?.items ?? [];
                         const hasPhysicalItem = cartItems.some(
                             (item) => item.extensions?.['mollie-payments']?.virtual === false
                         );
@@ -169,19 +172,11 @@ function registerExpressPaymentMethodHooks(mollieGateways) {
                 if (!settings.isExpressEnabled) {
                     return false;
                 }
-                if (!PayPalUtils.canRegisterPayPal()) {
-                    return false;
-                }
-                // Only register when the cart contains exclusively virtual items.
-                // Relies on per-item `virtual` flag exposed by
-                // PayPalExpressButton::registerStoreApiExtension() via the
-                // WC Store API extension mechanism. If the extension data is absent
-                // (e.g. PayPal gateway disabled), the check is skipped (safe fallback).
-                const cartItems = select('wc/store/cart')?.getCartData()?.items ?? [];
-                const hasPhysicalItem = cartItems.some(
-                    (item) => item.extensions?.['mollie-payments']?.virtual === false
-                );
-                return !hasPhysicalItem;
+                return PayPalUtils.canRegisterPayPal();
+                // Cart-content gating (virtual-only) is handled in canMakePayment,
+                // which WC Blocks calls reactively on every cart change. Doing it
+                // here would prevent re-registration after items are removed without
+                // a full page reload.
             },
             10,
             3

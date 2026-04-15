@@ -53,15 +53,33 @@
     "e2e:setup:env": "npm run e2e:setup:hosts && npm install && npx wp-env start --update",
     "e2e:setup:tests": "npm install && npx playwright install",
     "e2e:watch:utils": "npm run e2e:setup:tests && cd ./playwright-utils && yarn devLocal",
-    "e2e:setup:wc:default": "npx playwright test woocommerce.setup",
-    "e2e:setup:checkout:block": "npx playwright test --grep=\"setup:checkout:block;\"",
-    "e2e:setup:checkout:classic": "npx playwright test --grep=\"setup:checkout:classic;\"",
-    "e2e:setup:tax:inc": "npx playwright test --grep=\"setup:tax:inc;\"",
-    "e2e:setup:tax:exc": "npx playwright test --grep=\"setup:tax:exc;\"",
-    "e2e:setup:mollie:germany": "npx playwright test --grep \"setup:mollie:germany;\"",
-    "e2e:test:all": "npx playwright test --project=all --workers=1",
-    "e2e:test:critical": "npx playwright test --project=all --workers=1 --grep \"@Critical\"",
-    "e2e:test:refund": "npx playwright test --project=refund --workers=4"
+
+    "env:reset": "npx playwright test --grep=\"env:reset;\"",
+    "env:reset:wc": "npx playwright test --grep=\"env:reset;|setup:wc;\"",
+    "env:reset:mollie": "npm run env:reset:wc && npm run env:setup:mollie",
+    "env:reset:mollie:multistep": "npx playwright test --grep=\"env:reset;|setup:wc;|setup:mollie;|setup:multistep:checkout;\"",
+
+    "env:setup:wc": "npx playwright test --grep=\"setup:wc;\"",
+    "env:setup:mollie": "npx playwright test --project=setup-mollie --grep=\"setup:mollie;\"",
+    "env:setup:payment-api": "npx playwright test --grep=\"setup:payment-api;\"",
+    "env:setup:order-api": "npx playwright test --grep=\"setup:order-api;\"",
+    "env:setup:multistep": "npx playwright test --grep=\"setup:multistep:checkout;\"",
+    "env:setup:checkout:block": "npx playwright test --grep=\"setup:checkout:block;\"",
+    "env:setup:checkout:classic": "npx playwright test --grep=\"setup:checkout:classic;\"",
+    "env:setup:tax:inc": "npx playwright test --grep=\"setup:tax:inc;\"",
+    "env:setup:tax:exc": "npx playwright test --grep=\"setup:tax:exc;\"",
+
+    "e2e:test:payment-api": "npx playwright test --project=payment-api --workers=1",
+    "e2e:test:payment-api:smoke": "npx playwright test --project=payment-api --workers=1 --grep \"@Critical\"",
+    "e2e:test:payment-api:refund": "npx playwright test --project=refund-payment-api --workers=4",
+    "e2e:test:payment-api:multistep": "npx playwright test --project=multistep-payment-api --workers=1",
+    "e2e:test:payment-api:multistep:smoke": "npx playwright test --project=multistep-payment-api --workers=1 --grep \"@Critical\"",
+
+    "e2e:test:order-api": "npx playwright test --project=order-api --workers=1",
+    "e2e:test:order-api:smoke": "npx playwright test --project=order-api --workers=1 --grep \"@Critical\"",
+    "e2e:test:order-api:refund": "npx playwright test --project=refund-order-api --workers=4",
+    "e2e:test:order-api:multistep": "npx playwright test --project=multistep-order-api --workers=1",
+    "e2e:test:order-api:multistep:smoke": "npx playwright test --project=multistep-order-api --workers=1 --grep \"@Critical\""
   },
   "eslintConfig": {
     "extends": [

@@ -2,14 +2,14 @@
  * Internal dependencies
  */
 import { test } from '../../utils';
-import { products, shopConfigGermany } from '../../resources';
+import { products, shopConfigDefault } from '../../resources';
 import { testSubscriptionOrderOnClassicCheckout } from './_test-scenarios';
 import { subscriptionOrderOnClassicCheckout } from './_test-data';
 
 test.beforeAll( async ( { utils, wooCommerceApi } ) => {
 	test.setTimeout( 2 * 60_000 );
 	await utils.configureStore( {
-		...shopConfigGermany,
+		...shopConfigDefault,
 		enableClassicPages: true,
 		enableSubscriptionsPlugin: true,
 		products: [ products.mollieSubscription100 ],

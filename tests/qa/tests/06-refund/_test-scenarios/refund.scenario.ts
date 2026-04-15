@@ -17,7 +17,6 @@ import {
 	processMolliePaymentStatus,
 	updateCurrencyIfNeeded,
 	getOrderStatusFromMollieStatus,
-	assertOrderNotes,
 } from '../../../utils';
 import { MollieTestData, guests } from '../../../resources';
 
@@ -31,10 +30,8 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 		refundOrderStatus: expectedRefundOrderStatus,
 	} = testData;
 	const { gateway } = payment;
-	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
 	const customer = guests[ gateway.country ];
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
-	Object.assign( testData, { orderStatus, customer, currency } );
 
 	const refundPart = refundPercentage === 100 ? 'Full' : 'Partial';
 
@@ -58,13 +55,23 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 		async ( {
 			wooCommerceApi,
 			utils,
-			classicCheckout,
+			checkout,
 			mollieHostedCheckout,
 			mollieClientApi,
 			orderReceived,
 			payForOrder,
 			wooCommerceOrderEdit,
+			mollieApiMethod,
 		} ) => {
+			// exclude tests for payment methods if not available for tested API
+			test.skip(
+				! gateway.availableForApiMethods.includes( mollieApiMethod ), 
+				`Test is not eligible for ${ mollieApiMethod } API method.`
+			);
+
+			const orderStatus = getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+			Object.assign( testData, { orderStatus, customer, currency } );
+			
 			test.setTimeout( 30 * 60_000 );
 			let transactionId: string;
 			let orderId: number;
@@ -89,7 +96,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 
 				await utils.fillVisitorsCart( testData.products );
 
-				await classicCheckout.makeOrder( testData );
+				await checkout.makeOrder( testData );
 
 				await mollieHostedCheckout.assertUrl();
 				orderId = await mollieHostedCheckout.captureOrderNumber();

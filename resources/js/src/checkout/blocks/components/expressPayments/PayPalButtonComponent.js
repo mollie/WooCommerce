@@ -17,7 +17,7 @@ export const PayPalButtonComponent = ({buttonData, buttonAttributes = {}}) => {
         Math.pow(10, cartStore?.getCartTotals()?.currency_minor_unit || 2) || 0;
     const cartNeedsShipping = cartStore?.getNeedsShipping() || false;
 
-    // Don't show if cart needs shipping or below minimum
+    // Don't show if cart needs shipping or below minimum fee
     const shouldShow = cartTotal > minFee && !cartNeedsShipping;
 
     if (!shouldShow) {

@@ -135,11 +135,17 @@ function registerExpressPaymentMethodHooks(mollieGateways) {
                     content: <PayPalButtonComponent buttonData={settings.expressButtonData}/>,
                     edit: <PayPalButtonEditorComponent/>,
                     ariaLabel: 'PayPal',
-                    canMakePayment: () => {
+                    canMakePayment: ({cartItems = []} = {}) => {
                         if (isEditorContext()) {
                             return true;
                         }
-                        return PayPalUtils.canRegisterPayPal();
+                        if (!PayPalUtils.canRegisterPayPal()) {
+                            return false;
+                        }
+                        const hasPhysicalItem = cartItems.some(
+                            (item) => item.extensions?.['mollie-payments']?.virtual === false
+                        );
+                        return !hasPhysicalItem;
                     },
                     paymentMethodId: 'mollie_wc_gateway_paypal',
                     gatewayId: 'mollie_wc_gateway_paypal',
@@ -163,7 +169,19 @@ function registerExpressPaymentMethodHooks(mollieGateways) {
                 if (!settings.isExpressEnabled) {
                     return false;
                 }
-                return PayPalUtils.canRegisterPayPal();
+                if (!PayPalUtils.canRegisterPayPal()) {
+                    return false;
+                }
+                // Only register when the cart contains exclusively virtual items.
+                // Relies on per-item `virtual` flag exposed by
+                // PayPalExpressButton::registerStoreApiExtension() via the
+                // WC Store API extension mechanism. If the extension data is absent
+                // (e.g. PayPal gateway disabled), the check is skipped (safe fallback).
+                const cartItems = select('wc/store/cart')?.getCartItems() ?? [];
+                const hasPhysicalItem = cartItems.some(
+                    (item) => item.extensions?.['mollie-payments']?.virtual === false
+                );
+                return !hasPhysicalItem;
             },
             10,
             3

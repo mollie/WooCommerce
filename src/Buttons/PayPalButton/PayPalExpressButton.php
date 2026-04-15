@@ -80,9 +80,6 @@ class PayPalExpressButton extends AbstractExpressButton
         // Register AJAX handlers
         $this->registerAjaxHandlers();
 
-        // Expose is_virtual per cart item for the block cart component
-        $this->registerStoreApiExtension();
-
         // Add rendering hooks for product page
         if ($this->enabledInProduct) {
             $this->registerProductPageHook();
@@ -95,40 +92,6 @@ class PayPalExpressButton extends AbstractExpressButton
 
         // Enqueue scripts will be called by parent class if needed
         // or handled by the blocks registration
-    }
-
-    /**
-     * Expose is_virtual per cart item via the WC Store API extension mechanism.
-     * This lets the block cart component and canMakePayment check product type
-     * directly, without relying on the cart-level needs_shipping flag which
-     * short-circuits to false when shipping is globally disabled.
-     */
-    private function registerStoreApiExtension(): void
-    {
-        if (!function_exists('woocommerce_store_api_register_endpoint_data')) {
-            return;
-        }
-        woocommerce_store_api_register_endpoint_data([
-            'endpoint' => 'cart-item',
-            'namespace' => 'mollie-payments',
-            'data_callback' => static function (array $cart_item): array {
-                $product = $cart_item['data'] ?? null;
-                return [
-                    'virtual' => $product instanceof \WC_Product && $product->is_virtual(),
-                ];
-            },
-            'schema_callback' => static function (): array {
-                return [
-                    'virtual' => [
-                        'description' => 'Whether the cart item is a virtual product',
-                        'type' => 'boolean',
-                        'context' => ['view', 'edit'],
-                        'readonly' => true,
-                    ],
-                ];
-            },
-            'schema_type' => ARRAY_A,
-        ]);
     }
 
     /**

@@ -26,7 +26,7 @@
     "url": "git@github.com:mollie/WooCommerce.git"
   },
   "devDependencies": {
-    "@inpsyde/playwright-utils": "^5.0.1",
+    "@inpsyde/playwright-utils": "^5.1.0",
     "@playwright/test": "^1.59.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "3.0.1",
     "@wordpress/scripts": "^30.24.0",

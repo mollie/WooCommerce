@@ -6,13 +6,19 @@ on:
       TEST_SUITE:
         description: 'Test suite'
         required: true
-        default: 'e2e:test:multistep'
+        default: 'e2e:test:payment-api:smoke'
         type: choice
         options:
-          - e2e:test:critical
-          - e2e:test:refund
-          - e2e:test:all
-          - e2e:test:multistep
+          - e2e:test:payment-api
+          - e2e:test:payment-api:smoke
+          - e2e:test:payment-api:refund
+          - e2e:test:payment-api:multistep
+          - e2e:test:payment-api:multistep:smoke
+          - e2e:test:order-api
+          - e2e:test:order-api:smoke
+          - e2e:test:order-api:refund
+          - e2e:test:order-api:multistep
+          - e2e:test:order-api:multistep:smoke
 #  pull_request:
 #    branches: [dev/develop]
 #    paths:
@@ -45,7 +51,7 @@ jobs:
     needs: build
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
     with:
-      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE || 'e2e:test:critical' }}
+      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
       ARTIFACT_PATH: |
         artifacts/*
         playwright-report/

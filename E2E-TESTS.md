@@ -71,13 +71,21 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 	npm run e2e:setup:tests
 	```
 
-3. Using `.env.example.e2e`, create and configure `.env` file:
+3. Create the `.env` file. Copy-paste content from `Mollie .env` vault of 1Password replacing all the data for your test env. Alternatively use `.env.example.e2e` to create and configure `.env` file:
 
-	5.1 Set general variables. See also [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables).
+	3.1 Set general variables. See also [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables).
 	
-	5.2 Set Mollie API keys and tested API method (variable values: `payment` (is applied by default) or `order`).
+	3.2 Set Mollie API keys.
 
-4. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
+	3.3 For Kinsta envs set ssh parameters (lookup in Kinsta dashboard). See also [Reset Kinsta env](#reset-kinsta-env) section.
+
+4. Copy following packages into `/tests/qa/resources/files`:
+
+	* Configured Mollie plugin package (e.g. v8.1.6) named as `mollie-payments-for-woocommerce.zip`
+	
+	* WooCommerce Subscriptions package named as `woocommerce-subscriptions.zip`
+
+	* Germanized Pro package named as `germanized-for-woocommerce-pro.zip`
 
 > Note 1: Further configuration of the environment is done automatically via scripts in `./tests/qa/tests/_setup/woocommerce.setup.ts`.
 
@@ -208,9 +216,20 @@ Additional actions for local execution:
 
 	> Note: depending on selected API method number of tests may vary (not all payment methods are eligible for 'Payment'). To find specific cases in specs perform a global code search for `Test is not eligible for ${ mollieApiMethod } API method` text.
 
+
+## Reset Kinsta env
+
+> **Note:** the staging env on Kinsta should be created and the script to reset env [provided by devops](https://inpsyde.atlassian.net/wiki/spaces/ENG/pages/6240338010/WordPress+hosting+FAQs#How-can-QA-reset-a-test-environment%3F) (if not - create a ticket on [SDO board](https://inpsyde.atlassian.net/jira/software/c/projects/SDO/boards/395)).
+
+Find SSH data in [Kinsta dashboard](https://my.kinsta.com/sites/details) for your tested env. Replace data in the following one-line command and run it in the terminal to reset the env:
+
+```bash
+ssh <your-ssh-username>@<your-ssh-host> -p <your-ssh-port> '${HOME}/bin/reset-wp.sh --wp-version=6.9 --wp-type=single && exit'
+```
+
 ## Automated environment setup scripts
 
-**Requires [Local installation](#local-installation) and optionally [DDEV adjustments](#ddev-adjustments).**
+Local usage of _automated env setup scripts_ assumes that [Local installation](#local-installation) and, optionally, [DDEV adjustments](#ddev-adjustments) are done.
 
 ### Reset environment and store
 
@@ -225,6 +244,9 @@ Reset the env and store to a clean state:
 Can be combined with Mollie and multistep checkout setup:
 
 ```bash
+# Reset env only
+npm run env:reset
+
 # Reset env, WooCommerce
 npm run env:reset:wc
 

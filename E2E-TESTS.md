@@ -71,13 +71,21 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 	npm run e2e:setup:tests
 	```
 
-3. Using `.env.example.e2e`, create and configure `.env` file:
+3. Create the `.env` file. Copy-paste content from `Mollie .env` vault of 1Password replacing all the data for your test env. Alternatively use `.env.example.e2e` to create and configure `.env` file:
 
-	5.1 Set general variables. See also [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables).
+	3.1 Set general variables. See also [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#env-variables).
 	
-	5.2 Set Mollie API keys and tested API method (variable values: `payment` (is applied by default) or `order`).
+	3.2 Set Mollie API keys.
 
-4. Configure `playwright.config.ts` of the project following [these steps](https://github.com/inpsyde/playwright-utils?tab=readme-ov-file#playwright-configuration).
+	3.3 For Kinsta envs set ssh parameters (lookup in Kinsta dashboard). See also [Reset Kinsta env](#reset-kinsta-env) section.
+
+4. Copy following packages into `/tests/qa/resources/files`:
+
+	* Configured Mollie plugin package (e.g. v8.1.6) named as `mollie-payments-for-woocommerce.zip`
+	
+	* WooCommerce Subscriptions package named as `woocommerce-subscriptions.zip`
+
+	* Germanized Pro package named as `germanized-for-woocommerce-pro.zip`
 
 > Note 1: Further configuration of the environment is done automatically via scripts in `./tests/qa/tests/_setup/woocommerce.setup.ts`.
 
@@ -108,8 +116,14 @@ Configure reporting to the __TestRail__ following [these steps](https://github.c
 To execute all tests sequentially, run the following command in the terminal:
 
 ```bash
-# Run tests from playwright project "all" using 1 worker
-npm run e2e:test:all
+# Run tests from playwright project "payment-api"
+npm run e2e:test:payment-api
+
+# Run only smoke tests from playwright project "payment-api"
+npm run e2e:test:payment-api:smoke
+
+# Run tests from playwright project "order-api"
+npm run e2e:test:order-api
 ```
 
 ## Run Refund tests
@@ -117,9 +131,9 @@ npm run e2e:test:all
 Refunds require long wait for the webhook arrival and therefore are executed in a separate project:
 
 ```bash
-npm run e2e:test:refund
+npm run e2e:test:payment-api:refund
 # OR
-npx playwright test --project=refund
+npx playwright test --project=refund-payment-api --workers=4
 ```
 
 ## Run Multistep Checkout tests
@@ -128,54 +142,35 @@ _Multistep Checkout_ requires installation of both Germanized and Germanized Pro
 
 Additional actions for local execution:
 
-1. Add Germanized and Germanized Pro plugins `.zip` files in `/tests/qa/resources/files/` as `germanized-for-woocommerce.zip` and `germanized-for-woocommerce-pro.zip`.
+1. Add Germanized Pro plugin `.zip` file into `/tests/qa/resources/files/` as `germanized-for-woocommerce-pro.zip`. Germanized Pro can be downloaded from [Inpsyde Packagist](https://packagist.com/orgs/inpsyde/packages/4592207).
 
-2. In `.env` set `IS_MULTISTEP_CHECKOUT='true'`
-
-4. Multistep setup and tests can be executed only under `multistep` projects. Use one of the following commands:
+2. Multistep setup might require env reset. Use one of the following commands:
 
 	```bash
-	# Setup multistep checkout:
-	npx playwright test --project=setup-multistep
+	# Setup multistep checkout with env reset:
+	npm run env:reset:multistep
 
-	# Run selected (smoke) tests for multistep checkout:
-	npx playwright test --project=multistep-smoke
+	# Setup multistep checkout:
+	npm run env:setup:multistep
+
+	# Run smoke tests for multistep checkout:
+	npm run e2e:test:payment-api:multistep:smoke
+	# OR
+	npm run e2e:test:order-api:multistep:smoke
 
 	# Run all available tests for multistep checkout:
-	npx playwright test --project=multistep
+	npm run e2e:test:payment-api:multistep
+	# OR
+	npm run e2e:test:order-api:multistep
 	```
 
 
 ### Additional options to run tests from command line
 
-- You may add scripts to `package.json` of the project (eligible for Windows, not tested on other OS):
-
-	```json
-	"scripts": {
-		"test:smoke":  "npx playwright test --grep \"@Smoke\"",
-		"test:critical": "npx playwright test --grep \"@Critical\"",
-		"test:ui": "npx playwright test --grep \"UI\"",
-		"test:functional": "npx playwright test --grep \"Functional\"",
-		"test:all": "npm run test:ui & npm run test:functional"
-	},
-	```
-
-	Run script with the following command:
-
-	```bash
-	npm run e2e:test:critical
-	```
-
 - Run several tests by test ID
 
 	```bash
-	npx playwright test --grep "C123|C124|C125"
-	```
-
-	It may be required additionally to specify the project (if tests relate to more then one project):
-
-	```bash
-	npx playwright test --project=all --grep "C123|C124|C125"
+	npx playwright test --project=payment-api --grep "C123|C124|C125"
 	```
 
 
@@ -193,22 +188,22 @@ Additional actions for local execution:
 
 	3.1 Add/update test plan with run IDs in `.env` file of the project (`TESTRAIL_PLAN_ID`, `TESTRAIL_RUN_ID`).
 
-	3.2 In case of testing 2 API methods set the respective `TESTRAIL_RUN_ID` and `MOLLIE_API_METHOD` (`payment` (is applied by default) or `order`).
+	3.2 In case of testing 2 API methods set the respective `TESTRAIL_RUN_ID`.
 
 	3.3 For multistep checkout follow stepd described in [this section](#run-multistep-checkout-tests).
 
-4. Download tested plugin `.zip` package (usually attached to release ticket) and add it to `./tests/qa/resources/files`. You may need to remove version number from the file name. Expected filename: `mollie-payments-for-woocommerce.zip`.
+4. Download tested plugin `.zip` package and copy it into `./tests/qa/resources/files` as `mollie-payments-for-woocommerce.zip`.
 
 5. Optional: restart test env or delete previous version of tested plugin from the website if you don't execute __plugin foundation__ tests.
 
-6. Start autotest execution from command line for the defined scope of tests (e.g. all, Critical, etc.). You should see `Test plan ID: 001, Test run ID: 002` in the terminal.
+6. Start autotest execution from command line for the defined scope of tests (see [Run tests](#run-tests) section). You should see `Test plan ID: 001, Test run ID: 002` in the terminal.
 
-7. When finished test results should be exported to the specified test run ticket in Testrail.
+7. Test results will be exported to the specified test run ticket in Testrail after each test.
 
 8. Analyze failed tests (if any). Restart execution for failed tests, possibly in debug mode (see section _Additional options to run tests from command line_):
 
 	```bash
-	npx playwright test --grep "C123|C124|C125" --debug
+	npx playwright test --project=payment-api --grep "C123|C124|C125" --debug
 	```
 
 	> Note: command for restarting failed/skipped tests is posted to the terminal after the execution.
@@ -217,64 +212,97 @@ Additional actions for local execution:
 
 10. If needed, fix failing tests in a new branch, create a PR and assign it for review.
 
-11. If needed, update the `TESTRAIL_RUN_ID` and `MOLLIE_API_METHOD` and repeat the execution for another API method.
+11. If needed, update the `TESTRAIL_RUN_ID` and repeat the execution for another API method using respective Playwright project.
 
-	> Note: depending on selected API method number of tests may vary (not all payment methods are eligible for 'Payment'). To find specific cases in specs perform a global code search for `testedApiMethod` and `mollieApiMethod` fixture.
+	> Note: depending on selected API method number of tests may vary (not all payment methods are eligible for 'Payment'). To find specific cases in specs perform a global code search for `Test is not eligible for ${ mollieApiMethod } API method` text.
+
+
+## Reset Kinsta env
+
+> **Note:** the staging env on Kinsta should be created and the script to reset env [provided by devops](https://inpsyde.atlassian.net/wiki/spaces/ENG/pages/6240338010/WordPress+hosting+FAQs#How-can-QA-reset-a-test-environment%3F) (if not - create a ticket on [SDO board](https://inpsyde.atlassian.net/jira/software/c/projects/SDO/boards/395)).
+
+Find SSH data in [Kinsta dashboard](https://my.kinsta.com/sites/details) for your tested env. Replace data in the following one-line command and run it in the terminal to reset the env:
+
+```bash
+ssh <your-ssh-username>@<your-ssh-host> -p <your-ssh-port> '${HOME}/bin/reset-wp.sh --wp-version=6.9 --wp-type=single && exit'
+```
 
 ## Automated environment setup scripts
 
-**Requires [Local installation](#local-installation) and optionally [DDEV adjustments](#ddev-adjustments).**
+Local usage of _automated env setup scripts_ assumes that [Local installation](#local-installation) and, optionally, [DDEV adjustments](#ddev-adjustments) are done.
 
-### Setup store
+### Reset environment and store
 
-> Note: see [WooCommerce setup scripts](./tests/qa/tests/_setup/woocommerce.setup.ts).
+Reset the env and store to a clean state:
 
+- Resets env
 - Installs WooCommerce, Storefront theme, additional plugins (Disable Nonce, Subscriptions, etc.).
 - Configures website permalinks (`%postname%`).
 - Configures WooCommerce default settings (country, currency, taxes, shipping, API keys, emails).
 - Creates classic pages, products, coupons, registered customer.
 
-```bash
-npm run e2e:setup:store:default
-```
-
-### Setup German store and connect Mollie merchant
-
-> Note: see [Mollie setup scripts](./tests/qa/tests/_setup/mollie.setup.ts).
+Can be combined with Mollie and multistep checkout setup:
 
 ```bash
-npm run e2e:setup:mollie:germany
+# Reset env only
+npm run env:reset
+
+# Reset env, WooCommerce
+npm run env:reset:wc
+
+# Reset env, WooCommerce, install and connect Mollie
+npm run env:reset:mollie
+
+# Reset env, WooCommerce, install and connect Mollie, setup Multistep checkout
+npm run env:reset:mollie:multistep
 ```
 
-### Other scripts:
+### Setup store
 
-* Setup block pages
+```bash
+npm run env:setup:wc
+```
 
-	```bash
-	npm run e2e:setup:checkout:block
-	```
+### Setup Mollie plugin
 
-* Setup classic pages
+- Installs Mollie
+- Connects default merchant
+- Payment API
 
-	```bash
-	npm run e2e:setup:checkout:classic
-	```
+```bash
+npm run env:setup:mollie
+```
 
-* Setup taxes included
+### Setup Mollie API method
 
-	```bash
-	npm run e2e:setup:tax:inc
-	```
+```bash
+npm run env:setup:payment-api
+npm run env:setup:order-api
+```
 
-* Setup taxes excluded
+### Other setup scripts
 
-	```bash
-	npm run e2e:setup:tax:exc
-	```
+```bash
+# Multistep checkout
+npm run env:setup:multistep
+
+# Block checkout pages
+npm run env:setup:checkout:block
+
+# Classic checkout pages
+npm run env:setup:checkout:classic
+
+# Taxes included
+npm run env:setup:tax:inc
+
+# Taxes excluded
+npm run env:setup:tax:exc
+```
+
 
 ## Coding standards
 
-Before commiting changes run following command:
+Before committing changes run following command:
 
 ```bash
 npm run e2e:lint:js:fix

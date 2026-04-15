@@ -20,11 +20,8 @@ import {
 	guests,
 	flatRate,
 	shopSettings,
-	MollieSettings,
+	shopConfigClassic,
 } from '../../../resources';
-
-const testedApiMethod =
-	( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) || 'payment';
 
 const allTests = [
 	surchargeNoFee,
@@ -40,12 +37,7 @@ const allTests = [
 ];
 
 test.beforeAll( async ( { utils } ) => {
-	await utils.configureStore( {
-		enableClassicPages: true,
-		settings: {
-			general: shopSettings.germany.general,
-		},
-	} );
+	await utils.configureStore( shopConfigClassic );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
@@ -56,14 +48,6 @@ for ( const surcharge of allTests ) {
 			const gateway = gateways[ testData.gateway ];
 			const { testId, testLabel } = testData;
 			const label = testLabel ? ` ${ testLabel }` : '';
-
-			// exclude tests for payment methods if not available for tested API
-			if (
-				! gateway.availableForApiMethods.includes( testedApiMethod )
-			) {
-				continue;
-			}
-
 			const country = gateway.country;
 			const product = testData.product || products.mollieSimple100;
 			const expectedFeeText =
@@ -74,7 +58,12 @@ for ( const surcharge of allTests ) {
 				mollieApi,
 				utils,
 				classicCheckout,
+				mollieApiMethod,
 			} ) => {
+				test.skip(
+					! gateway.availableForApiMethods.includes( mollieApiMethod ), 
+					`Test is not eliginle for ${ mollieApiMethod } API method.`
+				);
 				await wooCommerceApi.updateGeneralSettings(
 					shopSettings[ country ].general
 				);

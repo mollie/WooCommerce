@@ -52,7 +52,7 @@
     "e2e:setup:hosts": "echo '127.0.0.1 mywp.site' | sudo tee -a /etc/hosts",
     "e2e:setup:env": "npm run e2e:setup:hosts && npm install && npx wp-env start --update",
     "e2e:setup:tests": "npm install && npx playwright install",
-    "e2e:watch:utils": "npm run e2e:setup:tests && cd .tests/qa/playwright-utils && yarn devLocal",
+    "e2e:watch:utils": "npm run e2e:setup:tests && cd ./playwright-utils && yarn devLocal",
     "e2e:setup:wc:default": "npx playwright test woocommerce.setup",
     "e2e:setup:checkout:block": "npx playwright test --grep=\"setup:checkout:block;\"",
     "e2e:setup:checkout:classic": "npx playwright test --grep=\"setup:checkout:classic;\"",

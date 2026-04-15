@@ -177,7 +177,7 @@ function registerExpressPaymentMethodHooks(mollieGateways) {
                 // PayPalExpressButton::registerStoreApiExtension() via the
                 // WC Store API extension mechanism. If the extension data is absent
                 // (e.g. PayPal gateway disabled), the check is skipped (safe fallback).
-                const cartItems = select('wc/store/cart')?.getCartItems() ?? [];
+                const cartItems = select('wc/store/cart')?.getCartData()?.items ?? [];
                 const hasPhysicalItem = cartItems.some(
                     (item) => item.extensions?.['mollie-payments']?.virtual === false
                 );

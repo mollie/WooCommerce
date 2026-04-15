@@ -50,8 +50,12 @@ import { ajaxCallToOrder } from './paypalButtonUtils';
 	};
 
 	const calculateTotal = () => {
-		const subtotalPath = document
-			.getElementsByClassName( 'cart-subtotal' )[ 0 ]
+		const subtotalElement = document.getElementsByClassName( 'cart-subtotal' )[ 0 ];
+		if ( ! subtotalElement ) {
+			// Not a classic cart page (e.g. block cart) — skip range check.
+			return Infinity;
+		}
+		const subtotalPath = subtotalElement
 			.getElementsByClassName( 'woocommerce-Price-amount' )[ 0 ]
 			.childNodes[ 0 ];
 		const workingNode = subtotalPath.cloneNode( true );

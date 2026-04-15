@@ -79,6 +79,11 @@ export const PayPalButtonComponent = ({buttonData, buttonAttributes = {}}) => {
         display: 'inline-block',
     };
 
+    /**
+     * Satisfy WooCommerce UX guidelines.
+     * We grudgingly accept that this causes some slight blur on the button graphics since our png images were not meant to be scaled
+     * @see https://developer.woocommerce.com/docs/user-experience-guidelines/ux-guidelines-payments/payment-button-layout/
+     */
     const imageStyle = {
         height: `${buttonAttributes.height || 48}px`,
         borderRadius: `${buttonAttributes.borderRadius || 4}px`,

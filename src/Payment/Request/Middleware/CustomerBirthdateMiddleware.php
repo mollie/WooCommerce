@@ -4,17 +4,15 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
 use Mollie\WooCommerce\Shared\FieldConstants;
-
 /**
  * Middleware to handle customer birthdate in the request.
  */
-class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
+class CustomerBirthdateMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * @var array The payment methods.
      */
     private array $paymentMethods;
-
     /**
      * Constructor.
      *
@@ -24,7 +22,6 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
     {
         $this->paymentMethods = $paymentMethods;
     }
-
     /**
      * Invoke the middleware.
      *
@@ -46,7 +43,6 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
         $requestData['consumerDateOfBirth'] = gmdate($format, (int) strtotime($fieldPosted));
         return $next($requestData, $order, $context);
     }
-
     /**
      * Each payment method has a different birthdate field name or uses the default.
      *
@@ -58,11 +54,9 @@ class CustomerBirthdateMiddleware implements RequestMiddlewareInterface
         $method = $order->get_payment_method();
         $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
         $constantName = strtoupper($cleanMethod) . '_BIRTHDATE';
-
         if (defined(FieldConstants::class . '::' . $constantName)) {
             return constant(FieldConstants::class . '::' . $constantName);
         }
-
         return '';
     }
 }

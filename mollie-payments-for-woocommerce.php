@@ -4,7 +4,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: v8.1.6+piwoo-862-apple-pay-express-button-is-missed-on-block-checkout-page.13a000e
+ * Version: v8.1.6+piwoo-862-apple-pay-express-button-is-missed-on-block-checkout-page.c10b1ea
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0

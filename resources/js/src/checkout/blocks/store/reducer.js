@@ -51,9 +51,6 @@ const initialState = {
     // Server-hydrated config (read once at store init)
     isOrderPayPage: window.mollieServerData?.isOrderPayPage ?? false,
     componentConfig: window.mollieServerData?.componentData ?? null,
-
-    // PayPal cart button
-    paypalCartProcessing: false,
 };
 
 const reducer = ( state = initialState, action ) => {
@@ -193,9 +190,6 @@ const reducer = ( state = initialState, action ) => {
                     [ action.payload.gateway ]: null,
                 },
             };
-
-		case ACTIONS.SET_PAYPAL_CART_PROCESSING:
-			return { ...state, paypalCartProcessing: action.payload };
 
 		default:
 			return state;

@@ -167,15 +167,11 @@ class AssetsModule implements ExecutableModule, ServiceModule
             true
         );
         //paypal in classic cart page
-        $paypalCartAssetFile = $this->getPluginPath($pluginPath, '/public/js/paypalButtonCart.min.asset.php');
-        $paypalCartAssetData = file_exists($paypalCartAssetFile)
-            ? require $paypalCartAssetFile
-            : ['dependencies' => ['underscore', 'jquery'], 'version' => '1.0.0'];
         wp_register_script(
             'mollie_paypalButtonCart',
             $this->getPluginUrl($pluginUrl, '/public/js/paypalButtonCart.min.js'),
-            array_unique(array_merge($paypalCartAssetData['dependencies'], ['underscore', 'jquery'])),
-            (string)($paypalCartAssetData['version'] ?? filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButtonCart.min.js'))),
+            ['underscore', 'jquery'],
+            (string) filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButtonCart.min.js')),
             true
         );
         wp_register_script(

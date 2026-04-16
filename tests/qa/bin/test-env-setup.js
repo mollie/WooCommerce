@@ -36,6 +36,10 @@ const commands = [
 		command:
 			'wp-env run tests-cli -- wp option update woocommerce_coming_soon "no"',
 	},
+	{
+		description: 'Install Germanized',
+		command: 'wp-env run tests-cli -- wp plugin install woocommerce-germanized --version=3.20.0',
+	},
 ];
 
 console.log( 'Starting test environment setup...\n' );

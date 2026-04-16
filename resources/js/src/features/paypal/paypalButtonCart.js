@@ -52,8 +52,7 @@ import { ajaxCallToOrder } from './paypalButtonUtils';
 	const calculateTotal = () => {
 		const subtotalElement = document.getElementsByClassName( 'cart-subtotal' )[ 0 ];
 		if ( ! subtotalElement ) {
-			// Not a classic cart page (e.g. block cart) — skip range check.
-			return Infinity;
+			throw new Error( 'cart-subtotal element not found — cannot calculate total' );
 		}
 		const subtotalPath = subtotalElement
 			.getElementsByClassName( 'woocommerce-Price-amount' )[ 0 ]
@@ -70,7 +69,13 @@ import { ajaxCallToOrder } from './paypalButtonUtils';
 	};
 
 	const underRange = () => {
-		const updatedPrice = calculateTotal();
+		let updatedPrice;
+		try {
+			updatedPrice = calculateTotal();
+		} catch {
+			// Not a classic cart page (e.g. block cart) — skip range check.
+			return false;
+		}
 		return minFee > updatedPrice;
 	};
 

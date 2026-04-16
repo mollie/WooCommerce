@@ -161,3 +161,35 @@ export const clearComponentContainer = ( gateway ) => ( {
     type: ACTIONS.CLEAR_COMPONENT_CONTAINER,
     payload: { gateway },
 } );
+
+// PayPal cart button actions
+export const setPaypalCartProcessing = ( isProcessing ) => ( {
+	type: ACTIONS.SET_PAYPAL_CART_PROCESSING,
+	payload: isProcessing,
+} );
+
+export const createPayPalCartOrder = ( ajaxUrl, nonce ) =>
+	async ( { select, dispatch } ) => {
+		if ( select.getPaypalCartProcessing() ) {
+			return;
+		}
+		dispatch( setPaypalCartProcessing( true ) );
+		try {
+			const params = new URLSearchParams( {
+				action: 'mollie_paypal_create_order_cart',
+				'mollie-payments-for-woocommerce_issuer_paypal_button': 'paypal',
+				nonce,
+			} );
+			const response = await fetch( ajaxUrl, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: params.toString(),
+			} );
+			const result = await response.json();
+			if ( result.success === true ) {
+				window.location.href = result.data.redirect;
+			}
+		} finally {
+			dispatch( setPaypalCartProcessing( false ) );
+		}
+	};

@@ -97,6 +97,9 @@ const selectors = {
     // Server-hydrated config selectors
     getIsOrderPayPage: (state) => state.isOrderPayPage,
     getComponentConfig: (state) => state.componentConfig,
+
+    // PayPal cart button
+    getPaypalCartProcessing: (state) => state.paypalCartProcessing,
 };
 
 export default selectors;

@@ -73,7 +73,7 @@
     "e2e:test:payment-api:smoke": "npx playwright test --project=payment-api --workers=1 --grep \"@Critical\"",
     "e2e:test:payment-api:refund": "npx playwright test --project=refund-payment-api --workers=4",
     "e2e:test:payment-api:multistep": "npx playwright test --project=multistep-payment-api --workers=1",
-    "e2e:test:payment-api:multistep:smoke": "npx playwright test --project=multistep-payment-api --workers=1 --grep \"@Critical\"",
+    "e2e:test:payment-api:multistep:smoke": "npx playwright test --project=multistep-payment-api --workers=1 --grep \"@ngrok\"",
 
     "e2e:test:order-api": "npx playwright test --project=order-api --workers=1",
     "e2e:test:order-api:smoke": "npx playwright test --project=order-api --workers=1 --grep \"@Critical\"",

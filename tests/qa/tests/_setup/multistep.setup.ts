@@ -19,7 +19,7 @@ setup(
 				// in CI plugin is installed in tests/qa/bin/test-env-setup.js, so we can skip installation step
 				if( ! process.env.CI ) {
 					if ( ! ( await requestUtils.isPluginInstalled( germanizedPlugin.slug ) ) ) {
-						await plugins.installPlugin( germanizedPlugin.name );
+						await plugins.installPluginFromFile( germanizedPlugin.zipFilePath );
 					}
 				}
 				await requestUtils.activatePlugin( germanizedPlugin.slug );

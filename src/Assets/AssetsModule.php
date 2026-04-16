@@ -102,9 +102,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
         //paypal in product page
         wp_register_script('mollie_paypalButton', $this->getPluginUrl($pluginUrl, '/public/js/paypalButton.min.js'), ['underscore', 'jquery'], (string) filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButton.min.js')), \true);
         //paypal in classic cart page
-        $paypalCartAssetFile = $this->getPluginPath($pluginPath, '/public/js/paypalButtonCart.min.asset.php');
-        $paypalCartAssetData = file_exists($paypalCartAssetFile) ? require $paypalCartAssetFile : ['dependencies' => ['underscore', 'jquery'], 'version' => '1.0.0'];
-        wp_register_script('mollie_paypalButtonCart', $this->getPluginUrl($pluginUrl, '/public/js/paypalButtonCart.min.js'), array_unique(array_merge($paypalCartAssetData['dependencies'], ['underscore', 'jquery'])), (string) ($paypalCartAssetData['version'] ?? filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButtonCart.min.js'))), \true);
+        wp_register_script('mollie_paypalButtonCart', $this->getPluginUrl($pluginUrl, '/public/js/paypalButtonCart.min.js'), ['underscore', 'jquery'], (string) filemtime($this->getPluginPath($pluginPath, '/public/js/paypalButtonCart.min.js')), \true);
         wp_register_script('mollie_applepaydirectCart', $this->getPluginUrl($pluginUrl, '/public/js/applepayDirectCart.min.js'), ['underscore', 'jquery'], (string) filemtime($this->getPluginPath($pluginPath, '/public/js/applepayDirectCart.min.js')), \true);
         wp_register_script('mollie', 'https://js.mollie.com/v1/mollie.js', [], gmdate("d"), \true);
         wp_register_script('mollie-components', $this->getPluginUrl($pluginUrl, '/public/js/mollie-components.min.js'), ['underscore', 'jquery', 'mollie'], (string) filemtime($this->getPluginPath($pluginPath, '/public/js/mollie-components.min.js')), \true);

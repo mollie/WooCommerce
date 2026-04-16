@@ -4,7 +4,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: v8.1.6+piwoo-857-paypal-button-order-deduplication.9269772
+ * Version: v8.1.6+piwoo-857-paypal-button-order-deduplication.605b8e2
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0

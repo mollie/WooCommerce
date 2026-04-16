@@ -33,22 +33,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build tested plugin package
-    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@main
-    secrets:
-      GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
-      GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
-      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
-      GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
-      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES }}
-    with:
-      PACKAGE_NAME: mollie-payments-for-woocommerce
-      NODE_VERSION: 22
-
   e2e-playwright:
     name: Run Playwright E2E Tests
-    needs: build
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright-ngrok
     with:
       PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
@@ -62,8 +48,24 @@ jobs:
       NGROK_DOMAIN: ngrok-dev.mollie.syde.wpinfra.cloud
       
       PRE_SCRIPT: |
-        # 1. Download and unzip the built plugin
-        gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D tests/qa/resources/files
+        # 1. Download the latest built plugin from build-and-distribute workflow
+        RUN_ID=$(gh run list \
+          --workflow=build-and-distribute.yml \
+          --branch="${GITHUB_REF_NAME}" \
+          --status=success \
+          --limit=1 \
+          --json databaseId \
+          -q '.[0].databaseId')
+
+        if [ -z "$RUN_ID" ]; then
+          echo "::error::No successful build-and-distribute run found on branch ${GITHUB_REF_NAME}"
+          exit 1
+        fi
+
+        echo "Downloading artifact from run $RUN_ID"
+        gh run download "$RUN_ID" \
+          -p "mollie-payments-for-woocommerce-*" \
+          -D tests/qa/resources/files
         (
           cd tests/qa/resources/files
           mv mollie-payments-for-woocommerce-*/mollie-payments-for-woocommerce .

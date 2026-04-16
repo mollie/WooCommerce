@@ -1,48 +1,29 @@
-export const ajaxCallToOrder = ( ajaxUrl ) => {
+import { dispatch } from '@wordpress/data';
+// Register the Mollie store so it is available in the classic cart bundle.
+import { MOLLIE_STORE_KEY } from '../../checkout/blocks/store/constants';
+import '../../checkout/blocks/store/index';
+
+/**
+ * Attach a click handler to the PayPal cart button.
+ *
+ * The `data-mollie-handler-attached` attribute is used as a deduplication guard:
+ * WooCommerce's cart-totals AJAX replaces the cart fragment on every update,
+ * destroying the old element along with its attribute, so re-attachment on the
+ * next `updated_cart_totals` event is automatically permitted after a DOM refresh.
+ * This prevents duplicate listeners from accumulating when both the `setTimeout`
+ * and `updated_cart_totals` paths fire during a normal page load.
+ *
+ * @param {string} ajaxUrl WordPress admin-ajax URL.
+ */
+export const ensurePayPalButtonListenerAttached = ( ajaxUrl ) => {
 	const button = document.getElementById( 'mollie-PayPal-button' );
-	if ( ! button ) {
+	if ( ! button || button.dataset.mollieHandlerAttached ) {
 		return;
 	}
-
-	let preventSpam = false;
 	const nonce = button.children[ 0 ].value;
 	button.addEventListener( 'click', ( evt ) => {
 		evt.preventDefault();
-		if ( ! button ) {
-			return;
-		}
-		button.disabled = true;
-		button.classList.add( 'buttonDisabled' );
-		jQuery.ajax( {
-			url: ajaxUrl,
-			method: 'POST',
-			data: {
-				action: 'mollie_paypal_create_order_cart',
-				'mollie-payments-for-woocommerce_issuer_paypal_button':
-					'paypal',
-				nonce,
-			},
-			success: ( response ) => {
-				const result = response.data;
-				if ( response.success === true ) {
-					window.location.href = result.redirect;
-				} else {
-					console.log( response.data );
-				}
-			},
-			error: ( jqXHR, textStatus, errorThrown ) => {
-				button.disabled = false;
-				button.classList.remove( 'buttonDisabled' );
-				console.warn( textStatus, errorThrown );
-			},
-		} );
-		preventSpam = true;
-		if ( preventSpam ) {
-			setTimeout( function () {
-				button.disabled = false;
-				button.classList.remove( 'buttonDisabled' );
-				preventSpam = false;
-			}, 3000 );
-		}
+		dispatch( MOLLIE_STORE_KEY ).createPayPalCartOrder( ajaxUrl, nonce );
 	} );
+	button.dataset.mollieHandlerAttached = 'true';
 };

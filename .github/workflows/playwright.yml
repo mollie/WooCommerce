@@ -50,7 +50,7 @@ jobs:
       PRE_SCRIPT: |
         # 1. Download the latest built plugin from build-and-distribute workflow
         RUN_ID=$(gh run list \
-          --workflow=build-and-distribute.yml \
+          --workflow=release.yml \
           --branch="${GITHUB_REF_NAME}" \
           --status=success \
           --limit=1 \

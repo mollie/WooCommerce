@@ -57,7 +57,7 @@
     "env:reset": "npx playwright test --grep=\"env:reset;\"",
     "env:reset:wc": "npx playwright test --grep=\"env:reset;|setup:wc;\"",
     "env:reset:mollie": "npm run env:reset:wc && npm run env:setup:mollie",
-    "env:reset:mollie:multistep": "npx playwright test --grep=\"env:reset;|setup:wc;|setup:mollie;|setup:multistep:checkout;\"",
+    "env:reset:mollie:multistep": "npm run env:reset:mollie && npm run env:setup:multistep",
 
     "env:setup:wc": "npx playwright test --grep=\"setup:wc;\"",
     "env:setup:mollie": "npx playwright test --project=setup-mollie --grep=\"setup:mollie;\"",

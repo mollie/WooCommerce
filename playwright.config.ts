@@ -124,12 +124,14 @@ export default defineConfig< TestBaseExtend >( {
 		},
 		{
 			name: 'setup-mollie-payment-api',
+			dependencies: [ 'setup-woocommerce' ],
 			testMatch: /mollie\.setup\.ts/,
 			grep: /setup:mollie;/,
 			fullyParallel: false,
 		},
 		{
 			name: 'setup-mollie-order-api',
+			dependencies: [ 'setup-woocommerce' ],
 			testMatch: /mollie\.setup\.ts/,
 			grep: /setup:mollie;/,
 			fullyParallel: false,
@@ -139,6 +141,18 @@ export default defineConfig< TestBaseExtend >( {
 		},
 		{
 			name: 'setup-multistep',
+			testMatch: /multistep\.setup\.ts/,
+			fullyParallel: false,
+		},
+		{
+			name: 'setup-multistep-payment-api',
+			dependencies: [ 'setup-mollie-payment-api' ],
+			testMatch: /multistep\.setup\.ts/,
+			fullyParallel: false,
+		},
+		{
+			name: 'setup-multistep-order-api',
+			dependencies: [ 'setup-mollie-order-api' ],
 			testMatch: /multistep\.setup\.ts/,
 			fullyParallel: false,
 		},
@@ -175,7 +189,7 @@ export default defineConfig< TestBaseExtend >( {
 		},
 		{
 			name: 'multistep-payment-api',
-			dependencies: [ 'setup-multistep' ],
+			dependencies: [ 'setup-multistep-payment-api' ],
 			fullyParallel: false,
 			testIgnore: /refund\.spec\.ts/,
 			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
@@ -187,7 +201,7 @@ export default defineConfig< TestBaseExtend >( {
 		},
 		{
 			name: 'multistep-order-api',
-			dependencies: [ 'setup-multistep' ],
+			dependencies: [ 'setup-multistep-order-api' ],
 			fullyParallel: false,
 			testIgnore: /refund\.spec\.ts/,
 			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,

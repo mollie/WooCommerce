@@ -75,6 +75,9 @@ class AssetsModule implements ExecutableModule, ServiceModule
                 $dataToScripts->applePayScriptData()
             );
         }
+        if (mollieWooCommerceIsApplePayDirectEnabled('express_checkout') && (is_checkout() || is_cart())) {
+            wp_enqueue_style('mollie-applepaydirect');
+        }
     }
 
     /**

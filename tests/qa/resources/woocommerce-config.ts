@@ -16,35 +16,3 @@ export const shopConfigClassic: ShopConfig = {
 	...shopConfigDefault,
 	enableClassicPages: true,
 };
-
-export const shopConfigGermany: ShopConfig = {
-	...shopConfigDefault,
-	customer: customers.germany,
-};
-
-export const shopConfigUsa: ShopConfig = {
-	...shopConfigDefault,
-	settings: shopSettings.usa,
-	customer: customers.usa,
-};
-
-export const shopConfigMexico: ShopConfig = {
-	...shopConfigDefault,
-	settings: shopSettings.mexico,
-	customer: customers.mexico,
-};
-
-const shopConfigSubscription: ShopConfig = {
-	// requireFinalConfirmation: false,
-	enableSubscriptionsPlugin: true,
-};
-
-export const shopConfigSubscriptionGermany: ShopConfig = {
-	...shopConfigGermany,
-	...shopConfigSubscription,
-};
-
-export const shopConfigSubscriptionUsa: ShopConfig = {
-	...shopConfigUsa,
-	...shopConfigSubscription,
-};

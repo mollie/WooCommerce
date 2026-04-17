@@ -15,24 +15,18 @@ import {
 } from '../../../utils';
 import { MollieTestData, guests } from '../../../resources';
 
-const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
-
 export const testPaymentStatusOnClassicCheckout = (
 	testData: MollieTestData.ShopOrder
 ) => {
 	const { testId, testLabel, payment } = testData;
 	const { gateway } = payment;
 
-	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
 	const customer = guests[ gateway.country ];
 	const currency = gateway.currency;
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
-	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
 	const label = testLabel ? ` ${ testLabel }` : '';
 
-	Object.assign( testData, { orderStatus, customer, currency } );
-
-	test( `${ testId } | Transaction${ multistepLabel } - Classic checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }${ label }`, async ( {
+	test( `${ testId } | Transaction - Classic checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with expected status${ label }`, async ( {
 		wooCommerceApi,
 		utils,
 		classicCheckout,
@@ -40,7 +34,23 @@ export const testPaymentStatusOnClassicCheckout = (
 		orderReceived,
 		payForOrder,
 		wooCommerceOrderEdit,
-	} ) => {
+		isMultistepCheckout,
+		mollieApiMethod,
+	}, testInfo ) => {
+		// exclude tests for payment methods if not available for tested API
+		test.skip(
+			! gateway.availableForApiMethods.includes( mollieApiMethod ), 
+			`Test is not eligible for ${ mollieApiMethod } API method.`
+		);
+
+		const orderStatus = getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+		Object.assign( testData, { orderStatus, customer, currency } );
+		
+		testInfo.annotations.push({
+			type: 'orderStatus',
+			description: orderStatus,
+		});
+
 		await updateCurrencyIfNeeded( wooCommerceApi, currency );
 
 		const orderTotals = await countTotals( testData );

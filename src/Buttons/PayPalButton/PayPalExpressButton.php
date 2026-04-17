@@ -110,7 +110,6 @@ class PayPalExpressButton extends AbstractExpressButton
         add_action($renderPlaceholder, function () {
             $product = wc_get_product(get_the_id());
 
-            // Don't show for subscriptions
             if (
                 !$product ||
                 $product->is_type('subscription') ||
@@ -119,11 +118,11 @@ class PayPalExpressButton extends AbstractExpressButton
                 return;
             }
 
-            // Only show if product doesn't need shipping
-            $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
-            if (!$productNeedShipping) {
-                $this->renderButton();
+            if (!$this->isVirtualProduct($product)) {
+                return;
             }
+
+            $this->renderButton();
         });
     }
 
@@ -143,21 +142,41 @@ class PayPalExpressButton extends AbstractExpressButton
         add_action($renderPlaceholder, function () {
             $cart = WC()->cart;
 
-            // Don't show for subscriptions
-            foreach ($cart->get_cart_contents() as $product) {
+            foreach ($cart->get_cart_contents() as $item) {
+                $product = $item['data'];
                 if (
-                    $product['data']->is_type('subscription') ||
-                    $product['data'] instanceof \WC_Product_Subscription_Variation
+                    $product->is_type('subscription') ||
+                    $product instanceof \WC_Product_Subscription_Variation
                 ) {
+                    return;
+                }
+                if (!$product->is_virtual()) {
                     return;
                 }
             }
 
-            // Only show if cart doesn't need shipping
-            if (!$cart->needs_shipping()) {
-                $this->renderButton();
-            }
+            $this->renderButton();
         });
+    }
+
+    /**
+     * Returns true if the product is virtual (no physical shipping required).
+     * For variable products, returns true only if at least one variation is virtual,
+     * since the product page may allow selecting a virtual variant.
+     */
+    private function isVirtualProduct(\WC_Product $product): bool
+    {
+        if ($product->is_type('variable')) {
+            assert($product instanceof \WC_Product_Variable);
+            foreach ($product->get_available_variations() as $variation) {
+                if ($variation['is_virtual']) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return $product->is_virtual();
     }
 
     /**

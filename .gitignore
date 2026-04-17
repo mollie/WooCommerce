@@ -28,6 +28,7 @@ storage-states
 test-results*
 playwright-wordpress-credentials.json
 woocommerce-subscriptions*.zip
+germanized*.zip
 mollie-payments-for-woocommerce*.zip
 .env*
 !.env.example*

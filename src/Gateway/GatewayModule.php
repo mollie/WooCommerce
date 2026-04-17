@@ -68,7 +68,13 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 'mollie_wc_gateway_' . Constants::KLARNASLICEIT,
             ];
             foreach ($gateways as $key => $gateway) {
-                if (mollieWooCommerceIsMollieGateway($gateway) && in_array($gateway->id, $orderMandatoryPaymentMethods, true)) {
+                if (
+                    mollieWooCommerceIsMollieGateway($gateway) && in_array(
+                        $gateway->id,
+                        $orderMandatoryPaymentMethods,
+                        true
+                    )
+                ) {
                     unset($gateways[$key]);
                 }
             }
@@ -146,7 +152,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         assert($surchargeService instanceof Surcharge);
         $this->gatewaySurchargeHandling($surchargeService);
 
-        $this->paymentButtonsBootstrap($container);
+        add_action('woocommerce_init', function () use ($container) {
+            $this->paymentButtonsBootstrap($container);
+        });
 
         $maybeDisableVoucher = new MaybeDisableGateway();
         $dataService = $container->get('settings.data_helper');
@@ -188,24 +196,36 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 $paymentMethod->updateSettingsWithDefaults($container);
             }
         });
-        add_filter('woocommerce_get_transaction_url', static function ($return_url, $order, \WC_Payment_Gateway $wcGateway) {
-            if ($return_url || strpos($wcGateway->id, 'mollie_wc_gateway_') === false) {
-                return $return_url;
-            }
-            $transactionId = $order->get_transaction_id();
-            $isPaymentApi = substr($transactionId, 0, 3) === 'tr_'  ;
-            $resource = ($transactionId && !$isPaymentApi) ? 'orders' : 'payments';
-            return 'https://my.mollie.com/dashboard/' . $resource . '/' . trim($transactionId) . '?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';
-        }, 10, 3);
+        add_filter(
+            'woocommerce_get_transaction_url',
+            static function ($return_url, $order, \WC_Payment_Gateway $wcGateway) {
+                if ($return_url || strpos($wcGateway->id, 'mollie_wc_gateway_') === false) {
+                    return $return_url;
+                }
+                $transactionId = $order->get_transaction_id();
+                $isPaymentApi = substr($transactionId, 0, 3) === 'tr_';
+                $resource = ($transactionId && !$isPaymentApi) ? 'orders' : 'payments';
+                return 'https://my.mollie.com/dashboard/' . $resource . '/' . trim(
+                    $transactionId
+                ) . '?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner';
+            },
+            10,
+            3
+        );
 
         add_filter(
             'woocommerce_cancel_unpaid_order',
             static function (bool $createdViaCheckout, \WC_Order $order) use ($container): bool {
-                if (! $createdViaCheckout || ! apply_filters('mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_cancel_unpaid_order', true)) {
+                if (
+                    !$createdViaCheckout || !apply_filters(
+                        'mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_cancel_unpaid_order',
+                        true
+                    )
+                ) {
                     return $createdViaCheckout;
                 }
                 $mollieOrderService = $container->get(MollieOrderService::class);
-                return ! $mollieOrderService->checkPaymentForUnpaidOrder($order);
+                return !$mollieOrderService->checkPaymentForUnpaidOrder($order);
             },
             5,
             2
@@ -214,7 +234,12 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         add_action(
             'woocommerce_thankyou',
             static function ($orderId) use ($container) {
-                if (! apply_filters('mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_woocommerce_thankyou_page', false)) {
+                if (
+                    !apply_filters(
+                        'mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_woocommerce_thankyou_page',
+                        false
+                    )
+                ) {
                     return;
                 }
                 $order = wc_get_order($orderId);
@@ -254,7 +279,12 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             'woocommerce_order_action_mollie_wc_check_payment_for_unpaid_order',
             static function ($orderId) use ($container) {
                 $order = wc_get_order($orderId);
-                if (! $order || $order->is_paid() || ! $order->has_status('pending') || strpos($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
+                if (
+                    !$order || $order->is_paid() || !$order->has_status('pending') || strpos(
+                        $order->get_payment_method(),
+                        'mollie_wc_gateway_'
+                    ) === false
+                ) {
                     return;
                 }
                 $mollieOrderService = $container->get(MollieOrderService::class);
@@ -265,7 +295,10 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         add_filter(
             'bulk_actions-woocommerce_page_wc-orders',
             static function ($bulk_actions) {
-                $bulk_actions['mollie_wc_check_payment_for_unpaid_order'] = __('Check payment on mollie', 'mollie-payments-for-woocommerce');
+                $bulk_actions['mollie_wc_check_payment_for_unpaid_order'] = __(
+                    'Check payment on mollie',
+                    'mollie-payments-for-woocommerce'
+                );
                 return $bulk_actions;
             }
         );
@@ -279,7 +312,12 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 
                 foreach ($post_ids as $post_id) {
                     $order = wc_get_order($post_id);
-                    if (! $order || $order->is_paid() || ! $order->has_status('pending') || strpos($order->get_payment_method(), 'mollie_wc_gateway_') === false) {
+                    if (
+                        !$order || $order->is_paid() || !$order->has_status('pending') || strpos(
+                            $order->get_payment_method(),
+                            'mollie_wc_gateway_'
+                        ) === false
+                    ) {
                         continue;
                     }
                     $mollieOrderService = $container->get(MollieOrderService::class);
@@ -354,7 +392,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      */
     public function addShopOrderMetabox(object $post)
     {
-        if (! $post instanceof \WC_Order) {
+        if (!$post instanceof \WC_Order) {
             return;
         }
         $meta = $post->get_meta('_mollie_payment_instructions');
@@ -364,13 +402,20 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $screen = wc_get_container()->get(CustomOrdersTableController::class)->custom_orders_table_usage_is_enabled()
             ? wc_get_page_screen_id('shop-order')
             : 'shop_order';
-        add_meta_box('mollie_order_details', __('Mollie Payment Details', 'mollie-payments-for-woocommerce'), static function () use ($meta) {
-            $allowedTags = ['strong' => []];
-            printf(
-                '<p style="border-bottom:solid 1px #eee;padding-bottom:13px;">%s</p>',
-                wp_kses($meta, $allowedTags)
-            );
-        }, $screen, 'side', 'high');
+        add_meta_box(
+            'mollie_order_details',
+            __('Mollie Payment Details', 'mollie-payments-for-woocommerce'),
+            static function () use ($meta) {
+                $allowedTags = ['strong' => []];
+                printf(
+                    '<p style="border-bottom:solid 1px #eee;padding-bottom:13px;">%s</p>',
+                    wp_kses($meta, $allowedTags)
+                );
+            },
+            $screen,
+            'side',
+            'high'
+        );
     }
 
     public function gatewaySurchargeHandling(Surcharge $surcharge)
@@ -404,10 +449,10 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         if (class_exists('WC_Subscription')) {
             // Do not disable if account page is also checkout
             // (workaround for bug in WC), do disable on change payment method page (param)
-            if ((! is_checkout() && is_account_page()) || ! empty($_GET['change_payment_method'])) {
+            if ((!is_checkout() && is_account_page()) || !empty($_GET['change_payment_method'])) {
                 foreach ($available_gateways as $key => $value) {
                     if (strpos($key, 'mollie_') !== false) {
-                        unset($available_gateways[ $key ]);
+                        unset($available_gateways[$key]);
                     }
                 }
             }
@@ -443,13 +488,27 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      */
     public function paymentButtonsBootstrap(ContainerInterface $container): void
     {
+        $wooCommerceGateways = WC()->payment_gateways()->payment_gateways;
+
         $applePayDirectHandler = $container->get(ApplePayDirectHandler::class);
         if ($applePayDirectHandler instanceof ApplePayDirectHandler) {
             $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
             $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
-            if ($buttonEnabledCart || $buttonEnabledProduct) {
+            $buttonEnabledExpressCheckout = mollieWooCommerceIsApplePayDirectEnabled('express_checkout');
+            if ($buttonEnabledCart || $buttonEnabledProduct || $buttonEnabledExpressCheckout) {
                 $applePayDirectHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
             }
+        }
+
+        if (
+            !count(array_filter($wooCommerceGateways, static function ($gateway) {
+                return $gateway->id === 'mollie_wc_gateway_paypal';
+            }))
+        ) {
+            /**
+             * Only set up PayPalExpressButton if PayPal is available...
+             */
+            return;
         }
 
         $paypalButtonHandler = $container->get(PayPalExpressButton::class);
@@ -485,6 +544,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         }
         return $paymentMethods;
     }
+
     /**
      * @param string $id
      * @return PaymentMethodI | array

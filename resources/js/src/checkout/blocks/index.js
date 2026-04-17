@@ -139,7 +139,16 @@ function registerExpressPaymentMethodHooks(mollieGateways) {
                         if (isEditorContext()) {
                             return true;
                         }
-                        return PayPalUtils.canRegisterPayPal();
+                        if (!PayPalUtils.canRegisterPayPal()) {
+                            return false;
+                        }
+                        // cartItems from the canMakePayment argument does not carry
+                        // Store API extension data; read directly from the store instead.
+                        const cartItems = select('wc/store/cart')?.getCartData()?.items ?? [];
+                        const hasPhysicalItem = cartItems.some(
+                            (item) => item.extensions?.['mollie-payments']?.virtual === false
+                        );
+                        return !hasPhysicalItem;
                     },
                     paymentMethodId: 'mollie_wc_gateway_paypal',
                     gatewayId: 'mollie_wc_gateway_paypal',
@@ -164,6 +173,10 @@ function registerExpressPaymentMethodHooks(mollieGateways) {
                     return false;
                 }
                 return PayPalUtils.canRegisterPayPal();
+                // Cart-content gating (virtual-only) is handled in canMakePayment,
+                // which WC Blocks calls reactively on every cart change. Doing it
+                // here would prevent re-registration after items are removed without
+                // a full page reload.
             },
             10,
             3

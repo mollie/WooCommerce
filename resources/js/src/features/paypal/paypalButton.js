@@ -24,6 +24,9 @@ import { maybeShowButton } from '../apple-pay/maybeShowApplePayButton';
 		return Object.keys( object ).find( ( key ) => object[ key ] === value );
 	}
 	const payPalButton = document.querySelector( '#mollie-PayPal-button' );
+	if ( ! payPalButton ) {
+		return;
+	}
 	const buttonParentNode = payPalButton.parentNode;
 	let positionKey = false;
 	if ( buttonParentNode.hasChildNodes() ) {

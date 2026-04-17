@@ -1,4 +1,4 @@
-import { ajaxCallToOrder } from './paypalButtonUtils';
+import { ensurePayPalButtonListenerAttached } from './paypalButtonUtils';
 
 ( function ( { _, molliepaypalButtonCart, jQuery } ) {
 	if ( _.isEmpty( molliepaypalButtonCart ) ) {
@@ -85,7 +85,7 @@ import { ajaxCallToOrder } from './paypalButtonUtils';
 			return;
 		}
 		maybeShowButton( underRange() );
-		ajaxCallToOrder( ajaxUrl );
+		ensurePayPalButtonListenerAttached( ajaxUrl );
 	} );
 
 	setTimeout( function () {
@@ -94,6 +94,6 @@ import { ajaxCallToOrder } from './paypalButtonUtils';
 			return;
 		}
 		maybeShowButton( underRange() );
-		ajaxCallToOrder( ajaxUrl );
+		ensurePayPalButtonListenerAttached( ajaxUrl );
 	}, 500 );
 } )( window );

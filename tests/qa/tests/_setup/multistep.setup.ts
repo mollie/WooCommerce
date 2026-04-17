@@ -16,8 +16,11 @@ setup(
 		await setup.step(
 			`Setup ${ germanizedPlugin.name } plugin (active)`,
 			async () => {
-				if ( ! ( await requestUtils.isPluginInstalled( germanizedPlugin.slug ) ) ) {
-					await plugins.installPlugin( germanizedPlugin.name );
+				// in CI plugin is installed in tests/qa/bin/test-env-setup.js, so we can skip installation step
+				if( ! process.env.CI ) {
+					if ( ! ( await requestUtils.isPluginInstalled( germanizedPlugin.slug ) ) ) {
+						await plugins.installPluginFromFile( germanizedPlugin.zipFilePath );
+					}
 				}
 				await requestUtils.activatePlugin( germanizedPlugin.slug );
 				await plugins.visit( urls.admin.plugins.home );
@@ -28,10 +31,13 @@ setup(
 		await setup.step(
 			`Setup ${ germanizedProPlugin.name } plugin (active)`,
 			async () => {
-				if (
-					! ( await requestUtils.isPluginInstalled( germanizedProPlugin.slug ) )
-				) {
-					await plugins.installPluginFromFile( germanizedProPlugin.zipFilePath );
+				// in CI plugin is added directly to the wp-content/plugins folder, so we can skip installation step
+				if( ! process.env.CI ) {
+					if (
+						! ( await requestUtils.isPluginInstalled( germanizedProPlugin.slug ) )
+					) {
+						await plugins.installPluginFromFile( germanizedProPlugin.zipFilePath );
+					}
 				}
 				await requestUtils.activatePlugin( germanizedProPlugin.slug );
 				await plugins.visit( urls.admin.plugins.home );

@@ -26,7 +26,7 @@
     "url": "git@github.com:mollie/WooCommerce.git"
   },
   "devDependencies": {
-    "@inpsyde/playwright-utils": "^5.0.1",
+    "@inpsyde/playwright-utils": "^5.1.0",
     "@playwright/test": "^1.59.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "3.0.1",
     "@wordpress/scripts": "^30.24.0",
@@ -52,12 +52,12 @@
     "e2e:setup:hosts": "echo '127.0.0.1 mywp.site' | sudo tee -a /etc/hosts",
     "e2e:setup:env": "npm run e2e:setup:hosts && npm install && npx wp-env start --update",
     "e2e:setup:tests": "npm install && npx playwright install",
-    "e2e:watch:utils": "npm run e2e:setup:tests && cd .tests/qa/playwright-utils && yarn devLocal",
+    "e2e:watch:utils": "npm run e2e:setup:tests && cd ./playwright-utils && yarn devLocal",
 
     "env:reset": "npx playwright test --grep=\"env:reset;\"",
     "env:reset:wc": "npx playwright test --grep=\"env:reset;|setup:wc;\"",
     "env:reset:mollie": "npm run env:reset:wc && npm run env:setup:mollie",
-    "env:reset:mollie:multistep": "npx playwright test --grep=\"env:reset;|setup:wc;|setup:mollie;|setup:multistep:checkout;\"",
+    "env:reset:mollie:multistep": "npm run env:reset:mollie && npm run env:setup:multistep",
 
     "env:setup:wc": "npx playwright test --grep=\"setup:wc;\"",
     "env:setup:mollie": "npx playwright test --project=setup-mollie --grep=\"setup:mollie;\"",

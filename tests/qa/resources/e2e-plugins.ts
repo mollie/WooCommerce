@@ -39,6 +39,7 @@ export const molliePlugin = {
 export const germanizedPlugin = {
 	name: 'Germanized for WooCommerce',
 	slug: 'germanized-for-woocommerce',
+	zipFilePath: `${ filePath }/germanized-for-woocommerce.zip`,
 };
 
 export const germanizedProPlugin = {

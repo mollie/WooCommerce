@@ -327,7 +327,8 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         if ($applePayDirectHandler instanceof ApplePayDirectHandler) {
             $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
             $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
-            if ($buttonEnabledCart || $buttonEnabledProduct) {
+            $buttonEnabledExpressCheckout = mollieWooCommerceIsApplePayDirectEnabled('express_checkout');
+            if ($buttonEnabledCart || $buttonEnabledProduct || $buttonEnabledExpressCheckout) {
                 $applePayDirectHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
             }
         }

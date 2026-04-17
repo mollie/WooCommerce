@@ -14,7 +14,7 @@ class Giftcard extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod 
      * @param \WC_Order  $order
      *
      */
-    public function debugGiftcardDetails($payment, \WC_Order $order)
+    public function debugGiftcardDetails($payment, \WC_Order $order): void
     {
         $details = $payment->details;
         if (!$details) {

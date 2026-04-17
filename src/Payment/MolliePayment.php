@@ -3,20 +3,15 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
-use Mollie\Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
-use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\Psr\Log\LoggerInterface as Logger;
-use Mollie\Psr\Log\LogLevel;
 use WC_Order;
-use WC_Subscriptions_Manager;
 use WP_Error;
 class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
 {
@@ -56,9 +51,6 @@ class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
     {
         return $this->requestFactory->createRequest('payment', $order, $customerId);
     }
-    /**
-     * @return void
-     */
     public function setActiveMolliePayment($orderId)
     {
         self::$paymentId = $this->getMolliePaymentIdFromPaymentObject();
@@ -68,6 +60,7 @@ class MolliePayment extends \Mollie\WooCommerce\Payment\MollieObject
         self::$order->update_meta_data('_mollie_payment_id', $this->data->id);
         self::$order->save();
         parent::setActiveMolliePayment($orderId);
+        return $this;
     }
     public function getMolliePaymentIdFromPaymentObject()
     {

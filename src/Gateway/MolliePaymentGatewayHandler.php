@@ -9,7 +9,6 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -149,6 +148,8 @@ class MolliePaymentGatewayHandler
         if (!$this->cartAmountAvailable()) {
             return \true;
         }
+        // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $order_total = WC()->cart ? WC()->cart->get_total('edit') : 0;
         $currency = $this->getCurrencyFromOrder();
         $billingCountry = $this->getBillingCountry();
@@ -308,10 +309,12 @@ class MolliePaymentGatewayHandler
      * @param      $title
      * @param null $id
      *
-     * @return string|void
+     * @return string
      */
     public function onOrderReceivedTitle($title, $id = null)
     {
+        // phpstan:ignore [wc-stub] get_the_ID() returns int|false; comparison with nullable $id triggers a false-positive
+        // @phpstan-ignore-next-line
         if (is_order_received_page() && get_the_ID() === $id) {
             $order = \false;
             $orderReceived = get_query_var('order-received');
@@ -369,9 +372,9 @@ class MolliePaymentGatewayHandler
     }
     /**
      * @param          $text
-     * @param WC_Order| null $order
+     * @param WC_Order|null $order
      *
-     * @return string|void
+     * @return string
      */
     public function onOrderReceivedText($text, $order)
     {
@@ -416,6 +419,8 @@ class MolliePaymentGatewayHandler
      */
     public function getBillingCountry()
     {
+        // phpstan:ignore [wc-stub] WC()->customer is WC_Customer|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $customerExistsAndHasCountry = WC()->customer && !empty(WC()->customer->get_billing_country());
         $fallbackToShopCountry = wc_get_base_location()['country'];
         $billingCountry = $customerExistsAndHasCountry ? WC()->customer->get_billing_country() : $fallbackToShopCountry;
@@ -462,6 +467,8 @@ class MolliePaymentGatewayHandler
      */
     protected function cartAmountAvailable()
     {
+        // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         return WC()->cart && WC()->cart->get_total('edit') > 0;
     }
     /**

@@ -8,12 +8,11 @@ use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\Psr\Log\LoggerInterface as Logger;
-use Mollie\Psr\Log\LogLevel;
 use WC_Data_Exception;
 class PayPalAjaxRequests
 {
     /**
-     * @var
+     * @var mixed
      */
     protected $gateway;
     /**
@@ -105,16 +104,26 @@ class PayPalAjaxRequests
         if (!$this->isNonceValid()) {
             return;
         }
-        $payPalRequestDataObject = $this->payPalDataObjectHttp();
-        $payPalRequestDataObject->orderData('cart');
-        list($cart, $order) = $this->createOrderFromCart();
-        $orderId = $order->get_id();
-        $order->calculate_totals();
-        $surcharge = new Surcharge();
-        $surchargeHandler = new GatewaySurchargeHandler($surcharge);
-        $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
-        $this->updateOrderPostMeta($orderId, $order);
-        $result = $this->processOrderPayment($orderId);
+        $lockKey = 'mollie_paypal_cart_order_lock';
+        if (WC()->session->get($lockKey)) {
+            wp_send_json_error('Duplicate request');
+        }
+        WC()->session->set($lockKey, \true);
+        $result = [];
+        try {
+            $payPalRequestDataObject = $this->payPalDataObjectHttp();
+            $payPalRequestDataObject->orderData('cart');
+            list($cart, $order) = $this->createOrderFromCart();
+            $orderId = $order->get_id();
+            $order->calculate_totals();
+            $surcharge = new Surcharge();
+            $surchargeHandler = new GatewaySurchargeHandler($surcharge);
+            $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
+            $this->updateOrderPostMeta($orderId, $order);
+            $result = $this->processOrderPayment($orderId);
+        } finally {
+            WC()->session->__unset($lockKey);
+        }
         if (isset($result['result']) && 'success' === $result['result']) {
             wp_send_json_success($result);
         } else {
@@ -164,7 +173,7 @@ class PayPalAjaxRequests
         $order->update_meta_data('_payment_method_title', 'PayPal');
         $order->update_meta_data('_mollie_payment_method_button', 'PayPalButton');
         //this saves the order
-        $order->update_status('Processing', 'PayPal Button order', \true);
+        $order->update_status('pending', 'PayPal Button order', \true);
     }
     /**
      * Process order payment with PayPal gateway
@@ -182,7 +191,7 @@ class PayPalAjaxRequests
      * Handles the order creation in cart page
      *
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     protected function createOrderFromCart()
     {
@@ -195,7 +204,6 @@ class PayPalAjaxRequests
     /**
      * Checks if the nonce in the data object is valid
      *
-     * @param PayPalDataObjectHttp $PayPalRequestDataObject
      */
     protected function isNonceValid(): bool
     {

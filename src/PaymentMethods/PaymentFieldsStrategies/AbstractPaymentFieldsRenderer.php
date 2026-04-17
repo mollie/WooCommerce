@@ -9,9 +9,6 @@ class AbstractPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     protected MolliePaymentGatewayHandler $deprecatedHelperGateway;
     protected string $gatewayDescription;
-    /**
-     * @var mixed
-     */
     protected Data $dataHelper;
     public function __construct($deprecatedHelperGateway, $gateway, $dataHelper)
     {

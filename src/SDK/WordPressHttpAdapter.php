@@ -4,7 +4,6 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\SDK;
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Exceptions\CurlConnectTimeoutException;
 use Mollie\Api\HttpAdapter\MollieHttpAdapterInterface;
 class WordPressHttpAdapter implements MollieHttpAdapterInterface
 {
@@ -31,7 +30,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
         $args = ['method' => $httpMethod, 'body' => $httpBody, 'headers' => $headers, 'user-agent' => $headers['User-Agent'], 'sslverify' => \true, 'timeout' => self::DEFAULT_TIMEOUT];
         $response = wp_remote_request($url, $args);
         if (is_wp_error($response)) {
-            $message = $response->get_error_message() ?? 'Unknown error';
+            $message = $response->get_error_message();
             $code = is_int($response->get_error_code()) ? $response->get_error_code() : 0;
             // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new ApiException(esc_html($message), $code);
@@ -75,9 +74,7 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
             if (isset($body->_links, $body->_links->documentation)) {
                 $message .= ". Documentation: {$body->_links->documentation->href}";
             }
-            if ($httpBody) {
-                $message .= ". Request body: {$httpBody}";
-            }
+            $message .= ". Request body: {$httpBody}";
             // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new ApiException(esc_html($message), $statusCode, esc_html($field));
             // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped

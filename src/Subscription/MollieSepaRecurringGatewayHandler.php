@@ -8,12 +8,10 @@ use DateTime;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\Api\Types\SequenceType;
-use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
-use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -36,7 +34,6 @@ class MollieSepaRecurringGatewayHandler extends \Mollie\WooCommerce\Subscription
         if (isset($directDebitSettings['enabled']) && $directDebitSettings['enabled'] === 'yes') {
             $this->recurringMollieMethod = $directDebitPaymentMethod;
         }
-        return $this;
     }
     /**
      * @return string
@@ -118,7 +115,11 @@ class MollieSepaRecurringGatewayHandler extends \Mollie\WooCommerce\Subscription
         // Duplicate webhook call
         if ($this->dataService->isWcSubscription($orderId) && isset($payment->sequenceType) && $payment->sequenceType === SequenceType::SEQUENCETYPE_RECURRING) {
             $payment_method_title = $this->getPaymentMethodTitle($payment);
+            // phpstan:ignore [mollie-stub] Mollie Payment object exposes mode and id as dynamic stdClass properties not covered by type definitions
+            // @phpstan-ignore-next-line
             $isTestMode = $payment->mode === 'test';
+            // phpstan:ignore [mollie-stub] see above — $payment->id is also a dynamic property on the same object
+            // @phpstan-ignore-next-line
             $paymentMessage = $payment->id . ($isTestMode ? ' - ' . __('test mode', 'mollie-payments-for-woocommerce') : '');
             $order->add_order_note(sprintf(
                 /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */

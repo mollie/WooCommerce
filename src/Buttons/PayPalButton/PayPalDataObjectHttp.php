@@ -4,7 +4,6 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 use Mollie\Psr\Log\LoggerInterface as Logger;
-use Mollie\Psr\Log\LogLevel;
 class PayPalDataObjectHttp
 {
     /**
@@ -112,7 +111,7 @@ class PayPalDataObjectHttp
      * Selector for the different filters to apply to each field
      * @param $value
      *
-     * @return int
+     * @return int|false
      */
     protected function filterType($value)
     {

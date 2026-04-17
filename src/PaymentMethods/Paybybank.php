@@ -47,7 +47,7 @@ class Paybybank extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod
         ], 'skip_mollie_payment_screen' => ['title' => __('Skip Mollie payment screen', 'mollie-payments-for-woocommerce'), 'label' => __('Skip Mollie payment screen when Pay by Bank is selected', 'mollie-payments-for-woocommerce'), 'description' => __('Enable this option if you want to skip redirecting your user to the Mollie payment screen, instead this will redirect your user directly to the WooCommerce order received page displaying instructions how to complete the Pay by Bank payment.', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no']];
         return array_merge($generalFormFields, $paymentMethodFormFields);
     }
-    public function filtersOnBuild()
+    public function filtersOnBuild(): void
     {
         add_filter('woocommerce_mollie_wc_gateway_' . $this->getProperty('id') . 'payment_args', function (array $args, \WC_Order $order): array {
             return $this->addPaymentArguments($args, $order);

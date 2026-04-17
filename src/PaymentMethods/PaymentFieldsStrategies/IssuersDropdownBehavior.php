@@ -50,8 +50,7 @@ trait IssuersDropdownBehavior
         return $html;
     }
     /**
-     * @param        $description
-     * @param string $html
+     * @param        $gateway
      * @param        $issuers
      * @param        $selectedIssuer
      *

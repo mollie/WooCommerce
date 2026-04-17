@@ -56,6 +56,8 @@ class PaymentGateway extends WC_Payment_Gateway
         unset($this->icon);
         unset($this->form_fields);
         unset($this->enabled);
+        // phpstan:ignore [wc-stub] process_admin_options is inherited from WC_Payment_Gateway but absent from stubs
+        // @phpstan-ignore-next-line
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_settings_checkout', [$this, 'display_errors']);
         add_filter('woocommerce_settings_api_sanitized_fields_' . $this->id, [$this, 'filterVirtualFields'], -1000);
@@ -312,7 +314,7 @@ class PaymentGateway extends WC_Payment_Gateway
             return $this->validate_text_field($key, $value);
         } catch (RangeException $exception) {
             $this->add_error(sprintf('Field "%1$s" is invalid: %2$s', $key, $exception->getMessage()));
-            return null;
+            return '';
         }
     }
     /**

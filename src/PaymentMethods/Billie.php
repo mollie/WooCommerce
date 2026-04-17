@@ -35,10 +35,10 @@ class Billie extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod im
      * Add filters and actions for the Billie payment method.
      * This will be added during constructor
      */
-    public function filtersOnBuild()
+    public function filtersOnBuild(): void
     {
         add_filter('woocommerce_after_checkout_validation', [$this, 'BillieFieldsMandatory'], 11, 2);
-        add_action('woocommerce_checkout_posted_data', [$this, 'switchFields'], 11);
+        add_filter('woocommerce_checkout_posted_data', [$this, 'switchFields'], 11);
     }
     /**
      * Modify the general form fields for the Billie payment method.

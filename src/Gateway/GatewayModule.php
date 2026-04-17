@@ -18,9 +18,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\PaymentMethods\Constants;
-use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
-use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -107,7 +105,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $surchargeService = $container->get(\Mollie\WooCommerce\Gateway\Surcharge::class);
         assert($surchargeService instanceof \Mollie\WooCommerce\Gateway\Surcharge);
         $this->gatewaySurchargeHandling($surchargeService);
-        $this->paymentButtonsBootstrap($container);
+        add_action('woocommerce_init', function () use ($container) {
+            $this->paymentButtonsBootstrap($container);
+        });
         $maybeDisableVoucher = new MaybeDisableGateway();
         $dataService = $container->get('settings.data_helper');
         assert($dataService instanceof Data);
@@ -121,19 +121,21 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             if (!$title) {
                 return;
             }
+            // phpstan:ignore [wc-stub] $paymentContext is passed via WC REST action with no declared type; ->order is a WC_Order
+            // @phpstan-ignore-next-line
             $order = $paymentContext->order;
             $order->set_payment_method_title($title);
             $order->save();
         });
         add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
-        add_filter('woocommerce_checkout_fields', static function ($fields) use ($container) {
+        add_filter('woocommerce_checkout_fields', static function ($fields) {
             if (!isset($fields['billing']['billing_phone']) || !$fields['billing']['billing_phone']['required']) {
                 update_option('mollie_wc_is_phone_required_flag', \false);
             } else {
                 update_option('mollie_wc_is_phone_required_flag', \true);
             }
             return $fields;
-        }, 10, 3);
+        }, 10, 1);
         add_action('init', static function () use ($container) {
             $paymentMethods = $container->get('gateway.paymentMethods');
             foreach ($paymentMethods as $paymentMethod) {
@@ -168,7 +170,10 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 $mollieOrderService->checkPaymentForUnpaidOrder($order);
             }
         }, \PHP_INT_MAX);
-        add_filter('woocommerce_order_actions', static function ($actions, \WC_Order $order) {
+        add_filter('woocommerce_order_actions', static function ($actions, $order) {
+            if (!$order instanceof \WC_Order) {
+                return $actions;
+            }
             if ($order->is_paid() || !$order->has_status('pending') || strpos($order->get_payment_method(), 'mollie_wc_gateway_') === \false) {
                 return $actions;
             }
@@ -317,13 +322,23 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      */
     public function paymentButtonsBootstrap(ContainerInterface $container): void
     {
+        $wooCommerceGateways = WC()->payment_gateways()->payment_gateways;
         $applePayDirectHandler = $container->get(ApplePayDirectHandler::class);
         if ($applePayDirectHandler instanceof ApplePayDirectHandler) {
             $buttonEnabledCart = mollieWooCommerceIsApplePayDirectEnabled('cart');
             $buttonEnabledProduct = mollieWooCommerceIsApplePayDirectEnabled('product');
-            if ($buttonEnabledCart || $buttonEnabledProduct) {
+            $buttonEnabledExpressCheckout = mollieWooCommerceIsApplePayDirectEnabled('express_checkout');
+            if ($buttonEnabledCart || $buttonEnabledProduct || $buttonEnabledExpressCheckout) {
                 $applePayDirectHandler->bootstrap($buttonEnabledProduct, $buttonEnabledCart);
             }
+        }
+        if (!count(array_filter($wooCommerceGateways, static function ($gateway) {
+            return $gateway->id === 'mollie_wc_gateway_paypal';
+        }))) {
+            /**
+             * Only set up PayPalExpressButton if PayPal is available...
+             */
+            return;
         }
         $paypalButtonHandler = $container->get(PayPalExpressButton::class);
         if ($paypalButtonHandler instanceof PayPalExpressButton) {
@@ -336,7 +351,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      *
      * @return array
      */
-    protected function instantiatePaymentMethods(): array
+    public function instantiatePaymentMethods(): array
     {
         $paymentMethods = [];
         $allGatewayClassNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
@@ -354,10 +369,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     }
     /**
      * @param string $id
-     * @param IconFactory $iconFactory
-     * @param Settings $settingsHelper
-     * @param Surcharge $surchargeService
-     * @param array $paymentMethods
      * @return PaymentMethodI | array
      */
     public function buildPaymentMethod(string $id)

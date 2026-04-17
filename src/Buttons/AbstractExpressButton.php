@@ -14,6 +14,9 @@ abstract class AbstractExpressButton implements \Mollie\WooCommerce\Buttons\Expr
         $this->registerAjaxHandlers();
         $this->enqueueScripts();
     }
+    protected function enqueueScripts(): void
+    {
+    }
     protected function registerAjaxHandlers()
     {
         foreach ($this->getAjaxHandlers() as $action => $callback) {

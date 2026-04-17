@@ -244,7 +244,7 @@ class Surcharge
      */
     protected function name_fixed_fee_percentage($paymentMethod)
     {
-        if (!$paymentMethod->getProperty(self::FIXED_FEE) || !$paymentMethod->getProperty(self::PERCENTAGE) || $paymentMethod->getProperty(self::FIXED_FEE) === '' || $paymentMethod->getProperty(self::PERCENTAGE) === '' || $paymentMethod->getProperty(self::PERCENTAGE) <= 0 || $paymentMethod->getProperty(self::FIXED_FEE) <= 0) {
+        if (!$paymentMethod->getProperty(self::FIXED_FEE) || !$paymentMethod->getProperty(self::PERCENTAGE) || $paymentMethod->getProperty(self::PERCENTAGE) <= 0 || $paymentMethod->getProperty(self::FIXED_FEE) <= 0) {
             return \false;
         }
         $amountFix = $paymentMethod->getProperty(self::FIXED_FEE);

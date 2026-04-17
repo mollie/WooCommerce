@@ -35,7 +35,8 @@ concurrency:
 jobs:
   e2e-playwright:
     name: Run Playwright E2E Tests
-    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright-ngrok
+    needs: build
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
     with:
       PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
       ARTIFACT_PATH: |
@@ -81,4 +82,4 @@ jobs:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES }}
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
-      NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+      NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}

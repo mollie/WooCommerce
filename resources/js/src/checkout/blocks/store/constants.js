@@ -1,3 +1,5 @@
+export const MOLLIE_STORE_KEY = 'mollie-payments';
+
 export const ACTIONS = {
 	// Field updates
 	SET_SELECTED_ISSUER: 'SET_SELECTED_ISSUER',

@@ -51,6 +51,7 @@ type TestBaseExtend = BaseExtend & {
 	mollieSettingsAdvanced: MollieSettingsAdvanced;
 	mollieSettingsGateway: MollieSettingsGateway;
 	mollieApiMethod?: MollieSettings.ApiMethod;
+	isMultistepCheckout?: boolean;
 
 	// Frontend fixtures
 	visitorPage: Page;
@@ -98,6 +99,7 @@ const test = base.extend< TestBaseExtend >( {
 		await use( new MollieSettingsGateway( { page, gatewaySlug } ) );
 	},
 	mollieApiMethod: [ null, { option: true } ],
+	isMultistepCheckout: [ null, { option: true } ],
 	wooCommerceOrderEdit: async ( { page }, use ) => {
 		await use( new WooCommerceOrderEdit( { page } ) );
 	},

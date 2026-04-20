@@ -21,22 +21,29 @@ export const testPaymentStatusOnPayForOrder = (
 	const { testId, testLabel, payment } = testData;
 	const { gateway } = payment;
 
-	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
 	const customer = guests[ gateway.country ];
 	const currency = gateway.currency;
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
 	const label = testLabel ? ` ${ testLabel }` : '';
 
-	Object.assign( testData, { orderStatus, customer, currency } );
-
-	test( `${ testId } | Transaction - Pay for order - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }${ label }`, async ( {
+	test( `${ testId } | Transaction - Pay for order - ${ gatewayLabel } - Payment status ${ payment.status } creates order with expected status${ label }`, async ( {
 		wooCommerceApi,
 		wooCommerceUtils,
 		mollieHostedCheckout,
 		orderReceived,
 		payForOrder,
 		wooCommerceOrderEdit,
+		mollieApiMethod,
 	} ) => {
+		// exclude tests for payment methods if not available for tested API
+		test.skip(
+			! gateway.availableForApiMethods.includes( mollieApiMethod ), 
+			`Test is not eligible for ${ mollieApiMethod } API method.`
+		);
+
+		const orderStatus = getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+		Object.assign( testData, { orderStatus, customer, currency } );
+		
 		await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
 
 		const orderTotals = await countTotals( testData );
@@ -60,9 +67,8 @@ export const testPaymentStatusOnPayForOrder = (
 			testData
 		);
 
-		const { transaction_id: transactionId } = await wooCommerceApi.getOrder(
-			orderId
-		);
+		const { transaction_id: transactionId } =
+			await wooCommerceApi.getOrder( orderId );
 		await expect(
 			transactionId,
 			`Assert transaction ID ${ transactionId } is defined`
@@ -74,7 +80,7 @@ export const testPaymentStatusOnPayForOrder = (
 			transactionId
 		);
 
-		if( payment.status === 'paid' ) {
+		if ( payment.status === 'paid' ) {
 			// Assert order notes via WC API
 			const expectedNotes = [
 				`${ gateway.slug } payment started (${ transactionId } - test mode).`,

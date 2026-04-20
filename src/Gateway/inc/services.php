@@ -10,6 +10,7 @@ use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalButtonHandler;
+use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\DeprecatedGatewayBuilder;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\Gateway\Refund\RefundLineItemsBuilder;
@@ -203,20 +204,31 @@ return static function (): array {
             $ajaxRequests = new AppleAjaxRequests($responseTemplates, $notice, $logger, $apiHelper, $settingsHelper);
             return new ApplePayDirectHandler($notice, $ajaxRequests);
         },
-        PayPalButtonHandler::class => static function (ContainerInterface $container) {
+        PayPalExpressButton::class => static function (ContainerInterface $container): PayPalExpressButton {
+            $wooCommerceGateways = WC()->payment_gateways()->payment_gateways;
+            $matchingPayPalGateway = array_filter($wooCommerceGateways, static function ($gateway) {
+                return $gateway->id === 'mollie_wc_gateway_paypal';
+            });
+            if (!count($matchingPayPalGateway)) {
+                /**
+                 * Bail if PayPal is not available...
+                 */
+                throw new \RuntimeException(
+                    'Mollie PayPal Express Button requires PayPal payment method (Mollie) to be enabled'
+                );
+            }
+            $matchingPayPalGateway = reset($matchingPayPalGateway);
+            assert($matchingPayPalGateway instanceof PaymentGateway);
             $notice = $container->get(AdminNotice::class);
             assert($notice instanceof AdminNotice);
             $logger = $container->get(Logger::class);
             assert($logger instanceof Logger);
-            $paymentGateways = $container->get('payment_gateways');
-            if (!in_array('mollie_wc_gateway_paypal', $paymentGateways)) {
-                return false;
-            }
-            $paypalGateway = new Inpsyde\PaymentGateway\PaymentGateway('mollie_wc_gateway_paypal', $container);
             $pluginUrl = $container->get('shared.plugin_url');
-            $ajaxRequests = new PayPalAjaxRequests($paypalGateway, $notice, $logger);
+            $ajaxRequests = new PayPalAjaxRequests($matchingPayPalGateway, $notice, $logger);
             $data = new DataToPayPal($pluginUrl);
-            return new PayPalButtonHandler($ajaxRequests, $data);
+            $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
+            $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));
+            return new PayPalExpressButton($ajaxRequests, $data, $enabledInProduct, $enabledInCart);
         },
         'payment_gateway.getRefundProcessor' => static function (ContainerInterface $container): callable {
             return static function (string $gatewayId) use ($container): RefundProcessorInterface {

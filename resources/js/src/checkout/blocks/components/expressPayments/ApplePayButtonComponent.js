@@ -1,15 +1,20 @@
 /* global jQuery, ApplePaySession */
-import { select } from '@wordpress/data';
-import { request } from '../../../../features/apple-pay/applePayRequest';
-import { createAppleErrors } from '../../../../features/apple-pay/applePayError';
+import {select} from '@wordpress/data';
+import {request} from '../../../../features/apple-pay/applePayRequest';
+import {createAppleErrors} from '../../../../features/apple-pay/applePayError';
 
-export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
-    let mollieApplePayBlockDataCart =
-        window.mollieApplePayBlockDataCart ||
-        window.mollieBlockData.mollieApplePayBlockDataCart;
-    if (mollieApplePayBlockDataCart.length === 0) {
-        mollieApplePayBlockDataCart = window.mollieBlockData.gatewayData.appleButtonData;
+export const ApplePayButtonComponent = ({buttonData, buttonAttributes = {}}) => {
+    if (!buttonData) {
+        console.warn('Mollie Apple Pay: No button data available');
+        return null;
     }
+
+    const {
+        shop: {countryCode, totalLabel = ''},
+        ajaxUrl,
+        nonce: dataNonce,
+    } = buttonData;
+
     let nonce = false;
 	let wooNonceElement = document.getElementById(
 		'woocommerce-process-checkout-nonce'
@@ -18,16 +23,11 @@ export const ApplePayButtonComponent = ( { buttonAttributes = {} } ) => {
         nonce = wooNonceElement.value;
     }
     if(!nonce) {
-        nonce = window.mollieBlockData.gatewayData.appleButtonData.nonce;
+        nonce = dataNonce;
     }
 
 	let updatedContactInfo = [];
 	let redirectionUrl = '';
-
-	const {
-		shop: { countryCode,  totalLabel = '' },
-        ajaxUrl,
-	} = mollieApplePayBlockDataCart;
 
     const cartStore = select('wc/store/cart')
     const needShipping = cartStore.getNeedsShipping();

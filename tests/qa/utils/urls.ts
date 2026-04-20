@@ -33,8 +33,9 @@ export const urls = {
 		admin: {
 			home: './wp-admin/admin.php?page=wc-settings&tab=germanized',
 			taxes: {
-				additionalCosts: './wp-admin/admin.php?page=wc-settings&tab=germanized-taxes&section=additional_costs'
-			}
+				additionalCosts:
+					'./wp-admin/admin.php?page=wc-settings&tab=germanized-taxes&section=additional_costs',
+			},
 		},
 	},
 };

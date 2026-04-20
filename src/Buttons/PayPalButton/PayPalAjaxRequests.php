@@ -44,30 +44,24 @@ class PayPalAjaxRequests
      */
     public function bootstrapAjaxRequest()
     {
-        add_action(
-            'wp_ajax_' . PropertiesDictionary::CREATE_ORDER,
-            [$this, 'createWcOrder']
-        );
-        add_action(
-            'wp_ajax_nopriv_' . PropertiesDictionary::CREATE_ORDER,
-            [$this, 'createWcOrder']
-        );
-        add_action(
-            'wp_ajax_' . PropertiesDictionary::CREATE_ORDER_CART,
-            [$this, 'createWcOrderFromCart']
-        );
-        add_action(
-            'wp_ajax_nopriv_' . PropertiesDictionary::CREATE_ORDER_CART,
-            [$this, 'createWcOrderFromCart']
-        );
-        add_action(
-            'wp_ajax_' . PropertiesDictionary::UPDATE_AMOUNT,
-            [$this, 'updateAmount']
-        );
-        add_action(
-            'wp_ajax_nopriv_' . PropertiesDictionary::UPDATE_AMOUNT,
-            [$this, 'updateAmount']
-        );
+        foreach ($this->getHandlers() as $action => $handler) {
+            add_action('wp_ajax_' . $action, $handler);
+            add_action('wp_ajax_nopriv_' . $action, $handler);
+        }
+    }
+
+    /**
+     * Get the array of AJAX action handlers
+     *
+     * @return array
+     */
+    public function getHandlers(): array
+    {
+        return [
+            PropertiesDictionary::CREATE_ORDER => [$this, 'createWcOrder'],
+            PropertiesDictionary::CREATE_ORDER_CART => [$this, 'createWcOrderFromCart'],
+            PropertiesDictionary::UPDATE_AMOUNT => [$this, 'updateAmount'],
+        ];
     }
 
     /**
@@ -137,16 +131,30 @@ class PayPalAjaxRequests
         if (!$this->isNonceValid()) {
             return;
         }
-        $payPalRequestDataObject = $this->payPalDataObjectHttp();
-        $payPalRequestDataObject->orderData('cart');
-        list($cart, $order) = $this->createOrderFromCart();
-        $orderId = $order->get_id();
-        $order->calculate_totals();
-        $surcharge = new Surcharge();
-        $surchargeHandler = new GatewaySurchargeHandler($surcharge);
-        $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
-        $this->updateOrderPostMeta($orderId, $order);
-        $result = $this->processOrderPayment($orderId);
+
+        $lockKey = 'mollie_paypal_cart_order_lock';
+        if (WC()->session->get($lockKey)) {
+            wp_send_json_error('Duplicate request');
+            return;
+        }
+        WC()->session->set($lockKey, true);
+
+        $result = [];
+        try {
+            $payPalRequestDataObject = $this->payPalDataObjectHttp();
+            $payPalRequestDataObject->orderData('cart');
+            list($cart, $order) = $this->createOrderFromCart();
+            $orderId = $order->get_id();
+            $order->calculate_totals();
+            $surcharge = new Surcharge();
+            $surchargeHandler = new GatewaySurchargeHandler($surcharge);
+            $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
+            $this->updateOrderPostMeta($orderId, $order);
+            $result = $this->processOrderPayment($orderId);
+        } finally {
+            WC()->session->__unset($lockKey);
+        }
+
         if (
             isset($result['result'])
             && 'success' === $result['result']
@@ -212,7 +220,7 @@ class PayPalAjaxRequests
         $order->update_meta_data('_mollie_payment_method_button', 'PayPalButton');
         //this saves the order
         $order->update_status(
-            'Processing',
+            'pending',
             'PayPal Button order',
             true
         );

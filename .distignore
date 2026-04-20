@@ -25,8 +25,12 @@ node_modules/
 .babelrc
 .composer_compiled_assets
 .editorconfig
-.env.example
 .idea/
 .psalm/
-wp-cli.yml
+.env.example-e2e
 .env.integration.example
+.eslintignore
+.wp-env.json
+playwright.config.ts
+tsconfig.json
+wp-cli.yml

@@ -23,6 +23,9 @@ class SettingsModule implements ServiceModule, ExecutableModule
 {
     use ModuleClassNameIdTrait;
 
+    /**
+     * @var ?Settings
+     */
     protected $settingsHelper;
     /**
      * @var mixed

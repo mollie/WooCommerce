@@ -8,8 +8,7 @@ import path from 'path';
 /**
  * Internal dependencies
  */
-import { MollieSettings } from './resources';
-import { TestBaseExtend } from './utils';
+import { TestBaseExtend } from './tests/qa/utils';
 
 const dotenvPath = process.env.CI
     ? path.resolve( __dirname, '.env.ci' )
@@ -17,7 +16,7 @@ const dotenvPath = process.env.CI
 dotenv.config( { path: dotenvPath } );
 
 export default defineConfig< TestBaseExtend >( {
-	testDir: 'tests',
+	testDir: 'tests/qa/tests',
 	expect: {
 		timeout: 10_000,
 	},
@@ -55,7 +54,7 @@ export default defineConfig< TestBaseExtend >( {
 		  ],
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 
-	globalSetup: require.resolve( './global-setup' ),
+	globalSetup: require.resolve( './tests/qa/global-setup' ),
 
 	use: {
 		baseURL: process.env.WP_BASE_URL,
@@ -96,9 +95,9 @@ export default defineConfig< TestBaseExtend >( {
 			size: { width: 1280, height: 850 },
 		},
 
-		mollieApiMethod:
-			( process.env.MOLLIE_API_METHOD as MollieSettings.ApiMethod ) ||
-			'payment',
+		mollieApiMethod: 'payment',
+		
+		isMultistepCheckout: false,
 
 		cliConfig: {
 			envType: process.env.WPCLI_ENV_TYPE as WpCliEnvType,
@@ -108,6 +107,11 @@ export default defineConfig< TestBaseExtend >( {
 
 	/* Configure projects for major browsers */
 	projects: [
+		{
+			name: 'setup-env',
+			testMatch: /env\.setup\.ts/,
+			fullyParallel: false,
+		},
 		{
 			name: 'setup-woocommerce',
 			testMatch: /woocommerce\.setup\.ts/,
@@ -119,42 +123,88 @@ export default defineConfig< TestBaseExtend >( {
 			fullyParallel: false,
 		},
 		{
-			name: 'all',
+			name: 'setup-mollie-payment-api',
 			dependencies: [ 'setup-woocommerce' ],
-			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
-		},
-		{
-			name: 'setup-refund',
-			dependencies: [ 'setup-woocommerce' ],
-			testMatch: /refund\.setup\.ts/,
+			testMatch: /mollie\.setup\.ts/,
+			grep: /setup:mollie;/,
 			fullyParallel: false,
 		},
 		{
-			name: 'refund',
-			dependencies: [ 'setup-refund' ],
-			fullyParallel: true,
-			testMatch: /refund\.spec\.ts/,
+			name: 'setup-mollie-order-api',
+			dependencies: [ 'setup-woocommerce' ],
+			testMatch: /mollie\.setup\.ts/,
+			grep: /setup:mollie;/,
+			fullyParallel: false,
+			use: {
+				mollieApiMethod: 'order',
+			},
 		},
 		{
 			name: 'setup-multistep',
+			testMatch: /multistep\.setup\.ts/,
+			fullyParallel: false,
+		},
+		{
+			name: 'setup-multistep-tests',
 			dependencies: [ 'setup-woocommerce' ],
 			testMatch: /multistep\.setup\.ts/,
 			fullyParallel: false,
 		},
 		{
-			name: 'multistep',
-			dependencies: [ 'setup-multistep' ],
+			name: 'payment-api',
+			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,
-			grep: /Transaction - Multistep/,
 			testIgnore: /refund\.spec\.ts/,
 		},
 		{
-			name: 'multistep-smoke',
-			dependencies: [ 'setup-multistep' ],
+			name: 'order-api',
+			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,
 			testIgnore: /refund\.spec\.ts/,
-			grep: /Transaction - Multistep - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Multistep - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
+			use: {
+				mollieApiMethod: 'order',
+			},
+		},
+		{
+			name: 'refund-payment-api',
+			dependencies: [ 'setup-mollie-payment-api' ],
+			fullyParallel: true,
+			testMatch: /refund\.spec\.ts/,
+		},
+		{
+			name: 'refund-order-api',
+			dependencies: [ 'setup-mollie-order-api' ],
+			fullyParallel: true,
+			testMatch: /refund\.spec\.ts/,
+			use: {
+				mollieApiMethod: 'order',
+				isMultistepCheckout: false,
+			},
+		},
+		{
+			name: 'multistep-payment-api',
+			dependencies: [ 'setup-multistep-tests' ],
+			fullyParallel: false,
+			testIgnore: /refund\.spec\.ts/,
+			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
+			grep: /Transaction/,
+			grepInvert: /Transaction - Pay for order/,
+			use: {
+				isMultistepCheckout: true,
+			},
+		},
+		{
+			name: 'multistep-order-api',
+			dependencies: [ 'setup-multistep-tests' ],
+			fullyParallel: false,
+			testIgnore: /refund\.spec\.ts/,
+			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
+			grep: /Transaction/,
+			grepInvert: /Transaction - Pay for order/,
+			use: {
+				mollieApiMethod: 'order',
+				isMultistepCheckout: true,
+			},
 		},
 	],
 } );

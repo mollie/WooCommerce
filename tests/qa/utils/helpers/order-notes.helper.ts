@@ -98,9 +98,8 @@ export const assertSubscriptionNotes = async (
 	expectedNotes: ExpectedNote[],
 	options?: AssertOptions
 ) => {
-	const subscriptionNotes = await wooCommerceApi.getSubscriptionNotes(
-		subscriptionId
-	);
+	const subscriptionNotes =
+		await wooCommerceApi.getSubscriptionNotes( subscriptionId );
 	const notes = subscriptionNotes.map( ( note ) => note.note );
 	await assertNotes( notes, expectedNotes, options );
 };

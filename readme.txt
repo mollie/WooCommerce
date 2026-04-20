@@ -218,12 +218,13 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.1.5 - 13-04-2026 =
+= 8.1.6 - 20-04-2026 =
 * Added - Hide order lines setting for payments API in gateways
 * Fixed - PayPal button is missed on Cart block
 * Fixed - Send billing address with email or phone
 * Fixed - Expired webhook for stale transaction cancels order despite subsequent payment attempts
 * Fixed - Fatal error when AutomateWoo triggers woocommerce_order_actions filter
+* Fixed - PayPal payment button on Cart page causes duplicate order to be generate and left in "draft" status
 
 = 8.1.4 - 09-03-2026 =
 * Added - Rebranding of iDEAL to iDEAL | Wero

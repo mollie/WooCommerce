@@ -6,12 +6,19 @@ on:
       TEST_SUITE:
         description: 'Test suite'
         required: true
-        default: 'critical'
+        default: 'e2e:test:payment-api:smoke'
         type: choice
         options:
-          - e2e:test:critical
-          - e2e:test:refund
-          - e2e:test:all
+          - e2e:test:payment-api
+          - e2e:test:payment-api:smoke
+          - e2e:test:payment-api:refund
+          - e2e:test:payment-api:multistep
+          - e2e:test:payment-api:multistep:smoke
+          - e2e:test:order-api
+          - e2e:test:order-api:smoke
+          - e2e:test:order-api:refund
+          - e2e:test:order-api:multistep
+          - e2e:test:order-api:multistep:smoke
 #  pull_request:
 #    branches: [dev/develop]
 #    paths:
@@ -44,7 +51,7 @@ jobs:
     needs: build
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
     with:
-      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE || 'e2e:test:critical' }}
+      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
       ARTIFACT_PATH: |
         artifacts/*
         playwright-report/
@@ -52,6 +59,7 @@ jobs:
       ARTIFACT_INCLUDE_HIDDEN_FILES: true
       NODE_VERSION: 24
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
+      NGROK_DOMAIN: ngrok-dev.mollie.syde.wpinfra.cloud
       
       PRE_SCRIPT: |
         # 1. Download and unzip the built plugin
@@ -63,37 +71,12 @@ jobs:
           rm -rf mollie-payments-for-woocommerce mollie-payments-for-woocommerce-*/
         )
 
-        # 2. Add private composer repository and download WooCommerce Subscriptions
+        # 2. Add private composer repository and download WooCommerce Subscriptions and Germanized Pro
         composer config repositories.repo-name composer https://repo.packagist.com/inpsyde/payment-gateways/
         composer require inpsyde-mirror/woocommerce-subscriptions
-
-        # 3. Setup wp-env default hosts
-        npm run e2e:setup:hosts
-
-        # 4. Install ngrok
-        curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
-        echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
-        sudo apt-get update && sudo apt-get install -y ngrok
-
-        # 5. Configure ngrok auth (token sourced from .env.ci)
-        ngrok config add-authtoken $NGROK_AUTHTOKEN
-
-        # 6. Start ngrok tunnel in background (tests environment port 80)
-        ngrok http 80 --log=stdout --log-level=info > /tmp/ngrok.log 2>&1 &
-
-        # 7. Wait for tunnel to be ready and grab the public URL
-        sleep 3
-        NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url')
-        echo "Ngrok URL: $NGROK_URL"
-
-        # 8. Update WordPress site URLs to ngrok (tests environment)
-        wp-env run tests-cli wp config set WP_SITEURL "$NGROK_URL"
-        wp-env run tests-cli wp config set WP_HOME "$NGROK_URL"
-
-        # 9. Override WP_BASE_URL for Playwright
-        sed -i "s|WP_BASE_URL=.*|WP_BASE_URL=$NGROK_URL|" .env.ci
+        composer require inpsyde-mirror/woocommerce-germanized-pro
     secrets:
       ENV_FILE_DATA: ${{ secrets.ENV_FILE_DATA }}
       NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES }}
       COMPOSER_AUTH_JSON: ${{ secrets.COMPOSER_AUTH_JSON }}
-      
+      NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}

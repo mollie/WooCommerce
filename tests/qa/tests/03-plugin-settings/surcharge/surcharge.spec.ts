@@ -62,7 +62,7 @@ for ( const surcharge of allTests ) {
 			} ) => {
 				test.skip(
 					! gateway.availableForApiMethods.includes( mollieApiMethod ), 
-					`Test is not eliginle for ${ mollieApiMethod } API method.`
+					`Test is not eligible for ${ mollieApiMethod } API method.`
 				);
 				await wooCommerceApi.updateGeneralSettings(
 					shopSettings[ country ].general

@@ -23,6 +23,7 @@ export const testPaymentStatusOnClassicCheckout = (
 
 	const customer = guests[ gateway.country ];
 	const currency = gateway.currency;
+	Object.assign( testData, { customer, currency } );
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
 	const label = testLabel ? ` ${ testLabel }` : '';
 
@@ -43,13 +44,11 @@ export const testPaymentStatusOnClassicCheckout = (
 			`Test is not eligible for ${ mollieApiMethod } API method.`
 		);
 
-		const orderStatus = getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
-		Object.assign( testData, { orderStatus, customer, currency } );
-		
-		testInfo.annotations.push({
-			type: 'orderStatus',
-			description: orderStatus,
-		});
+		// Sets the default orderStatus based on API method, if specific is not set
+		if ( ! testData.orderStatus ) {
+			testData.orderStatus =
+				await getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+		}
 
 		await updateCurrencyIfNeeded( wooCommerceApi, currency );
 

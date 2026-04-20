@@ -1,19 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Mollie\Inpsyde\PaymentGateway\Method;
 
-namespace Inpsyde\PaymentGateway\Method;
-
-use Inpsyde\PaymentGateway\GatewayIconsRendererInterface;
-use Inpsyde\PaymentGateway\IconProviderInterface;
-use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
-use Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
-use Inpsyde\PaymentGateway\PaymentProcessorInterface;
-use Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
-use Inpsyde\PaymentGateway\RefundProcessorInterface;
-use Psr\Container\ContainerInterface;
+use Mollie\Inpsyde\PaymentGateway\GatewayIconsRendererInterface;
+use Mollie\Inpsyde\PaymentGateway\IconProviderInterface;
+use Mollie\Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
+use Mollie\Inpsyde\PaymentGateway\PaymentMethodServiceProviderTrait;
+use Mollie\Inpsyde\PaymentGateway\PaymentProcessorInterface;
+use Mollie\Inpsyde\PaymentGateway\PaymentRequestValidatorInterface;
+use Mollie\Inpsyde\PaymentGateway\RefundProcessorInterface;
+use Mollie\Psr\Container\ContainerInterface;
 use WC_Payment_Gateway;
-
 /**
  * This interface describes a payment method within the service locator paradigm
  * of this payment gateway library/module.
@@ -30,49 +28,29 @@ use WC_Payment_Gateway;
 interface PaymentMethodDefinition
 {
     public function id(): string;
-
     public function isEnabled(ContainerInterface $container): bool;
-
     public function paymentProcessor(ContainerInterface $container): PaymentProcessorInterface;
-
     public function paymentRequestValidator(ContainerInterface $container): PaymentRequestValidatorInterface;
-
     public function title(ContainerInterface $container): string;
-
     public function methodTitle(ContainerInterface $container): string;
-
     public function description(ContainerInterface $container): string;
-
     public function methodDescription(ContainerInterface $container): string;
-
     /**
      * @param ContainerInterface $container
      *
      * @return callable(WC_Payment_Gateway): bool
      */
     public function availabilityCallback(ContainerInterface $container): callable;
-
     public function supports(ContainerInterface $container): array;
-
     public function refundProcessor(ContainerInterface $container): RefundProcessorInterface;
-
     public function paymentMethodIconProvider(ContainerInterface $container): IconProviderInterface;
-
     public function gatewayIconsRenderer(ContainerInterface $container): GatewayIconsRendererInterface;
-
     public function paymentFieldsRenderer(ContainerInterface $container): PaymentFieldsRendererInterface;
-
     public function hasFields(ContainerInterface $container): bool;
-
     public function formFields(ContainerInterface $container): array;
-
     public function optionKey(ContainerInterface $container): string;
-
     public function registerBlocks(ContainerInterface $container): bool;
-
     public function orderButtonText(ContainerInterface $container): string;
-
     public function customSettings(): CustomSettingsFieldsDefinition;
-
     public function icon(ContainerInterface $container): string;
 }

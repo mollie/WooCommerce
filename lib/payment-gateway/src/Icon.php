@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Inpsyde\PaymentGateway;
+declare (strict_types=1);
+namespace Mollie\Inpsyde\PaymentGateway;
 
 /**
  * Represents an icon with a unique identifier, source URL, and alternative text.
@@ -13,22 +12,14 @@ namespace Inpsyde\PaymentGateway;
 final class Icon
 {
     private string $id;
-
     private string $src;
-
     private string $alt;
-
-    public function __construct(
-        string $id,
-        string $src,
-        string $alt
-    ) {
-
+    public function __construct(string $id, string $src, string $alt)
+    {
         $this->id = $id;
         $this->src = $src;
         $this->alt = $alt;
     }
-
     /**
      * Returns the unique identifier of the icon.
      *
@@ -38,7 +29,6 @@ final class Icon
     {
         return $this->id;
     }
-
     /**
      * Retrieves the source URL of the icon image.
      *
@@ -48,7 +38,6 @@ final class Icon
     {
         return $this->src;
     }
-
     /**
      * Provides the alternative text for the icon, used for accessibility purposes.
      *

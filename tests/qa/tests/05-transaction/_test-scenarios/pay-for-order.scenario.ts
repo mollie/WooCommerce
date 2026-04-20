@@ -23,6 +23,7 @@ export const testPaymentStatusOnPayForOrder = (
 
 	const customer = guests[ gateway.country ];
 	const currency = gateway.currency;
+	Object.assign( testData, { customer, currency } );
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
 	const label = testLabel ? ` ${ testLabel }` : '';
 
@@ -34,15 +35,18 @@ export const testPaymentStatusOnPayForOrder = (
 		payForOrder,
 		wooCommerceOrderEdit,
 		mollieApiMethod,
-	} ) => {
+	}, testInfo ) => {
 		// exclude tests for payment methods if not available for tested API
 		test.skip(
 			! gateway.availableForApiMethods.includes( mollieApiMethod ), 
 			`Test is not eligible for ${ mollieApiMethod } API method.`
 		);
 
-		const orderStatus = getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
-		Object.assign( testData, { orderStatus, customer, currency } );
+		// Sets the default orderStatus based on API method, if specific is not set
+		if ( ! testData.orderStatus ) {
+			testData.orderStatus =
+				await getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+		}
 		
 		await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
 

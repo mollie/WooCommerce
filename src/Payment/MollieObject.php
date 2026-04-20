@@ -539,7 +539,9 @@ class MollieObject
             $paymentID
         );
         //check if there is a reason for failed payment and print it to order note
-        $failureReason = $payment->details->failureReason ?? '';
+        // CC payments use failureReason/failureMessage; SEPA DD uses bankReasonCode/bankReason
+        $failureReason = $payment->details->failureReason ?? $payment->details->bankReasonCode ?? '';
+        $failureMessage = $payment->details->failureMessage ?? $payment->details->bankReason ?? '';
         if ($failureReason) {
             $orderNote = sprintf(
                 /* translators: Placeholder 1: payment method title, placeholder 2: payment ID, placeholder 3: failure reason, placeholder 4: failure message */
@@ -547,7 +549,7 @@ class MollieObject
                 $paymentMethodTitle,
                 $paymentID,
                 $failureReason,
-                $payment->details->failureMessage ?? ''
+                $failureMessage
             );
         }
         if (function_exists('wcs_order_contains_renewal') && wcs_order_contains_renewal($orderId)) {

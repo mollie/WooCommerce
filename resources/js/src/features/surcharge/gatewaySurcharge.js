@@ -19,6 +19,11 @@
 			let previousPaymentMethod =
 				$( 'input[name="payment_method"]:checked' ).val() || '';
 
+			$( 'body' ).on( 'updated_checkout', function () {
+				previousPaymentMethod =
+					$( 'input[name="payment_method"]:checked' ).val() || '';
+			} );
+
 			$( 'body' ).on(
 				'change',
 				'input[name="payment_method"]',

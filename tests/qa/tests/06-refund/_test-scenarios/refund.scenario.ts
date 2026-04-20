@@ -31,6 +31,8 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 	} = testData;
 	const { gateway } = payment;
 	const customer = guests[ gateway.country ];
+	Object.assign( testData, { customer, currency } );
+
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
 
 	const refundPart = refundPercentage === 100 ? 'Full' : 'Partial';
@@ -62,15 +64,18 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			payForOrder,
 			wooCommerceOrderEdit,
 			mollieApiMethod,
-		} ) => {
+		}, testInfo ) => {
 			// exclude tests for payment methods if not available for tested API
 			test.skip(
 				! gateway.availableForApiMethods.includes( mollieApiMethod ), 
 				`Test is not eligible for ${ mollieApiMethod } API method.`
 			);
 
-			const orderStatus = getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
-			Object.assign( testData, { orderStatus, customer, currency } );
+			// Sets the default orderStatus based on API method, if specific is not set
+			if ( ! testData.orderStatus ) {
+				testData.orderStatus =
+					await getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+			}
 			
 			test.setTimeout( 30 * 60_000 );
 			let transactionId: string;

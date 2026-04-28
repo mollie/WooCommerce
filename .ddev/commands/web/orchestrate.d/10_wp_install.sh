@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-silent-no-warn
 
 if [ ! -z "${RECREATE_ENV}" ]; then
   echo "Deleting database before creating a new one"

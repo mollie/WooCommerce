@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-silent-no-warn
 
 popd
 

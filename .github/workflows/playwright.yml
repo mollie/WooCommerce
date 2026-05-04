@@ -19,6 +19,16 @@ on:
           - e2e:test:order-api:refund
           - e2e:test:order-api:multistep
           - e2e:test:order-api:multistep:smoke
+      TESTRAIL_PLAN_ID:
+        description: TestRail plan ID for reporting.
+        required: false
+        default: ''
+        type: string
+      TESTRAIL_RUN_ID:
+        description: TestRail run ID for reporting.
+        required: false
+        default: ''
+        type: string
 #  pull_request:
 #    branches: [dev/develop]
 #    paths:
@@ -60,6 +70,8 @@ jobs:
       NODE_VERSION: 24
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       NGROK_DOMAIN: ngrok-dev.mollie.syde.wpinfra.cloud
+      TESTRAIL_PLAN_ID: ${{ inputs.TESTRAIL_PLAN_ID }}
+      TESTRAIL_RUN_ID: ${{ inputs.TESTRAIL_RUN_ID }}
       
       PRE_SCRIPT: |
         # 1. Download and unzip the built plugin

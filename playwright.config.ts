@@ -68,18 +68,20 @@ export default defineConfig< TestBaseExtend >( {
 
 		...devices[ 'Desktop Chrome' ],
 
-		viewport: { width: 1280, height: 850 },
-
-		trace: 'retain-on-failure', //'on-first-retry',//'on',//
-
 		screenshot: {
 			mode: 'only-on-failure',
 			fullPage: true, // Captures entire scrollable page
 		},
 
+		viewport: { width: 1280, height: 850 },
+
+		trace: process.env.CI
+			? 'off'
+			: 'retain-on-failure', //'on-first-retry',//'on',//
+
 		video: process.env.CI
-			? undefined
-			:{
+			? 'off'
+			: {
 				mode: 'retain-on-failure', //'on',//
 				size: { width: 1280, height: 850 },
 			},

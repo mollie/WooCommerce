@@ -41,9 +41,8 @@ test( 'C3333 | Validate that the ecommerce admin have access to Documentation/Su
 	await mollieSettingsApiKeys.visit();
 	const contactMollieSupportButton =
 		mollieSettingsApiKeys.contactMollieSupportButton();
-	const contactSupportHref = await contactMollieSupportButton.getAttribute(
-		'href'
-	);
+	const contactSupportHref =
+		await contactMollieSupportButton.getAttribute( 'href' );
 	await expect(
 		contactSupportHref,
 		'Assert contact support href is correct'

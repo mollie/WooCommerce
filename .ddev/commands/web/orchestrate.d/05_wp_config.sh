@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-silent-no-warn
 
 # Create wp-config.php
 # the PHP snippet avoids some notices during CLI calls

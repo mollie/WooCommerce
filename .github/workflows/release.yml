@@ -33,6 +33,7 @@ jobs:
       GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
       GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}
       GITHUB_USER_SSH_PUBLIC_KEY: ${{ secrets.DEPLOYBOT_SSH_PUBLIC_KEY }}
+      NPM_REGISTRY_TOKEN: ${{ secrets.DEPLOYBOT_GITHUB_TOKEN_PACKAGES }}
     with:
       PACKAGE_NAME: mollie-payments-for-woocommerce
       PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}

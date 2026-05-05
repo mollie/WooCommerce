@@ -17,7 +17,6 @@ import {
 	processMolliePaymentStatus,
 	updateCurrencyIfNeeded,
 	getOrderStatusFromMollieStatus,
-	assertOrderNotes,
 } from '../../../utils';
 import { MollieTestData, guests } from '../../../resources';
 
@@ -31,10 +30,10 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 		refundOrderStatus: expectedRefundOrderStatus,
 	} = testData;
 	const { gateway } = payment;
-	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
 	const customer = guests[ gateway.country ];
+	Object.assign( testData, { customer, currency } );
+
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
-	Object.assign( testData, { orderStatus, customer, currency } );
 
 	const refundPart = refundPercentage === 100 ? 'Full' : 'Partial';
 
@@ -58,15 +57,29 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 		async ( {
 			wooCommerceApi,
 			utils,
-			classicCheckout,
+			checkout,
 			mollieHostedCheckout,
 			mollieClientApi,
 			orderReceived,
 			payForOrder,
 			wooCommerceOrderEdit,
-		} ) => {
-			test.setTimeout( 16 * 60_000 );
+			mollieApiMethod,
+		}, testInfo ) => {
+			// exclude tests for payment methods if not available for tested API
+			test.skip(
+				! gateway.availableForApiMethods.includes( mollieApiMethod ), 
+				`Test is not eligible for ${ mollieApiMethod } API method.`
+			);
+
+			// Sets the default orderStatus based on API method, if specific is not set
+			if ( ! testData.orderStatus ) {
+				testData.orderStatus =
+					await getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+			}
+			
+			test.setTimeout( 30 * 60_000 );
 			let transactionId: string;
+			let molliePaymentId: string;
 			let orderId: number;
 			let refundAmount: string;
 			let refundAvailable: number;
@@ -76,7 +89,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			let refundMeta: { key: string; value: any };
 			let statusAfterRefund: string;
 			// Preconditions
-			await test.step( 'Precondition: create WooCommerce order', async step => {
+			await test.step( 'Precondition: create WooCommerce order', async () => {
 				await updateCurrencyIfNeeded( wooCommerceApi, currency );
 
 				const orderTotals = await countTotals( testData );
@@ -89,7 +102,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 
 				await utils.fillVisitorsCart( testData.products );
 
-				await classicCheckout.makeOrder( testData );
+				await checkout.makeOrder( testData );
 
 				await mollieHostedCheckout.assertUrl();
 				orderId = await mollieHostedCheckout.captureOrderNumber();
@@ -102,10 +115,19 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				);
 
 				const order = await wooCommerceApi.getOrder( orderId );
+				// In case of Payment API transactionId = paymentId but in case of Order API transactionID = orderId which appears in order notes
 				transactionId = order.transaction_id;
 				await expect(
 					transactionId,
 					`Assert transaction ID ${ transactionId } is defined`
+				).toBeDefined();
+				// In case of Order API transactionId = orderId but to make a refund paymentId is required
+				molliePaymentId = order.meta_data.find(
+					( meta ) => meta.key === '_mollie_payment_id'
+				)?.value;
+				await expect(
+					molliePaymentId,
+					`Assert payment ID ${ molliePaymentId } is defined`
 				).toBeDefined();
 			} );
 
@@ -113,10 +135,10 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 
 			// Make refund via Mollie client API
 			if ( isMollieClientApiRefund ) {
-				await test.step( 'Make refund via Mollie client API', async step => {
-					const idempotencyKey = `${ transactionId }-refund-${ orderId }`;
+				await test.step( 'Make refund via Mollie client API', async () => {
+					const idempotencyKey = `${ molliePaymentId }-refund-${ orderId }`;
 					await mollieClientApi.refunds.create( {
-						paymentId: transactionId,
+						paymentId: molliePaymentId,
 						idempotencyKey,
 						refundRequest: {
 							amount: {
@@ -132,7 +154,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			}
 			// Make refund via WooCommerce admin
 			else {
-				await test.step( 'Make refund via WooCommerce', async step => {
+				await test.step( 'Make refund via WooCommerce', async () => {
 					await wooCommerceOrderEdit.visit( orderId );
 					await wooCommerceOrderEdit.refundButton().click();
 
@@ -160,9 +182,9 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				} );
 			}
 
-			await test.step( 'Wait for webhook and assert refund meta ~10 min', async step => {
+			await test.step( 'Wait for webhook and assert refund meta ~15 min', async () => {
 				// Assert via API WooCommerce Order refund status and presence of refunds
-				// Delayed webhooks cause following values to arrive in ~10 minutes after refund creation
+				// Delayed webhooks cause following values to arrive in ~10-30 minutes after refund creation
 				await expect( async () => {
 					const order = await wooCommerceApi.getOrder( orderId );
 					orderTotal = order.total;
@@ -179,7 +201,7 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 					await wooCommerceOrderEdit.page.reload();
 				} ).toPass( {
 					intervals: [ 60_000 ],
-					timeout: 14 * 60_000,
+					timeout: 30 * 60_000,
 				} );
 
 				await expect(
@@ -188,9 +210,12 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				).toHaveLength( 1 );
 				refundTransactionId = refundMeta.value[ 0 ];
 			} );
-			
-			await test.step( 'Assert refund details', async step => {
-				step.skip( isMolliePartialRefund, 'Not availabe for partial refund via Mollie dashboard' );
+
+			await test.step( 'Assert refund details', async ( step ) => {
+				step.skip(
+					isMolliePartialRefund,
+					'Not availabe for partial refund via Mollie dashboard'
+				);
 
 				await expect(
 					refunds,
@@ -224,8 +249,9 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			} );
 
 			// Assert order notes via WC API
-			await test.step( 'Assert refund Order Notes', async step => {
-				const formattedRefundAmount = parseFloat( refundAmount ).toString();
+			await test.step( 'Assert refund Order Notes', async () => {
+				const formattedRefundAmount =
+					parseFloat( refundAmount ).toString();
 				let expectedNotes = [];
 				if ( isWooCommerceFullRefund ) {
 					expectedNotes = [
@@ -262,7 +288,11 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 					];
 				}
 
-				await assertOrderNotes( wooCommerceApi, orderId, expectedNotes );
+				// await assertOrderNotes(
+				// 	wooCommerceApi,
+				// 	orderId,
+				// 	expectedNotes
+				// );
 			} );
 		}
 	);

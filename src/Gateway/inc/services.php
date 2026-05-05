@@ -205,17 +205,26 @@ return static function (): array {
             return new ApplePayDirectHandler($notice, $ajaxRequests);
         },
         PayPalExpressButton::class => static function (ContainerInterface $container): PayPalExpressButton {
+            $wooCommerceGateways = WC()->payment_gateways()->payment_gateways;
+            $matchingPayPalGateway = array_filter($wooCommerceGateways, static function ($gateway) {
+                return $gateway->id === 'mollie_wc_gateway_paypal';
+            });
+            if (!count($matchingPayPalGateway)) {
+                /**
+                 * Bail if PayPal is not available...
+                 */
+                throw new \RuntimeException(
+                    'Mollie PayPal Express Button requires PayPal payment method (Mollie) to be enabled'
+                );
+            }
+            $matchingPayPalGateway = reset($matchingPayPalGateway);
+            assert($matchingPayPalGateway instanceof PaymentGateway);
             $notice = $container->get(AdminNotice::class);
             assert($notice instanceof AdminNotice);
             $logger = $container->get(Logger::class);
             assert($logger instanceof Logger);
-            $paymentGateways = $container->get('payment_gateways');
-            if (!in_array('mollie_wc_gateway_paypal', $paymentGateways)) {
-                return false;
-            }
-            $paypalGateway = new Inpsyde\PaymentGateway\PaymentGateway('mollie_wc_gateway_paypal', $container);
             $pluginUrl = $container->get('shared.plugin_url');
-            $ajaxRequests = new PayPalAjaxRequests($paypalGateway, $notice, $logger);
+            $ajaxRequests = new PayPalAjaxRequests($matchingPayPalGateway, $notice, $logger);
             $data = new DataToPayPal($pluginUrl);
             $enabledInProduct = (mollieWooCommerceIsPayPalButtonEnabled('product'));
             $enabledInCart = (mollieWooCommerceIsPayPalButtonEnabled('cart'));

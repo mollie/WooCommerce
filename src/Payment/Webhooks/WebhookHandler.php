@@ -346,10 +346,11 @@ class WebhookHandler
             $payment
         );
 
-        if (isset($payment->details->failureReason)) {
+        $loggedReason = $payment->details->failureReason ?? $payment->details->bankReasonCode ?? null;
+        if ($loggedReason) {
             $this->logger->debug(
                 __METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id
-                . ', regular payment failed because of ' . esc_attr($payment->details->failureReason) . '.'
+                . ', regular payment failed because of ' . esc_attr($loggedReason) . '.'
             );
         } else {
             $this->logger->debug(

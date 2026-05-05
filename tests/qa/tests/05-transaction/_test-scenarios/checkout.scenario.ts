@@ -15,24 +15,19 @@ import {
 } from '../../../utils';
 import { MollieTestData, guests } from '../../../resources';
 
-const isMultistepCheckout = process.env.IS_MULTISTEP_CHECKOUT === 'true';
-
 export const testPaymentStatusOnCheckout = (
 	testData: MollieTestData.ShopOrder
 ) => {
 	const { testId, testLabel, payment } = testData;
 	const { gateway } = payment;
 
-	const orderStatus = getOrderStatusFromMollieStatus( payment.status );
 	const customer = guests[ gateway.country ];
 	const currency = gateway.currency;
+	Object.assign( testData, { customer, currency } );
 	const gatewayLabel = buildMollieGatewayLabel( gateway );
-	const multistepLabel = isMultistepCheckout ? ' - Multistep' : '';
 	const label = testLabel ? ` ${ testLabel }` : '';
 
-	Object.assign( testData, { orderStatus, customer, currency } );
-
-	test( `${ testId } | Transaction${ multistepLabel } - Checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with status ${ orderStatus }${ label }`, async ( {
+	test( `${ testId } | Transaction - Checkout - ${ gatewayLabel } - Payment status ${ payment.status } creates order with expected status${ label }`, async ( {
 		wooCommerceApi,
 		utils,
 		checkout,
@@ -40,7 +35,21 @@ export const testPaymentStatusOnCheckout = (
 		orderReceived,
 		payForOrder,
 		wooCommerceOrderEdit,
-	} ) => {
+		isMultistepCheckout,
+		mollieApiMethod,
+	}, testInfo ) => {
+		// exclude tests for payment methods if not available for tested API
+		test.skip(
+			! gateway.availableForApiMethods.includes( mollieApiMethod ), 
+			`Test is not eligible for ${ mollieApiMethod } API method.`
+		);
+
+		// Sets the default orderStatus based on API method, if specific is not set
+		if ( ! testData.orderStatus ) {
+			testData.orderStatus =
+				await getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+		}
+		
 		await updateCurrencyIfNeeded( wooCommerceApi, gateway.currency );
 
 		const orderTotals = await countTotals( testData );
@@ -62,9 +71,8 @@ export const testPaymentStatusOnCheckout = (
 			testData
 		);
 
-		const { transaction_id: transactionId } = await wooCommerceApi.getOrder(
-			orderId
-		);
+		const { transaction_id: transactionId } =
+			await wooCommerceApi.getOrder( orderId );
 		await expect(
 			transactionId,
 			`Assert transaction ID ${ transactionId } is defined`
@@ -76,7 +84,7 @@ export const testPaymentStatusOnCheckout = (
 			transactionId
 		);
 
-		if( payment.status === 'paid' ) {
+		if ( payment.status === 'paid' ) {
 			// Assert order notes via WC API
 			const expectedNotes = [
 				`${ gateway.slug } payment started (${ transactionId } - test mode).`,

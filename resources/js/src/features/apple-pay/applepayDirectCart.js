@@ -16,9 +16,11 @@ import { maybeShowButton } from './maybeShowApplePayButton.js';
 		return;
 	}
 
-	const nonce = document.getElementById(
-		'woocommerce-process-checkout-nonce'
-	).value;
+	const nonceElement = document.getElementById( 'woocommerce-process-checkout-nonce' );
+	if ( ! nonceElement ) {
+		return;
+	}
+	const nonce = nonceElement.value;
 
 	let updatedContactInfo = [];
 	let selectedShippingMethod = [];

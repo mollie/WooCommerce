@@ -1,17 +1,17 @@
 /**
  * Internal dependencies
  */
-import { test, expect } from '../../utils';
+import { test } from '../../utils';
 import {
 	gateways,
 	guests,
 	MollieGateway,
 	products,
-	shopSettings,
+	shopConfigClassic,
 } from '../../resources';
 
 test.beforeAll( async ( { utils } ) => {
-	await utils.configureStore( { enableClassicPages: true } );
+	await utils.configureStore( shopConfigClassic );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
 } );
@@ -42,7 +42,9 @@ test( 'C420154 | Validate correct gateways shown with Order API on Classic check
 		guest = guests[ gateway.country ];
 		countryCode = guest.billing.country;
 
-		if ( excludedPaymentMethods.includes( gateway.slug ) ) continue;
+		if ( excludedPaymentMethods.includes( gateway.slug ) ) {
+			continue;
+		}
 
 		await wooCommerceApi.updateGeneralSettings( {
 			woocommerce_currency: gateway.currency || 'EUR',
@@ -58,8 +60,4 @@ test( 'C420154 | Validate correct gateways shown with Order API on Classic check
 			{ isSoftAssertion: true }
 		);
 	}
-} );
-
-test.afterAll( async ( { wooCommerceApi } ) => {
-	await wooCommerceApi.updateGeneralSettings( shopSettings.germany.general );
 } );

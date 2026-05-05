@@ -8,7 +8,6 @@ import {
 	WooCommerceUtils,
 	restLogin,
 } from '@inpsyde/playwright-utils/build';
-import path from 'path';
 /**
  * Internal dependencies
  */
@@ -21,9 +20,8 @@ import {
 import {
 	MollieSettings,
 	molliePlugin,
-	enableBizumPlugin,
 	mollieApiKeys,
-	subscriptionsPlugin,
+	woocommerceSubscriptionsPlugin,
 	ShopConfig,
 } from '../resources';
 
@@ -72,16 +70,6 @@ export class Utils {
 		}
 		await this.requestUtils.activatePlugin( molliePlugin.slug );
 	};
-	installAndActivateBizum = async () => {
-	if (
-		! ( await this.requestUtils.isPluginInstalled( enableBizumPlugin.slug ) )
-	) {
-		await this.plugins.installPluginFromFile(
-			path.resolve( __dirname, '../resources/files/enable-bizum.zip' )
-		);
-	}
-	await this.requestUtils.activatePlugin( 'enable-bizum' );
-};
 
 	/**
 	 * Resets and reconnects Mollie:
@@ -104,9 +92,8 @@ export class Utils {
 	 * @param products
 	 */
 	fillVisitorsCart = async ( products: WooCommerce.CreateProduct[] ) => {
-		const cartProducts = await this.wooCommerceUtils.createCartProducts(
-			products
-		);
+		const cartProducts =
+			await this.wooCommerceUtils.createCartProducts( products );
 		await this.visitorWooCommerceApi.clearCart();
 		await this.visitorWooCommerceApi.addProductsToCart( cartProducts );
 	};
@@ -152,12 +139,12 @@ export class Utils {
 		}: ShopConfig = data;
 
 		if ( enableSubscriptionsPlugin === true ) {
-			await this.requestUtils.activatePlugin( subscriptionsPlugin.slug );
+			await this.requestUtils.activatePlugin( woocommerceSubscriptionsPlugin.slug );
 		}
 
 		if ( enableSubscriptionsPlugin === false ) {
 			await this.requestUtils.deactivatePlugin(
-				subscriptionsPlugin.slug
+				woocommerceSubscriptionsPlugin.slug
 			);
 		}
 

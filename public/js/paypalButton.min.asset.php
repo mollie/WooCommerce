@@ -2,4 +2,4 @@
 
 namespace Mollie;
 
-return array('dependencies' => array(), 'version' => 'bcfa43370f172f185e54');
+return array('dependencies' => array(), 'version' => '99aafe68d0ddd00a2647');

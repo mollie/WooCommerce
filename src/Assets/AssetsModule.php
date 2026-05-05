@@ -56,6 +56,9 @@ class AssetsModule implements ExecutableModule, ServiceModule
             wp_enqueue_script('mollie_applepaydirectCart');
             wp_localize_script('mollie_applepaydirectCart', 'mollieApplePayDirectDataCart', $dataToScripts->applePayScriptData());
         }
+        if (mollieWooCommerceIsApplePayDirectEnabled('express_checkout') && (is_checkout() || is_cart())) {
+            wp_enqueue_style('mollie-applepaydirect');
+        }
     }
     /**
      * Enqueues the ApplePay button scripts if enabled and in correct page
@@ -252,6 +255,18 @@ class AssetsModule implements ExecutableModule, ServiceModule
             woocommerce_store_api_register_update_callback(['namespace' => 'mollie-payments-for-woocommerce', 'callback' => static function () {
                 // Do nothing
             }]);
+            // Expose is_virtual per cart item in the WC Store API.
+            // Called directly here (no hook wrapper) — setupModuleActions() runs
+            // during module boot on plugins_loaded after WooCommerce has loaded,
+            // so the function and StoreApi container are already available.
+            // ExtendSchema::register_endpoint_data just appends to an in-memory
+            // array consumed on REST requests, so there is no timing deadline.
+            woocommerce_store_api_register_endpoint_data(['endpoint' => 'cart-item', 'namespace' => 'mollie-payments', 'data_callback' => static function (array $cart_item): array {
+                $product = $cart_item['data'] ?? null;
+                return ['virtual' => $product instanceof \WC_Product && $product->is_virtual()];
+            }, 'schema_callback' => static function (): array {
+                return ['virtual' => ['description' => 'Whether the cart item is a virtual product', 'type' => 'boolean', 'context' => ['view', 'edit'], 'readonly' => \true]];
+            }, 'schema_type' => \ARRAY_A]);
         });
         add_action('woocommerce_init', function () use ($container, $pluginUrl, $pluginPath) {
             self::registerFrontendScripts($pluginUrl, $pluginPath);

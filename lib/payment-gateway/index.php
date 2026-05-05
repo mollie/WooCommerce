@@ -7,8 +7,8 @@ namespace Mollie;
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version: 8.1.4+piwoo-841-expiry-webhook-race-condition.ef623f4
- * SHA: ef623f467130077bdd28812214027da99e61b8e7
+ * Version:     {VERSION}
+ * SHA:         ${GIT_SHA}
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3

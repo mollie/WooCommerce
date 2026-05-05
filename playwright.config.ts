@@ -30,28 +30,20 @@ export default defineConfig< TestBaseExtend >( {
 	/* Opt out of parallel tests on CI. */
 	workers: process.env.CI ? 1 : 1,
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
-	reporter: process.env.CI
-		? [
-				[ 'list' ],
-				[ 'html', { outputFolder: 'playwright-report' } ],
-				[
-					'@inpsyde/playwright-utils/build/integration/testrail/testrail-reporter.js',
-				],
-		  ]
-		: [
-				[ 'list' ],
-				[ 'html', { outputFolder: 'playwright-report' } ],
-				[
-					'@inpsyde/playwright-utils/build/integration/testrail/testrail-reporter.js',
-					{
-						apiUrl: process.env.TESTRAIL_URL,
-						apiUsername: process.env.TESTRAIL_USERNAME,
-						apiPassword: process.env.TESTRAIL_PASSWORD,
-						plan_id: process.env.TESTRAIL_PLAN_ID,
-						run_id: process.env.TESTRAIL_RUN_ID,
-					},
-				],
-		  ],
+	reporter: [
+		[ 'list' ],
+		[ 'html', { outputFolder: 'playwright-report' } ],
+		[
+			'@inpsyde/playwright-utils/build/integration/testrail/testrail-reporter.js',
+			{
+				apiUrl: process.env.TESTRAIL_URL,
+				apiUsername: process.env.TESTRAIL_USERNAME,
+				apiPassword: process.env.TESTRAIL_PASSWORD,
+				plan_id: process.env.TESTRAIL_PLAN_ID,
+				run_id: process.env.TESTRAIL_RUN_ID,
+			},
+		],
+	],
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 
 	globalSetup: require.resolve( './tests/qa/global-setup' ),
@@ -76,24 +68,30 @@ export default defineConfig< TestBaseExtend >( {
 
 		...devices[ 'Desktop Chrome' ],
 
-		viewport: { width: 1280, height: 850 },
-
-		trace: 'retain-on-failure', //'on-first-retry',//'on',//
-
 		screenshot: {
 			mode: 'only-on-failure',
 			fullPage: true, // Captures entire scrollable page
 		},
 
-		video: {
-			mode: 'retain-on-failure', //'on',//
-			size: { width: 1280, height: 850 },
-		},
+		viewport: { width: 1280, height: 850 },
 
-		recordVideoOptions: {
-			mode: 'retain-on-failure',
-			size: { width: 1280, height: 850 },
-		},
+		trace: process.env.CI
+			? 'off'
+			: 'retain-on-failure', //'on-first-retry',//'on',//
+
+		video: process.env.CI
+			? 'off'
+			: {
+				mode: 'retain-on-failure', //'on',//
+				size: { width: 1280, height: 850 },
+			},
+
+		recordVideoOptions: process.env.CI
+			? undefined
+			: {
+				mode: 'retain-on-failure',
+				size: { width: 1280, height: 850 },
+			},
 
 		mollieApiMethod: 'payment',
 		

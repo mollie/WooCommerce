@@ -27,7 +27,7 @@ node_modules/
 .editorconfig
 .idea/
 .psalm/
-.env.example-e2e
+.env.example.e2e
 .env.integration.example
 .eslintignore
 .wp-env.json

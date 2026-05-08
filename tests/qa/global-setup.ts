@@ -23,7 +23,6 @@ async function globalSetup( config: FullConfig ) {
 		baseURL: projectUse.baseURL,
 		httpCredentials: projectUse.httpCredentials,
 		storageStatePath: `${ process.env.STORAGE_STATE_PATH }/guest.json`,
-		extraHTTPHeaders,
 	} );
 }
 

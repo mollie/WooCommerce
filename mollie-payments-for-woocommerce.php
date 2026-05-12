@@ -4,7 +4,7 @@
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 8.1.6+develop.c3a4894
+ * Version: 8.1.6+develop.cb9b06d
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0

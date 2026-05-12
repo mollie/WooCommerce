@@ -59,7 +59,7 @@ jobs:
   e2e-playwright:
     name: Run Playwright E2E Tests
     needs: build
-    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright-rename-artifact-inputs
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@fix/test-playwright
     with:
       PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
       PLAYWRIGHT_ARTIFACT_PATH: |

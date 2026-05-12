@@ -163,7 +163,7 @@ Yes, you can with a separate plugin. At the moment we have tested and can recomm
 
 = Why do orders with payment method BankTransfer and Direct Debit get the status 'on-hold'? =
 
-These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://docs.woothemes.com/document/configuring-woocommerce-settings/#inventory-options) will
+These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://woocommerce.com/document/configuring-woocommerce-settings/products/#inventory) will
 cancel the order. The order stock is also reduced to reserve stock for these orders. The stock is restored if the payment fails or is cancelled. You can change the initial order status for these payment methods on their setting page.
 
 = I have a different question about this plugin =

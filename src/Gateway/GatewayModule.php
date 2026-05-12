@@ -18,9 +18,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\PaymentMethods\Constants;
-use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
-use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -123,19 +121,21 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             if (!$title) {
                 return;
             }
+            // phpstan:ignore [wc-stub] $paymentContext is passed via WC REST action with no declared type; ->order is a WC_Order
+            // @phpstan-ignore-next-line
             $order = $paymentContext->order;
             $order->set_payment_method_title($title);
             $order->save();
         });
         add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
-        add_filter('woocommerce_checkout_fields', static function ($fields) use ($container) {
+        add_filter('woocommerce_checkout_fields', static function ($fields) {
             if (!isset($fields['billing']['billing_phone']) || !$fields['billing']['billing_phone']['required']) {
                 update_option('mollie_wc_is_phone_required_flag', \false);
             } else {
                 update_option('mollie_wc_is_phone_required_flag', \true);
             }
             return $fields;
-        }, 10, 3);
+        }, 10, 1);
         add_action('init', static function () use ($container) {
             $paymentMethods = $container->get('gateway.paymentMethods');
             foreach ($paymentMethods as $paymentMethod) {
@@ -351,7 +351,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      *
      * @return array
      */
-    protected function instantiatePaymentMethods(): array
+    public function instantiatePaymentMethods(): array
     {
         $paymentMethods = [];
         $allGatewayClassNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
@@ -369,10 +369,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
     }
     /**
      * @param string $id
-     * @param IconFactory $iconFactory
-     * @param Settings $settingsHelper
-     * @param Surcharge $surchargeService
-     * @param array $paymentMethods
      * @return PaymentMethodI | array
      */
     public function buildPaymentMethod(string $id)

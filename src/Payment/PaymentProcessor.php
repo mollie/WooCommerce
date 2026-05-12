@@ -8,12 +8,12 @@ use Mollie\Inpsyde\PaymentGateway\PaymentProcessorInterface;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Notice\NoticeInterface;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
-use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\Psr\Log\LoggerInterface as Logger;
 use WC_Order;
 class PaymentProcessor implements PaymentProcessorInterface
@@ -21,7 +21,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     public const PAYMENT_METHOD_TYPE_ORDER = 'order';
     public const PAYMENT_METHOD_TYPE_PAYMENT = 'payment';
     /**
-     * @var
+     * @var mixed
      */
     protected $deprecatedGatewayHelper;
     /**

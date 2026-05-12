@@ -293,7 +293,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
                 return $dependencies;
             });
         });
-        add_action('admin_init', function () use ($container, $pluginVersion, $pluginUrl) {
+        add_action('admin_init', function () use ($pluginVersion, $pluginUrl) {
             if (is_admin()) {
                 global $current_section;
                 wp_register_script('mollie_wc_admin_settings', $this->getPluginUrl($pluginUrl, '/public/js/settings.min.js'), ['underscore', 'jquery'], $pluginVersion);

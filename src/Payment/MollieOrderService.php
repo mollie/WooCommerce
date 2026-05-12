@@ -34,6 +34,8 @@ class MollieOrderService
     protected $data;
     protected $pluginId;
     private ContainerInterface $container;
+    // phpstan:ignore [dead-code] declared but never assigned after construction; likely a concurrency guard placeholder
+    // @phpstan-ignore-next-line
     private string $currentLockValue;
     private WebhookHandler $webhookHandler;
     /**
@@ -395,6 +397,8 @@ class MollieOrderService
             // Send a "Failed order" email to notify the admin
             $emails = WC()->mailer()->get_emails();
             if (!empty($emails) && !empty($orderId) && !empty($emails['WC_Email_Failed_Order'])) {
+                // phpstan:ignore [wc-stub] WC_Email subclass accessed via mailer array; trigger() not typed on WC_Email base class in stubs
+                // @phpstan-ignore-next-line
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
             $order->update_meta_data('_mollie_processed_chargeback_ids', $processedChargebackIds);

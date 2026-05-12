@@ -8,9 +8,9 @@ use Mollie\Api\MollieApiClient;
 class Api
 {
     /**
-     * @var \Mollie\Api\MollieApiClient
+     * @var \Mollie\Api\MollieApiClient|null
      */
-    protected static $api_client;
+    protected static ?MollieApiClient $api_client = null;
     /**
      * @var string
      */
@@ -25,7 +25,7 @@ class Api
         $this->pluginId = $pluginId;
     }
     /**
-     * @param bool $test_mode
+     * @param string $apiKey
      * @param bool $needToUpdateApiKey If the apiKey was updated discard the old instance, and create a new one with the new key.
      *
      * @return \Mollie\Api\MollieApiClient
@@ -42,7 +42,7 @@ class Api
         } elseif (!preg_match('#^(live|test)_\w{30,}$#', $apiKey)) {
             throw new ApiException(sprintf(esc_html__("Invalid API key(s). Get them on the %1\$sDevelopers page in the Mollie dashboard%2\$s. The API key(s) must start with 'live_' or 'test_', be at least 30 characters and must not contain any special characters.", 'mollie-payments-for-woocommerce'), '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">', '</a>'));
         }
-        if (empty(self::$api_client) || $needToUpdateApiKey) {
+        if (self::$api_client === null || $needToUpdateApiKey) {
             $client = new MollieApiClient(null, new \Mollie\WooCommerce\SDK\WordPressHttpAdapterPicker());
             $client->setApiKey($apiKey);
             $client->setApiEndpoint($this->getApiEndpoint());

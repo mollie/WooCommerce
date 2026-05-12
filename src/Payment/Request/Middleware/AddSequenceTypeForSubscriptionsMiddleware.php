@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\Payment\Request\Middleware;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
+use WC_Payment_Gateway;
 /**
  * Middleware to add sequence type for subscription payments.
  */
@@ -42,7 +43,7 @@ class AddSequenceTypeForSubscriptionsMiddleware implements \Mollie\WooCommerce\P
     public function __invoke(array $requestData, WC_Order $order, $context, callable $next): array
     {
         $gateway = wc_get_payment_gateway_by_order($order);
-        if ($gateway) {
+        if ($gateway instanceof WC_Payment_Gateway) {
             $requestData = $this->addSequenceTypeForSubscriptionsFirstPayments($order->get_id(), $gateway, $requestData, $context);
         }
         return $next($requestData, $order, $context);

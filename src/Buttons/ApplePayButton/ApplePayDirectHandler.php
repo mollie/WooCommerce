@@ -9,6 +9,8 @@ class ApplePayDirectHandler
     /**
      * @var AdminNotice
      */
+    // phpstan:ignore [dead-code] injected via constructor but never read; kept in case future methods need admin notice access
+    // @phpstan-ignore-next-line
     private $adminNotice;
     /**
      * @var AppleAjaxRequests

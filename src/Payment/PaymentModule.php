@@ -91,7 +91,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $paymentMethods = $container->get('gateway.paymentMethods');
         add_action('init', function () use ($paymentMethods) {
             $this->handleExpiryDateCancelation($paymentMethods);
-        }, 10, 2);
+        }, 10, 0);
         add_action(OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS, [$this, 'addOrderNoteForRefundCreated'], 10, 3);
         add_action(OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS, [$this, 'addOrderNoteForCancelledLineItems'], 10, 2);
         return \true;
@@ -120,7 +120,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             if (empty($gatewaySettings["activate_expiry_days_setting"]) || $gatewaySettings["activate_expiry_days_setting"] === 'no') {
                 continue;
             }
-            $heldDuration = isset($gatewaySettings) && isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
+            $heldDuration = isset($gatewaySettings['order_dueDate']) ? $gatewaySettings['order_dueDate'] : 0;
             if ($heldDuration < 1) {
                 continue;
             }
@@ -407,7 +407,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             if (\false === as_next_scheduled_action('mollie_woocommerce_cancel_unpaid_orders')) {
                 as_schedule_recurring_action(time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
             }
-            add_action('mollie_woocommerce_cancel_unpaid_orders', [$this, 'cancelOrderOnExpiryDate'], 11, 2);
+            add_action('mollie_woocommerce_cancel_unpaid_orders', [$this, 'cancelOrderOnExpiryDate'], 11, 0);
         }
     }
     /**

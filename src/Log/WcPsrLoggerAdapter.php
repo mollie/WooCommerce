@@ -69,7 +69,7 @@ class WcPsrLoggerAdapter extends AbstractLogger
             $context['originalSource'] = $this->className;
         }
         $context['source'] = $this->loggerSource;
-        $interpolatedMessage = is_string($message) ? $this->interpolate($message, $this->getReplacements($context)) : $message;
+        $interpolatedMessage = $this->interpolate((string) $message, $this->getReplacements($context));
         $this->wcLogger->log($level, $interpolatedMessage, $context);
     }
     /**

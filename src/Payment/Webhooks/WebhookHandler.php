@@ -169,6 +169,7 @@ class WebhookHandler
         $mollieObject->unsetActiveMolliePayment($orderId, $payment->id);
         $mollieObject->setCancelledMolliePaymentId($orderId, $payment->id);
         $orderStatusCancelledPayments = $this->settingsHelper->getOrderStatusCancelledPayments();
+        $newOrderStatus = SharedDataDictionary::STATUS_PENDING;
         if ($orderStatusCancelledPayments === 'pending' || $orderStatusCancelledPayments === null) {
             $newOrderStatus = SharedDataDictionary::STATUS_PENDING;
         } elseif ($orderStatusCancelledPayments === 'cancelled') {

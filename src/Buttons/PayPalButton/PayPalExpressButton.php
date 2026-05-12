@@ -119,6 +119,7 @@ class PayPalExpressButton extends AbstractExpressButton
     private function isVirtualProduct(\WC_Product $product): bool
     {
         if ($product->is_type('variable')) {
+            assert($product instanceof \WC_Product_Variable);
             foreach ($product->get_available_variations() as $variation) {
                 if ($variation['is_virtual']) {
                     return \true;

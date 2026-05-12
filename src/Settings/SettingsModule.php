@@ -4,16 +4,15 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\Settings;
 
+use Mollie\Inpsyde\Modularity\Module\ExecutableModule;
+use Mollie\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Notice\AdminNotice;
-use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerce\Uninstall\CleanDb;
-use Mollie\Inpsyde\Modularity\Module\ExecutableModule;
-use Mollie\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use Mollie\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\Psr\Container\ContainerInterface;
 use Mollie\Psr\Log\LoggerInterface as Logger;
 class SettingsModule implements ServiceModule, ExecutableModule
@@ -153,7 +152,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
             $this->maybeSaveDefaultSettings($optionName, $testedOption, $defaultAdvancedOptions);
             $testedOption = 'backgroundColor';
             $this->maybeSaveDefaultSettings('mollie_components_', $testedOption, $defaultComponentsOptions);
-        }, 10, 2);
+        }, 10, 0);
         $this->isTestNoticePrinted = \false;
         add_action('woocommerce_settings_saved', function () {
             $isNoticePrinted = $this->maybeTestModeNotice();

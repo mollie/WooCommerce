@@ -125,13 +125,13 @@ class Settings
         return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER;
     }
     /**
-     * @param bool $overrideTestMode
+     * @param bool|null $overrideTestMode Pass null to use the current test mode setting.
      *
      * @return false|string
      */
-    public function getApiKey($overrideTestMode = 2)
+    public function getApiKey(?bool $overrideTestMode = null)
     {
-        $isTestModeEnabled = $overrideTestMode === 2 ? $this->isTestModeEnabled() : $overrideTestMode;
+        $isTestModeEnabled = $overrideTestMode === null ? $this->isTestModeEnabled() : $overrideTestMode;
         $settingId = $isTestModeEnabled ? 'test_api_key' : 'live_api_key';
         $apiKeyId = $this->getSettingId($settingId);
         $apiKey = get_option($apiKeyId);
@@ -316,7 +316,7 @@ class Settings
         $setting_id_length = strlen($setting_id);
         $max_option_name_length = 191;
         if ($setting_id_length > $max_option_name_length) {
-            trigger_error(sprintf('Setting id %s (%s) to long for database column wp_options.option_name which is varchar(%s).', esc_html($setting_id), esc_html($setting_id_length), esc_html($max_option_name_length)), \E_USER_WARNING);
+            trigger_error(sprintf('Setting id %s (%s) to long for database column wp_options.option_name which is varchar(%s).', esc_html($setting_id), esc_html((string) $setting_id_length), esc_html((string) $max_option_name_length)), \E_USER_WARNING);
         }
         return $setting_id;
     }
@@ -416,7 +416,7 @@ class Settings
      * If we are calling this the api key has been updated, we need a new api object
      * to retrieve a new profile id
      *
-     * @return CurrentProfile
+     * @return \Mollie\Api\Resources\CurrentProfile
      * @throws ApiException
      */
     protected function mollieWooCommerceMerchantProfile()
@@ -443,7 +443,7 @@ class Settings
             if (!$merchantProfileId) {
                 try {
                     $merchantProfile = $this->mollieWooCommerceMerchantProfile();
-                    $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
+                    $merchantProfileId = $merchantProfile->id;
                 } catch (ApiException $exception) {
                     $merchantProfileId = '';
                 }

@@ -98,7 +98,6 @@ class GatewaySurchargeHandler
         if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE) {
             $data = ['amount' => \false, 'currency' => get_woocommerce_currency_symbol(), 'newTotal' => $order->get_total()];
             wp_send_json_success($data);
-            return;
         }
         $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
         if ($amount > 0) {

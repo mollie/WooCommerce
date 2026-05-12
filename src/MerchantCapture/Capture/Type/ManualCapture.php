@@ -4,7 +4,6 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\MerchantCapture\Capture\Type;
 
 use Mollie\WooCommerce\MerchantCapture\Capture\Action\CapturePayment;
-use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\Psr\Container\ContainerInterface;
 class ManualCapture
 {
@@ -50,7 +49,7 @@ class ManualCapture
         }
         return $paymentData;
     }
-    public function manualCapture(\WC_Order $order)
+    public function manualCapture(\WC_Order $order): void
     {
         $this->container->get(CapturePayment::class)($order->get_id());
         //give paid webhook time to arrive so that updated correctly bevor showing the order in the backend

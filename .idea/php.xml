@@ -22,6 +22,7 @@
     <phpcsfixer_settings>
       <PhpCSFixerConfiguration standards="PSR1;PSR2;Symfony;DoctrineAnnotation;PHP70Migration;PHP71Migration" tool_path="$PROJECT_DIR$/vendor/bin/phpcbf" />
       <phpcs_fixer_by_interpreter interpreter_id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" standards="PSR1;PSR2;Symfony;DoctrineAnnotation;PHP70Migration;PHP71Migration" tool_path="/var/www/html/vendor/bin/phpcbf" timeout="30000" />
+      <phpcs_fixer_by_interpreter asDefaultInterpreter="true" interpreter_id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" standards="PSR1;PSR2;Symfony;DoctrineAnnotation;PHP70Migration;PHP71Migration" tool_path="/var/www/html/vendor/bin/phpcbf" timeout="30000" />
     </phpcsfixer_settings>
   </component>
   <component name="PhpCodeSniffer">
@@ -266,6 +267,7 @@
   <component name="PhpStan">
     <PhpStan_settings>
       <phpstan_by_interpreter asDefaultInterpreter="true" interpreter_id="29a5ef5c-f9cb-48bf-aa11-97d89c5f9549" timeout="60000" />
+      <PhpStanConfiguration tool_path="$PROJECT_DIR$/vendor/bin/phpstan" />
     </PhpStan_settings>
   </component>
   <component name="PhpStanOptionsConfiguration">
@@ -280,6 +282,7 @@
     <Psalm_settings>
       <PsalmConfiguration tool_path="$PROJECT_DIR$/vendor/bin/psalm" />
       <psalm_fixer_by_interpreter interpreter_id="29a5ef5c-f9cb-48bf-aa11-97d89c5f9549" tool_path="$PROJECT_DIR$/vendor/bin/psalm" timeout="60000" />
+      <psalm_fixer_by_interpreter asDefaultInterpreter="true" interpreter_id="52b49461-5bc3-4708-8d5d-ae6e32b31b9c" tool_path="/var/www/html/vendor/bin/psalm" timeout="60000" />
     </Psalm_settings>
   </component>
   <component name="PsalmOptionsConfiguration">

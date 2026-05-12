@@ -14,7 +14,7 @@ class ResponsesToApple
      */
     protected $logger;
     /**
-     * @var
+     * @var mixed
      */
     protected $deprecatedAppleHelper;
 

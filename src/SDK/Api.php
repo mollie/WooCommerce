@@ -10,9 +10,9 @@ use Mollie\Api\MollieApiClient;
 class Api
 {
     /**
-     * @var \Mollie\Api\MollieApiClient
+     * @var \Mollie\Api\MollieApiClient|null
      */
-    protected static $api_client;
+    protected static ?MollieApiClient $api_client = null;
     /**
      * @var string
      */
@@ -29,7 +29,7 @@ class Api
     }
 
     /**
-     * @param bool $test_mode
+     * @param string $apiKey
      * @param bool $needToUpdateApiKey If the apiKey was updated discard the old instance, and create a new one with the new key.
      *
      * @return \Mollie\Api\MollieApiClient
@@ -59,7 +59,7 @@ class Api
             );
         }
 
-        if (empty(self::$api_client) || $needToUpdateApiKey) {
+        if (self::$api_client === null || $needToUpdateApiKey) {
             $client = new MollieApiClient(null, new WordPressHttpAdapterPicker());
             $client->setApiKey($apiKey);
             $client->setApiEndpoint($this->getApiEndpoint());

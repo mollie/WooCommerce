@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 use WC_Order;
-use WC_Order_Item_Product;
 
 class WCOrderCalculator extends WC_Order
 {
@@ -30,23 +29,23 @@ class WCOrderCalculator extends WC_Order
 
         // Sum shipping costs.
         foreach ($this->get_shipping_methods() as $shipping) {
-            $shipping_total += $this->round($shipping->get_total(), wc_get_price_decimals());
+            $shipping_total += $this->round((float)$shipping->get_total(), wc_get_price_decimals());
         }
 
-        $this->set_shipping_total($shipping_total);
+        $this->set_shipping_total((string)$shipping_total);
 
         // Sum fee costs.
         foreach ($this->get_fees() as $item) {
-            $fee_total = $item->get_total();
+            $fee_total = (float)$item->get_total();
 
             if (0 > $fee_total) {
                 $max_discount = $this->round($cart_total + $fees_total + $shipping_total, wc_get_price_decimals()) * -1;
 
                 if ($fee_total < $max_discount && 0 > $max_discount) {
-                    $item->set_total($max_discount);
+                    $item->set_total((string)$max_discount);
                 }
             }
-            $fees_total += $item->get_total();
+            $fees_total += (float)$item->get_total();
         }
 
         // Calculate taxes for items, shipping, discounts. Note; this also triggers save().
@@ -56,6 +55,8 @@ class WCOrderCalculator extends WC_Order
 
          // Sum taxes again so we can work out how much tax was discounted. This uses original values, not those possibly rounded to 2dp.
         foreach ($this->get_items() as $item) {
+            // phpstan:ignore [wc-stub] get_items() returns WC_Order_Item[] but get_taxes() is only typed on product/shipping subtypes
+            // @phpstan-ignore-next-line
             $taxes = $item->get_taxes();
 
             foreach ($taxes['total'] as $tax_rate_id => $tax) {
@@ -67,9 +68,15 @@ class WCOrderCalculator extends WC_Order
             }
         }
 
-          $this->set_discount_total($this->round($cart_subtotal - $cart_total, wc_get_price_decimals()));
-          $this->set_discount_tax(wc_round_tax_total($cart_subtotal_tax - $cart_total_tax));
-          $this->set_total($this->round($cart_total + $fees_total + $this->get_shipping_total() + $this->get_cart_tax() + $this->get_shipping_tax(), wc_get_price_decimals()));
+        $this->set_discount_total((string)$this->round($cart_subtotal - $cart_total, wc_get_price_decimals()));
+        $this->set_discount_tax((string)wc_round_tax_total($cart_subtotal_tax - $cart_total_tax));
+        $this->set_total(
+            (string)$this->round(
+                $cart_total + $fees_total + (float)$this->get_shipping_total() + (float)$this->get_cart_tax(
+                ) + (float)$this->get_shipping_tax(),
+                wc_get_price_decimals()
+            )
+        );
 
           do_action('woocommerce_order_after_calculate_totals', $and_taxes, $this);
 
@@ -86,6 +93,8 @@ class WCOrderCalculator extends WC_Order
         $saved_rate_ids = [];
 
         foreach ($this->get_items([ 'line_item', 'fee' ]) as $item_id => $item) {
+            // phpstan:ignore [wc-stub] get_items() returns WC_Order_Item[] but get_taxes() is only typed on product/shipping subtypes
+            // @phpstan-ignore-next-line
             $taxes = $item->get_taxes();
             foreach ($taxes['total'] as $tax_rate_id => $tax) {
                 $tax_amount = $this->round_line_tax($tax, false);
@@ -114,8 +123,12 @@ class WCOrderCalculator extends WC_Order
                 continue;
             }
             $saved_rate_ids[] = $tax->get_rate_id();
-            $tax->set_tax_total(isset($cart_taxes[ $tax->get_rate_id() ]) ? $cart_taxes[ $tax->get_rate_id() ] : 0);
-            $tax->set_shipping_tax_total(! empty($shipping_taxes[ $tax->get_rate_id() ]) ? $shipping_taxes[ $tax->get_rate_id() ] : 0);
+            $tax->set_tax_total(
+                (string)(isset($cart_taxes[$tax->get_rate_id()]) ? $cart_taxes[$tax->get_rate_id()] : 0)
+            );
+            $tax->set_shipping_tax_total(
+                (string)(!empty($shipping_taxes[$tax->get_rate_id()]) ? $shipping_taxes[$tax->get_rate_id()] : 0)
+            );
             $tax->save();
         }
 
@@ -125,17 +138,21 @@ class WCOrderCalculator extends WC_Order
         foreach ($new_rate_ids as $tax_rate_id) {
             $item = new \WC_Order_Item_Tax();
             $item->set_rate($tax_rate_id);
-            $item->set_tax_total(isset($cart_taxes[ $tax_rate_id ]) ? $cart_taxes[ $tax_rate_id ] : 0);
-            $item->set_shipping_tax_total(! empty($shipping_taxes[ $tax_rate_id ]) ? $shipping_taxes[ $tax_rate_id ] : 0);
+            $item->set_tax_total((string)(isset($cart_taxes[$tax_rate_id]) ? $cart_taxes[$tax_rate_id] : 0));
+            $item->set_shipping_tax_total(
+                (string)(!empty($shipping_taxes[$tax_rate_id]) ? $shipping_taxes[$tax_rate_id] : 0)
+            );
             $this->add_item($item);
         }
 
-        $this->set_shipping_tax(array_sum($shipping_taxes));
-        $this->set_cart_tax(array_sum($cart_taxes));
+        $this->set_shipping_tax((string)array_sum($shipping_taxes));
+        $this->set_cart_tax((string)array_sum($cart_taxes));
     }
 
     public function add_product($product, $qty = 1, $args = [])
     {
+        // phpstan:ignore [wc-stub] parent WC_Order::add_product() declares $product as WC_Product; override loosens the type to allow null/false
+        // @phpstan-ignore-next-line
         if ($product) {
             $default_args = [
                 'name' => $product->get_name(),

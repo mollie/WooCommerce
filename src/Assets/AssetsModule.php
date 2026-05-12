@@ -518,7 +518,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
         );
         add_action(
             'admin_init',
-            function () use ($container, $pluginVersion, $pluginUrl) {
+            function () use ($pluginVersion, $pluginUrl) {
                 if (is_admin()) {
                     global $current_section;
                     wp_register_script(

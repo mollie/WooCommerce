@@ -9,13 +9,12 @@ use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use WC_Data_Exception;
 
 class PayPalAjaxRequests
 {
     /**
-     * @var
+     * @var mixed
      */
     protected $gateway;
     /**
@@ -135,7 +134,6 @@ class PayPalAjaxRequests
         $lockKey = 'mollie_paypal_cart_order_lock';
         if (WC()->session->get($lockKey)) {
             wp_send_json_error('Duplicate request');
-            return;
         }
         WC()->session->set($lockKey, true);
 
@@ -243,7 +241,7 @@ class PayPalAjaxRequests
      * Handles the order creation in cart page
      *
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     protected function createOrderFromCart()
     {
@@ -257,7 +255,6 @@ class PayPalAjaxRequests
     /**
      * Checks if the nonce in the data object is valid
      *
-     * @param PayPalDataObjectHttp $PayPalRequestDataObject
      */
     protected function isNonceValid(): bool
     {

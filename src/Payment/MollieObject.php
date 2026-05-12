@@ -11,9 +11,9 @@ use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Psr\Log\LoggerInterface as Logger;
 use WC_Order;
 use WC_Payment_Gateway;
-use Psr\Log\LoggerInterface as Logger;
 
 class MollieObject
 {
@@ -47,6 +47,8 @@ class MollieObject
     /**
      * @var null
      */
+    // phpstan:ignore [dead-code] typed @var null; kept as a placeholder — subclasses shadow this with properly typed versions
+    // @phpstan-ignore-next-line
     private $paymentMethod;
     protected RequestFactory $requestFactory;
 
@@ -415,7 +417,7 @@ class MollieObject
                 );
             } catch (ApiException $exception) {
                 $this->logger->debug($exception->getMessage());
-                return;
+                return null;
             }
 
             return $this->getPaymentObjectPayment(
@@ -591,8 +593,12 @@ class MollieObject
                     $subscriptions = wcs_get_subscriptions_for_renewal_order($order);
                 }
                 foreach ($subscriptions as $subscription) {
+                    // phpstan:ignore [mollie-stub] Mollie Payment object exposes id and mandateId as dynamic stdClass properties not covered by type definitions
+                    // @phpstan-ignore-next-line
                     $subscription->update_meta_data('_mollie_payment_id', $payment->id);
                     $subscription->update_meta_data('_mollie_mandate_id', $payment->mandateId);
+                    // phpstan:ignore [mollie-stub] Mollie Payment object exposes method as a dynamic property; also set_payment_method() may not be typed on WC_Subscription stubs
+                    // @phpstan-ignore-next-line
                     $subscription->set_payment_method('mollie_wc_gateway_' . $payment->method);
                     $subscription->save();
                     $subscriptionParentOrder = $subscription->get_parent();
@@ -722,6 +728,8 @@ class MollieObject
                 !empty($emails) && !empty($orderId)
                 && !empty($emails['WC_Email_Failed_Order'])
             ) {
+                // phpstan:ignore [wc-stub] WC_Email subclass accessed via mailer array; trigger() not typed on WC_Email base class in stubs
+                // @phpstan-ignore-next-line
                 $emails['WC_Email_Failed_Order']->trigger($orderId);
             }
         } elseif (mollieWooCommerceIsMollieGateway($gateway->id)) {

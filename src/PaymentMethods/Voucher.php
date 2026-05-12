@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
-use Mollie\WooCommerce\Payment\MollieOrder;
-use Mollie\WooCommerce\Payment\MolliePayment;
-
 class Voucher extends AbstractPaymentMethod implements PaymentMethodI
 {
     /**
@@ -54,9 +51,8 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         ];
     }
 
-    public function filtersOnBuild()
+    public function filtersOnBuild(): void
     {
-
         add_action('mollie-payments-for-woocommerce_after_webhook_action', [$this, 'addPaymentDetailsOrderNote'], 10, 2);
     }
 
@@ -93,6 +89,8 @@ class Voucher extends AbstractPaymentMethod implements PaymentMethodI
         if (isset($details->remainderAmount)) {
             $remainder = sprintf(
                 __('%1$s: %2$s %3$s<br/>', 'mollie-payments-for-woocommerce'),
+                // phpstan:ignore [mollie-stub] Mollie payment detail object exposes remainderMethod as a dynamic property not covered by type definitions
+                // @phpstan-ignore-next-line
                 $details->remainderMethod,
                 $details->remainderAmount->value,
                 $details->remainderAmount->currency

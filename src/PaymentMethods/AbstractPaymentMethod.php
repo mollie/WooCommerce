@@ -377,6 +377,14 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             $iconUrlArray = $this->getUploadedImage();
         }
 
+        // Filter deprecated in 8.1.7 — remove in next major version.
+        if (has_filter('mollie_wc_gateway_use_api_icon')) {
+            _doing_it_wrong(
+                'mollie_wc_gateway_use_api_icon',
+                'This filter is deprecated. Icon source is now determined by whether a custom logo has been uploaded.',
+                '8.1.7'
+            );
+        }
         $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', empty($this->getUploadedImage()), $this->getIdFromConfig());
 
         if (!$this->isCreditCardSelectorEnabled() && $useAPIImage) {

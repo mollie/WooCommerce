@@ -5,6 +5,7 @@
         iconUrl,
         message,
         removeLogoLabel,
+        undoRemoveLabel,
         pluginUrlImages,
     } = gatewaySettingsData;
 
@@ -45,25 +46,86 @@
             return;
         }
 
-        const removeInputName = 'woocommerce_' + uploadFieldName.replace('_upload_logo', '_remove_logo');
+        // handleCustomIconDisplay() has already injected the preview as the
+        // upload field's next sibling. We work inside that container.
+        const preview = uploadField.nextElementSibling;
+        if (!preview || !preview.classList.contains('mollie_custom_icon')) {
+            return;
+        }
 
+        const previewImg = preview.querySelector('img');
+        if (!previewImg) {
+            return;
+        }
+
+        // Hidden field travelling with the form on normal save. PHP picks it
+        // up in Settings::processAdminOptionCustomLogo() and drops the stored
+        // iconFileUrl/iconFilePath when its value is non-empty. We never
+        // submit the form ourselves — toggling this flag only takes effect
+        // when the merchant clicks "Save changes".
+        const removeInputName = 'woocommerce_' + uploadFieldName.replace('_upload_logo', '_remove_logo');
         const hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
         hiddenInput.name = removeInputName;
         hiddenInput.value = '';
         form.appendChild(hiddenInput);
 
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.textContent = removeLogoLabel;
-        removeBtn.className = 'button';
-        removeBtn.style.marginLeft = '8px';
-        removeBtn.addEventListener('click', function() {
-            hiddenInput.value = '1';
-            form.submit();
+        // Mirror the empty-state placeholder rendered by
+        // handleCustomIconDisplay() when no logo is stored, so toggling
+        // pending-remove gives the merchant a true preview of the post-save
+        // result. Hidden until the merchant marks the logo for removal.
+        const placeholder = document.createElement('p');
+        placeholder.textContent = message;
+        placeholder.style.display = 'none';
+        preview.insertBefore(placeholder, previewImg);
+
+        const removeLink = document.createElement('button');
+        removeLink.type = 'button';
+        removeLink.className = 'mollie-remove-logo-link';
+        preview.appendChild(removeLink);
+
+        function setMarkedForRemoval(marked, notifyDirty) {
+            if (marked) {
+                hiddenInput.value = '1';
+                previewImg.style.display = 'none';
+                placeholder.style.display = '';
+                removeLink.textContent = '↺ ' + undoRemoveLabel;
+                removeLink.classList.add('mollie-remove-logo-link--undo');
+            } else {
+                hiddenInput.value = '';
+                previewImg.style.display = '';
+                placeholder.style.display = 'none';
+                removeLink.textContent = '× ' + removeLogoLabel;
+                removeLink.classList.remove('mollie-remove-logo-link--undo');
+            }
+            if (notifyDirty) {
+                // WC's settings page tracks dirty state by listening for
+                // change / input events on form inputs. Programmatically
+                // setting .value does not fire either, so the save button
+                // stays disabled until we synthesize them ourselves. Skipped
+                // on initial render to avoid marking the form dirty on load.
+                hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        removeLink.addEventListener('click', function() {
+            setMarkedForRemoval(hiddenInput.value !== '1', true);
         });
 
-        uploadField.insertAdjacentElement('afterend', removeBtn);
+        // Picking a new file overrides a pending remove — the merchant is
+        // replacing the logo, not deleting it. The PHP side also early-returns
+        // on the remove flag and would silently drop an uploaded file, so
+        // clearing the flag here keeps both layers in sync. The file input
+        // itself already fires a change event, so WC's dirty tracker picks
+        // that up; we just need to reset our own state.
+        uploadField.addEventListener('change', function() {
+            if (uploadField.files && uploadField.files.length > 0) {
+                setMarkedForRemoval(false, false);
+            }
+        });
+
+        setMarkedForRemoval(false, false);
     }
 
     function handlePayPalIconSelector() {

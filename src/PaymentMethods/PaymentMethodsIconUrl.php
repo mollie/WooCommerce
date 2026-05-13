@@ -98,24 +98,16 @@ class PaymentMethodsIconUrl
             return false;
         }
         if (
-            !isset($gatewaySettings['enable_custom_logo'])
-            || $gatewaySettings['enable_custom_logo'] !== 'yes'
-        ) {
-            return false;
-        }
-        if (
             !isset($gatewaySettings['iconFileUrl'])
-            || !is_string(
-                $gatewaySettings['iconFileUrl']
-            )
+            || !is_string($gatewaySettings['iconFileUrl'])
+            || $gatewaySettings['iconFileUrl'] === ''
         ) {
             return false;
         }
-        if (!isset($gatewaySettings["iconFilePath"])) {
+        if (!isset($gatewaySettings['iconFilePath'])) {
             return false;
         }
-        $svgPath = $gatewaySettings["iconFilePath"];
-        return file_exists($svgPath);
+        return file_exists($gatewaySettings['iconFilePath']);
     }
     /**
      * @return array Array containing the credit cards names enabled in settings

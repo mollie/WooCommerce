@@ -1,11 +1,10 @@
 
 (function({ gatewaySettingsData }) {
     const {
-        isEnabledIcon,
         uploadFieldName,
-        enableFieldName,
         iconUrl,
         message,
+        removeLogoLabel,
         pluginUrlImages,
     } = gatewaySettingsData;
 
@@ -19,10 +18,6 @@
     }
 
     function handleCustomIconDisplay() {
-        if (!isEnabledIcon) {
-            return;
-        }
-
         const uploadField = document.querySelector('#woocommerce_' + uploadFieldName);
         if (!uploadField) {
             return;
@@ -35,29 +30,40 @@
         uploadField.insertAdjacentHTML('afterend', iconHtml);
     }
 
-    function handleEnableFieldToggle() {
-        const enableField = document.querySelector('#woocommerce_' + enableFieldName);
+    function handleRemoveLogoButton() {
+        if (isEmpty(iconUrl)) {
+            return;
+        }
+
         const uploadField = document.querySelector('#woocommerce_' + uploadFieldName);
-
-        if (!enableField || !uploadField) {
+        if (!uploadField) {
             return;
         }
 
-        const uploadRow = uploadField.closest('tr');
-        if (!uploadRow) {
+        const form = uploadField.closest('form');
+        if (!form) {
             return;
         }
 
-        function toggleUploadField() {
-            if (enableField.checked) {
-                uploadRow.style.display = '';
-            } else {
-                uploadRow.style.display = 'none';
-            }
-        }
+        const removeInputName = 'woocommerce_' + uploadFieldName.replace('_upload_logo', '_remove_logo');
 
-        enableField.addEventListener('change', toggleUploadField);
-        toggleUploadField();
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = removeInputName;
+        hiddenInput.value = '';
+        form.appendChild(hiddenInput);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = removeLogoLabel;
+        removeBtn.className = 'button';
+        removeBtn.style.marginLeft = '8px';
+        removeBtn.addEventListener('click', function() {
+            hiddenInput.value = '1';
+            form.submit();
+        });
+
+        uploadField.insertAdjacentElement('afterend', removeBtn);
     }
 
     function handlePayPalIconSelector() {
@@ -96,13 +102,12 @@
         }
 
         handleCustomIconDisplay();
-        handleEnableFieldToggle();
+        handleRemoveLogoButton();
         handlePayPalIconSelector();
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initialize);
     } else {
-        console.log('DOM fully loaded and parsed');
         initialize();
     }
 })(window);

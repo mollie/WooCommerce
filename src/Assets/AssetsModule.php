@@ -333,13 +333,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
         wp_enqueue_script('mollie_wc_gateway_settings');
         $settingsName = "{$current_section}_settings";
         $gatewaySettings = get_option($settingsName, false);
-        $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
-        $isEnabled = false;
-        if ($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])) {
-            $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
-        }
         $uploadFieldName = "{$current_section}_upload_logo";
-        $enabledFieldName = "{$current_section}_enable_custom_logo";
         $gatewayIconUrl = '';
         if ($gatewaySettings && isset($gatewaySettings['iconFileUrl'])) {
             $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
@@ -349,11 +343,10 @@ class AssetsModule implements ExecutableModule, ServiceModule
             'mollie_wc_gateway_settings',
             'gatewaySettingsData',
             [
-                'isEnabledIcon' => $isEnabled,
                 'uploadFieldName' => $uploadFieldName,
-                'enableFieldName' => $enabledFieldName,
                 'iconUrl' => $gatewayIconUrl,
-                'message' => $message,
+                'message' => __('No custom logo selected', 'mollie-payments-for-woocommerce'),
+                'removeLogoLabel' => __('Remove / Reset to Mollie logo', 'mollie-payments-for-woocommerce'),
                 'pluginUrlImages' => plugins_url('public/images', M4W_FILE),
             ]
         );

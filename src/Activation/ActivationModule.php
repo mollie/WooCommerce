@@ -7,14 +7,29 @@ namespace Mollie\WooCommerce\Activation;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Mollie\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
+use Mollie\Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Activation\Migrations\MigratorInterface;
+use Mollie\WooCommerce\Activation\Migrations\PaymentMethodSettingsMigrator;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\Psr\Container\ContainerInterface;
-class ActivationModule implements ExecutableModule
+use Mollie\Psr\Log\LoggerInterface;
+use Throwable;
+class ActivationModule implements ExecutableModule, ServiceModule
 {
     use ModuleClassNameIdTrait;
     private $baseFile;
     private $pluginVersion;
+    /** @var MigratorInterface[] */
+    private array $migrators = [];
+    /** @var LoggerInterface */
+    private $logger;
+    public function services(): array
+    {
+        return ['activation.migrators' => static function (): array {
+            return [new PaymentMethodSettingsMigrator()];
+        }];
+    }
     /**
      * @param ContainerInterface $container
      *
@@ -23,6 +38,8 @@ class ActivationModule implements ExecutableModule
     public function run(ContainerInterface $container): bool
     {
         $this->pluginVersion = $container->get('shared.plugin_version');
+        $this->migrators = $container->get('activation.migrators');
+        $this->logger = $container->get(LoggerInterface::class);
         $this->baseFile = \M4W_FILE;
         add_action('init', [$this, 'pluginInit']);
         add_action('admin_init', [$this, 'mollieWcNoticeApiKeyMissing']);
@@ -113,8 +130,47 @@ class ActivationModule implements ExecutableModule
      */
     public function pluginInit()
     {
-        $this->markUpdatedOrNew();
+        $migrationsOk = $this->runMigrations();
+        if ($migrationsOk) {
+            $this->markUpdatedOrNew();
+        }
         $this->initDb();
+    }
+    protected function runMigrations(): bool
+    {
+        // Fresh install: no stored version means nothing to migrate from. Let
+        // markUpdatedOrNew() seed the cursor at the current plugin version.
+        $storedVersion = (string) get_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, '');
+        if ($storedVersion === '') {
+            return \true;
+        }
+        // Keep only migrators whose target falls in the open-closed window
+        // (V_old, V_new]: strictly newer than what's on disk, no newer than
+        // the version we're upgrading to.
+        $applicable = array_filter($this->migrators, function (MigratorInterface $m) use ($storedVersion): bool {
+            return version_compare($m->targetVersion(), $storedVersion, '>') && version_compare($m->targetVersion(), $this->pluginVersion, '<=');
+        });
+        // Run the ladder bottom-up so each migrator sees the state produced
+        // by every earlier one. Same-target ordering is undefined by contract.
+        usort($applicable, static function (MigratorInterface $a, MigratorInterface $b): int {
+            return version_compare($a->targetVersion(), $b->targetVersion());
+        });
+        foreach ($applicable as $migrator) {
+            try {
+                $migrator->migrate();
+                // Advance the cursor immediately after each success so a
+                // later failure resumes from the last completed step instead
+                // of replaying the whole ladder.
+                update_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, $migrator->targetVersion(), \true);
+            } catch (Throwable $e) {
+                // Halt the ladder on the first failure: subsequent migrators
+                // may assume the failed one ran. The caller skips the final
+                // version bump so this run is retried on the next request.
+                $this->logger->error(sprintf('Migration to %s failed: %s', $migrator->targetVersion(), $e->getMessage()), ['exception' => $e]);
+                return \false;
+            }
+        }
+        return \true;
     }
     /**
      * @return void

@@ -239,6 +239,8 @@ return array(
     'Mollie\\Psr\\Log\\Test\\TestLogger' => $vendorDir . '/psr/log/Psr/Log/Test/TestLogger.php',
     'Mollie\\WooCommerce\\Activation\\ActivationModule' => $baseDir . '/src/Activation/ActivationModule.php',
     'Mollie\\WooCommerce\\Activation\\ConstraintsChecker' => $baseDir . '/src/Activation/ConstraintsChecker.php',
+    'Mollie\\WooCommerce\\Activation\\Migrations\\MigratorInterface' => $baseDir . '/src/Activation/Migrations/MigratorInterface.php',
+    'Mollie\\WooCommerce\\Activation\\Migrations\\PaymentMethodSettingsMigrator' => $baseDir . '/src/Activation/Migrations/PaymentMethodSettingsMigrator.php',
     'Mollie\\WooCommerce\\Activation\\PluginDisabler' => $baseDir . '/src/Activation/PluginDisabler.php',
     'Mollie\\WooCommerce\\Assets\\AssetsModule' => $baseDir . '/src/Assets/AssetsModule.php',
     'Mollie\\WooCommerce\\BlockService\\CheckoutBlockService' => $baseDir . '/src/BlockService/CheckoutBlockService.php',

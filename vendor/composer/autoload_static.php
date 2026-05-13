@@ -297,6 +297,8 @@ class ComposerStaticInite80ebce9c7ab43cf3dc33f2f5de2b76e
         'Mollie\\Psr\\Log\\Test\\TestLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/TestLogger.php',
         'Mollie\\WooCommerce\\Activation\\ActivationModule' => __DIR__ . '/../..' . '/src/Activation/ActivationModule.php',
         'Mollie\\WooCommerce\\Activation\\ConstraintsChecker' => __DIR__ . '/../..' . '/src/Activation/ConstraintsChecker.php',
+        'Mollie\\WooCommerce\\Activation\\Migrations\\MigratorInterface' => __DIR__ . '/../..' . '/src/Activation/Migrations/MigratorInterface.php',
+        'Mollie\\WooCommerce\\Activation\\Migrations\\PaymentMethodSettingsMigrator' => __DIR__ . '/../..' . '/src/Activation/Migrations/PaymentMethodSettingsMigrator.php',
         'Mollie\\WooCommerce\\Activation\\PluginDisabler' => __DIR__ . '/../..' . '/src/Activation/PluginDisabler.php',
         'Mollie\\WooCommerce\\Assets\\AssetsModule' => __DIR__ . '/../..' . '/src/Assets/AssetsModule.php',
         'Mollie\\WooCommerce\\BlockService\\CheckoutBlockService' => __DIR__ . '/../..' . '/src/BlockService/CheckoutBlockService.php',

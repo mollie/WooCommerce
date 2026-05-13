@@ -69,11 +69,10 @@ class Settings
         if (!$isNonceValid) {
             return;
         }
-        $enabledLogoOptionName = 'woocommerce_' . $gatewayId . '_enable_custom_logo';
         $gatewaySettings = get_option(sprintf('%s_settings', $gatewayId), []);
-        if (!isset($_POST[$enabledLogoOptionName])) {
-            $gatewaySettings["iconFileUrl"] = null;
-            $gatewaySettings["iconFilePath"] = null;
+        $removeLogoOptionName = 'woocommerce_' . $gatewayId . '_remove_logo';
+        if (!empty($_POST[$removeLogoOptionName])) {
+            unset($gatewaySettings['iconFileUrl'], $gatewaySettings['iconFilePath']);
             update_option(sprintf('%s_settings', $gatewayId), $gatewaySettings);
             return;
         }

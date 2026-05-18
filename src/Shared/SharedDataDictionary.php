@@ -92,6 +92,9 @@ class SharedDataDictionary
         '_transient_timeout_mollie-wc-giftcard_issuers_live',
         '_transient_mollie-wc-giftcard_issuers_live',
         'mollie_plugin_update_translation',
+        'mollie_tracks_first_test_payment_tracked',
+        'mollie_tracks_api_keys_viewed',
+        'mollie_tracks_plugin_activated',
     ];
     public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     public const PLUGIN_VERSION_PARAM_NAME = 'mollie-plugin-version';

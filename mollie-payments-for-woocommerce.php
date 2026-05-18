@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Plugin Name: Mollie Payments for WooCommerce
  * Plugin URI: https://www.mollie.com
  * Description: Accept payments in WooCommerce with the official Mollie plugin
- * Version: 8.1.6
+ * Version: 8.1.6+piwoo-882-woo-commerce-tracks-integration-mollie-payments-plugin-phase-1.a8707ee
  * Author: Mollie
  * Author URI: https://www.mollie.com
  * Requires at least: 5.0
@@ -16,41 +17,33 @@
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  */
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce;
 
-use Psr\Container\ContainerInterface;
+use Mollie\Psr\Container\ContainerInterface;
 use Throwable;
-
-require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-
+require_once \ABSPATH . 'wp-admin/includes/plugin.php';
 define('M4W_FILE', __FILE__);
-define('M4W_PLUGIN_DIR', dirname(M4W_FILE));
-
+define('M4W_PLUGIN_DIR', dirname(\M4W_FILE));
 // Plugin folder URL.
 if (!defined('M4W_PLUGIN_URL')) {
-    define('M4W_PLUGIN_URL', plugin_dir_url(M4W_FILE));
+    define('M4W_PLUGIN_URL', plugin_dir_url(\M4W_FILE));
 }
-
-
 function mollie_wc_plugin_autoload(): bool
 {
     $autoloader = __DIR__ . '/vendor/autoload.php';
     $mollieSdkAutoload = __DIR__ . '/vendor/mollie/mollie-api-php/vendor/autoload.php';
-    if (file_exists($autoloader) && ! class_exists('Mollie\WooCommerce\Activation\ActivationModule')) {
+    if (file_exists($autoloader) && !class_exists('Mollie\WooCommerce\Activation\ActivationModule')) {
         require $autoloader;
     }
-
     if (file_exists($mollieSdkAutoload)) {
         /**
          * @psalm-suppress MissingFile
          */
         require $mollieSdkAutoload;
     }
-    return true;
+    return \true;
 }
-
 /**
  * Display an error message in the WP admin.
  *
@@ -60,19 +53,11 @@ function mollie_wc_plugin_autoload(): bool
  */
 function errorNotice(string $message)
 {
-    add_action(
-        'all_admin_notices',
-        static function () use ($message) {
-            $class = 'notice notice-error';
-            printf(
-                '<div class="%1$s"><p>%2$s</p></div>',
-                esc_attr($class),
-                wp_kses_post($message)
-            );
-        }
-    );
+    add_action('all_admin_notices', static function () use ($message) {
+        $class = 'notice notice-error';
+        printf('<div class="%1$s"><p>%2$s</p></div>', esc_attr($class), wp_kses_post($message));
+    });
 }
-
 /**
  * Handle any exception that might occur during plugin setup.
  *
@@ -83,16 +68,8 @@ function errorNotice(string $message)
 function handleException(Throwable $throwable)
 {
     do_action('inpsyde.mollie-woocommerce.critical', $throwable);
-
-    errorNotice(
-        sprintf(
-            '<strong>Error:</strong> %s <br><pre>%s</pre>',
-            $throwable->getMessage(),
-            $throwable->getTraceAsString()
-        )
-    );
+    errorNotice(sprintf('<strong>Error:</strong> %s <br><pre>%s</pre>', $throwable->getMessage(), $throwable->getTraceAsString()));
 }
-
 /**
  * Initialize all the plugin things.
  *
@@ -101,7 +78,7 @@ function handleException(Throwable $throwable)
 function initialize(): ?ContainerInterface
 {
     static $container = null;
-    $root_dir = M4W_PLUGIN_DIR;
+    $root_dir = \M4W_PLUGIN_DIR;
     if ($container === null) {
         try {
             $bootstrap = require __DIR__ . '/bootstrap.php';
@@ -111,23 +88,22 @@ function initialize(): ?ContainerInterface
             return null;
         }
     }
-
     return $container;
 }
-
 register_activation_hook(__FILE__, static function (): void {
     mollie_wc_plugin_autoload();
-    Tracks\TracksModule::onPluginActivation();
+    \Mollie\WooCommerce\Tracks\TracksModule::onPluginActivation();
 });
-
 register_deactivation_hook(__FILE__, static function (): void {
     mollie_wc_plugin_autoload();
-    Tracks\TracksModule::onPluginDeactivation();
+    \Mollie\WooCommerce\Tracks\TracksModule::onPluginDeactivation();
 });
-
 add_action(
-/**
- * @throws Throwable
- */ 'plugins_loaded', static function () {
-    initialize();
-});
+    /**
+     * @throws Throwable
+     */
+    'plugins_loaded',
+    static function () {
+        initialize();
+    }
+);

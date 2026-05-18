@@ -115,6 +115,16 @@ function initialize(): ?ContainerInterface
     return $container;
 }
 
+register_activation_hook(__FILE__, static function (): void {
+    mollie_wc_plugin_autoload();
+    Tracks\TracksModule::onPluginActivation();
+});
+
+register_deactivation_hook(__FILE__, static function (): void {
+    mollie_wc_plugin_autoload();
+    Tracks\TracksModule::onPluginDeactivation();
+});
+
 add_action(
 /**
  * @throws Throwable

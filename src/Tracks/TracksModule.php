@@ -32,7 +32,7 @@ class TracksModule implements ServiceModule, ExecutableModule
         $settingsHelper = $container->get('settings.settings_helper');
         assert($settingsHelper instanceof Settings);
         $pluginId = $container->get('shared.plugin_id');
-        $this->trackDeferredPluginActivation($recorder);
+        $this->trackDeferredPluginActivation($recorder, $settingsHelper);
         $this->trackApiKeysViewed($recorder);
         $this->trackApiKeySaved($recorder, $settingsHelper);
         $this->trackTestPaymentComplete($recorder, $pluginId);
@@ -68,14 +68,18 @@ class TracksModule implements ServiceModule, ExecutableModule
     /**
      * Fire plugin_activated on next admin request after activation.
      */
-    private function trackDeferredPluginActivation(\Mollie\WooCommerce\Tracks\TracksEventRecorder $recorder): void
+    private function trackDeferredPluginActivation(\Mollie\WooCommerce\Tracks\TracksEventRecorder $recorder, Settings $settingsHelper): void
     {
-        add_action('admin_init', static function () use ($recorder): void {
+        add_action('admin_init', static function () use ($recorder, $settingsHelper): void {
             // Skip if no activation flag (not freshly activated)
             if (!get_option(self::OPTION_PLUGIN_ACTIVATED)) {
                 return;
             }
             delete_option(self::OPTION_PLUGIN_ACTIVATED);
+            // Skip if merchant is already connected to Mollie
+            if ($settingsHelper->getConnectionStatus()) {
+                return;
+            }
             $recorder->recordEvent('wcadmin_mollie_plugin_activated');
         }, 20);
     }

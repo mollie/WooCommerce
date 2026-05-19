@@ -49,7 +49,7 @@ class TracksModuleTest extends TestCase
     }
 
     /**
-     * WHEN activation option is set
+     * WHEN activation option is set and merchant is NOT connected
      * THEN deferred activation callback fires the event and clears the option
      * @test
      */
@@ -67,12 +67,16 @@ class TracksModuleTest extends TestCase
             ->once()
             ->with('mollie_tracks_plugin_activated');
 
+        $settingsHelper = Mockery::mock(Settings::class);
+        $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(false);
+        $settingsHelper->shouldIgnoreMissing();
+
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
             ->once()
             ->with('wcadmin_mollie_plugin_activated');
 
-        $container = $this->createMockContainer($recorder);
+        $container = $this->createMockContainer($recorder, $settingsHelper);
         $module = new TracksModule();
         $module->run($container);
 
@@ -81,11 +85,47 @@ class TracksModuleTest extends TestCase
     }
 
     /**
+     * WHEN activation option is set but merchant IS already connected
+     * THEN the activation event does NOT fire
+     * @test
+     */
+    public function activationSkippedWhenConnected()
+    {
+        $this->interceptAddAction();
+
+        when('get_option')->alias(function ($name) {
+            if ($name === 'mollie_tracks_plugin_activated') {
+                return '1';
+            }
+            return false;
+        });
+        expect('delete_option')
+            ->once()
+            ->with('mollie_tracks_plugin_activated');
+
+        $settingsHelper = Mockery::mock(Settings::class);
+        $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(true);
+        $settingsHelper->shouldIgnoreMissing();
+
+        $recorder = Mockery::mock(TracksEventRecorder::class);
+        $recorder->shouldNotReceive('recordEvent')
+            ->with('wcadmin_mollie_plugin_activated');
+        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+
+        $container = $this->createMockContainer($recorder, $settingsHelper);
+        $module = new TracksModule();
+        $module->run($container);
+
+        $this->runCallbacks('admin_init');
+        $this->addToAssertionCount(1);
+    }
+
+    /**
      * WHEN activation option is NOT set
      * THEN no activation event fires
      * @test
      */
-    public function deferredActivationDoesNotFireWhenNoOption()
+    public function activationSkippedWithoutFlag()
     {
         $this->interceptAddAction();
 
@@ -174,7 +214,7 @@ class TracksModuleTest extends TestCase
      * THEN api_key_saved and connection_success fire with correct params
      * @test
      */
-    public function apiKeySavedAndConnectionSuccessFireOnSave()
+    public function saveFiresKeyAndConnectionSuccess()
     {
         $this->interceptAddAction();
 
@@ -354,7 +394,7 @@ class TracksModuleTest extends TestCase
      * THEN the test payment event does NOT fire
      * @test
      */
-    public function firstTestPaymentDoesNotFireForLivePayment()
+    public function testPaymentSkippedForLiveMode()
     {
         $this->interceptAddAction();
 
@@ -388,7 +428,7 @@ class TracksModuleTest extends TestCase
      * THEN the test payment event does NOT fire
      * @test
      */
-    public function firstTestPaymentDoesNotFireForUnpaidPayment()
+    public function testPaymentSkippedWhenUnpaid()
     {
         $this->interceptAddAction();
 
@@ -461,7 +501,7 @@ class TracksModuleTest extends TestCase
      * THEN all tracking options are cleared
      * @test
      */
-    public function onPluginDeactivationResetsTrackingWhenNotConnected()
+    public function deactivationResetsWhenNotConnected()
     {
         when('get_option')->justReturn(false);
 
@@ -485,7 +525,7 @@ class TracksModuleTest extends TestCase
      * THEN tracking options are NOT cleared
      * @test
      */
-    public function onPluginDeactivationKeepsTrackingWhenConnected()
+    public function deactivationKeepsWhenConnected()
     {
         when('get_option')->alias(function ($name, $default = false) {
             if ($name === 'mollie-payments-for-woocommerce_test_api_key') {

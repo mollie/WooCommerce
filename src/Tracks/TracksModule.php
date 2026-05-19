@@ -105,7 +105,7 @@ class TracksModule implements ServiceModule, ExecutableModule
                 return;
             }
 
-            $recorder->recordEvent('wcadmin_mollie_plugin_activated');
+            $recorder->recordEvent('mollie_plugin_activated');
         }, 20);
     }
 
@@ -129,7 +129,7 @@ class TracksModule implements ServiceModule, ExecutableModule
 
             update_option(self::OPTION_API_KEYS_VIEWED, '1', false);
 
-            $recorder->recordEvent('wcadmin_mollie_api_keys_viewed');
+            $recorder->recordEvent('mollie_api_keys_viewed');
         });
     }
 
@@ -158,7 +158,7 @@ class TracksModule implements ServiceModule, ExecutableModule
 
             $paymentMode = $settingsHelper->isTestModeEnabled() ? 'test' : 'live';
 
-            $recorder->recordEvent('wcadmin_mollie_api_key_saved', [
+            $recorder->recordEvent('mollie_api_key_saved', [
                 'payment_mode' => $paymentMode,
                 'has_test_key' => (bool) get_option($testKeyOption),
                 'has_live_key' => (bool) get_option($liveKeyOption),
@@ -167,13 +167,13 @@ class TracksModule implements ServiceModule, ExecutableModule
             $result = $settingsHelper->getConnectionStatusWithError();
 
             if ($result['connected']) {
-                $recorder->recordEvent('wcadmin_mollie_connection_success', [
+                $recorder->recordEvent('mollie_connection_success', [
                     'payment_mode' => $paymentMode,
                 ]);
                 return;
             }
 
-            $recorder->recordEvent('wcadmin_mollie_connection_failed', [
+            $recorder->recordEvent('mollie_connection_failed', [
                 'payment_mode' => $paymentMode,
                 'error_code' => $result['error_code'] ?? 0,
                 'error_message' => preg_replace('/^(\[[\d\-T:+]+\]\s*)+/', '', $result['error_message'] ?? ''),
@@ -206,7 +206,7 @@ class TracksModule implements ServiceModule, ExecutableModule
 
                 update_option(self::OPTION_FIRST_TEST_PAYMENT_TRACKED, '1', false);
 
-                $recorder->recordEvent('wcadmin_mollie_first_test_payment_complete', [
+                $recorder->recordEvent('mollie_first_test_payment_complete', [
                     'payment_method' => $payment->method ?? '',
                 ]);
             },

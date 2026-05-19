@@ -74,7 +74,7 @@ class TracksModuleTest extends TestCase
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
             ->once()
-            ->with('wcadmin_mollie_plugin_activated');
+            ->with('mollie_plugin_activated');
 
         $container = $this->createMockContainer($recorder, $settingsHelper);
         $module = new TracksModule();
@@ -109,7 +109,7 @@ class TracksModuleTest extends TestCase
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldNotReceive('recordEvent')
-            ->with('wcadmin_mollie_plugin_activated');
+            ->with('mollie_plugin_activated');
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder, $settingsHelper);
@@ -133,7 +133,7 @@ class TracksModuleTest extends TestCase
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldNotReceive('recordEvent')
-            ->with('wcadmin_mollie_plugin_activated');
+            ->with('mollie_plugin_activated');
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
@@ -165,7 +165,7 @@ class TracksModuleTest extends TestCase
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
             ->once()
-            ->with('wcadmin_mollie_api_keys_viewed');
+            ->with('mollie_api_keys_viewed');
 
         $container = $this->createMockContainer($recorder);
         $module = new TracksModule();
@@ -196,7 +196,7 @@ class TracksModuleTest extends TestCase
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldNotReceive('recordEvent')
-            ->with('wcadmin_mollie_api_keys_viewed');
+            ->with('mollie_api_keys_viewed');
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
@@ -243,14 +243,14 @@ class TracksModuleTest extends TestCase
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
             ->once()
-            ->with('wcadmin_mollie_api_key_saved', Mockery::on(function ($props) {
+            ->with('mollie_api_key_saved', Mockery::on(function ($props) {
                 return $props['payment_mode'] === 'test'
                     && $props['has_test_key'] === true
                     && $props['has_live_key'] === true;
             }));
         $recorder->shouldReceive('recordEvent')
             ->once()
-            ->with('wcadmin_mollie_connection_success', Mockery::on(function ($props) {
+            ->with('mollie_connection_success', Mockery::on(function ($props) {
                 return $props['payment_mode'] === 'test';
             }));
 
@@ -296,10 +296,10 @@ class TracksModuleTest extends TestCase
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
             ->once()
-            ->with('wcadmin_mollie_api_key_saved', Mockery::any());
+            ->with('mollie_api_key_saved', Mockery::any());
         $recorder->shouldReceive('recordEvent')
             ->once()
-            ->with('wcadmin_mollie_connection_failed', Mockery::on(function ($props) {
+            ->with('mollie_connection_failed', Mockery::on(function ($props) {
                 return $props['payment_mode'] === 'test'
                     && $props['error_code'] === 401
                     && $props['error_message'] === 'Invalid API key';
@@ -332,7 +332,7 @@ class TracksModuleTest extends TestCase
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldNotReceive('recordEvent')
-            ->with('wcadmin_mollie_api_key_saved', Mockery::any());
+            ->with('mollie_api_key_saved', Mockery::any());
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
@@ -368,7 +368,7 @@ class TracksModuleTest extends TestCase
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
             ->once()
-            ->with('wcadmin_mollie_first_test_payment_complete', Mockery::on(function ($props) {
+            ->with('mollie_first_test_payment_complete', Mockery::on(function ($props) {
                 return $props['payment_method'] === 'ideal';
             }));
 
@@ -402,7 +402,7 @@ class TracksModuleTest extends TestCase
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldNotReceive('recordEvent')
-            ->with('wcadmin_mollie_first_test_payment_complete', Mockery::any());
+            ->with('mollie_first_test_payment_complete', Mockery::any());
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
@@ -436,7 +436,7 @@ class TracksModuleTest extends TestCase
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldNotReceive('recordEvent')
-            ->with('wcadmin_mollie_first_test_payment_complete', Mockery::any());
+            ->with('mollie_first_test_payment_complete', Mockery::any());
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
@@ -475,7 +475,7 @@ class TracksModuleTest extends TestCase
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldNotReceive('recordEvent')
-            ->with('wcadmin_mollie_first_test_payment_complete', Mockery::any());
+            ->with('mollie_first_test_payment_complete', Mockery::any());
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);

@@ -22,7 +22,7 @@ class TracksEventRecorderTest extends TestCase
 
         // WC_Tracks is not loaded in the test environment, so class_exists returns false natively
         $recorder = new TracksEventRecorder('8.1.6');
-        $recorder->recordEvent('wcadmin_mollie_plugin_activated');
+        $recorder->recordEvent('mollie_plugin_activated');
 
         $this->addToAssertionCount(1);
     }
@@ -39,13 +39,13 @@ class TracksEventRecorderTest extends TestCase
         $captured = null;
         expect('do_action')
             ->once()
-            ->with('mollie_tracks_event_recorded', 'wcadmin_mollie_plugin_activated', Mockery::on(function ($props) use (&$captured) {
+            ->with('mollie_tracks_event_recorded', 'mollie_plugin_activated', Mockery::on(function ($props) use (&$captured) {
                 $captured = $props;
                 return true;
             }));
 
         $recorder = new TracksEventRecorder('8.1.6');
-        $recorder->recordEvent('wcadmin_mollie_plugin_activated', ['is_test_mode' => true]);
+        $recorder->recordEvent('mollie_plugin_activated', ['is_test_mode' => true]);
 
         $this->assertNotNull($captured);
         $this->assertEquals('8.1.6', $captured['plugin_version']);
@@ -66,13 +66,13 @@ class TracksEventRecorderTest extends TestCase
         $wcTracks->shouldReceive('record_event')
             ->once()
             ->withArgs(function ($name, $props) {
-                return $name === 'wcadmin_mollie_plugin_activated'
+                return $name === 'mollie_plugin_activated'
                     && $props['plugin_version'] === '8.1.6';
             })
             ->andReturn(true);
 
         $recorder = new TracksEventRecorder('8.1.6');
-        $recorder->recordEvent('wcadmin_mollie_plugin_activated');
+        $recorder->recordEvent('mollie_plugin_activated');
 
         $this->addToAssertionCount(1);
     }

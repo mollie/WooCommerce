@@ -348,10 +348,10 @@ class TracksModuleTest extends TestCase
     /**
      * WHEN a paid test payment webhook fires
      * AND first_test_payment has NOT been tracked yet
-     * THEN the event fires and option is set
+     * THEN the pending flag is set with the payment method
      * @test
      */
-    public function firstTestPaymentFiresOnWebhook()
+    public function webhookSetsPendingFlagForPaidTestPayment()
     {
         $this->interceptAddAction();
 
@@ -363,14 +363,13 @@ class TracksModuleTest extends TestCase
         });
         expect('update_option')
             ->once()
+            ->with('mollie_tracks_first_test_payment_pending', 'ideal', false);
+        expect('update_option')
+            ->once()
             ->with('mollie_tracks_first_test_payment_tracked', '1', false);
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldReceive('recordEvent')
-            ->once()
-            ->with('mollie_first_test_payment_complete', Mockery::on(function ($props) {
-                return $props['payment_method'] === 'ideal';
-            }));
+        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
         $module = new TracksModule();
@@ -390,19 +389,63 @@ class TracksModuleTest extends TestCase
     }
 
     /**
-     * WHEN a paid live payment webhook fires
-     * THEN the test payment event does NOT fire
+     * WHEN an authorized test payment webhook fires (e.g. Klarna)
+     * AND first_test_payment has NOT been tracked yet
+     * THEN the pending flag is set with the payment method
      * @test
      */
-    public function testPaymentSkippedForLiveMode()
+    public function webhookSetsPendingFlagForAuthorizedTestPayment()
+    {
+        $this->interceptAddAction();
+
+        when('get_option')->alias(function ($name, $default = false) {
+            if ($name === 'mollie_tracks_first_test_payment_tracked') {
+                return false;
+            }
+            return $default;
+        });
+        expect('update_option')
+            ->once()
+            ->with('mollie_tracks_first_test_payment_pending', 'klarnapaylater', false);
+        expect('update_option')
+            ->once()
+            ->with('mollie_tracks_first_test_payment_tracked', '1', false);
+
+        $recorder = Mockery::mock(TracksEventRecorder::class);
+        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+
+        $container = $this->createMockContainer($recorder);
+        $module = new TracksModule();
+        $module->run($container);
+
+        $hookName = 'mollie-payments-for-woocommerce_after_webhook_action';
+        $cbs = $this->getCallbacks($hookName);
+        $this->assertNotEmpty($cbs);
+
+        $payment = Mockery::mock();
+        $payment->shouldReceive('isPaid')->andReturn(false);
+        $payment->shouldReceive('isAuthorized')->andReturn(true);
+        $payment->mode = 'test';
+        $payment->method = 'klarnapaylater';
+        $order = Mockery::mock('WC_Order');
+
+        $cbs[0]($payment, $order);
+    }
+
+    /**
+     * WHEN a paid live payment webhook fires
+     * THEN the pending flag is NOT set
+     * @test
+     */
+    public function webhookSkipsPendingFlagForLiveMode()
     {
         $this->interceptAddAction();
 
         when('get_option')->justReturn(false);
+        expect('update_option')->never()
+            ->with('mollie_tracks_first_test_payment_pending', Mockery::any(), Mockery::any());
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_first_test_payment_complete', Mockery::any());
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
@@ -424,19 +467,19 @@ class TracksModuleTest extends TestCase
     }
 
     /**
-     * WHEN the webhook fires but payment is not paid
-     * THEN the test payment event does NOT fire
+     * WHEN the webhook fires but payment is not paid or authorized
+     * THEN the pending flag is NOT set
      * @test
      */
-    public function testPaymentSkippedWhenUnpaid()
+    public function webhookSkipsPendingFlagWhenUnpaid()
     {
         $this->interceptAddAction();
 
         when('get_option')->justReturn(false);
+        expect('update_option')->never()
+            ->with('mollie_tracks_first_test_payment_pending', Mockery::any(), Mockery::any());
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_first_test_payment_complete', Mockery::any());
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
@@ -459,56 +502,11 @@ class TracksModuleTest extends TestCase
     }
 
     /**
-     * WHEN an authorized test payment webhook fires (e.g. Klarna)
-     * AND first_test_payment has NOT been tracked yet
-     * THEN the event fires
-     * @test
-     */
-    public function firstTestPaymentFiresOnAuthorizedWebhook()
-    {
-        $this->interceptAddAction();
-
-        when('get_option')->alias(function ($name, $default = false) {
-            if ($name === 'mollie_tracks_first_test_payment_tracked') {
-                return false;
-            }
-            return $default;
-        });
-        expect('update_option')
-            ->once()
-            ->with('mollie_tracks_first_test_payment_tracked', '1', false);
-
-        $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldReceive('recordEvent')
-            ->once()
-            ->with('mollie_first_test_payment_complete', Mockery::on(function ($props) {
-                return $props['payment_method'] === 'klarnapaylater';
-            }));
-
-        $container = $this->createMockContainer($recorder);
-        $module = new TracksModule();
-        $module->run($container);
-
-        $hookName = 'mollie-payments-for-woocommerce_after_webhook_action';
-        $cbs = $this->getCallbacks($hookName);
-        $this->assertNotEmpty($cbs);
-
-        $payment = Mockery::mock();
-        $payment->shouldReceive('isPaid')->andReturn(false);
-        $payment->shouldReceive('isAuthorized')->andReturn(true);
-        $payment->mode = 'test';
-        $payment->method = 'klarnapaylater';
-        $order = Mockery::mock('WC_Order');
-
-        $cbs[0]($payment, $order);
-    }
-
-    /**
      * WHEN first test payment has already been tracked
-     * THEN it does NOT fire again
+     * THEN the webhook does NOT set the pending flag again
      * @test
      */
-    public function firstTestPaymentDoesNotFireTwice()
+    public function webhookSkipsPendingFlagWhenAlreadyTracked()
     {
         $this->interceptAddAction();
 
@@ -518,10 +516,10 @@ class TracksModuleTest extends TestCase
             }
             return $default;
         });
+        expect('update_option')->never()
+            ->with('mollie_tracks_first_test_payment_pending', Mockery::any(), Mockery::any());
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_first_test_payment_complete', Mockery::any());
         $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
 
         $container = $this->createMockContainer($recorder);
@@ -543,6 +541,75 @@ class TracksModuleTest extends TestCase
     }
 
     /**
+     * WHEN admin_init fires and a pending test payment flag exists
+     * THEN the event is recorded and the pending flag is deleted
+     * @test
+     */
+    public function adminInitFiresDeferredTestPaymentEvent()
+    {
+        $this->interceptAddAction();
+
+        when('get_option')->alias(function ($name, $default = false) {
+            if ($name === 'mollie_tracks_first_test_payment_pending') {
+                return 'ideal';
+            }
+            return $default;
+        });
+        expect('delete_option')
+            ->once()
+            ->with('mollie_tracks_first_test_payment_pending');
+
+        $recorder = Mockery::mock(TracksEventRecorder::class);
+        $recorder->shouldReceive('recordEvent')
+            ->once()
+            ->with('mollie_first_test_payment_complete', Mockery::on(function ($props) {
+                return $props['payment_method'] === 'ideal';
+            }));
+
+        $container = $this->createMockContainer($recorder);
+        $module = new TracksModule();
+        $module->run($container);
+
+        $cbs = $this->getCallbacks('admin_init');
+        $this->assertNotEmpty($cbs);
+
+        // Fire all admin_init callbacks
+        foreach ($cbs as $cb) {
+            $cb();
+        }
+    }
+
+    /**
+     * WHEN admin_init fires and no pending test payment flag exists
+     * THEN no event is recorded
+     * @test
+     */
+    public function adminInitSkipsWhenNoPendingTestPayment()
+    {
+        $this->interceptAddAction();
+
+        when('get_option')->justReturn(false);
+
+        $recorder = Mockery::mock(TracksEventRecorder::class);
+        $recorder->shouldNotReceive('recordEvent')
+            ->with('mollie_first_test_payment_complete', Mockery::any());
+        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+
+        $container = $this->createMockContainer($recorder);
+        $module = new TracksModule();
+        $module->run($container);
+
+        $cbs = $this->getCallbacks('admin_init');
+        $this->assertNotEmpty($cbs);
+
+        foreach ($cbs as $cb) {
+            $cb();
+        }
+
+        $this->addToAssertionCount(1);
+    }
+
+    /**
      * WHEN plugin is deactivated and merchant has no API keys
      * THEN all tracking options are cleared
      * @test
@@ -554,6 +621,9 @@ class TracksModuleTest extends TestCase
         expect('delete_option')
             ->once()
             ->with('mollie_tracks_first_test_payment_tracked');
+        expect('delete_option')
+            ->once()
+            ->with('mollie_tracks_first_test_payment_pending');
         expect('delete_option')
             ->once()
             ->with('mollie_tracks_api_keys_viewed');

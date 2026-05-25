@@ -19,11 +19,13 @@ class TracksModule implements ServiceModule, ExecutableModule
     public const OPTION_FIRST_TEST_PAYMENT_TRACKED = 'mollie_tracks_first_test_payment_tracked';
     public const OPTION_API_KEYS_VIEWED = 'mollie_tracks_api_keys_viewed';
     private const OPTION_PLUGIN_ACTIVATED = 'mollie_tracks_plugin_activated';
+    private const OPTION_FIRST_TEST_PAYMENT_PENDING = 'mollie_tracks_first_test_payment_pending';
     private const OPTION_PREFIX = 'mollie-payments-for-woocommerce_';
     private const PAYMENT_MODE_TEST = 'test';
 
     private const ALL_TRACKING_OPTIONS = [
         self::OPTION_FIRST_TEST_PAYMENT_TRACKED,
+        self::OPTION_FIRST_TEST_PAYMENT_PENDING,
         self::OPTION_API_KEYS_VIEWED,
         self::OPTION_PLUGIN_ACTIVATED,
     ];
@@ -186,32 +188,41 @@ class TracksModule implements ServiceModule, ExecutableModule
      */
     private function trackTestPaymentComplete(TracksEventRecorder $recorder, string $pluginId): void
     {
+        // Webhook: set pending flag when a successful test payment arrives
         add_action(
             $pluginId . '_after_webhook_action',
-            static function (object $payment, $order) use ($recorder): void {
-                // Skip if first test payment already tracked (one-time event)
+            static function (object $payment, $order): void {
                 if (get_option(self::OPTION_FIRST_TEST_PAYMENT_TRACKED)) {
                     return;
                 }
 
-                // Skip payments that are neither paid nor authorized
                 if (!$payment->isPaid() && !$payment->isAuthorized()) {
                     return;
                 }
 
-                // Skip live payments (only track test mode)
                 if ($payment->mode !== self::PAYMENT_MODE_TEST) {
                     return;
                 }
 
+                update_option(self::OPTION_FIRST_TEST_PAYMENT_PENDING, $payment->method ?? '', false);
                 update_option(self::OPTION_FIRST_TEST_PAYMENT_TRACKED, '1', false);
-
-                $recorder->recordEvent('mollie_first_test_payment_complete', [
-                    'payment_method' => $payment->method ?? '',
-                ]);
             },
             10,
             2
         );
+
+        // Admin: fire the event on next page load with proper user context
+        add_action('admin_init', static function () use ($recorder): void {
+            $paymentMethod = get_option(self::OPTION_FIRST_TEST_PAYMENT_PENDING);
+            if ($paymentMethod === false) {
+                return;
+            }
+
+            delete_option(self::OPTION_FIRST_TEST_PAYMENT_PENDING);
+
+            $recorder->recordEvent('mollie_first_test_payment_complete', [
+                'payment_method' => $paymentMethod,
+            ]);
+        }, 20);
     }
 }

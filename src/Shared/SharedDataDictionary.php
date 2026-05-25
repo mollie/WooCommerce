@@ -93,6 +93,7 @@ class SharedDataDictionary
         '_transient_mollie-wc-giftcard_issuers_live',
         'mollie_plugin_update_translation',
         'mollie_tracks_first_test_payment_tracked',
+        'mollie_tracks_first_test_payment_pending',
         'mollie_tracks_api_keys_viewed',
         'mollie_tracks_plugin_activated',
     ];

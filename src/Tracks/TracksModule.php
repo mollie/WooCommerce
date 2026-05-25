@@ -141,8 +141,8 @@ class TracksModule implements ServiceModule, ExecutableModule
             if (get_option(self::OPTION_FIRST_TEST_PAYMENT_TRACKED)) {
                 return;
             }
-            // Skip unpaid/pending payments
-            if (!$payment->isPaid()) {
+            // Skip payments that are neither paid nor authorized
+            if (!$payment->isPaid() && !$payment->isAuthorized()) {
                 return;
             }
             // Skip live payments (only track test mode)

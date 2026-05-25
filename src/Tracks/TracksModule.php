@@ -194,8 +194,8 @@ class TracksModule implements ServiceModule, ExecutableModule
                     return;
                 }
 
-                // Skip unpaid/pending payments
-                if (!$payment->isPaid()) {
+                // Skip payments that are neither paid nor authorized
+                if (!$payment->isPaid() && !$payment->isAuthorized()) {
                     return;
                 }
 

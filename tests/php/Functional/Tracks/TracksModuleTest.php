@@ -449,12 +449,58 @@ class TracksModuleTest extends TestCase
 
         $payment = Mockery::mock();
         $payment->shouldReceive('isPaid')->andReturn(false);
+        $payment->shouldReceive('isAuthorized')->andReturn(false);
         $payment->mode = 'test';
         $payment->method = 'ideal';
         $order = Mockery::mock('WC_Order');
 
         $cbs[0]($payment, $order);
         $this->addToAssertionCount(1);
+    }
+
+    /**
+     * WHEN an authorized test payment webhook fires (e.g. Klarna)
+     * AND first_test_payment has NOT been tracked yet
+     * THEN the event fires
+     * @test
+     */
+    public function firstTestPaymentFiresOnAuthorizedWebhook()
+    {
+        $this->interceptAddAction();
+
+        when('get_option')->alias(function ($name, $default = false) {
+            if ($name === 'mollie_tracks_first_test_payment_tracked') {
+                return false;
+            }
+            return $default;
+        });
+        expect('update_option')
+            ->once()
+            ->with('mollie_tracks_first_test_payment_tracked', '1', false);
+
+        $recorder = Mockery::mock(TracksEventRecorder::class);
+        $recorder->shouldReceive('recordEvent')
+            ->once()
+            ->with('mollie_first_test_payment_complete', Mockery::on(function ($props) {
+                return $props['payment_method'] === 'klarnapaylater';
+            }));
+
+        $container = $this->createMockContainer($recorder);
+        $module = new TracksModule();
+        $module->run($container);
+
+        $hookName = 'mollie-payments-for-woocommerce_after_webhook_action';
+        $cbs = $this->getCallbacks($hookName);
+        $this->assertNotEmpty($cbs);
+
+        $payment = Mockery::mock();
+        $payment->shouldReceive('isPaid')->andReturn(false);
+        $payment->shouldReceive('isAuthorized')->andReturn(true);
+        $payment->mode = 'test';
+        $payment->method = 'klarnapaylater';
+        $order = Mockery::mock('WC_Order');
+
+        $cbs[0]($payment, $order);
     }
 
     /**

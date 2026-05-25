@@ -1,16 +1,49 @@
 ( function ( { jQuery, surchargeData } ) {
-	jQuery( function ( $ ) {
-		$( 'body' ).on( 'change', 'input[name="payment_method"]', function () {
-			$( 'body' ).trigger( 'update_checkout' );
-		} );
-	} );
 	if ( ! surchargeData ) {
 		return;
 	}
 
+	const surchargeGatewayIds = Array.isArray( surchargeData.surchargeGatewayIds )
+		? surchargeData.surchargeGatewayIds
+		: [];
+
+	const gatewayHasSurcharge = ( gatewayId ) =>
+		surchargeGatewayIds.indexOf( gatewayId ) !== -1;
+
 	const isOrderPay = document.body.classList.contains(
 		'woocommerce-order-pay'
 	);
+
+	if ( ! isOrderPay ) {
+		jQuery( function ( $ ) {
+			let previousPaymentMethod =
+				$( 'input[name="payment_method"]:checked' ).val() || '';
+
+			$( 'body' ).on( 'updated_checkout', function () {
+				previousPaymentMethod =
+					$( 'input[name="payment_method"]:checked' ).val() || '';
+			} );
+
+			$( 'body' ).on(
+				'change',
+				'input[name="payment_method"]',
+				function () {
+					const currentPaymentMethod =
+						$( 'input[name="payment_method"]:checked' ).val() ||
+						'';
+
+					if (
+						gatewayHasSurcharge( previousPaymentMethod ) ||
+						gatewayHasSurcharge( currentPaymentMethod )
+					) {
+						$( 'body' ).trigger( 'update_checkout' );
+					}
+
+					previousPaymentMethod = currentPaymentMethod;
+				}
+			);
+		} );
+	}
 
 	if ( isOrderPay ) {
 		jQuery( function ( $ ) {

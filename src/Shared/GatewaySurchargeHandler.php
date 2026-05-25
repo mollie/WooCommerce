@@ -64,8 +64,42 @@ class GatewaySurchargeHandler
             [
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'gatewayFeeLabel' => $this->gatewayFeeLabel,
+                'surchargeGatewayIds' => $this->surchargeGatewayIds(),
             ]
         );
+    }
+
+    protected function surchargeGatewayIds(): array
+    {
+        if (!function_exists('WC') || !WC()->payment_gateways()) {
+            return [];
+        }
+
+        $paymentGateways = WC()->payment_gateways()->payment_gateways();
+        $gatewayIds = [];
+
+        foreach ($paymentGateways as $gatewayId => $gateway) {
+            $gatewayId = (string) $gatewayId;
+
+            if (!$this->isMollieGateway($gatewayId)) {
+                continue;
+            }
+
+            $gatewaySettings = $this->gatewaySettings($gatewayId);
+
+            if (!$gatewaySettings) {
+                continue;
+            }
+
+            if (
+                isset($gatewaySettings['payment_surcharge'])
+                && $gatewaySettings['payment_surcharge'] !== Surcharge::NO_FEE
+            ) {
+                $gatewayIds[] = $gatewayId;
+            }
+        }
+
+        return $gatewayIds;
     }
 
     public function addSurchargeFeeProductPage($order, $gateway)

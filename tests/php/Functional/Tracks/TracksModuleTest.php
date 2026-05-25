@@ -23,6 +23,9 @@ class TracksModuleTest extends TestCase
         $this->hooks = (object) ['callbacks' => []];
         unset($_SERVER['REQUEST_METHOD']);
         $_GET = [];
+
+        when('wp_doing_ajax')->justReturn(false);
+        when('wp_doing_cron')->justReturn(false);
     }
 
     protected function tearDown(): void

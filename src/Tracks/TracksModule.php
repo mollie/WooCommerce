@@ -95,6 +95,10 @@ class TracksModule implements ServiceModule, ExecutableModule
     private function trackDeferredPluginActivation(TracksEventRecorder $recorder, Settings $settingsHelper): void
     {
         add_action('admin_init', static function () use ($recorder, $settingsHelper): void {
+            if (wp_doing_ajax() || defined('REST_REQUEST') || wp_doing_cron()) {
+                return;
+            }
+
             // Skip if no activation flag (not freshly activated)
             if (!get_option(self::OPTION_PLUGIN_ACTIVATED)) {
                 return;
@@ -211,8 +215,12 @@ class TracksModule implements ServiceModule, ExecutableModule
             2
         );
 
-        // Admin: fire the event on next page load with proper user context
+        // Admin: fire the event on next full page load with proper user context.
         add_action('admin_init', static function () use ($recorder): void {
+            if (wp_doing_ajax() || defined('REST_REQUEST') || wp_doing_cron()) {
+                return;
+            }
+
             $paymentMethod = get_option(self::OPTION_FIRST_TEST_PAYMENT_PENDING);
             if ($paymentMethod === false) {
                 return;

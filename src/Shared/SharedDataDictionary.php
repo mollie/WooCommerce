@@ -95,6 +95,7 @@ class SharedDataDictionary
         'mollie_tracks_first_test_payment_tracked',
         'mollie_tracks_first_test_payment_pending',
         'mollie_tracks_api_keys_viewed',
+        'mollie_tracks_plugin_activated_tracked',
         'mollie_tracks_plugin_activated',
     ];
     public const DB_VERSION_PARAM_NAME = 'mollie-db-version';

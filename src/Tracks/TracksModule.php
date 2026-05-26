@@ -18,6 +18,7 @@ class TracksModule implements ServiceModule, ExecutableModule
 
     public const OPTION_FIRST_TEST_PAYMENT_TRACKED = 'mollie_tracks_first_test_payment_tracked';
     public const OPTION_API_KEYS_VIEWED = 'mollie_tracks_api_keys_viewed';
+    public const OPTION_PLUGIN_ACTIVATED_TRACKED = 'mollie_tracks_plugin_activated_tracked';
     private const OPTION_PLUGIN_ACTIVATED = 'mollie_tracks_plugin_activated';
     private const OPTION_FIRST_TEST_PAYMENT_PENDING = 'mollie_tracks_first_test_payment_pending';
     private const OPTION_PREFIX = 'mollie-payments-for-woocommerce_';
@@ -27,6 +28,7 @@ class TracksModule implements ServiceModule, ExecutableModule
         self::OPTION_FIRST_TEST_PAYMENT_TRACKED,
         self::OPTION_FIRST_TEST_PAYMENT_PENDING,
         self::OPTION_API_KEYS_VIEWED,
+        self::OPTION_PLUGIN_ACTIVATED_TRACKED,
         self::OPTION_PLUGIN_ACTIVATED,
     ];
 
@@ -106,11 +108,16 @@ class TracksModule implements ServiceModule, ExecutableModule
 
             delete_option(self::OPTION_PLUGIN_ACTIVATED);
 
+            if (get_option(self::OPTION_PLUGIN_ACTIVATED_TRACKED)) {
+                return;
+            }
+
             // Skip if merchant is already connected to Mollie
             if ($settingsHelper->getConnectionStatus()) {
                 return;
             }
 
+            update_option(self::OPTION_PLUGIN_ACTIVATED_TRACKED, '1', false);
             $recorder->recordEvent('mollie_plugin_activated');
         }, 20);
     }

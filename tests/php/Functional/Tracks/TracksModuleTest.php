@@ -53,7 +53,7 @@ class TracksModuleTest extends TestCase
 
     /**
      * WHEN activation option is set and merchant is NOT connected
-     * THEN deferred activation callback fires the event and clears the option
+     * THEN deferred activation callback fires the event, sets tracked gate, and clears the trigger
      * @test
      */
     public function deferredActivationFiresWhenOptionSet()
@@ -69,6 +69,9 @@ class TracksModuleTest extends TestCase
         expect('delete_option')
             ->once()
             ->with('mollie_tracks_plugin_activated');
+        expect('update_option')
+            ->once()
+            ->with('mollie_tracks_plugin_activated_tracked', '1', false);
 
         $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(false);
@@ -108,6 +111,44 @@ class TracksModuleTest extends TestCase
 
         $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(true);
+        $settingsHelper->shouldIgnoreMissing();
+
+        $recorder = Mockery::mock(TracksEventRecorder::class);
+        $recorder->shouldNotReceive('recordEvent')
+            ->with('mollie_plugin_activated');
+        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+
+        $container = $this->createMockContainer($recorder, $settingsHelper);
+        $module = new TracksModule();
+        $module->run($container);
+
+        $this->runCallbacks('admin_init');
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * WHEN activation option is set but tracked gate is already set
+     * THEN the activation event does NOT fire
+     * @test
+     */
+    public function activationSkippedWhenAlreadyTracked()
+    {
+        $this->interceptAddAction();
+
+        when('get_option')->alias(function ($name) {
+            if ($name === 'mollie_tracks_plugin_activated') {
+                return '1';
+            }
+            if ($name === 'mollie_tracks_plugin_activated_tracked') {
+                return '1';
+            }
+            return false;
+        });
+        expect('delete_option')
+            ->once()
+            ->with('mollie_tracks_plugin_activated');
+
+        $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldIgnoreMissing();
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
@@ -630,6 +671,9 @@ class TracksModuleTest extends TestCase
         expect('delete_option')
             ->once()
             ->with('mollie_tracks_api_keys_viewed');
+        expect('delete_option')
+            ->once()
+            ->with('mollie_tracks_plugin_activated_tracked');
         expect('delete_option')
             ->once()
             ->with('mollie_tracks_plugin_activated');

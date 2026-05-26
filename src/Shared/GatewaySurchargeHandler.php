@@ -40,10 +40,10 @@ class GatewaySurchargeHandler
         add_action('wp_ajax_nopriv_update_surcharge_order_pay', function () {
             $this->updateSurchargeOrderPay();
         });
-        add_action('woocommerce_order_item_meta_end', [$this, 'setHiddenOrderId'], 10, 4);
+        add_action('woocommerce_order_item_meta_end', [$this, 'renderHiddenOrderKeyFields'], 10, 4);
     }
 
-    public function setHiddenOrderId($item_id, $item, $order, $bool = false)
+    public function renderHiddenOrderKeyFields($item_id, $item, $order, $bool = false)
     {
         $orderKey = $order->get_order_key();
         $nonce = wp_create_nonce('mollie_surcharge_' . $orderKey);

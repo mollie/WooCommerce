@@ -14,12 +14,12 @@
 
 	if ( isOrderPay ) {
 		jQuery( function ( $ ) {
-			let orderId = false;
+			let orderKey = false;
 			const hiddenField = $(
-				'input:hidden[name="mollie-woocommerce-orderId"]'
+				'input:hidden[name="mollie-woocommerce-orderKey"]'
 			);
 			if ( hiddenField.length ) {
-				orderId = hiddenField.val();
+				orderKey = hiddenField.val();
 			}
 			const gatewayLabel = surchargeData.gatewayFeeLabel;
 			const updateSurcharge = () => {
@@ -31,7 +31,7 @@
 						method: $(
 							'input:radio[name="payment_method"]:checked'
 						).val(),
-						orderId,
+						orderKey,
 						nonce: $(
 							'input[name="mollie-surcharge-nonce"]'
 						).val(),

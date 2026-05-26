@@ -236,7 +236,12 @@ class WebhookHandler
         $metaKey = $mollieObject instanceof MollieOrder ? '_mollie_order_id' : '_mollie_payment_id';
         $molliePaymentId = $order->get_meta($metaKey, \true);
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
-        if (!$order->needs_payment()) {
+        if ($mollieObject->isFinalOrderStatus($order)) {
+            $this->logger->debug(__METHOD__ . " called for order {$orderId} has final status. Nothing to be done");
+            return;
+        }
+        $alreadyPaid = !$order->needs_payment() || $order->get_status() === 'processing' || $order->get_meta('_mollie_paid_and_processed', \true);
+        if ($alreadyPaid) {
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' called for order ' . $orderId . ', not processed because the order is already paid.');
             return;
         }

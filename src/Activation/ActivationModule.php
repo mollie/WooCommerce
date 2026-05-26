@@ -50,24 +50,24 @@ class ActivationModule implements ExecutableModule, ServiceModule
     /**
      *
      */
-    public function initDb()
+    public function initDb(): void
     {
         global $wpdb;
-        global $EZSQL_ERROR;
         $wpdb->mollie_pending_payment = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
-        if (get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '') !== SharedDataDictionary::DB_VERSION) {
-            $pendingPaymentConfirmTable = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
-            require_once \ABSPATH . 'wp-admin/includes/upgrade.php';
-            if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $pendingPaymentConfirmTable)) !== $pendingPaymentConfirmTable) {
-                $sql = "\n\t\t\t\t\tCREATE TABLE " . $pendingPaymentConfirmTable . " (\n                    id int(11) NOT NULL AUTO_INCREMENT,\n                    post_id bigint NOT NULL,\n                    expired_time int NOT NULL,\n                    PRIMARY KEY id (id)\n                );";
-                dbDelta($sql);
-                /**
-                 * Remove redundant 'DESCRIBE *__mollie_pending_payment' error so it doesn't show up in error logs
-                 */
-                array_pop($EZSQL_ERROR);
-            }
-            update_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, SharedDataDictionary::DB_VERSION);
+        if (get_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, '') === SharedDataDictionary::DB_VERSION) {
+            return;
         }
+        $table = $wpdb->prefix . SharedDataDictionary::PENDING_PAYMENT_DB_TABLE_NAME;
+        require_once \ABSPATH . 'wp-admin/includes/upgrade.php';
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) !== $table) {
+            $sql = "CREATE TABLE {$table} (\n                id int(11) NOT NULL AUTO_INCREMENT,\n                post_id bigint NOT NULL,\n                expired_time int NOT NULL,\n                PRIMARY KEY id (id)\n            );";
+            // dbDelta() runs DESCRIBE on a non-existent table as part of its schema diff;
+            // suppress that expected false-positive instead of manipulating $EZSQL_ERROR directly.
+            $previousSuppressErrors = $wpdb->suppress_errors(\true);
+            dbDelta($sql);
+            $wpdb->suppress_errors($previousSuppressErrors);
+        }
+        update_option(SharedDataDictionary::DB_VERSION_PARAM_NAME, SharedDataDictionary::DB_VERSION);
     }
     /**
      *

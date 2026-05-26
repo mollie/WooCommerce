@@ -35,14 +35,15 @@ class GatewaySurchargeHandler
         add_action('wp_ajax_nopriv_update_surcharge_order_pay', function () {
             $this->updateSurchargeOrderPay();
         });
-        add_action('woocommerce_order_item_meta_end', [$this, 'setHiddenOrderId'], 10, 4);
+        add_action('woocommerce_order_item_meta_end', [$this, 'renderHiddenOrderKeyFields'], 10, 4);
     }
-    public function setHiddenOrderId($item_id, $item, $order, $bool = \false)
+    public function renderHiddenOrderKeyFields($item_id, $item, $order, $bool = \false)
     {
-        $nonce = wp_create_nonce('mollie_surcharge_' . $order->get_id());
+        $orderKey = $order->get_order_key();
+        $nonce = wp_create_nonce('mollie_surcharge_' . $orderKey);
         ?>
-        <input type="hidden" name="mollie-woocommerce-orderId" value="<?php 
-        echo esc_attr($order->get_id());
+        <input type="hidden" name="mollie-woocommerce-orderKey" value="<?php 
+        echo esc_attr($orderKey);
         ?>">
         <input type="hidden" name="mollie-surcharge-nonce" value="<?php 
         echo esc_attr($nonce);
@@ -141,12 +142,12 @@ class GatewaySurchargeHandler
      */
     protected function verifyNonce(): bool
     {
-        $orderId = (int) wc_get_post_data_by_key('orderId', '');
+        $orderKey = sanitize_text_field(wc_get_post_data_by_key('orderKey', ''));
         $nonce = wc_get_post_data_by_key('nonce', '');
-        if (!$orderId || !$nonce) {
+        if (!$orderKey || !$nonce) {
             return \false;
         }
-        return (bool) wp_verify_nonce($nonce, 'mollie_surcharge_' . $orderId);
+        return (bool) wp_verify_nonce($nonce, 'mollie_surcharge_' . $orderKey);
     }
     protected function chosenGateway()
     {
@@ -204,11 +205,15 @@ class GatewaySurchargeHandler
      */
     protected function canProcessOrder()
     {
-        $postedOrderId = (int) wc_get_post_data_by_key('orderId', '');
-        if (!$postedOrderId) {
+        $orderKey = sanitize_text_field(wc_get_post_data_by_key('orderKey', ''));
+        if (!$orderKey) {
             return \false;
         }
-        $order = wc_get_order($postedOrderId);
+        $orderId = wc_get_order_id_by_order_key($orderKey);
+        if (!$orderId) {
+            return \false;
+        }
+        $order = wc_get_order($orderId);
         if (!$order) {
             return \false;
         }

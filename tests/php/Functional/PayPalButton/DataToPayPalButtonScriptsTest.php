@@ -257,7 +257,6 @@ class DataToPayPalButtonScriptsTest extends TestCase
         when('__')->returnArg(1);
     }
 
-    // kb-active
 
     public function testWhichPaypalButtonReturnsPathForFourSegmentColor()
     {

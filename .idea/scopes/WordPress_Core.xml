@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="WordPress Core" pattern="file[WooCommerce]:.ddev/wordpress//*" />
-</component>

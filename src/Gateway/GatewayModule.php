@@ -89,12 +89,12 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $gateways = WC()->payment_gateways()->payment_gateways();
             $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
             foreach ($gateways as $gateway) {
-                $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
-                    || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false;
-                if (!$isMolliegateway) {
+                if (
+                    !$gateway instanceof PaymentGateway
+                    || !array_key_exists($gateway->id, $deprecatedGatewayHelpers)
+                ) {
                     continue;
                 }
-                assert($gateway instanceof PaymentGateway);
                 // Add subscription filters after payment gateways are loaded
                 $isSubscriptiongateway = $gateway->supports('subscriptions');
                 if (

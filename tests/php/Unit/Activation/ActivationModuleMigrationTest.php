@@ -117,7 +117,7 @@ class ActivationModuleMigrationTest extends TestCase
                 $this->testCase->markUpdatedCalled = true;
             }
 
-            public function initDb()
+            public function initDb(): void
             {
                 $this->testCase->initDbCalled = true;
             }

@@ -1,10 +1,8 @@
 /**
  * Internal dependencies
  */
-import { createStorageStates, resetEnvironment, test as setup, setupWooCommerce } from '../../utils';
-import {
-	taxSettings,
-} from '../../resources';
+import { createStorageStates, resetEnvironment, test as setup } from '../../utils';
+import { taxSettings } from '../../resources';
 
 // --- Reset env ---
 

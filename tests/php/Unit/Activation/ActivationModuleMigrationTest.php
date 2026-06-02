@@ -87,10 +87,11 @@ class ActivationModuleMigrationTest extends TestCase
         $self = $this;
 
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('error')
-            ->andReturnUsing(function ($message, $context = []) use ($self): void {
-                $self->errorLogs[] = (string) $message;
-            });
+        /** @var \Mockery\Expectation $logExpect */
+        $logExpect = $logger->shouldReceive('error');
+        $logExpect->andReturnUsing(function ($message, $context = []) use ($self): void {
+            $self->errorLogs[] = (string) $message;
+        });
         $logger->shouldIgnoreMissing();
 
         $module = new class ($self) extends ActivationModule {
@@ -117,7 +118,7 @@ class ActivationModuleMigrationTest extends TestCase
                 $this->testCase->markUpdatedCalled = true;
             }
 
-            public function initDb()
+            public function initDb(): void
             {
                 $this->testCase->initDbCalled = true;
             }

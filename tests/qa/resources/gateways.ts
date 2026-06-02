@@ -5,9 +5,7 @@ import { MollieGateway, MollieSettings } from './types';
 
 export const defaultGatewaySettings: MollieSettings.Gateway = {
 	enabled: true,
-	use_api_title: 'no',
 	display_logo: 'yes',
-	enable_custom_logo: 'no',
 	description: '',
 	'allowed_countries[]': [],
 

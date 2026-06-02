@@ -26,4 +26,6 @@ parameters:
     - '#^(Property WooCommerce::\$cart \(WC_Cart\) in isset\(\) is not nullable|Left side of && is always true)\.$#'
     # M4W_PLUGIN_DIR constant is defined at runtime in the main plugin file
     - '#^Constant M4W_PLUGIN_DIR not found\.$#'
+    # WooCommerce Store API helpers are conditionally declared inside WC Blocks — not always present in stubs
+    - '#^Function woocommerce_store_api_register_(update_callback|endpoint_data) not found\.$#'
 

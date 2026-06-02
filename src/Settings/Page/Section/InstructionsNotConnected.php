@@ -65,7 +65,7 @@ class InstructionsNotConnected extends AbstractSection
             </li>
             <li>
                 <?= wp_kses(
-                    __("Navigate to <strong>Developers > API keys.</strong>", 'mollie-payments-for-woocommerce'),
+                    __("Navigate to <strong>Developers > API access tokens.</strong>", 'mollie-payments-for-woocommerce'),
                     [
                                 'strong' => [],
                         ]
@@ -73,7 +73,7 @@ class InstructionsNotConnected extends AbstractSection
             </li>
             <li>
                 <?= wp_kses(
-                    __("Click on <strong>Copy</strong> next to your API key.", 'mollie-payments-for-woocommerce'),
+                    __("Click <strong>+ Create access token</strong>, select <strong>Standard API key</strong> as the token type, choose your payment profile and API mode (Test or Live), then click <strong>Create access token</strong>.", 'mollie-payments-for-woocommerce'),
                     [
                         'strong' => [],
                         ]

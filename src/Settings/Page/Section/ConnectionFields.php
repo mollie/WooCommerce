@@ -42,10 +42,10 @@ class ConnectionFields extends AbstractSection
                 'type' => 'text',
                 'desc' => sprintf(
                     __(
-                        "Use your <a href='%s' target='_blank'>Live API key</a> when you're ready to receive real payments.",
+                        "In the Mollie Dashboard, <a href='%s' target='_blank'>create a Standard API key access token</a> in Live mode and paste it here when you're ready to receive real payments.",
                         'mollie-payments-for-woocommerce'
                     ),
-                    'https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner'
+                    'https://my.mollie.com/dashboard/developers/api-access-tokens?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner'
                 ),
                 'css' => 'width: 350px',
                 'placeholder' => __(
@@ -60,10 +60,10 @@ class ConnectionFields extends AbstractSection
                 'type' => 'text',
                 'desc' => sprintf(
                     __(
-                        "Use your <a href='%s' target='_blank'>Test APl key</a> to check the connection and test transactions without a fee.",
+                        "In the Mollie Dashboard, <a href='%s' target='_blank'>create a Standard API key access token</a> in Test mode and paste it here to check the connection and test transactions without a fee.",
                         'mollie-payments-for-woocommerce'
                     ),
-                    'https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner'
+                    'https://my.mollie.com/dashboard/developers/api-access-tokens?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner'
                 ),
                 'css' => 'width: 350px',
                 'placeholder' => __(

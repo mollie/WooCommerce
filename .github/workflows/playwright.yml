@@ -67,7 +67,7 @@ jobs:
         playwright-report/
         test-results/
       PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES: true
-      NODE_VERSION: 24
+      NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
       NGROK_DOMAIN: ngrok-dev.mollie.syde.wpinfra.cloud
       TESTRAIL_PLAN_ID: ${{ inputs.TESTRAIL_PLAN_ID }}

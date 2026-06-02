@@ -262,6 +262,7 @@ class PaymentServiceTest extends TestCase
                 'get_order_number' => 1,
                 'get_payment_method' => 'mollie_wc_gateway_ideal',
                 'get_currency' => 'EUR',
+                'is_paid' => false,
             ]
         );
 

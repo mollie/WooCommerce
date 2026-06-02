@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Mollie\\enshrined\\svgSanitize\\' => array($vendorDir . '/enshrined/svg-sanitize/src'),
     'Mollie\\WooCommerce\\' => array($baseDir . '/src'),
     'Mollie\\Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
     'Mollie\\Psr\\Container\\' => array($vendorDir . '/psr/container/src'),

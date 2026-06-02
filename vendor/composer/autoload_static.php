@@ -4,11 +4,12 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInite80ebce9c7ab43cf3dc33f2f5de2b76e
+class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
 {
     public static $prefixLengthsPsr4 = array (
         'M' =>
         array (
+            'Mollie\\enshrined\\svgSanitize\\' => 29,
             'Mollie\\WooCommerce\\' => 19,
             'Mollie\\Psr\\Log\\' => 15,
             'Mollie\\Psr\\Container\\' => 21,
@@ -25,6 +26,10 @@ class ComposerStaticInite80ebce9c7ab43cf3dc33f2f5de2b76e
     );
 
     public static $prefixDirsPsr4 = array (
+        'Mollie\\enshrined\\svgSanitize\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/enshrined/svg-sanitize/src',
+        ),
         'Mollie\\WooCommerce\\' =>
         array (
             0 => __DIR__ . '/../..' . '/src',
@@ -500,14 +505,25 @@ class ComposerStaticInite80ebce9c7ab43cf3dc33f2f5de2b76e
         'Mollie\\WooCommerce\\Subscription\\SubscriptionModule' => __DIR__ . '/../..' . '/src/Subscription/SubscriptionModule.php',
         'Mollie\\WooCommerce\\Uninstall\\CleanDb' => __DIR__ . '/../..' . '/src/Uninstall/CleanDb.php',
         'Mollie\\WooCommerce\\Uninstall\\UninstallModule' => __DIR__ . '/../..' . '/src/Uninstall/UninstallModule.php',
+        'Mollie\\enshrined\\svgSanitize\\ElementReference\\Resolver' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/ElementReference/Resolver.php',
+        'Mollie\\enshrined\\svgSanitize\\ElementReference\\Subject' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/ElementReference/Subject.php',
+        'Mollie\\enshrined\\svgSanitize\\ElementReference\\Usage' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/ElementReference/Usage.php',
+        'Mollie\\enshrined\\svgSanitize\\Exceptions\\NestingException' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/Exceptions/NestingException.php',
+        'Mollie\\enshrined\\svgSanitize\\Helper' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/Helper.php',
+        'Mollie\\enshrined\\svgSanitize\\Sanitizer' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/Sanitizer.php',
+        'Mollie\\enshrined\\svgSanitize\\data\\AllowedAttributes' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/data/AllowedAttributes.php',
+        'Mollie\\enshrined\\svgSanitize\\data\\AllowedTags' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/data/AllowedTags.php',
+        'Mollie\\enshrined\\svgSanitize\\data\\AttributeInterface' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/data/AttributeInterface.php',
+        'Mollie\\enshrined\\svgSanitize\\data\\TagInterface' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/data/TagInterface.php',
+        'Mollie\\enshrined\\svgSanitize\\data\\XPath' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/data/XPath.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInite80ebce9c7ab43cf3dc33f2f5de2b76e::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInite80ebce9c7ab43cf3dc33f2f5de2b76e::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInite80ebce9c7ab43cf3dc33f2f5de2b76e::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -51,7 +51,7 @@ export const subscriptionRenewal: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C4132916',
-		testLabel: '@Critical',
+		testLabel: '@Critical @Flaky',
 		payment: {
 			gateway: gateways.creditcard,
 			card: cards.visa,

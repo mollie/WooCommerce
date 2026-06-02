@@ -121,7 +121,6 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 		} ) => {
 			await mollieSettingsGateway.setup( {
 				display_logo: 'yes',
-				enable_custom_logo: 'yes',
 				custom_logo_path:
 					'./tests/qa/resources/files/mollie-test-logo.png',
 			} );

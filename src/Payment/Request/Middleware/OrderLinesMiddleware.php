@@ -46,7 +46,7 @@ class OrderLinesMiddleware implements RequestMiddlewareInterface
         if ($context === 'payment') {
             $methodId = $requestData['method'] ?? '';
             $optionName = 'mollie_wc_gateway_' . $methodId . '_settings';
-            $hideOrderLines = get_option($optionName, false)['hide_order_lines'] === 'yes';
+            $hideOrderLines = (get_option($optionName, false)['hide_order_lines'] ?? '') === 'yes';
             if ($hideOrderLines) {
                 /**
                  * Merchant has configured to hide order lines via payment method settings.

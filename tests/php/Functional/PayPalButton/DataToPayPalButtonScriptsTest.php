@@ -257,4 +257,116 @@ class DataToPayPalButtonScriptsTest extends TestCase
         when('__')->returnArg(1);
     }
 
+
+    public function testWhichPaypalButtonReturnsPathForFourSegmentColor()
+    {
+        /*
+         * Stubs
+         */
+        stubs([
+            'get_option' => ['color' => 'en-checkout-pill-golden'],
+        ]);
+
+        /*
+         * Sut
+         */
+        $pluginUrl = 'http://pluginUrl.com/';
+        $sut = new DataToPayPal($pluginUrl);
+
+        /*
+         * Execute Test
+         */
+        $result = $sut->selectedPaypalButtonUrl();
+        self::assertStringContainsString('en/checkout/pill-golden.png', $result);
+    }
+
+    public function testWhichPaypalButtonHandlesTwoSegmentColorWithFallbacks()
+    {
+        /*
+         * Stubs
+         */
+        stubs([
+            'get_option' => ['color' => 'en-buy'],
+        ]);
+
+        /*
+         * Sut
+         */
+        $pluginUrl = 'http://pluginUrl.com/';
+        $sut = new DataToPayPal($pluginUrl);
+
+        /*
+         * Execute Test
+         */
+        $result = $sut->selectedPaypalButtonUrl();
+        self::assertStringContainsString('en/buy/pill-golden.png', $result);
+    }
+
+    public function testWhichPaypalButtonHandlesEmptyStringColorWithoutFatalError()
+    {
+        /*
+         * Stubs
+         */
+        stubs([
+            'get_option' => ['color' => ''],
+        ]);
+
+        /*
+         * Sut
+         */
+        $pluginUrl = 'http://pluginUrl.com/';
+        $sut = new DataToPayPal($pluginUrl);
+
+        /*
+         * Execute Test
+         */
+        $result = $sut->selectedPaypalButtonUrl();
+        self::assertIsString($result);
+        self::assertNotEmpty($result);
+    }
+
+    public function testWhichPaypalButtonUsesDefaultColorWhenColorKeyAbsent()
+    {
+        /*
+         * Stubs
+         */
+        stubs([
+            'get_option' => ['enabled' => 'yes'],
+        ]);
+
+        /*
+         * Sut
+         */
+        $pluginUrl = 'http://pluginUrl.com/';
+        $sut = new DataToPayPal($pluginUrl);
+
+        /*
+         * Execute Test
+         */
+        $result = $sut->selectedPaypalButtonUrl();
+        self::assertStringContainsString('en/checkout/pill-golden.png', $result);
+    }
+
+    public function testWhichPaypalButtonReturnsFallbackWhenConstructedPathNotFound()
+    {
+        /*
+         * Stubs
+         */
+        stubs([
+            'get_option' => ['color' => 'en-checkout-rounded-purple'],
+        ]);
+
+        /*
+         * Sut
+         */
+        $pluginUrl = 'http://pluginUrl.com/';
+        $sut = new DataToPayPal($pluginUrl);
+
+        /*
+         * Execute Test
+         */
+        $result = $sut->selectedPaypalButtonUrl();
+        self::assertStringContainsString('en/checkout/pill-golden.png', $result);
+    }
+
 }

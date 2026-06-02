@@ -86,6 +86,9 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         });
 
         add_action('woocommerce_init', static function () use ($container) {
+            if (!post_type_exists('shop_order')) {
+                return;
+            }
             $gateways = WC()->payment_gateways()->payment_gateways();
             $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
             foreach ($gateways as $gateway) {

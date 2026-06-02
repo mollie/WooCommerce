@@ -186,12 +186,6 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 			await this.enableGatewayCheckbox().setChecked( data.enabled );
 		}
 
-		if ( data.use_api_title !== undefined ) {
-			await this.useApiDynamicTitleAndGatewayLogoCheckbox().setChecked(
-				data.use_api_title === 'yes'
-			);
-		}
-
 		if ( data.title ) {
 			await this.titleInput().fill( data.title );
 		}
@@ -202,15 +196,9 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 			);
 		}
 
-		if ( data.enable_custom_logo !== undefined ) {
-			await this.enableCustomLogoCheckbox().setChecked(
-				data.enable_custom_logo === 'yes'
-			);
-		}
-
-		if ( data.enable_custom_logo === 'yes' && data.custom_logo_path ) {
+		if ( data.custom_logo_path ) {
 			await this.uploadCustomLogoButton().setInputFiles(
-				'./tests/qa/resources/files/mollie-test-logo.png'
+				data.custom_logo_path
 			);
 		}
 

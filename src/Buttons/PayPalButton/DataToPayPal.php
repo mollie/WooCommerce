@@ -67,7 +67,7 @@ class DataToPayPal
         $colorSetting = isset($paypalSettings['color']) ? $paypalSettings['color'] : "en-checkout-pill-golden";
         $dataArray = explode('-', $colorSetting);//[0]lang [1]folder [2]first part filename [3] second part filename
         $fixPath = 'public/images/PayPal_Buttons/';
-        $buildButtonName = sprintf('%s/%s/%s-%s.png', $dataArray[0], $dataArray[1], $dataArray[2], $dataArray[3]);
+        $buildButtonName = sprintf('%s/%s/%s-%s.png', $dataArray[0] ?? 'en', $dataArray[1] ?? 'checkout', $dataArray[2] ?? 'pill', $dataArray[3] ?? 'golden');
         $path = sprintf('%s%s', $fixPath, $buildButtonName);
         if (file_exists(M4W_PLUGIN_DIR . '/' . $path)) {
             return sprintf('%s%s', $fixPath, $buildButtonName);

@@ -53,7 +53,7 @@ class Api
                         "Invalid API key(s). Get them on the %1\$sDevelopers page in the Mollie dashboard%2\$s. The API key(s) must start with 'live_' or 'test_', be at least 30 characters and must not contain any special characters.",
                         'mollie-payments-for-woocommerce'
                     ),
-                    '<a href="https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
+                    '<a href="https://my.mollie.com/dashboard/developers/api-access-tokens?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner" target="_blank">',
                     '</a>'
                 )
             );

@@ -7,8 +7,8 @@ namespace Mollie;
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version: 8.1.6+develop.e43213b
- * SHA: e43213b972a7405dd81296b579c83413d3833a80
+ * Version: 8.1.6+develop.58fc471
+ * SHA: 58fc47165e76ebd0d5010aefca2f9440a0563e33
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3

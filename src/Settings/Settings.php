@@ -669,6 +669,16 @@ class Settings
 
             $movefile = wp_handle_upload($file, $upload_overrides);
             if ($movefile) {
+                if (strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'svg') {
+                    $svgContent = file_get_contents($movefile['file']);
+                    $sanitizer = new \enshrined\svgSanitize\Sanitizer();
+                    $sanitized = ($svgContent !== false) ? $sanitizer->sanitize($svgContent) : false;
+                    if (!$sanitized) {
+                        wp_delete_file($movefile['file']);
+                        return;
+                    }
+                    file_put_contents($movefile['file'], $sanitized);
+                }
                 $gatewaySettings = get_option(sprintf('%s_settings', $gatewayId), []);
                 $gatewaySettings["iconFileUrl"] = $movefile['url'];
                 $gatewaySettings["iconFilePath"] = $movefile['file'];

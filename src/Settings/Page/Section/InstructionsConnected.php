@@ -25,11 +25,11 @@ class InstructionsConnected extends AbstractSection
         <p>
             <?= wp_kses(sprintf(
                 __(
-                    "To start receiving payments through the Mollie plugin in your WooCommerce store, 
-                you'll need to connect it to your Mollie account using an <a href='%s' target='_blank'>API key.</a>",
+                    "To start receiving payments through the Mollie plugin in your WooCommerce store,
+                you'll need to connect it to your Mollie account using an <a href='%s' target='_blank'>API access token.</a>",
                     'mollie-payments-for-woocommerce'
                 ),
-                'https://my.mollie.com/dashboard/developers/api-keys?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner'
+                'https://my.mollie.com/dashboard/developers/api-access-tokens?utm_source=woocommerce&utm_medium=plugin&utm_campaign=partner'
             ), [
                     'a' => [
                             'target' => [],

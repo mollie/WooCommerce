@@ -149,10 +149,8 @@ export namespace MollieSettings {
 	export type Gateway = {
 		id?: string;
 		enabled?: boolean;
-		use_api_title?: 'yes' | 'no';
 		title?: string;
 		display_logo?: 'yes' | 'no';
-		enable_custom_logo?: 'yes' | 'no';
 		custom_logo_path?: string;
 		upload_logo?: string;
 		description?: string;

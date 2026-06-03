@@ -219,7 +219,6 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 == Changelog ==
 
 = 8.1.7 - 15-06-2026 =
-* Added - WooCommerce Tracks integration for Mollie Payments plugin
 * Fixed - Error exporting invoices in WooCommerce
 * Fixed - Undefined array key warning in Mollie PayPal button due to malformed color setting
 * Fixed - PHP warning caused by missing value key in payment_data array in WooCommerce Store API checkout
@@ -229,7 +228,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - Replace orderId with orderKey in surcharge processing logic
 * Fixed - API key retrieval broken due to Mollie dashboard change breaking in-plugin guidance (with @fjbender)
 * Fixed - Expired webhook for stale transaction cancels order despite subsequent payment attempts
-* Improvement - Simplified WooCommerce payment logo settings
+* Improvement - Simplified WooCommerce payment title and logo settings
 * Improvement - Added file type validation for custom gateway logo uploads
 * Improvement - Tightened ownership and type checks for Mollie gateway objects
 

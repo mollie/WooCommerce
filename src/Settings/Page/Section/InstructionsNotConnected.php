@@ -25,7 +25,7 @@ class InstructionsNotConnected extends AbstractSection
         <p>
             <?= esc_html(__(
                 "To start receiving payments through the Mollie plugin in your WooCommerce store,
-            you'll need to connect it to your Mollie account using an API key.",
+                you'll need to connect it to your Mollie account using an <a href='%s' target='_blank'>API access token.</a>",
                 'mollie-payments-for-woocommerce'
             )); ?>
         </p>

@@ -668,7 +668,7 @@ class Settings
             ];
 
             $movefile = wp_handle_upload($file, $upload_overrides);
-            if ($movefile) {
+            if ($movefile && !isset($movefile['error'])) {
                 if (strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'svg') {
                     $svgContent = file_get_contents($movefile['file']);
                     $sanitizer = new \enshrined\svgSanitize\Sanitizer();

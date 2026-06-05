@@ -157,6 +157,21 @@ class SettingsTest extends TestCase
         @unlink($storedFile);
     }
 
+    // T7: wp_handle_upload returns an error array; settings are not written and no file deletion is attempted
+    public function testHandleUploadErrorSkipsSettingsAndFileCleanup(): void
+    {
+        $tempFile = $this->createTempFile('<svg xmlns="http://www.w3.org/2000/svg"></svg>', 'svg');
+        $this->setUpFilesGlobal(self::GATEWAY_ID, 'logo.svg', $tempFile);
+
+        when('wp_handle_upload')->justReturn(['error' => 'Upload failed due to file type restriction.']);
+        expect('update_option')->never();
+        expect('wp_delete_file')->never();
+
+        $this->callProcessUploadedFile($this->makeSut(), 'logo.svg', $tempFile, self::GATEWAY_ID);
+
+        @unlink($tempFile);
+    }
+
     // T6: SVG with unparseable content causes sanitizer to return empty; file is deleted and settings not written
     public function testEmptySanitizerOutputDeletesFileAndSkipsSettings(): void
     {

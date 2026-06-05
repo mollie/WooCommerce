@@ -504,7 +504,7 @@ class Settings
         if (!empty($file)) {
             $file = ['name' => $file['name'], 'type' => $file['type'], 'tmp_name' => $file['tmp_name'], 'error' => $file['error'], 'size' => $file['size']];
             $movefile = wp_handle_upload($file, $upload_overrides);
-            if ($movefile) {
+            if ($movefile && !isset($movefile['error'])) {
                 if (strtolower(pathinfo($name, \PATHINFO_EXTENSION)) === 'svg') {
                     $svgContent = file_get_contents($movefile['file']);
                     $sanitizer = new \Mollie\enshrined\svgSanitize\Sanitizer();

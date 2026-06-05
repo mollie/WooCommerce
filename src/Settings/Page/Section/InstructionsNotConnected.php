@@ -18,7 +18,7 @@ class InstructionsNotConnected extends \Mollie\WooCommerce\Settings\Page\Section
         ?></h3>
         <p>
             <?php 
-        echo esc_html(__("To start receiving payments through the Mollie plugin in your WooCommerce store,\n                you'll need to connect it to your Mollie account using an <a href='%s' target='_blank'>API access token.</a>", 'mollie-payments-for-woocommerce'));
+        echo wp_kses(sprintf(__("To start receiving payments through the Mollie plugin in your WooCommerce store,\n                you'll need to connect it to your Mollie account using an <a href='%s' target='_blank'>API access token.</a>", 'mollie-payments-for-woocommerce'), 'https://my.mollie.com/dashboard/developers/api-keys'), ['a' => ['href' => [], 'target' => []]]);
         ?>
         </p>
         <p>

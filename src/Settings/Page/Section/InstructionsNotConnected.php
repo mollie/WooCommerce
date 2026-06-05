@@ -23,11 +23,19 @@ class InstructionsNotConnected extends AbstractSection
         ?>
         <h3><?= esc_html(__("Mollie API Keys", 'mollie-payments-for-woocommerce')); ?></h3>
         <p>
-            <?= esc_html(__(
-                "To start receiving payments through the Mollie plugin in your WooCommerce store,
+            <?= wp_kses(sprintf(
+                __(
+                    "To start receiving payments through the Mollie plugin in your WooCommerce store,
                 you'll need to connect it to your Mollie account using an <a href='%s' target='_blank'>API access token.</a>",
-                'mollie-payments-for-woocommerce'
-            )); ?>
+                    'mollie-payments-for-woocommerce'
+                ),
+                'https://my.mollie.com/dashboard/developers/api-keys'
+            ), [
+                'a' => [
+                    'href' => [],
+                    'target' => [],
+                ],
+            ]); ?>
         </p>
         <p>
             <strong>

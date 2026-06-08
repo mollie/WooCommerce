@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Inpsyde\PaymentGateway;
+declare (strict_types=1);
+namespace Mollie\Inpsyde\PaymentGateway;
 
 /**
  * Implements the GatewayIconsRendererInterface to render icons for payment gateways.
@@ -12,12 +11,10 @@ namespace Inpsyde\PaymentGateway;
 class DefaultIconsRenderer implements GatewayIconsRendererInterface
 {
     private IconProviderInterface $iconProvider;
-
     public function __construct(IconProviderInterface $iconProvider)
     {
         $this->iconProvider = $iconProvider;
     }
-
     /**
      * Renders HTML containing payment gateway icons.
      * Ensures that necessary CSS is added to display the icons correctly
@@ -32,7 +29,6 @@ class DefaultIconsRenderer implements GatewayIconsRendererInterface
             $html .= "<img alt='{$icon->alt()}' src='{$icon->src()}'>";
         }
         $html .= '</span>';
-
         return $html;
     }
 }

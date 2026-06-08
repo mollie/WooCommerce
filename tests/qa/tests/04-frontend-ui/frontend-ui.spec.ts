@@ -7,14 +7,7 @@ import {
 	guests,
 	MollieGateway,
 	products,
-	shopConfigClassic,
 } from '../../resources';
-
-test.beforeAll( async ( { utils } ) => {
-	await utils.configureStore( shopConfigClassic );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-} );
 
 test( 'C420154 | Validate correct gateways shown with Order API on Classic checkout', async ( {
 	utils,

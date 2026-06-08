@@ -3,12 +3,6 @@
  */
 import { test, expect } from '../../utils';
 
-test.beforeAll( async ( { utils } ) => {
-	await utils.configureStore( { enableClassicPages: true } );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-} );
-
 test( 'C420152 | Validate that Mollie Advanced section is displayed per UI design @Critical', async ( {
 	mollieSettingsAdvanced,
 } ) => {

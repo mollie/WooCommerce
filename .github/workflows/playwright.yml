@@ -6,19 +6,45 @@ on:
       TEST_SUITE:
         description: 'Test suite'
         required: true
-        default: 'e2e:test:payment-api:smoke'
+        default: 'payment-api:parallel'
         type: choice
         options:
-          - e2e:test:payment-api
-          - e2e:test:payment-api:smoke
-          - e2e:test:payment-api:refund
-          - e2e:test:payment-api:multistep
-          - e2e:test:payment-api:multistep:smoke
-          - e2e:test:order-api
-          - e2e:test:order-api:smoke
-          - e2e:test:order-api:refund
-          - e2e:test:order-api:multistep
-          - e2e:test:order-api:multistep:smoke
+          - payment-api:parallel
+          - order-api:parallel
+          - multistep:payment-api:parallel
+          - multistep:order-api:parallel
+          - shard:payment-api:plugin-foundation
+          - shard:payment-api:merchant-setup
+          - shard:payment-api:plugin-settings:advanced
+          - shard:payment-api:plugin-settings:api-keys
+          - shard:payment-api:plugin-settings:gateway
+          - shard:payment-api:plugin-settings:surcharge
+          - shard:payment-api:frontend-ui
+          - shard:payment-api:transaction:eur-block
+          - shard:payment-api:transaction:eur-classic
+          - shard:payment-api:transaction:non-eur-block
+          - shard:payment-api:transaction:non-eur-classic
+          - shard:payment-api:transaction:eur-block-card-disabled-components
+          - shard:payment-api:transaction:eur-classic-card-disabled-components
+          - shard:payment-api:refund
+          - shard:payment-api:subscription
+          - shard:payment-api:multistep:eur-block
+          - shard:payment-api:multistep:eur-classic
+          - shard:payment-api:multistep:non-eur-block
+          - shard:payment-api:multistep:non-eur-classic
+          - shard:order-api:frontend-ui
+          - shard:order-api:transaction:eur-block
+          - shard:order-api:transaction:eur-classic
+          - shard:order-api:transaction:non-eur-block
+          - shard:order-api:transaction:non-eur-classic
+          - shard:order-api:transaction:eur-block-card-disabled-components
+          - shard:order-api:transaction:eur-classic-card-disabled-components
+          - shard:order-api:refund
+          - shard:order-api:subscription
+          - shard:order-api:multistep:eur-block
+          - shard:order-api:multistep:eur-classic
+          - shard:order-api:multistep:non-eur-block
+          - shard:order-api:multistep:non-eur-classic
       TESTRAIL_PLAN_ID:
         description: TestRail plan ID for reporting.
         required: false
@@ -56,12 +82,106 @@ jobs:
       PACKAGE_NAME: mollie-payments-for-woocommerce
       NODE_VERSION: 22
 
+  resolve-playwright-matrix:
+    name: Resolve Playwright matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.resolve.outputs.matrix }}
+    steps:
+      - name: Resolve test scripts
+        id: resolve
+        shell: bash
+        run: |
+          PAYMENT_SHARDS=(
+            plugin-foundation
+            merchant-setup
+            plugin-settings:advanced
+            plugin-settings:api-keys
+            plugin-settings:gateway
+            plugin-settings:surcharge
+            frontend-ui
+            transaction:eur-block
+            transaction:eur-classic
+            transaction:non-eur-block
+            transaction:non-eur-classic
+            transaction:eur-block-card-disabled-components
+            transaction:eur-classic-card-disabled-components
+            refund
+            subscription
+            multistep:eur-block
+            multistep:eur-classic
+            multistep:non-eur-block
+            multistep:non-eur-classic
+          )
+
+          ORDER_SHARDS=(
+            frontend-ui
+            transaction:eur-block
+            transaction:eur-classic
+            transaction:non-eur-block
+            transaction:non-eur-classic
+            transaction:eur-block-card-disabled-components
+            transaction:eur-classic-card-disabled-components
+            refund
+            subscription
+            multistep:eur-block
+            multistep:eur-classic
+            multistep:non-eur-block
+            multistep:non-eur-classic
+          )
+
+          TEST_SUITE='${{ inputs.TEST_SUITE }}'
+
+          # Emit one matrix entry per shard. Artifact names cannot contain
+          # ':' so they are sanitised to '-'.
+          entry() {
+            local api="$1" name="$2" safe
+            safe="${name//:/-}"
+            printf '{"script":"e2e:test:%s-api:%s","name_suffix":" / %s-api / %s","artifact_name":"playwright-artifact-%s-api-%s"}' \
+              "$api" "$name" "$api" "$name" "$api" "$safe"
+          }
+
+          ITEMS=()
+          case "$TEST_SUITE" in
+            payment-api:parallel)
+              for s in "${PAYMENT_SHARDS[@]}"; do [[ "$s" != multistep:* ]] && ITEMS+=("$(entry payment "$s")"); done
+              ;;
+            order-api:parallel)
+              for s in "${ORDER_SHARDS[@]}"; do [[ "$s" != multistep:* ]] && ITEMS+=("$(entry order "$s")"); done
+              ;;
+            multistep:payment-api:parallel)
+              for s in "${PAYMENT_SHARDS[@]}"; do [[ "$s" == multistep:* ]] && ITEMS+=("$(entry payment "$s")"); done
+              ;;
+            multistep:order-api:parallel)
+              for s in "${ORDER_SHARDS[@]}"; do [[ "$s" == multistep:* ]] && ITEMS+=("$(entry order "$s")"); done
+              ;;
+            shard:*)
+              REST="${TEST_SUITE#shard:}"   # <api>-api:<name>
+              API="${REST%%-api:*}"
+              NAME="${REST#*-api:}"
+              ITEMS+=("$(entry "$API" "$NAME")")
+              ;;
+            *)
+              echo "Unknown TEST_SUITE: $TEST_SUITE" >&2
+              exit 1
+              ;;
+          esac
+
+          JOINED=$(IFS=,; echo "${ITEMS[*]}")
+          echo "matrix={\"include\":[${JOINED}]}" >> "$GITHUB_OUTPUT"
+
   e2e-playwright:
-    name: Run Playwright E2E Tests
-    needs: build
+    name: Run Playwright E2E Tests${{ matrix.name_suffix }}
+    needs:
+      - build
+      - resolve-playwright-matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.resolve-playwright-matrix.outputs.matrix) }}
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
     with:
-      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
+      PLAYWRIGHT_SCRIPT: ${{ matrix.script }}
+      PLAYWRIGHT_ARTIFACT_NAME: ${{ matrix.artifact_name }}
       PLAYWRIGHT_ARTIFACT_PATH: |
         artifacts/*
         playwright-report/
@@ -72,7 +192,6 @@ jobs:
       NGROK_DOMAIN: ngrok-dev.mollie.syde.wpinfra.cloud
       TESTRAIL_PLAN_ID: ${{ inputs.TESTRAIL_PLAN_ID }}
       TESTRAIL_RUN_ID: ${{ inputs.TESTRAIL_RUN_ID }}
-      
       PRE_SCRIPT: |
         # 1. Download and unzip the built plugin
         gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D tests/qa/resources/files

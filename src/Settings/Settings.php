@@ -338,6 +338,36 @@ class Settings
     }
 
     /**
+     * Attempt connection and return error details on failure.
+     *
+     * @return array{connected: bool, error_code?: int, error_message?: string}
+     */
+    public function getConnectionStatusWithError(): array
+    {
+        $status = $this->statusHelper;
+        if (!$status->isCompatible()) {
+            return [
+                'connected' => false,
+                'error_code' => 0,
+                'error_message' => 'Incompatible environment',
+            ];
+        }
+
+        try {
+            $apiKey = $this->getApiKey();
+            $apiClient = $this->apiHelper->getApiClient($apiKey);
+            $status->getMollieApiStatus($apiClient);
+            return ['connected' => true];
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            return [
+                'connected' => false,
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Get plugin status
      *
      * - Check compatibility
@@ -668,7 +698,7 @@ class Settings
             ];
 
             $movefile = wp_handle_upload($file, $upload_overrides);
-            if ($movefile) {
+            if ($movefile && !isset($movefile['error'])) {
                 if (strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'svg') {
                     $svgContent = file_get_contents($movefile['file']);
                     $sanitizer = new \enshrined\svgSanitize\Sanitizer();

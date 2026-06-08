@@ -67,11 +67,11 @@ class PaymentProcessorTest extends TestCase
         );
     }
 
-    private function invokeCancel(PaymentProcessor $sut, object $order, string $apiKey = 'test_key'): void
+    private function invokeCancel(PaymentProcessor $sut, object $order, string $apiKey = 'test_key'): ?array
     {
         $method = new ReflectionMethod(PaymentProcessor::class, 'cancelExistingMolliePaymentIfPending');
         $method->setAccessible(true);
-        $method->invoke($sut, $order, $apiKey);
+        return $method->invoke($sut, $order, $apiKey);
     }
 
     private function wcOrderWithMeta(array $metaMap = []): object
@@ -395,5 +395,130 @@ class PaymentProcessorTest extends TestCase
         // Then
         $this->assertSame(['result' => 'failure'], $result);
         // Mockery verifies never() on endpoints in tearDown
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Criterion 8 — non-cancellable active payment WITH checkout URL → redirect
+    // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * @test
+     * @scenario When the existing tr_ payment is non-cancellable, not terminal, not
+     *           authorized, and Mollie returns a checkoutUrl, processPayment() must
+     *           redirect the customer to that URL instead of creating a new payment.
+     */
+    public function test_redirects_to_existing_payment_when_non_cancellable_with_checkout_url(): void
+    {
+        $paymentId = 'tr_active1';
+        $checkoutUrl = 'https://checkout.mollie.com/pay/tr_active1';
+
+        $molliePayment = Mockery::mock(MollieApiPayment::class);
+        $molliePayment->isCancelable = false;
+        $molliePayment->shouldReceive('isCanceled')->andReturn(false);
+        $molliePayment->shouldReceive('isPaid')->andReturn(false);
+        $molliePayment->shouldReceive('isExpired')->andReturn(false);
+        $molliePayment->shouldReceive('isFailed')->andReturn(false);
+        $molliePayment->shouldReceive('isAuthorized')->andReturn(false);
+        $molliePayment->shouldReceive('getCheckoutUrl')->andReturn($checkoutUrl);
+
+        $this->paymentEndpointMock->shouldReceive('get')->andReturn($molliePayment);
+        $this->paymentEndpointMock->shouldReceive('cancel')->never();
+
+        $order = $this->wcOrderWithMeta([
+            '_mollie_order_id'   => '',
+            '_mollie_payment_id' => $paymentId,
+        ]);
+        $order->shouldReceive('add_order_note')->never();
+
+        $result = $this->invokeCancel($this->buildSut(), $order);
+
+        $this->assertSame(['result' => 'success', 'redirect' => $checkoutUrl], $result);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Criterion 9 — non-cancellable active payment WITHOUT checkout URL → block
+    // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * @test
+     * @scenario When the existing tr_ payment is non-cancellable, not terminal, not
+     *           authorized, and no checkoutUrl is available (e.g. iDEAL pending at
+     *           bank), processPayment() must show an error notice and return failure.
+     */
+    public function test_blocks_with_error_notice_when_non_cancellable_no_checkout_url(): void
+    {
+        $paymentId = 'tr_pending1';
+
+        $molliePayment = Mockery::mock(MollieApiPayment::class);
+        $molliePayment->isCancelable = false;
+        $molliePayment->shouldReceive('isCanceled')->andReturn(false);
+        $molliePayment->shouldReceive('isPaid')->andReturn(false);
+        $molliePayment->shouldReceive('isExpired')->andReturn(false);
+        $molliePayment->shouldReceive('isFailed')->andReturn(false);
+        $molliePayment->shouldReceive('isAuthorized')->andReturn(false);
+        $molliePayment->shouldReceive('getCheckoutUrl')->andReturn(null);
+
+        $this->paymentEndpointMock->shouldReceive('get')->andReturn($molliePayment);
+        $this->paymentEndpointMock->shouldReceive('cancel')->never();
+
+        $order = $this->wcOrderWithMeta([
+            '_mollie_order_id'   => '',
+            '_mollie_payment_id' => $paymentId,
+        ]);
+        $order->shouldReceive('add_order_note')->never();
+
+        $noticeMock = Mockery::mock(\Mollie\WooCommerce\Notice\NoticeInterface::class);
+        $noticeMock->shouldReceive('addNotice')
+            ->once()
+            ->with('error', Mockery::type('string'));
+
+        $sut = new PaymentProcessor(
+            $noticeMock,
+            $this->logger,
+            $this->helperMocks->paymentFactory(),
+            $this->helperMocks->dataHelper($this->apiClientMock),
+            $this->helperMocks->apiHelper($this->apiClientMock),
+            $this->helperMocks->settingsHelper(),
+            $this->helperMocks->pluginId(),
+            $this->createMock(PaymentCheckoutRedirectService::class),
+            []
+        );
+
+        $result = $this->invokeCancel($sut, $order);
+
+        $this->assertSame(['result' => 'failure'], $result);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Criterion 10 — tr_ payment in terminal state → null (proceed)
+    // ──────────────────────────────────────────────────────────────────────
+
+    /**
+     * @test
+     * @scenario When the existing tr_ payment is in a terminal state (paid, canceled,
+     *           expired, or failed), cancelExistingMolliePaymentIfPending() returns null
+     *           so processPayment() proceeds to create a new payment normally.
+     */
+    public function test_proceeds_when_tr_payment_in_terminal_state(): void
+    {
+        $paymentId = 'tr_paid1';
+
+        $molliePayment = Mockery::mock(MollieApiPayment::class);
+        $molliePayment->isCancelable = false;
+        $molliePayment->shouldReceive('isCanceled')->andReturn(false);
+        $molliePayment->shouldReceive('isPaid')->andReturn(true);
+
+        $this->paymentEndpointMock->shouldReceive('get')->andReturn($molliePayment);
+        $this->paymentEndpointMock->shouldReceive('cancel')->never();
+
+        $order = $this->wcOrderWithMeta([
+            '_mollie_order_id'   => '',
+            '_mollie_payment_id' => $paymentId,
+        ]);
+        $order->shouldReceive('add_order_note')->never();
+
+        $result = $this->invokeCancel($this->buildSut(), $order);
+
+        $this->assertNull($result);
     }
 }

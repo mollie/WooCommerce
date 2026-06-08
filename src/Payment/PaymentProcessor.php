@@ -115,7 +115,10 @@ class PaymentProcessor implements PaymentProcessorInterface
             return $this->processSubscriptionSwitch($order, $orderId, $customerId, $apiKey);
         }
 
-        $this->cancelExistingMolliePaymentIfPending($order, $apiKey);
+        $earlyReturn = $this->cancelExistingMolliePaymentIfPending($order, $apiKey);
+        if ($earlyReturn !== null) {
+            return $earlyReturn;
+        }
 
         $molliePaymentType = $this->paymentTypeBasedOnGateway($paymentMethod);
         $molliePaymentType = $this->paymentTypeBasedOnProducts($order, $molliePaymentType);
@@ -836,7 +839,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         );
     }
 
-    private function cancelExistingMolliePaymentIfPending(WC_Order $order, string $apiKey): void
+    private function cancelExistingMolliePaymentIfPending(WC_Order $order, string $apiKey): ?array
     {
         $mollieOrderId = $order->get_meta('_mollie_order_id', true);
 
@@ -850,7 +853,7 @@ class PaymentProcessor implements PaymentProcessorInterface
                     $this->logger->debug(
                         "Previous Mollie order {$mollieOrderId} is already canceled, skipping cancel before new payment."
                     );
-                    return;
+                    return null;
                 }
 
                 if ($mollieOrder->isCreated() || $mollieOrder->isAuthorized() || $mollieOrder->isShipping()) {
@@ -864,13 +867,17 @@ class PaymentProcessor implements PaymentProcessorInterface
                             $mollieOrderId
                         )
                     );
-                    return;
+                    return null;
                 }
 
-                $this->logger->debug(
-                    "Previous Mollie order {$mollieOrderId} is in a non-cancellable state, skipping cancel before new payment."
-                );
-                return;
+                if ($mollieOrder->isCompleted() || $mollieOrder->isExpired()) {
+                    $this->logger->debug(
+                        "Previous Mollie order {$mollieOrderId} is already completed or expired — no cancellation needed, proceeding with new payment."
+                    );
+                    return null;
+                }
+
+                return $this->buildActivePaymentResponse($mollieOrder->getCheckoutUrl(), $mollieOrderId);
             }
 
             $molliePaymentId = $order->get_meta('_mollie_payment_id', true);
@@ -889,18 +896,47 @@ class PaymentProcessor implements PaymentProcessorInterface
                             $molliePaymentId
                         )
                     );
-                    return;
+                    return null;
                 }
 
-                $this->logger->debug(
-                    "Previous Mollie payment {$molliePaymentId} is in a non-cancellable state, skipping cancel before new payment."
-                );
+                if ($payment->isPaid() || $payment->isCanceled() || $payment->isExpired() || $payment->isFailed() || $payment->isAuthorized()) {
+                    $this->logger->debug(
+                        "Previous Mollie payment {$molliePaymentId} is already paid, canceled, expired, failed, or authorized — no cancellation needed, proceeding with new payment."
+                    );
+                    return null;
+                }
+
+                return $this->buildActivePaymentResponse($payment->getCheckoutUrl(), $molliePaymentId);
             }
         } catch (ApiException $e) {
             $this->logger->debug(
                 "Failed to cancel previous Mollie payment before creating new one: " . $e->getMessage()
             );
         }
+
+        return null;
+    }
+
+    private function buildActivePaymentResponse(?string $checkoutUrl, string $paymentId): array
+    {
+        if (!empty($checkoutUrl)) {
+            $this->logger->debug(
+                "Previous Mollie payment {$paymentId} is active and non-cancellable. Redirecting customer to existing checkout URL."
+            );
+            return ['result' => 'success', 'redirect' => $checkoutUrl];
+        }
+
+        $this->notice->addNotice(
+            'error',
+            __(
+                'You already have a payment in progress for this order. Please complete it or wait for it to expire before trying again.',
+                'mollie-payments-for-woocommerce'
+            )
+        );
+        $this->logger->debug(
+            "Previous Mollie payment {$paymentId} is active and non-cancellable with no checkout URL. Blocking new payment creation."
+        );
+        return ['result' => 'failure'];
     }
 
     /**

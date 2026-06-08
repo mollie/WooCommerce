@@ -51,7 +51,6 @@ const selectors = {
 		state.gatewayComponents[ gateway ] || [],
 
 	getIsComponentReady: ( state ) => {
-		// kb-active
 		const activePaymentMethod = state.activePaymentMethod;
 		return Boolean(
 			state.componentInitialized &&

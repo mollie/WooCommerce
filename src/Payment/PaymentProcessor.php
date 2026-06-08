@@ -872,7 +872,7 @@ class PaymentProcessor implements PaymentProcessorInterface
 
                 if ($mollieOrder->isCompleted() || $mollieOrder->isExpired()) {
                     $this->logger->debug(
-                        "Previous Mollie order {$mollieOrderId} is in a terminal state, proceeding with new payment."
+                        "Previous Mollie order {$mollieOrderId} is already completed or expired — no cancellation needed, proceeding with new payment."
                     );
                     return null;
                 }
@@ -901,7 +901,7 @@ class PaymentProcessor implements PaymentProcessorInterface
 
                 if ($payment->isPaid() || $payment->isCanceled() || $payment->isExpired() || $payment->isFailed() || $payment->isAuthorized()) {
                     $this->logger->debug(
-                        "Previous Mollie payment {$molliePaymentId} is in a terminal or authorized state, proceeding with new payment."
+                        "Previous Mollie payment {$molliePaymentId} is already paid, canceled, expired, failed, or authorized — no cancellation needed, proceeding with new payment."
                     );
                     return null;
                 }

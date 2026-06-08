@@ -503,6 +503,8 @@ class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
         'Mollie\\WooCommerce\\Subscription\\MollieSepaRecurringGatewayHandler' => __DIR__ . '/../..' . '/src/Subscription/MollieSepaRecurringGatewayHandler.php',
         'Mollie\\WooCommerce\\Subscription\\MollieSubscriptionGatewayHandler' => __DIR__ . '/../..' . '/src/Subscription/MollieSubscriptionGatewayHandler.php',
         'Mollie\\WooCommerce\\Subscription\\SubscriptionModule' => __DIR__ . '/../..' . '/src/Subscription/SubscriptionModule.php',
+        'Mollie\\WooCommerce\\Tracks\\TracksEventRecorder' => __DIR__ . '/../..' . '/src/Tracks/TracksEventRecorder.php',
+        'Mollie\\WooCommerce\\Tracks\\TracksModule' => __DIR__ . '/../..' . '/src/Tracks/TracksModule.php',
         'Mollie\\WooCommerce\\Uninstall\\CleanDb' => __DIR__ . '/../..' . '/src/Uninstall/CleanDb.php',
         'Mollie\\WooCommerce\\Uninstall\\UninstallModule' => __DIR__ . '/../..' . '/src/Uninstall/UninstallModule.php',
         'Mollie\\enshrined\\svgSanitize\\ElementReference\\Resolver' => __DIR__ . '/..' . '/enshrined/svg-sanitize/src/ElementReference/Resolver.php',

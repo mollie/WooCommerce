@@ -440,6 +440,8 @@ return array(
     'Mollie\\WooCommerce\\Subscription\\MollieSepaRecurringGatewayHandler' => $baseDir . '/src/Subscription/MollieSepaRecurringGatewayHandler.php',
     'Mollie\\WooCommerce\\Subscription\\MollieSubscriptionGatewayHandler' => $baseDir . '/src/Subscription/MollieSubscriptionGatewayHandler.php',
     'Mollie\\WooCommerce\\Subscription\\SubscriptionModule' => $baseDir . '/src/Subscription/SubscriptionModule.php',
+    'Mollie\\WooCommerce\\Tracks\\TracksEventRecorder' => $baseDir . '/src/Tracks/TracksEventRecorder.php',
+    'Mollie\\WooCommerce\\Tracks\\TracksModule' => $baseDir . '/src/Tracks/TracksModule.php',
     'Mollie\\WooCommerce\\Uninstall\\CleanDb' => $baseDir . '/src/Uninstall/CleanDb.php',
     'Mollie\\WooCommerce\\Uninstall\\UninstallModule' => $baseDir . '/src/Uninstall/UninstallModule.php',
     'Mollie\\enshrined\\svgSanitize\\ElementReference\\Resolver' => $vendorDir . '/enshrined/svg-sanitize/src/ElementReference/Resolver.php',

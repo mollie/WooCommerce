@@ -63,10 +63,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $maybeEnablegatewayHelper = new MaybeDisableGateway();
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
         });
-        add_action('woocommerce_init', static function () use ($container) {
-            if (!post_type_exists('shop_order')) {
-                return;
-            }
+        add_action('woocommerce_after_register_post_type', static function () use ($container) {
             $gateways = WC()->payment_gateways()->payment_gateways();
             $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
             foreach ($gateways as $gateway) {
@@ -106,7 +103,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $surchargeService = $container->get(\Mollie\WooCommerce\Gateway\Surcharge::class);
         assert($surchargeService instanceof \Mollie\WooCommerce\Gateway\Surcharge);
         $this->gatewaySurchargeHandling($surchargeService);
-        add_action('woocommerce_init', function () use ($container) {
+        add_action('woocommerce_after_register_post_type', function () use ($container) {
             $this->paymentButtonsBootstrap($container);
         });
         $maybeDisableVoucher = new MaybeDisableGateway();

@@ -92,7 +92,10 @@ class PaymentProcessor implements PaymentProcessorInterface
         if ($this->needsSubscriptionSwitch($order, $orderId)) {
             return $this->processSubscriptionSwitch($order, $orderId, $customerId, $apiKey);
         }
-        $this->cancelExistingMolliePaymentIfPending($order, $apiKey);
+        $earlyReturn = $this->cancelExistingMolliePaymentIfPending($order, $apiKey);
+        if ($earlyReturn !== null) {
+            return $earlyReturn;
+        }
         $molliePaymentType = $this->paymentTypeBasedOnGateway($paymentMethod);
         $molliePaymentType = $this->paymentTypeBasedOnProducts($order, $molliePaymentType);
         try {
@@ -525,7 +528,7 @@ class PaymentProcessor implements PaymentProcessorInterface
         $this->logger->debug("Creating payment object: The phone number provided is invalid, stopping process.");
         throw new ApiException(esc_html__('Payment failed due to: Invalid phone number.', 'mollie-payments-for-woocommerce'));
     }
-    private function cancelExistingMolliePaymentIfPending(WC_Order $order, string $apiKey): void
+    private function cancelExistingMolliePaymentIfPending(WC_Order $order, string $apiKey): ?array
     {
         $mollieOrderId = $order->get_meta('_mollie_order_id', \true);
         try {
@@ -534,15 +537,18 @@ class PaymentProcessor implements PaymentProcessorInterface
                 $mollieOrder = $apiClient->orders->get($mollieOrderId);
                 if ($mollieOrder->isCanceled()) {
                     $this->logger->debug("Previous Mollie order {$mollieOrderId} is already canceled, skipping cancel before new payment.");
-                    return;
+                    return null;
                 }
                 if ($mollieOrder->isCreated() || $mollieOrder->isAuthorized() || $mollieOrder->isShipping()) {
                     $mollieOrder->cancel();
                     $order->add_order_note(sprintf(__('Previous pending Mollie payment %s canceled before creating a new one.', 'mollie-payments-for-woocommerce'), $mollieOrderId));
-                    return;
+                    return null;
                 }
-                $this->logger->debug("Previous Mollie order {$mollieOrderId} is in a non-cancellable state, skipping cancel before new payment.");
-                return;
+                if ($mollieOrder->isCompleted() || $mollieOrder->isExpired()) {
+                    $this->logger->debug("Previous Mollie order {$mollieOrderId} is already completed or expired — no cancellation needed, proceeding with new payment.");
+                    return null;
+                }
+                return $this->buildActivePaymentResponse($mollieOrder->getCheckoutUrl(), $mollieOrderId);
             }
             $molliePaymentId = $order->get_meta('_mollie_payment_id', \true);
             if (!empty($molliePaymentId) && strpos($molliePaymentId, 'tr_') === 0) {
@@ -550,13 +556,28 @@ class PaymentProcessor implements PaymentProcessorInterface
                 if ($payment->isCancelable && !$payment->isCanceled() && !$payment->isPaid() && !$payment->isAuthorized()) {
                     $apiClient->payments->cancel($molliePaymentId);
                     $order->add_order_note(sprintf(__('Previous pending Mollie payment %s canceled before creating a new one.', 'mollie-payments-for-woocommerce'), $molliePaymentId));
-                    return;
+                    return null;
                 }
-                $this->logger->debug("Previous Mollie payment {$molliePaymentId} is in a non-cancellable state, skipping cancel before new payment.");
+                if ($payment->isPaid() || $payment->isCanceled() || $payment->isExpired() || $payment->isFailed() || $payment->isAuthorized()) {
+                    $this->logger->debug("Previous Mollie payment {$molliePaymentId} is already paid, canceled, expired, failed, or authorized — no cancellation needed, proceeding with new payment.");
+                    return null;
+                }
+                return $this->buildActivePaymentResponse($payment->getCheckoutUrl(), $molliePaymentId);
             }
         } catch (ApiException $e) {
             $this->logger->debug("Failed to cancel previous Mollie payment before creating new one: " . $e->getMessage());
         }
+        return null;
+    }
+    private function buildActivePaymentResponse(?string $checkoutUrl, string $paymentId): array
+    {
+        if (!empty($checkoutUrl)) {
+            $this->logger->debug("Previous Mollie payment {$paymentId} is active and non-cancellable. Redirecting customer to existing checkout URL.");
+            return ['result' => 'success', 'redirect' => $checkoutUrl];
+        }
+        $this->notice->addNotice('error', __('You already have a payment in progress for this order. Please complete it or wait for it to expire before trying again.', 'mollie-payments-for-woocommerce'));
+        $this->logger->debug("Previous Mollie payment {$paymentId} is active and non-cancellable with no checkout URL. Blocking new payment creation.");
+        return ['result' => 'failure'];
     }
     /**
      * @throws ApiException

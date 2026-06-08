@@ -17,6 +17,7 @@ use Mollie\WooCommerce\SDK\SDKModule;
 use Mollie\WooCommerce\Settings\SettingsModule;
 use Mollie\WooCommerce\Shared\SharedModule;
 use Mollie\WooCommerce\Subscription\SubscriptionModule;
+use Mollie\WooCommerce\Tracks\TracksModule;
 use Mollie\WooCommerce\Uninstall\UninstallModule;
 
 return /**
@@ -38,6 +39,7 @@ return /**
             new SubscriptionModule(),
             new MerchantCaptureModule(),
             new ComponentsModule(),
+            new TracksModule(),
             new UninstallModule(),
         ];
     };

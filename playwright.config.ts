@@ -9,6 +9,7 @@ import path from 'path';
  * Internal dependencies
  */
 import { TestBaseExtend } from './tests/qa/utils';
+import { buildShards, buildSetupProjects } from './tests/qa/project-shards';
 
 const dotenvPath = process.env.CI
     ? path.resolve( __dirname, '.env.ci' )
@@ -20,7 +21,7 @@ export default defineConfig< TestBaseExtend >( {
 	expect: {
 		timeout: 10_000,
 	},
-	timeout: 1 * 60_000,
+	timeout: 1.5 * 60_000,
 	/* Run tests in files in parallel */
 	fullyParallel: true,
 	/* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -101,104 +102,32 @@ export default defineConfig< TestBaseExtend >( {
 
 	/* Configure projects for major browsers */
 	projects: [
+		// Manual setup (grep scripts target this — no dependency chain)
 		{
-			name: 'setup-env',
-			testMatch: /env\.setup\.ts/,
+			name: 'setup',
+			testMatch: /(01-env|02-woocommerce|03-mollie|04-multistep)\.setup\.ts/,
 			fullyParallel: false,
 		},
+
+		// WooCommerce (dependency target only)
 		{
 			name: 'setup-woocommerce',
-			testMatch: /woocommerce\.setup\.ts/,
+			testMatch: /02-woocommerce\.setup\.ts/,
+			grep: /setup:wc;/,
 			fullyParallel: false,
 		},
-		{
-			name: 'setup-mollie',
-			testMatch: /mollie\.setup\.ts/,
-			fullyParallel: false,
-		},
-		{
-			name: 'setup-mollie-payment-api',
-			dependencies: [ 'setup-woocommerce' ],
-			testMatch: /mollie\.setup\.ts/,
-			grep: /setup:mollie;/,
-			fullyParallel: false,
-		},
-		{
-			name: 'setup-mollie-order-api',
-			dependencies: [ 'setup-woocommerce' ],
-			testMatch: /mollie\.setup\.ts/,
-			grep: /setup:mollie;/,
-			fullyParallel: false,
-			use: {
-				mollieApiMethod: 'order',
-			},
-		},
-		{
-			name: 'setup-multistep',
-			testMatch: /multistep\.setup\.ts/,
-			fullyParallel: false,
-		},
-		{
-			name: 'setup-multistep-tests',
-			dependencies: [ 'setup-woocommerce' ],
-			testMatch: /multistep\.setup\.ts/,
-			fullyParallel: false,
-		},
-		{
-			name: 'payment-api',
-			dependencies: [ 'setup-woocommerce' ],
-			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
-		},
-		{
-			name: 'order-api',
-			dependencies: [ 'setup-woocommerce' ],
-			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
-			use: {
-				mollieApiMethod: 'order',
-			},
-		},
-		{
-			name: 'refund-payment-api',
-			dependencies: [ 'setup-mollie-payment-api' ],
-			fullyParallel: true,
-			testMatch: /refund\.spec\.ts/,
-		},
-		{
-			name: 'refund-order-api',
-			dependencies: [ 'setup-mollie-order-api' ],
-			fullyParallel: true,
-			testMatch: /refund\.spec\.ts/,
-			use: {
-				mollieApiMethod: 'order',
-				isMultistepCheckout: false,
-			},
-		},
-		{
-			name: 'multistep-payment-api',
-			dependencies: [ 'setup-multistep-tests' ],
-			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
-			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
-			grep: /Transaction/,
-			grepInvert: /Transaction - Pay for order/,
-			use: {
-				isMultistepCheckout: true,
-			},
-		},
-		{
-			name: 'multistep-order-api',
-			dependencies: [ 'setup-multistep-tests' ],
-			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
-			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
-			grep: /Transaction/,
-			grepInvert: /Transaction - Pay for order/,
-			use: {
-				mollieApiMethod: 'order',
-				isMultistepCheckout: true,
-			},
-		},
+
+		// =============================================================
+		// Per-state setup projects (per API method, only the states that API's
+		// shards use), consumed by shards
+		// =============================================================
+		...buildSetupProjects( 'payment' ),
+		...buildSetupProjects( 'order' ),
+
+		// =============================================================
+		// Project shards (for parallel/separate executions)
+		// =============================================================
+		...buildShards( 'payment' ),
+		...buildShards( 'order' ),
 	],
 } );

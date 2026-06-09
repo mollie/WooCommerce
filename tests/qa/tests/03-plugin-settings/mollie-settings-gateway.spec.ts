@@ -119,34 +119,51 @@ test.describe( `Payment method settings ${ gateway.name }`, () => {
 			checkout,
 			classicCheckout,
 		} ) => {
-			await mollieSettingsGateway.setup( {
-				display_logo: 'yes',
-				custom_logo_path:
-					'./tests/qa/resources/files/mollie-test-logo.png',
-			} );
-			await mollieSettingsGateway.saveChanges();
+			test.setTimeout( 3 * 60_000 );
+			
+			const logos = [
+				{ name: 'dummy-logo-jpg', format: 'jpg' },
+				{ name: 'dummy-logo-png', format: 'png' },
+				{ name: 'dummy-logo-svg', format: 'svg' },
+			];
 
-			await utils.fillVisitorsCart( [ products.mollieSimple100 ] );
+			for( const logo of logos ) {
+				await test.step( `Upload ${ logo.name }.${ logo.format } logo in settings`, async () => {
+					await mollieSettingsGateway.setup( {
+						display_logo: 'yes',
+						custom_logo_path:
+							`./tests/qa/resources/files/${ logo.name }.${ logo.format }`,
+					} );
+					await mollieSettingsGateway.saveChanges();
+				} );
 
-			await utils.configureStore( { enableClassicPages: false } );
-			await checkout.visit();
-			await checkout.fillCheckoutForm( guests[ gateway.country ] );
-			const blockPaymentOptionLogoSrc = await checkout
-				.paymentOptionLogo( `${ gateway.name }` )
-				.getAttribute( 'src' );
-			await expect
-				.soft( blockPaymentOptionLogoSrc )
-				.toContain( `mollie-test-logo` );
+				
+				await test.step( `Check ${ logo.name } logo block checkout`, async () => {
+					await utils.fillVisitorsCart( [ products.mollieSimple100 ] );
 
-			await utils.configureStore( { enableClassicPages: true } );
-			await classicCheckout.visit();
-			await classicCheckout.fillCheckoutForm( guests[ gateway.country ] );
-			const classicPaymentOptionLogoSrc = await classicCheckout
-				.paymentOptionLogo( `${ gateway.name }` )
-				.getAttribute( 'src' );
-			await expect
-				.soft( classicPaymentOptionLogoSrc )
-				.toContain( `mollie-test-logo` );
+					await utils.configureStore( { enableClassicPages: false } );
+					await checkout.visit();
+					await checkout.fillCheckoutForm( guests[ gateway.country ] );
+					const blockPaymentOptionLogoSrc = await checkout
+						.paymentOptionLogo( `${ gateway.name }` )
+						.getAttribute( 'src' );
+					await expect
+						.soft( blockPaymentOptionLogoSrc )
+						.toContain( logo.name );
+				} );
+
+				await test.step( `Check ${ logo.name } logo classic checkout`, async () => {
+					await utils.configureStore( { enableClassicPages: true } );
+					await classicCheckout.visit();
+					await classicCheckout.fillCheckoutForm( guests[ gateway.country ] );
+					const classicPaymentOptionLogoSrc = await classicCheckout
+						.paymentOptionLogo( `${ gateway.name }` )
+						.getAttribute( 'src' );
+					await expect
+						.soft( classicPaymentOptionLogoSrc )
+						.toContain( logo.name );
+				} );
+			}
 		}
 	);
 

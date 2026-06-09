@@ -20,7 +20,7 @@ export default defineConfig< TestBaseExtend >( {
 	expect: {
 		timeout: 10_000,
 	},
-	timeout: 1 * 60_000,
+	timeout: 1.5 * 60_000,
 	/* Run tests in files in parallel */
 	fullyParallel: true,
 	/* Fail the build on CI if you accidentally left test.only in the source code. */

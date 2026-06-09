@@ -17,6 +17,7 @@
     0px 1px 3px 0px rgba(0, 0, 0, 0.1),
     0px 0px 0px 1px rgba(0, 0, 0, 0.05);
     border: 2px solid transparent;
+    padding: 0 .63em;
 
     iframe {
       border-radius: 6px;
@@ -167,6 +168,10 @@
 
 .mollie-component-wrapper[data-component="expiryDate"] {
     padding-right: 5%;
+}
+
+.mollie-component-wrapper[data-component="verificationCode"] {
+    padding-left: 5%;
 }
 
 /* Error notice for global component errors */

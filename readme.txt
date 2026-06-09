@@ -228,6 +228,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - Replace orderId with orderKey in surcharge processing logic
 * Fixed - API key retrieval broken due to Mollie dashboard change breaking in-plugin guidance (with @fjbender)
 * Fixed - Expired webhook for stale transaction cancels order despite subsequent payment attempts
+* Fixed - Credit card fields with no margin
 * Improvement - Simplified WooCommerce payment title and logo settings
 * Improvement - Added file type validation for custom gateway logo uploads
 * Improvement - Tightened ownership and type checks for Mollie gateway objects

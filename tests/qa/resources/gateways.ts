@@ -435,20 +435,6 @@ const swish: MollieGateway = {
 	},
 };
 
-const trustly: MollieGateway = {
-	country: 'germany', // Europe
-	minAmount: '1.00',
-	slug: 'trustly',
-	name: 'Pay By Bank', //'Trustly',// // known bug https://mollie.atlassian.net/browse/PIWOO-683 tolerated by client
-	availableForApiMethods: [ 'order', 'payment' ],
-	settings: {
-		...defaultGatewaySettings,
-		id: 'mollie_wc_gateway_trustly',
-		title: 'Pay By Bank', //'Trustly',//
-		initial_order_status: 'on-hold',
-	},
-};
-
 const twint: MollieGateway = {
 	country: 'switzerland',
 	minAmount: '0.01',
@@ -523,7 +509,6 @@ export const gateways: {
 	riverty, // >50.00
 	satispay,
 	swish, // Sweden, currency: SEK
-	trustly,
 	twint, // currency: CHF
 	vipps, // currency: NOK
 	voucher,

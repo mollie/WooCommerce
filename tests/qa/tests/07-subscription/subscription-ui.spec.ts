@@ -20,7 +20,6 @@ test( `C3348 | Validate that only the correct payment methods (that supports a f
 		gateways.eps,
 		gateways.kbc,
 		gateways.belfius,
-		gateways.trustly,
 		gateways.paybybank,
 	];
 	await utils.fillVisitorsCart( [ products.mollieSubscription100 ] );

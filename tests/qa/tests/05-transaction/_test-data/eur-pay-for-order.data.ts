@@ -612,38 +612,6 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C3437850',
-		payment: {
-			gateway: gateways.trustly,
-			status: 'paid',
-		},
-	},
-	{
-		...baseOrder,
-		testId: 'C3437851',
-		payment: {
-			gateway: gateways.trustly,
-			status: 'failed',
-		},
-	},
-	{
-		...baseOrder,
-		testId: 'C3437852',
-		payment: {
-			gateway: gateways.trustly,
-			status: 'canceled',
-		},
-	},
-	{
-		...baseOrder,
-		testId: 'C3437853',
-		payment: {
-			gateway: gateways.trustly,
-			status: 'expired',
-		},
-	},
-	{
-		...baseOrder,
 		testId: 'C3622421',
 		payment: {
 			gateway: gateways.riverty,

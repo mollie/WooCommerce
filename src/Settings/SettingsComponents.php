@@ -35,7 +35,9 @@ class SettingsComponents
         foreach ($group as $key) {
             $styleKey = str_replace(self::STYLE_KEY_PREFIXES, '', $key);
             $optionValue = get_option(sprintf('mollie_components_%s', $key), $this->defaultOptionFor($defaults, $key));
-            $settings[$styleKey] = $optionValue;
+            if ($optionValue !== null) {
+                $settings[$styleKey] = $optionValue;
+            }
         }
         return $settings;
     }

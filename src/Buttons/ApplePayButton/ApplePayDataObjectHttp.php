@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
-use Psr\Log\LoggerInterface as Logger;
-
+use Mollie\Psr\Log\LoggerInterface as Logger;
 /**
  * @phpcs:disable Inpsyde.CodeQuality.PropertyPerClassLimit.TooManyProperties
  */
@@ -55,7 +53,6 @@ class ApplePayDataObjectHttp
      * @var Logger
      */
     protected $logger;
-
     /**
      * ApplePayDataObjectHttp constructor.
      */
@@ -63,7 +60,6 @@ class ApplePayDataObjectHttp
     {
         $this->logger = $logger;
     }
-
     /**
      * Resets the errors array
      */
@@ -71,7 +67,6 @@ class ApplePayDataObjectHttp
     {
         $this->errors = [];
     }
-
     /**
      * Returns if the object has any errors
      * @return bool
@@ -80,7 +75,6 @@ class ApplePayDataObjectHttp
     {
         return !empty($this->errors);
     }
-
     /**
      * Returns errors
      * @return array
@@ -89,7 +83,6 @@ class ApplePayDataObjectHttp
     {
         return $this->errors;
     }
-
     /**
      * Set the object with the data relevant to ApplePay validation
      */
@@ -99,19 +92,12 @@ class ApplePayDataObjectHttp
             return;
         }
         $data = $this->getFilteredRequestData();
-
         $this->resetErrors();
-        if (
-            !$this->hasRequiredFieldsValuesOrError(
-                $data,
-                PropertiesDictionary::VALIDATION_REQUIRED_FIELDS
-            )
-        ) {
+        if (!$this->hasRequiredFieldsValuesOrError($data, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::VALIDATION_REQUIRED_FIELDS)) {
             return;
         }
         $this->assignDataObjectValues($data);
     }
-
     /**
      * Set the object with the data relevant to ApplePay on update shipping contact
      * Required data depends on callerPage
@@ -122,18 +108,12 @@ class ApplePayDataObjectHttp
             return;
         }
         $data = $this->getFilteredRequestData();
-
-        $result = $this->updateRequiredData(
-            $data,
-            PropertiesDictionary::UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS,
-            PropertiesDictionary::UPDATE_CONTACT_CART_REQUIRED_FIELDS
-        );
+        $result = $this->updateRequiredData($data, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::UPDATE_CONTACT_CART_REQUIRED_FIELDS);
         if (!$result) {
             return;
         }
-        $this->updateSimplifiedContact($data[PropertiesDictionary::SIMPLIFIED_CONTACT]);
+        $this->updateSimplifiedContact($data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SIMPLIFIED_CONTACT]);
     }
-
     /**
      * Set the object with the data relevant to ApplePay on update shipping method
      * Required data depends on callerPage
@@ -143,20 +123,14 @@ class ApplePayDataObjectHttp
         if (!$this->isNonceValid()) {
             return;
         }
-
         $data = $this->getFilteredRequestData();
-        $result = $this->updateRequiredData(
-            $data,
-            PropertiesDictionary::UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS,
-            PropertiesDictionary::UPDATE_METHOD_CART_REQUIRED_FIELDS
-        );
+        $result = $this->updateRequiredData($data, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::UPDATE_METHOD_CART_REQUIRED_FIELDS);
         if (!$result) {
             return;
         }
-        $this->updateSimplifiedContact($data[PropertiesDictionary::SIMPLIFIED_CONTACT]);
+        $this->updateSimplifiedContact($data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SIMPLIFIED_CONTACT]);
         $this->updateShippingMethod($data);
     }
-
     /**
      * Set the object with the data relevant to ApplePay on authorized order
      * Required data depends on callerPage
@@ -169,41 +143,22 @@ class ApplePayDataObjectHttp
             return;
         }
         // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $data = filter_var_array($_POST, FILTER_SANITIZE_SPECIAL_CHARS);
-        $data[PropertiesDictionary::CALLER_PAGE] = $callerPage;
-        $result = $this->updateRequiredData(
-            $data,
-            PropertiesDictionary::CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS,
-            PropertiesDictionary::CREATE_ORDER_CART_REQUIRED_FIELDS
-        );
+        $data = filter_var_array($_POST, \FILTER_SANITIZE_SPECIAL_CHARS);
+        $data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::CALLER_PAGE] = $callerPage;
+        $result = $this->updateRequiredData($data, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::CREATE_ORDER_CART_REQUIRED_FIELDS);
         if (!$result) {
             return;
         }
-        if (
-            !array_key_exists('emailAddress', $data[PropertiesDictionary::SHIPPING_CONTACT])
-            || !$data[PropertiesDictionary::SHIPPING_CONTACT]['emailAddress']
-        ) {
-            $this->errors[] = [
-                'errorCode' => PropertiesDictionary::SHIPPING_CONTACT_INVALID,
-                'contactField' => 'emailAddress',
-            ];
-
+        if (!array_key_exists('emailAddress', $data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT]) || !$data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT]['emailAddress']) {
+            $this->errors[] = ['errorCode' => \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT_INVALID, 'contactField' => 'emailAddress'];
             return;
         }
-
-        $filteredShippingContact = $data[PropertiesDictionary::SHIPPING_CONTACT];
-        $this->shippingAddress = $this->completeAddress(
-            $filteredShippingContact,
-            PropertiesDictionary::SHIPPING_CONTACT_INVALID
-        );
-        $filteredbillingContact = $data[PropertiesDictionary::BILLING_CONTACT];
-        $this->billingAddress = $this->completeAddress(
-            $filteredbillingContact,
-            PropertiesDictionary::BILLING_CONTACT_INVALID
-        );
+        $filteredShippingContact = $data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT];
+        $this->shippingAddress = $this->completeAddress($filteredShippingContact, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT_INVALID);
+        $filteredbillingContact = $data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::BILLING_CONTACT];
+        $this->billingAddress = $this->completeAddress($filteredbillingContact, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::BILLING_CONTACT_INVALID);
         $this->updateShippingMethod($data);
     }
-
     /**
      * Checks if the array contains all required fields and if those
      * are not empty.
@@ -217,24 +172,18 @@ class ApplePayDataObjectHttp
     {
         foreach ($required as $requiredField) {
             if (!array_key_exists($requiredField, $data)) {
-                $this->logger->debug(
-                    sprintf('ApplePay Data Error: Missing index %s', $requiredField)
-                );
-
+                $this->logger->debug(sprintf('ApplePay Data Error: Missing index %s', $requiredField));
                 $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
             if ($data[$requiredField] === null || $data[$requiredField] === '') {
-                $this->logger->debug(
-                    sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
-                );
+                $this->logger->debug(sprintf('ApplePay Data Error: Missing value for %s', $requiredField));
                 $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
         }
         return !$this->hasErrors();
     }
-
     /**
      * Sets the value to the appropriate field in the object
      */
@@ -244,10 +193,9 @@ class ApplePayDataObjectHttp
             if ($key === 'woocommerce-process-checkout-nonce') {
                 $key = 'nonce';
             }
-            $this->$key = $value;
+            $this->{$key} = $value;
         }
     }
-
     /**
      * Returns the address details used in pre-authorization steps
      * @param array $contactInfo
@@ -257,27 +205,12 @@ class ApplePayDataObjectHttp
      */
     protected function simplifiedAddress($contactInfo)
     {
-        $required = [
-            'locality' => 'locality',
-            'postalCode' => 'postalCode',
-            'countryCode' => 'countryCode',
-        ];
-        if (
-            !$this->addressHasRequiredFieldsValues(
-                $contactInfo,
-                $required,
-                PropertiesDictionary::SHIPPING_CONTACT_INVALID
-            )
-        ) {
+        $required = ['locality' => 'locality', 'postalCode' => 'postalCode', 'countryCode' => 'countryCode'];
+        if (!$this->addressHasRequiredFieldsValues($contactInfo, $required, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT_INVALID)) {
             return [];
         }
-        return [
-            'city' => $contactInfo['locality'],
-            'postcode' => $contactInfo['postalCode'],
-            'country' => strtoupper($contactInfo['countryCode']),
-        ];
+        return ['city' => $contactInfo['locality'], 'postcode' => $contactInfo['postalCode'], 'country' => strtoupper($contactInfo['countryCode'])];
     }
-
     /**
      * Checks if the address array contains all required fields and if those
      * are not empty.
@@ -289,35 +222,22 @@ class ApplePayDataObjectHttp
      *
      * @return bool
      */
-    protected function addressHasRequiredFieldsValues(
-        array $post,
-        array $required,
-        $errorCode
-    ) {
-
+    protected function addressHasRequiredFieldsValues(array $post, array $required, $errorCode)
+    {
         foreach ($required as $requiredField => $errorValue) {
             if (!array_key_exists($requiredField, $post)) {
-                $this->logger->debug(
-                    sprintf('ApplePay Data Error: Missing index %s', $requiredField)
-                );
-
+                $this->logger->debug(sprintf('ApplePay Data Error: Missing index %s', $requiredField));
                 $this->errors[] = ['errorCode' => 'unknown'];
                 continue;
             }
             if (!$post[$requiredField]) {
-                $this->logger->debug(
-                    sprintf('ApplePay Data Error: Missing value for %s', $requiredField)
-                );
-                $this->errors[] = [
-                    'errorCode' => $errorCode,
-                    'contactField' => $errorValue,
-                ];
+                $this->logger->debug(sprintf('ApplePay Data Error: Missing value for %s', $requiredField));
+                $this->errors[] = ['errorCode' => $errorCode, 'contactField' => $errorValue];
                 continue;
             }
         }
         return !$this->hasErrors();
     }
-
     /**
      * Returns the address details for after authorization steps
      *
@@ -329,38 +249,12 @@ class ApplePayDataObjectHttp
      */
     protected function completeAddress($data, $errorCode)
     {
-        $required = [
-            'givenName' => 'name',
-            'familyName' => 'name',
-            'addressLines' => 'addressLines',
-            'locality' => 'locality',
-            'postalCode' => 'postalCode',
-            'countryCode' => 'countryCode',
-        ];
-        if (
-            !$this->addressHasRequiredFieldsValues(
-                $data,
-                $required,
-                $errorCode
-            )
-        ) {
+        $required = ['givenName' => 'name', 'familyName' => 'name', 'addressLines' => 'addressLines', 'locality' => 'locality', 'postalCode' => 'postalCode', 'countryCode' => 'countryCode'];
+        if (!$this->addressHasRequiredFieldsValues($data, $required, $errorCode)) {
             return [];
         }
-
-        return [
-            'first_name' => $data['givenName'],
-            'last_name' => $data['familyName'],
-            'email' => $data['emailAddress'] ?? '',
-            'phone' => $data['phoneNumber'] ?? '',
-            'address_1' => $data['addressLines'][0] ?? '',
-            'address_2' => $data['addressLines'][1] ?? '',
-            'city' => $data['locality'],
-            'state' => $data['administrativeArea'],
-            'postcode' => $data['postalCode'],
-            'country' => strtoupper($data['countryCode']),
-        ];
+        return ['first_name' => $data['givenName'], 'last_name' => $data['familyName'], 'email' => $data['emailAddress'] ?? '', 'phone' => $data['phoneNumber'] ?? '', 'address_1' => $data['addressLines'][0] ?? '', 'address_2' => $data['addressLines'][1] ?? '', 'city' => $data['locality'], 'state' => $data['administrativeArea'], 'postcode' => $data['postalCode'], 'country' => strtoupper($data['countryCode'])];
     }
-
     /**
      * @param       $requiredProductFields
      * @param       $requiredCartFields
@@ -369,132 +263,76 @@ class ApplePayDataObjectHttp
     {
         $this->resetErrors();
         $requiredFields = $requiredProductFields;
-        if (
-            isset($data[PropertiesDictionary::CALLER_PAGE])
-            && $data[PropertiesDictionary::CALLER_PAGE] === 'cart'
-        ) {
+        if (isset($data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::CALLER_PAGE]) && $data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::CALLER_PAGE] === 'cart') {
             $requiredFields = $requiredCartFields;
         }
-        $hasRequiredFieldsValues = $this->hasRequiredFieldsValuesOrError(
-            $data,
-            $requiredFields
-        );
+        $hasRequiredFieldsValues = $this->hasRequiredFieldsValuesOrError($data, $requiredFields);
         if (!$hasRequiredFieldsValues) {
-            return false;
+            return \false;
         }
         $this->assignDataObjectValues($data);
-        return true;
+        return \true;
     }
-
     /**
      * @param $data
      */
     protected function updateSimplifiedContact($data)
     {
         $simplifiedContactInfo = array_map('sanitize_text_field', $data);
-        $this->simplifiedContact = $this->simplifiedAddress(
-            $simplifiedContactInfo
-        );
+        $this->simplifiedContact = $this->simplifiedAddress($simplifiedContactInfo);
     }
-
     protected function updateShippingMethod(array $data)
     {
-        if (
-            array_key_exists(
-                PropertiesDictionary::SHIPPING_METHOD,
-                $data
-            )
-        ) {
-            $this->shippingMethod = filter_var_array(
-                $data[PropertiesDictionary::SHIPPING_METHOD],
-                FILTER_SANITIZE_SPECIAL_CHARS
-            );
+        if (array_key_exists(\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_METHOD, $data)) {
+            $this->shippingMethod = filter_var_array($data[\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_METHOD], \FILTER_SANITIZE_SPECIAL_CHARS);
         }
     }
-
     public function billingAddress(): array
     {
         return $this->billingAddress;
     }
-
     public function shippingAddress(): array
     {
         return $this->shippingAddress;
     }
-
     public function shippingMethod(): array
     {
         return $this->shippingMethod ?? [];
     }
-
     public function needShipping(): bool
     {
         return $this->needShipping;
     }
-
     public function productId(): string
     {
         return $this->productId;
     }
-
     public function productQuantity(): string
     {
         return $this->productQuantity;
     }
-
     public function nonce()
     {
         return $this->nonce;
     }
-
     public function validationUrl()
     {
         return $this->validationUrl;
     }
-
     public function simplifiedContact()
     {
         return $this->simplifiedContact;
     }
-
     public function isNonceValid()
     {
-        $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
-
-        return wp_verify_nonce(
-            $nonce,
-            'woocommerce-process_checkout'
-        ) || wp_verify_nonce($nonce, 'mollie_apple_pay_blocks');
+        $nonce = filter_input(\INPUT_POST, 'woocommerce-process-checkout-nonce', \FILTER_SANITIZE_SPECIAL_CHARS);
+        return wp_verify_nonce($nonce, 'woocommerce-process_checkout') || wp_verify_nonce($nonce, 'mollie_apple_pay_blocks');
     }
-
     /**
      * @return array|false|null
      */
     public function getFilteredRequestData()
     {
-        return filter_input_array(INPUT_POST, [
-            PropertiesDictionary::CALLER_PAGE => FILTER_SANITIZE_SPECIAL_CHARS,
-            PropertiesDictionary::VALIDATION_URL => FILTER_SANITIZE_SPECIAL_CHARS,
-            'woocommerce-process-checkout-nonce' => FILTER_SANITIZE_SPECIAL_CHARS,
-            PropertiesDictionary::NEED_SHIPPING => FILTER_VALIDATE_BOOLEAN,
-            PropertiesDictionary::SIMPLIFIED_CONTACT => [
-                'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
-                'flags' => FILTER_REQUIRE_ARRAY,
-            ],
-            PropertiesDictionary::SHIPPING_CONTACT => [
-                'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
-                'flags' => FILTER_REQUIRE_ARRAY,
-            ],
-            PropertiesDictionary::BILLING_CONTACT => [
-                'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
-                'flags' => FILTER_REQUIRE_ARRAY,
-            ],
-            PropertiesDictionary::SHIPPING_METHOD => [
-                'filter' => FILTER_SANITIZE_SPECIAL_CHARS,
-                'flags' => FILTER_REQUIRE_ARRAY,
-            ],
-            PropertiesDictionary::PRODUCT_ID => FILTER_SANITIZE_NUMBER_INT,
-            PropertiesDictionary::PRODUCT_QUANTITY => FILTER_SANITIZE_NUMBER_INT,
-        ]);
+        return filter_input_array(\INPUT_POST, [\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::CALLER_PAGE => \FILTER_SANITIZE_SPECIAL_CHARS, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::VALIDATION_URL => \FILTER_SANITIZE_SPECIAL_CHARS, 'woocommerce-process-checkout-nonce' => \FILTER_SANITIZE_SPECIAL_CHARS, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::NEED_SHIPPING => \FILTER_VALIDATE_BOOLEAN, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SIMPLIFIED_CONTACT => ['filter' => \FILTER_SANITIZE_SPECIAL_CHARS, 'flags' => \FILTER_REQUIRE_ARRAY], \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT => ['filter' => \FILTER_SANITIZE_SPECIAL_CHARS, 'flags' => \FILTER_REQUIRE_ARRAY], \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::BILLING_CONTACT => ['filter' => \FILTER_SANITIZE_SPECIAL_CHARS, 'flags' => \FILTER_REQUIRE_ARRAY], \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_METHOD => ['filter' => \FILTER_SANITIZE_SPECIAL_CHARS, 'flags' => \FILTER_REQUIRE_ARRAY], \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::PRODUCT_ID => \FILTER_SANITIZE_NUMBER_INT, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::PRODUCT_QUANTITY => \FILTER_SANITIZE_NUMBER_INT]);
     }
 }

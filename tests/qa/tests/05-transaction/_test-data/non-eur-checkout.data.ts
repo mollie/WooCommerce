@@ -71,7 +71,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4567537',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'open',
@@ -144,7 +144,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4268795',
 		payment: {
 			gateway: gateways.vipps,
 			status: 'paid',
@@ -152,7 +152,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4268796',
 		payment: {
 			gateway: gateways.vipps,
 			status: 'failed',
@@ -160,7 +160,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4268797',
 		payment: {
 			gateway: gateways.vipps,
 			status: 'canceled',
@@ -168,7 +168,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4268798',
 		payment: {
 			gateway: gateways.vipps,
 			status: 'expired',
@@ -176,7 +176,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4268807',
 		payment: {
 			gateway: gateways.mobilepay,
 			status: 'paid',
@@ -184,7 +184,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4268808',
 		payment: {
 			gateway: gateways.mobilepay,
 			status: 'failed',
@@ -192,7 +192,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4268809',
 		payment: {
 			gateway: gateways.mobilepay,
 			status: 'canceled',
@@ -200,7 +200,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C00003',
+		testId: 'C4268810',
 		payment: {
 			gateway: gateways.mobilepay,
 			status: 'expired',

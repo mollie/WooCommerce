@@ -88,7 +88,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237500',
+		testId: 'C4237600',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'failed',
@@ -96,7 +96,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237501',
+		testId: 'C4237601',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'canceled',
@@ -104,7 +104,7 @@ export const checkoutNonEur: MollieTestData.ShopOrder[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C4237502',
+		testId: 'C4237602',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'expired',

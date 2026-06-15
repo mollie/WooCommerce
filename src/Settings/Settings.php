@@ -93,11 +93,10 @@ class Settings
         if (!$isNonceValid) {
             return;
         }
-        $enabledLogoOptionName = 'woocommerce_' . $gatewayId . '_enable_custom_logo';
         $gatewaySettings = get_option(sprintf('%s_settings', $gatewayId), []);
-        if (!isset($_POST[$enabledLogoOptionName])) {
-            $gatewaySettings["iconFileUrl"] = null;
-            $gatewaySettings["iconFilePath"] = null;
+        $removeLogoOptionName = 'woocommerce_' . $gatewayId . '_remove_logo';
+        if (!empty($_POST[$removeLogoOptionName])) {
+            unset($gatewaySettings['iconFileUrl'], $gatewaySettings['iconFilePath']);
             update_option(sprintf('%s_settings', $gatewayId), $gatewaySettings);
             return;
         }
@@ -169,13 +168,13 @@ class Settings
         return !$orderApiSetting || is_string($orderApiSetting) && trim($orderApiSetting) === PaymentProcessor::PAYMENT_METHOD_TYPE_ORDER;
     }
     /**
-     * @param bool $overrideTestMode
+     * @param bool|null $overrideTestMode Pass null to use the current test mode setting.
      *
      * @return false|string
      */
-    public function getApiKey($overrideTestMode = 2)
+    public function getApiKey(?bool $overrideTestMode = null)
     {
-        $isTestModeEnabled = $overrideTestMode === 2 ? $this->isTestModeEnabled() : $overrideTestMode;
+        $isTestModeEnabled = $overrideTestMode === null ? $this->isTestModeEnabled() : $overrideTestMode;
         $settingId = $isTestModeEnabled ? 'test_api_key' : 'live_api_key';
         $apiKeyId = $this->getSettingId($settingId);
         $apiKey = get_option($apiKeyId);
@@ -339,6 +338,36 @@ class Settings
     }
 
     /**
+     * Attempt connection and return error details on failure.
+     *
+     * @return array{connected: bool, error_code?: int, error_message?: string}
+     */
+    public function getConnectionStatusWithError(): array
+    {
+        $status = $this->statusHelper;
+        if (!$status->isCompatible()) {
+            return [
+                'connected' => false,
+                'error_code' => 0,
+                'error_message' => 'Incompatible environment',
+            ];
+        }
+
+        try {
+            $apiKey = $this->getApiKey();
+            $apiClient = $this->apiHelper->getApiClient($apiKey);
+            $status->getMollieApiStatus($apiClient);
+            return ['connected' => true];
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            return [
+                'connected' => false,
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Get plugin status
      *
      * - Check compatibility
@@ -418,7 +447,15 @@ class Settings
         $max_option_name_length = 191;
 
         if ($setting_id_length > $max_option_name_length) {
-            trigger_error(sprintf('Setting id %s (%s) to long for database column wp_options.option_name which is varchar(%s).', esc_html($setting_id), esc_html($setting_id_length), esc_html($max_option_name_length)), E_USER_WARNING);
+            trigger_error(
+                sprintf(
+                    'Setting id %s (%s) to long for database column wp_options.option_name which is varchar(%s).',
+                    esc_html($setting_id),
+                    esc_html((string)$setting_id_length),
+                    esc_html((string)$max_option_name_length)
+                ),
+                E_USER_WARNING
+            );
         }
 
         return $setting_id;
@@ -541,7 +578,7 @@ class Settings
      * If we are calling this the api key has been updated, we need a new api object
      * to retrieve a new profile id
      *
-     * @return CurrentProfile
+     * @return \Mollie\Api\Resources\CurrentProfile
      * @throws ApiException
      */
     protected function mollieWooCommerceMerchantProfile()
@@ -575,7 +612,7 @@ class Settings
             if (!$merchantProfileId) {
                 try {
                     $merchantProfile = $this->mollieWooCommerceMerchantProfile();
-                    $merchantProfileId = isset($merchantProfile->id) ? $merchantProfile->id : '';
+                    $merchantProfileId = $merchantProfile->id;
                 } catch (ApiException $exception) {
                     $merchantProfileId = '';
                 }
@@ -660,8 +697,42 @@ class Settings
                     'size' => $file['size'],
             ];
 
+            $isSvg = strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'svg';
+            // WordPress excludes SVG from allowed MIME types by default; temporarily allow it
+            // so wp_handle_upload does not reject the file before we can sanitize it.
+            $svgMimeFilter = static function (array $mimes): array {
+                $mimes['svg'] = 'image/svg+xml';
+                return $mimes;
+            };
+            // finfo may return text/plain or text/xml for SVGs; override the filetype check
+            // so wp_handle_upload accepts the file regardless of what finfo detects.
+            $svgTypeFilter = static function (array $data, $file, string $filename): array {
+                if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'svg') {
+                    $data['ext'] = 'svg';
+                    $data['type'] = 'image/svg+xml';
+                }
+                return $data;
+            };
+            if ($isSvg) {
+                add_filter('upload_mimes', $svgMimeFilter);
+                add_filter('wp_check_filetype_and_ext', $svgTypeFilter, 10, 3);
+            }
             $movefile = wp_handle_upload($file, $upload_overrides);
-            if ($movefile) {
+            if ($isSvg) {
+                remove_filter('upload_mimes', $svgMimeFilter);
+                remove_filter('wp_check_filetype_and_ext', $svgTypeFilter);
+            }
+            if ($movefile && !isset($movefile['error'])) {
+                if ($isSvg) {
+                    $svgContent = file_get_contents($movefile['file']);
+                    $sanitizer = new \enshrined\svgSanitize\Sanitizer();
+                    $sanitized = ($svgContent !== false) ? $sanitizer->sanitize($svgContent) : false;
+                    if (!$sanitized) {
+                        wp_delete_file($movefile['file']);
+                        return;
+                    }
+                    file_put_contents($movefile['file'], $sanitized);
+                }
                 $gatewaySettings = get_option(sprintf('%s_settings', $gatewayId), []);
                 $gatewaySettings["iconFileUrl"] = $movefile['url'];
                 $gatewaySettings["iconFilePath"] = $movefile['file'];

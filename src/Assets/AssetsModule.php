@@ -330,16 +330,16 @@ class AssetsModule implements ExecutableModule, ServiceModule
         if (!$current_section || strpos($current_section, 'mollie_wc_gateway_') === false) {
             return;
         }
+        // Per-gateway settings pages live under tab=checkout, so the
+        // tab=mollie_settings gate above doesn't enqueue the icon stylesheet
+        // here. The preview thumbnail and "Remove / Reset to Mollie" link
+        // both rely on rules in mollie-gateway-icons.scss, so enqueue it
+        // alongside the JS that injects them.
+        wp_enqueue_style('mollie-gateway-icons');
         wp_enqueue_script('mollie_wc_gateway_settings');
         $settingsName = "{$current_section}_settings";
         $gatewaySettings = get_option($settingsName, false);
-        $message = __('No custom logo selected', 'mollie-payments-for-woocommerce');
-        $isEnabled = false;
-        if ($gatewaySettings && isset($gatewaySettings['enable_custom_logo'])) {
-            $isEnabled = $gatewaySettings['enable_custom_logo'] === 'yes';
-        }
         $uploadFieldName = "{$current_section}_upload_logo";
-        $enabledFieldName = "{$current_section}_enable_custom_logo";
         $gatewayIconUrl = '';
         if ($gatewaySettings && isset($gatewaySettings['iconFileUrl'])) {
             $gatewayIconUrl = $gatewaySettings['iconFileUrl'];
@@ -349,11 +349,11 @@ class AssetsModule implements ExecutableModule, ServiceModule
             'mollie_wc_gateway_settings',
             'gatewaySettingsData',
             [
-                'isEnabledIcon' => $isEnabled,
                 'uploadFieldName' => $uploadFieldName,
-                'enableFieldName' => $enabledFieldName,
                 'iconUrl' => $gatewayIconUrl,
-                'message' => $message,
+                'message' => __('No custom logo selected', 'mollie-payments-for-woocommerce'),
+                'removeLogoLabel' => __('Remove / Reset to Mollie logo', 'mollie-payments-for-woocommerce'),
+                'undoRemoveLabel' => __('Keep current logo', 'mollie-payments-for-woocommerce'),
                 'pluginUrlImages' => plugins_url('public/images', M4W_FILE),
             ]
         );
@@ -518,7 +518,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
         );
         add_action(
             'admin_init',
-            function () use ($container, $pluginVersion, $pluginUrl) {
+            function () use ($pluginVersion, $pluginUrl) {
                 if (is_admin()) {
                     global $current_section;
                     wp_register_script(

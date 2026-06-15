@@ -20,9 +20,7 @@ use Mollie\WooCommerce\Buttons\PayPalButton\PayPalExpressButton;
 use Mollie\WooCommerce\Gateway\Voucher\MaybeDisableGateway;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\PaymentMethods\Constants;
-use Mollie\WooCommerce\PaymentMethods\IconFactory;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
-use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -87,16 +85,16 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             return $maybeEnablegatewayHelper->maybeDisableMealVoucherGateway($gateways);
         });
 
-        add_action('woocommerce_init', static function () use ($container) {
+        add_action('woocommerce_after_register_post_type', static function () use ($container) {
             $gateways = WC()->payment_gateways()->payment_gateways();
             $deprecatedGatewayHelpers = $container->get('__deprecated.gateway_helpers');
             foreach ($gateways as $gateway) {
-                $isMolliegateway = is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false
-                    || is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false;
-                if (!$isMolliegateway) {
+                if (
+                    !$gateway instanceof PaymentGateway
+                    || !array_key_exists($gateway->id, $deprecatedGatewayHelpers)
+                ) {
                     continue;
                 }
-                assert($gateway instanceof PaymentGateway);
                 // Add subscription filters after payment gateways are loaded
                 $isSubscriptiongateway = $gateway->supports('subscriptions');
                 if (
@@ -154,7 +152,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         assert($surchargeService instanceof Surcharge);
         $this->gatewaySurchargeHandling($surchargeService);
 
-        add_action('woocommerce_init', function () use ($container) {
+        add_action('woocommerce_after_register_post_type', function () use ($container) {
             $this->paymentButtonsBootstrap($container);
         });
 
@@ -173,20 +171,22 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
                 if (!$title) {
                     return;
                 }
+                // phpstan:ignore [wc-stub] $paymentContext is passed via WC REST action with no declared type; ->order is a WC_Order
+                // @phpstan-ignore-next-line
                 $order = $paymentContext->order;
                 $order->set_payment_method_title($title);
                 $order->save();
             }
         );
         add_action('add_meta_boxes_woocommerce_page_wc-orders', [$this, 'addShopOrderMetabox'], 10);
-        add_filter('woocommerce_checkout_fields', static function ($fields) use ($container) {
+        add_filter('woocommerce_checkout_fields', static function ($fields) {
             if (!isset($fields['billing']['billing_phone']) || !$fields['billing']['billing_phone']['required']) {
                 update_option('mollie_wc_is_phone_required_flag', false);
             } else {
                 update_option('mollie_wc_is_phone_required_flag', true);
             }
             return $fields;
-        }, 10, 3);
+        }, 10, 1);
 
         add_action('init', static function () use ($container) {
             $paymentMethods = $container->get('gateway.paymentMethods');
@@ -523,7 +523,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
      *
      * @return array
      */
-    protected function instantiatePaymentMethods(): array
+    public function instantiatePaymentMethods(): array
     {
         $paymentMethods = [];
         $allGatewayClassNames = SharedDataDictionary::GATEWAY_CLASSNAMES;
@@ -547,10 +547,6 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 
     /**
      * @param string $id
-     * @param IconFactory $iconFactory
-     * @param Settings $settingsHelper
-     * @param Surcharge $surchargeService
-     * @param array $paymentMethods
      * @return PaymentMethodI | array
      */
     public function buildPaymentMethod(

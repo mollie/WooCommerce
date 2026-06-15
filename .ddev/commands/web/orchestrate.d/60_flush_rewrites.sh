@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-silent-no-warn
 
 # Needed for generating the .htaccess file
 echo "apache_modules:

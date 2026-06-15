@@ -73,6 +73,10 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php73" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/inpsyde/composer-assets-compiler" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/dhii/services" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-stubs/woocommerce-subscriptions-stubs" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/extension-installer" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpstan" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/szepeviktor/phpstan-wordpress" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

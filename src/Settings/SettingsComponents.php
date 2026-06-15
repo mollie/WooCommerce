@@ -54,7 +54,9 @@ class SettingsComponents
                 sprintf('mollie_components_%s', $key),
                 $this->defaultOptionFor($defaults, $key)
             );
-            $settings[$styleKey] = $optionValue;
+            if ($optionValue !== null) {
+                $settings[$styleKey] = $optionValue;
+            }
         }
 
         return $settings;

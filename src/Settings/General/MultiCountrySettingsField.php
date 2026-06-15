@@ -28,6 +28,8 @@ class MultiCountrySettingsField implements SettingsFieldRendererInterface
         $gatewayId = $paymentMethod->getProperty('id');
         $id = 'woocommerce_mollie_wc_gateway_' . $gatewayId . '_allowed_countries';
         $title = __('Sell to specific countries', 'mollie-payments-for-woocommerce');
+        // phpstan:ignore [wc-stub] WC()->countries is WC_Countries|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $countries = WC()->countries->countries;
         asort($countries);
         ob_start();

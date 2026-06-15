@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-silent-no-warn
 
 #activate tax setting
 wp option set woocommerce_calc_taxes "yes"

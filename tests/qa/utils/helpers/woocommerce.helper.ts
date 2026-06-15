@@ -159,10 +159,6 @@ export const setupWooCommerce = async () => {
 		await wooCommerceUtils.createCustomer( customers.germany );
 	} );
 
-	setup( 'Setup Delete Previous Orders', async ( { wooCommerceApi } ) => {
-		await wooCommerceApi.deleteAllOrders();
-	} );
-
 	setup( 'Setup coupons', async ( { wooCommerceUtils } ) => {
 		// create test coupons
 		const couponItems = {};

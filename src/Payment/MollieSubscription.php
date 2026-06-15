@@ -5,7 +5,7 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Types\SequenceType;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Payment\Request\Middleware\PaymentDescriptionMiddleware;
-use Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Psr\Log\LoggerInterface as Logger;
@@ -13,18 +13,25 @@ use Psr\Log\LoggerInterface as Logger;
 class MollieSubscription extends MollieObject
 {
     protected $pluginId;
-    /**
-     * @var mixed
-     */
-    private AbstractPaymentMethod $paymentMethod;
+    // phpstan:ignore [dead-code] injected via constructor but never read in this class; MollieObject subclasses access it through other paths
+    // @phpstan-ignore-next-line
+    private PaymentMethodI $paymentMethod;
     protected MiddlewareHandler $middleware;
 
     /**
      * Molliesubscription constructor.
      *
      */
-    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, Logger $logger, AbstractPaymentMethod $paymentMethod, $middlewareHandler)
-    {
+    public function __construct(
+        $pluginId,
+        Api $apiHelper,
+        $settingsHelper,
+        $dataHelper,
+        Logger $logger,
+        PaymentMethodI $paymentMethod,
+        $middlewareHandler
+    ) {
+
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;

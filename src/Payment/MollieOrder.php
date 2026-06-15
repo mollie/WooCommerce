@@ -5,21 +5,17 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
 use Exception;
-use Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Order;
+use Mollie\Api\Resources\Payment;
 use Mollie\Api\Resources\Refund;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\Gateway\Refund\PartialRefundException;
 use Mollie\WooCommerce\Payment\Request\RequestFactory;
-use Mollie\WooCommerce\PaymentMethods\Voucher;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Psr\Log\LoggerInterface as Logger;
-use Psr\Log\LogLevel;
 use UnexpectedValueException;
 use WC_Order;
 use WP_Error;
@@ -226,11 +222,14 @@ class MollieOrder extends MollieObject
             $totals = 0;
 
             foreach ($items as $itemId => $itemData) {
-                $totals += $itemData->get_total() + $itemData->get_total_tax();
+                // @phpstan-ignore-next-line
+                $totals += (float)$itemData->get_total() + (float)$itemData->get_total_tax();
             }
 
             $totals = number_format(abs($totals), 2); // WooCommerce - sum of all refund items
-            $checkAmount = $amount ? number_format((float)$amount, 2) : 0; // WooCommerce - refund amount
+            // phpstan:ignore [wc-stub] $amount arrives via WC refund API as string|null; (float) cast already handles it but stubs type it inconsistently
+            // @phpstan-ignore-next-line
+            $checkAmount = number_format((float)($amount ?? 0), 2); // WooCommerce - refund amount
 
             if ($checkAmount !== $totals) {
                 $errorMessage = _x('The sum of refunds for all order lines is not identical to the refund amount, so this refund will be processed as a payment amount refund, not an order line refund.', 'Order note error', 'mollie-payments-for-woocommerce');
@@ -272,8 +271,6 @@ class MollieOrder extends MollieObject
             $this->logger->debug(__METHOD__ . ' - ' . $exceptionMessage);
             return new WP_Error(1, $exceptionMessage);
         }
-
-        return false;
     }
 
     /**
@@ -318,6 +315,8 @@ class MollieOrder extends MollieObject
 
                 if ($originalOrderItemId === $line->metadata->order_item_id) {
                     // Calculate the total refund amount for one order line
+                    // phpstan:ignore [mollie-stub] Mollie order line exposes unitPrice->value as a dynamic stdClass property not covered by type definitions
+                    // @phpstan-ignore-next-line
                     $lineTotalRefundAmount = abs($item->get_quantity()) * $line->unitPrice->value;
 
                     // Mollie doesn't allow a partial refund of the full amount or quantity of at least one order line, so when merchants try that, warn them and block the process
@@ -325,6 +324,8 @@ class MollieOrder extends MollieObject
                         $noteMessage = sprintf(
                             "Mollie doesn't allow a partial refund of the full amount or quantity of at least one order line. Use 'Refund amount' instead. The WooCommerce order item ID is %s, Mollie order line ID is %s.",
                             $originalOrderItemId,
+                            // phpstan:ignore [mollie-stub] Mollie order line exposes id as a dynamic property not covered by type definitions
+                            // @phpstan-ignore-next-line
                             $line->id
                         );
 
@@ -386,7 +387,7 @@ class MollieOrder extends MollieObject
             throw new Exception(esc_html(sprintf("%s", $noteMessage)));
         }
 
-        if ($paymentObject->isPaid() || $paymentObject->isShipping() || $paymentObject->isCompleted()) {
+        if ($paymentObject->isPaid() || $paymentObject->isCompleted()) {
             $refund = $this->apiHelper->getApiClient($apiKey)->payments->refund($paymentObjectPayment, [
                 'amount' =>  [
                     'currency' => $this->dataHelper->getOrderCurrency($order),
@@ -470,13 +471,15 @@ class MollieOrder extends MollieObject
         // Get the Mollie order
         $mollieOrder = $this->apiHelper->getApiClient($apiKey)->orders->get($paymentObject->id);
 
-        $itemTotalAmount = abs(number_format($item->get_total() + $item->get_total_tax(), 2));
+        $itemTotalAmount = abs((float)number_format($item->get_total() + $item->get_total_tax(), 2));
 
         // Prepare the order line to update
         if (!empty($line->discountAmount)) {
             $lines = [
                 'lines' => [
                     [
+                        // phpstan:ignore [mollie-stub] Mollie order line exposes id as a dynamic property not covered by type definitions
+                        // @phpstan-ignore-next-line
                         'id' => $line->id,
                         'quantity' => abs($item->get_quantity()),
                         'amount' => [
@@ -502,6 +505,8 @@ class MollieOrder extends MollieObject
             ];
         }
 
+        $refund = null;
+        $noteMessage = '';
         if ($line->status === 'created' || $line->status === 'authorized') {
             // Returns null if successful.
             $refund = $mollieOrder->cancelLines($lines);
@@ -563,7 +568,7 @@ class MollieOrder extends MollieObject
             $this->pluginId . '_refund_created',
             [$refund, $order],
             '5.3.1',
-            self::ACTION_AFTER_REFUND_PAYMENT_CREATED
+            MolliePayment::ACTION_AFTER_REFUND_PAYMENT_CREATED
         );
 
         $order->add_order_note($noteMessage);

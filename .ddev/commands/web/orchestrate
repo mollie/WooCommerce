@@ -2,6 +2,7 @@
 ## Description: Set up the development environment
 ## Usage: orchestrate
 ## Example: "ddev orchestrate"
+#ddev-silent-no-warn
 
 mkdir -p "${DDEV_DOCROOT}"
 pushd "${DDEV_DOCROOT}"

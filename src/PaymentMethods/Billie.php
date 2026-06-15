@@ -65,7 +65,7 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
      * Add filters and actions for the Billie payment method.
      * This will be added during constructor
      */
-    public function filtersOnBuild()
+    public function filtersOnBuild(): void
     {
         add_filter(
             'woocommerce_after_checkout_validation',
@@ -73,7 +73,7 @@ class Billie extends AbstractPaymentMethod implements PaymentMethodI
             11,
             2
         );
-        add_action(
+        add_filter(
             'woocommerce_checkout_posted_data',
             [$this, 'switchFields'],
             11

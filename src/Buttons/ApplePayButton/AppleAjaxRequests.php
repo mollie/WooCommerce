@@ -214,8 +214,8 @@ class AppleAjaxRequests
         $applePayRequestDataObject->orderData('productDetail');
 
         $cartItemKey = $cart->add_to_cart(
-            filter_input(INPUT_POST, 'productId'),
-            (bool) filter_input(INPUT_POST, 'productQuantity', FILTER_VALIDATE_INT)
+            (int)filter_input(INPUT_POST, 'productId', FILTER_SANITIZE_NUMBER_INT),
+            (int)filter_input(INPUT_POST, 'productQuantity', FILTER_VALIDATE_INT)
         );
         $this->addAddressesToOrder($applePayRequestDataObject);
 
@@ -300,7 +300,7 @@ class AppleAjaxRequests
      * @param      $productId
      * @param      $productQuantity
      * @param      $customerAddress
-     * @param null $shippingMethod
+     * @param mixed $shippingMethod
      */
     protected function calculateTotalsSingleProduct(
         $productId,
@@ -405,6 +405,8 @@ class AppleAjaxRequests
     ): array {
 
         $shippingMethodsArray = [];
+        // phpstan:ignore [wc-stub] WC()->shipping is WC_Shipping|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $shippingMethods = WC()->shipping->calculate_shipping(
             $this->getShippingPackages(
                 $customerAddress,
@@ -451,6 +453,8 @@ class AppleAjaxRequests
         $packages = [];
         $packages[0]['contents'] = WC()->cart->cart_contents;
         $packages[0]['contents_cost'] = $total;
+        // phpstan:ignore [wc-stub] WC()->session exposes applied_coupon as a dynamic property; WC session stubs lack coverage
+        // @phpstan-ignore-next-line
         $packages[0]['applied_coupons'] = WC()->session->applied_coupon;
         $packages[0]['destination']['country'] = $customerAddress['country'];
         $packages[0]['destination']['state'] = '';
@@ -516,7 +520,7 @@ class AppleAjaxRequests
      * method
      *
      * @param      $customerAddress
-     * @param null $shippingMethodId
+     * @param mixed $shippingMethodId
      */
     protected function calculateTotalsCartPage(
         $customerAddress = null,
@@ -689,7 +693,7 @@ class AppleAjaxRequests
                     wp_send_json_error(
                         $this->responseTemplates->authorizationResultResponse(
                             'STATUS_FAILURE',
-                            0,
+                            '0',
                             [['errorCode' => 'unknown']]
                         )
                     );

@@ -48,7 +48,7 @@ class PaymentGatewayModule implements ServiceModule, ExecutableModule
                  * prevent potential namespace conflicts when multiple plugins use this payment gateway library.
                  */
                 'payment_gateways.plugin_slug' => static function (ContainerInterface $container): string {
-                    /** @var PluginProperties $properties */
+                    /** @var PluginProperties $pluginProperties */
                     $pluginProperties = $container->get(Package::PROPERTIES);
 
                     return $pluginProperties->baseName();

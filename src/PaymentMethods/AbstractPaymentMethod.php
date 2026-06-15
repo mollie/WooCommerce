@@ -57,6 +57,18 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      */
     protected bool $translationsInitialized = false;
 
+    abstract protected function getConfig(): array;
+
+    abstract public function getFormFields(array $generalFormFields): array;
+
+    public function filtersOnBuild(): void
+    {
+    }
+
+    public function debugGiftcardDetails($payment, \WC_Order $order): void
+    {
+    }
+
     public function __construct()
     {
         $this->config = $this->getConfig();
@@ -66,13 +78,17 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     public function title(ContainerInterface $container): string
     {
-        $useApiTitle = apply_filters('mollie_wc_gateway_use_api_title', $this->isUseApiTitleChecked(), $this->getIdFromConfig());
         $title = $this->getProperty('title');
-        //new installations should use the api title
-        if ($useApiTitle || $title === false) {
-            return $this->getApiTitle($container);
+        // Filter deprecated in 8.1.7 — remove in next major version.
+        if (has_filter('mollie_wc_gateway_use_api_title')) {
+            _doing_it_wrong(
+                'mollie_wc_gateway_use_api_title',
+                'This filter is deprecated. Title is now determined by whether the title field is empty.',
+                '8.1.7'
+            );
         }
-         return $title;
+        $useApiTitle = apply_filters('mollie_wc_gateway_use_api_title', empty($title), $this->getIdFromConfig());
+        return $useApiTitle ? $this->getApiTitle($container) : (string) $title;
     }
 
     /**
@@ -277,11 +293,6 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $apiIcon;
     }
 
-    private function isUseApiTitleChecked(): bool
-    {
-        return $this->getProperty(SharedDataDictionary::USE_API_TITLE_AND_IMAGE) === 'yes';
-    }
-
     protected function titleIsDefault(): bool
     {
         $savedTitle = $this->getProperty('title');
@@ -366,7 +377,15 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             $iconUrlArray = $this->getUploadedImage();
         }
 
-        $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', $this->isUseApiTitleChecked(), $this->getIdFromConfig());
+        // Filter deprecated in 8.1.7 — remove in next major version.
+        if (has_filter('mollie_wc_gateway_use_api_icon')) {
+            _doing_it_wrong(
+                'mollie_wc_gateway_use_api_icon',
+                'This filter is deprecated. Icon source is now determined by whether a custom logo has been uploaded.',
+                '8.1.7'
+            );
+        }
+        $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', empty($this->getUploadedImage()), $this->getIdFromConfig());
 
         if (!$this->isCreditCardSelectorEnabled() && $useAPIImage) {
             $iconUrlArray = [$this->getApiIcon($container)];
@@ -477,6 +496,8 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
             ], $iconProvider->provideIcons())
             : [];
 
+        // phpstan:ignore [wc-stub] WC()->customer is WC_Customer|null at runtime; WooCommerce stubs declare it non-nullable
+        // @phpstan-ignore-next-line
         $billingCountry = WC()->customer ? WC()->customer->get_billing_country() : '';
         $allowedCountries = $this->getProperty('allowed_countries');
 

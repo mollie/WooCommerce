@@ -52,7 +52,7 @@ const selectors = {
 
 	getIsComponentReady: ( state ) => {
 		const activePaymentMethod = state.activePaymentMethod;
-		return (
+		return Boolean(
 			state.componentInitialized &&
 			state.componentMounted[ activePaymentMethod ] &&
 			! state.componentError &&

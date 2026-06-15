@@ -1,3 +1,4 @@
+#ddev-silent-no-warn
 services:
     web:
         volumes:

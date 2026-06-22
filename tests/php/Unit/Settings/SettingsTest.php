@@ -42,6 +42,13 @@ class SettingsTest extends TestCase
         $method->invoke($sut, $name, $tempName, $gatewayId);
     }
 
+    private function callValidateUploadedFile(Settings $sut, string $fileName, string $fileTempName, int $fileSize): bool
+    {
+        $method = new \ReflectionMethod(Settings::class, 'validateUploadedFile');
+        $method->setAccessible(true);
+        return $method->invoke($sut, $fileName, $fileTempName, $fileSize);
+    }
+
     private function createTempFile(string $content, string $extension): string
     {
         $path = sys_get_temp_dir() . '/mollie_test_' . uniqid() . '.' . $extension;
@@ -157,7 +164,7 @@ class SettingsTest extends TestCase
         @unlink($storedFile);
     }
 
-    // T7: wp_handle_upload returns an error array; settings are not written and no file deletion is attempted
+    // wp_handle_upload returns an error array; settings are not written and no file deletion is attempted
     public function testHandleUploadErrorSkipsSettingsAndFileCleanup(): void
     {
         $tempFile = $this->createTempFile('<svg xmlns="http://www.w3.org/2000/svg"></svg>', 'svg');
@@ -172,7 +179,7 @@ class SettingsTest extends TestCase
         @unlink($tempFile);
     }
 
-    // T6: SVG with unparseable content causes sanitizer to return empty; file is deleted and settings not written
+    // SVG with unparseable content causes sanitizer to return empty; file is deleted and settings not written
     public function testEmptySanitizerOutputDeletesFileAndSkipsSettings(): void
     {
         $invalidContent = 'not-valid-xml-or-svg-content';
@@ -188,5 +195,75 @@ class SettingsTest extends TestCase
 
         self::assertSame($invalidContent, file_get_contents($storedFile));
         @unlink($storedFile);
+    }
+
+    // SVG .svg extension passes validateUploadedFile regardless of what finfo detects
+    public function testSvgFilePassesValidationRegardlessOfFinfoMime(): void
+    {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile  = $this->createTempFile('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg>', 'svg');
+        $fileSize = (int) filesize($tmpFile);
+
+        $result = $this->callValidateUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, $fileSize);
+
+        self::assertTrue($result);
+        @unlink($tmpFile);
+    }
+
+    // Non-image MIME type with non-svg extension is rejected by validateUploadedFile
+    public function testNonImageNonSvgFileIsRejectedByValidation(): void
+    {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile  = $this->createTempFile('<?php echo "hello"; ?>', 'php');
+        $fileSize = (int) filesize($tmpFile);
+
+        $result = $this->callValidateUploadedFile($this->makeSut(), 'shell.php', $tmpFile, $fileSize);
+
+        self::assertFalse($result);
+        @unlink($tmpFile);
+    }
+
+    // Error message produced on rejection mentions svg as an allowed format
+    public function testRejectionNoticeMessageMentionsSvg(): void
+    {
+        $capturedCallback = null;
+        when('add_action')->alias(static function (string $hook, callable $cb) use (&$capturedCallback): void {
+            if ($hook === 'admin_notices') {
+                $capturedCallback = $cb;
+            }
+        });
+        when('esc_html__')->returnArg(1);
+        when('esc_attr')->returnArg();
+        when('wp_kses_post')->returnArg();
+
+        $tmpFile  = $this->createTempFile('<?php echo "hello"; ?>', 'php');
+        $fileSize = (int) filesize($tmpFile);
+
+        $this->callValidateUploadedFile($this->makeSut(), 'shell.php', $tmpFile, $fileSize);
+
+        self::assertNotNull($capturedCallback, 'AdminNotice did not register an admin_notices callback');
+        ob_start();
+        ($capturedCallback)();
+        $output = ob_get_clean();
+        self::assertStringContainsString('svg', strtolower($output));
+        @unlink($tmpFile);
+    }
+
+    // Oversized SVG (>500kb) is rejected by the file-size check, not the MIME check
+    public function testOversizedSvgIsRejectedByFileSizeNotMimeCheck(): void
+    {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile = $this->createTempFile('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg>', 'svg');
+
+        $result = $this->callValidateUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, 600000);
+
+        self::assertFalse($result);
+        @unlink($tmpFile);
     }
 }

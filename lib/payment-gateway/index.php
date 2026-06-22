@@ -1,12 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Mollie;
+
 /**
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version:     {VERSION}
- * SHA:         ${GIT_SHA}
+ * Version: 0.0.0+piwoo-906-svg-upload-mime-check-logic-gap-may-cause-silent-rejection.60a8a23
+ * SHA: 60a8a232b112b224b342f8a7141a8069840d3c62
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3
@@ -17,15 +19,8 @@ declare(strict_types=1);
  * Text Domain: ddev-wordpress-plugin-example
  * Domain Path: /languages
  */
-
-add_action('rest_api_init', function () {
-    register_rest_route('inpsyde', 'example', [
-        'method' => 'GET',
-        'callback' => function () {
-            return ['hello' => __('world', 'ddev-wordpress-plugin-example')];
-        },
-        'permission_callback' => '__return_true',
-    ]);
+\add_action('rest_api_init', function () {
+    \register_rest_route('inpsyde', 'example', ['method' => 'GET', 'callback' => function () {
+        return ['hello' => \__('world', 'ddev-wordpress-plugin-example')];
+    }, 'permission_callback' => '__return_true']);
 });
-
-

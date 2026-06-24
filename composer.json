@@ -24,7 +24,6 @@
     "psr/container": "1.1.0",
     "psr/log":"^1.1.4",
     "sniccowp/php-scoper-wordpress-excludes": "^6.6",
-    "dhii/services": "^0.1.0",
     "enshrined/svg-sanitize": "^0.22.0"
   },
   "require-dev": {

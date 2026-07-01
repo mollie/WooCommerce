@@ -218,6 +218,9 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.1.8 - 15-06-2026 =
+* Added - Mollie incentive campaign
+
 = 8.1.7 - 15-06-2026 =
 * Fixed - Error exporting invoices in WooCommerce
 * Fixed - Undefined array key warning in Mollie PayPal button due to malformed color setting

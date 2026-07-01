@@ -168,6 +168,12 @@ class ApplePayDataObjectTest extends TestCase
     }
 
 
+    public function testCallerPagePropertyIsDeclaredExplicitly()
+    {
+        $reflection = new \ReflectionClass(ApplePayDataObjectHttp::class);
+        self::assertTrue($reflection->hasProperty('callerPage'));
+    }
+
     /**
      * @inheritDoc
      */

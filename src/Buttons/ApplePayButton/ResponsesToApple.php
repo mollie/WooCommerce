@@ -116,7 +116,7 @@ class ResponsesToApple
         $reordered_methods = [];
 
         foreach ($methods as $key => $method) {
-            if ($method['identifier'] === $selectedShippingMethod['identifier']) {
+            if (($method['identifier'] ?? null) === ($selectedShippingMethod['identifier'] ?? null)) {
                 $reordered_methods[] = $method;
                 unset($methods[$key]);
                 break;

@@ -41,13 +41,41 @@ class RestApi
      */
     public function registerRoutes()
     {
+        $this->getOrCreateWebhookSecret();
         register_rest_route(self::ROUTE_NAMESPACE, self::WEBHOOK_ROUTE, [
             [
                 'methods' => 'POST',
                 'callback' => [$this, 'callback'],
-                'permission_callback' => '__return_true',
+                'permission_callback' => function (\WP_REST_Request $request) {
+                    if (!$this->checkWebhookSecret($request->get_param('mollie_webhook_secret'))) {
+                        return new \WP_Error('rest_forbidden', 'Invalid webhook secret.', ['status' => 401]);
+                    }
+                    return true;
+                },
             ],
         ]);
+    }
+
+    public function getOrCreateWebhookSecret(): string
+    {
+        $secret = get_option('mollie_webhook_secret', '');
+        if (!$secret) {
+            $secret = wp_generate_password(32, false);
+            update_option('mollie_webhook_secret', $secret);
+        }
+        return $secret;
+    }
+
+    public function checkWebhookSecret(?string $incoming): bool
+    {
+        if (!$incoming) {
+            return false;
+        }
+        $stored = $this->getOrCreateWebhookSecret();
+        if (!$stored) {
+            return false;
+        }
+        return hash_equals($stored, $incoming);
     }
 
     /**

@@ -113,6 +113,11 @@ class UrlMiddleware implements RequestMiddlewareInterface
                 $webhookUrl
             );
             $webhookUrl = untrailingslashit($webhookUrl);
+        } else {
+            $webhookUrl = add_query_arg(
+                ['mollie_webhook_secret' => get_option('mollie_webhook_secret', '')],
+                $webhookUrl
+            );
         }
 
         $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$webhookUrl}", [true]);

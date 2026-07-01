@@ -255,12 +255,13 @@ class WebhookTestService
      * @param string $testId Test identifier
      * @return string Webhook URL
      */
-    private function getWebhookUrl(string $testId): string
+    protected function getWebhookUrl(string $testId): string
     {
         // Use the REST API webhook endpoint
         $webhookUrl = rest_url('mollie/v1/webhook');
         $webhookUrl = add_query_arg([
                                         'test_id' => $testId,
+                                        'mollie_webhook_secret' => get_option('mollie_webhook_secret', ''),
                                     ], $webhookUrl);
 
         // Convert domain to ASCII for international domains

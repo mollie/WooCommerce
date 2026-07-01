@@ -12,6 +12,7 @@ use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
 use Mollie\WooCommerce\Log\LogModule;
 use Mollie\WooCommerce\MerchantCapture\MerchantCaptureModule;
 use Mollie\WooCommerce\Notice\NoticeModule;
+use Mollie\WooCommerce\Privacy\PrivacyModule;
 use Mollie\WooCommerce\Payment\PaymentModule;
 use Mollie\WooCommerce\SDK\SDKModule;
 use Mollie\WooCommerce\Settings\SettingsModule;
@@ -41,5 +42,6 @@ return /**
             new ComponentsModule(),
             new TracksModule(),
             new UninstallModule(),
+            new PrivacyModule(),
         ];
     };

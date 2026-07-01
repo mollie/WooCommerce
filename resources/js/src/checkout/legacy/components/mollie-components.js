@@ -52,29 +52,35 @@ function cleanContainer (container)
 function renderNotice ({ content, type })
 {
     return `
-      <div id="mollie-notice" class="woocommerce-${type}">
-        ${content}
-      </div>
+      <ul id="mollie-notice" class="woocommerce-${type}" role="alert">
+        <li>${content}</li>
+      </ul>
     `
 }
 
 function printNotice (jQuery, noticeData)
 {
-    const container = gatewayContainer(document)
-    const formContainer = closestFormForElement(container).parentNode || null
     const mollieNotice = noticeContainer(document)
     const renderedNotice = renderNotice(noticeData)
 
     mollieNotice && mollieNotice.remove()
 
-    if (!formContainer) {
-        alert(noticeData.content)
+    const noticesWrapper = document.querySelector('.woocommerce-notices-wrapper')
+    if (noticesWrapper) {
+        noticesWrapper.insertAdjacentHTML('afterbegin', renderedNotice)
+        scrollToNotice(jQuery)
         return
     }
 
-    formContainer.insertAdjacentHTML('beforebegin', renderedNotice)
+    const container = gatewayContainer(document)
+    const form = closestFormForElement(container)
+    if (form) {
+        form.insertAdjacentHTML('beforebegin', renderedNotice)
+        scrollToNotice(jQuery)
+        return
+    }
 
-    scrollToNotice(jQuery)
+    alert(noticeData.content)
 }
 
 function scrollToNotice (jQuery)
@@ -179,8 +185,8 @@ async function submitForm (evt)
     try {
         token = await retrievePaymentToken(mollie)
     } catch (error) {
-        const content = { message = messages.defaultErrorMessage } = error
-        content && printNotice(jQuery, { content, type: 'error' })
+        const message = error.message || messages.defaultErrorMessage
+        message && printNotice(jQuery, { content: message, type: 'error' })
 
         $form.removeClass('processing').unblock()
         $document.trigger('checkout_error')

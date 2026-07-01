@@ -190,7 +190,10 @@ class PaymentModule implements ServiceModule, ExecutableModule
                     $order = wc_get_order($unpaid_order);
                     $mollieOrderService = $this->container->get(MollieOrderService::class);
                     if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
-                        continue;
+                        $order = wc_get_order($unpaid_order);
+                        if (!$order->has_status('pending')) {
+                            continue;
+                        }
                     }
                     add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
                         return SharedDataDictionary::STATUS_CANCELLED;

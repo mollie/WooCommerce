@@ -230,7 +230,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.1.8 - 15-06-2026 =
+= 8.1.8 - 01-07-2026 =
 * Added - Mollie incentive campaign
 
 = 8.1.7 - 15-06-2026 =

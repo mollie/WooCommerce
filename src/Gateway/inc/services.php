@@ -119,6 +119,12 @@ return static function (): array {
                     return $method['id'] !== Constants::BIZUM;
                 });
             }
+            $weroFlag = (bool) apply_filters('inpsyde.feature-flags.mollie-woocommerce.wero_enabled', true);
+            if (!$weroFlag) {
+                $availablePaymentMethods = array_filter($availablePaymentMethods, static function ($method) {
+                    return $method['id'] !== Constants::WERO;
+                });
+            }
             return $availablePaymentMethods;
         },
         IconFactory::class => static function (ContainerInterface $container): IconFactory {

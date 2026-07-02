@@ -43,6 +43,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Vipps',
         'Mollie_WC_Gateway_Mobilepay',
         'Mollie_WC_Gateway_Bizum',
+        'Mollie_WC_Gateway_Wero',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

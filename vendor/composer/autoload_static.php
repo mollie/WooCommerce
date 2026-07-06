@@ -364,6 +364,7 @@ class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
         'Mollie\\WooCommerce\\PaymentMethods\\Banktransfer' => __DIR__ . '/../..' . '/src/PaymentMethods/Banktransfer.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Belfius' => __DIR__ . '/../..' . '/src/PaymentMethods/Belfius.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Billie' => __DIR__ . '/../..' . '/src/PaymentMethods/Billie.php',
+        'Mollie\\WooCommerce\\PaymentMethods\\Billink' => __DIR__ . '/../..' . '/src/PaymentMethods/Billink.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Bizum' => __DIR__ . '/../..' . '/src/PaymentMethods/Bizum.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Blik' => __DIR__ . '/../..' . '/src/PaymentMethods/Blik.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Constants' => __DIR__ . '/../..' . '/src/PaymentMethods/Constants.php',

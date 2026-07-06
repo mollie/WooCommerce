@@ -301,6 +301,7 @@ return array(
     'Mollie\\WooCommerce\\PaymentMethods\\Banktransfer' => $baseDir . '/src/PaymentMethods/Banktransfer.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Belfius' => $baseDir . '/src/PaymentMethods/Belfius.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Billie' => $baseDir . '/src/PaymentMethods/Billie.php',
+    'Mollie\\WooCommerce\\PaymentMethods\\Billink' => $baseDir . '/src/PaymentMethods/Billink.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Bizum' => $baseDir . '/src/PaymentMethods/Bizum.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Blik' => $baseDir . '/src/PaymentMethods/Blik.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Constants' => $baseDir . '/src/PaymentMethods/Constants.php',

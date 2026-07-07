@@ -1,7 +1,9 @@
 ( function ( { jQuery, surchargeData } ) {
 	jQuery( function ( $ ) {
-		$( 'body' ).on( 'change', 'input[name="payment_method"]', function () {
-			$( 'body' ).trigger( 'update_checkout' );
+		$( 'body' ).on( 'change', 'input[name="payment_method"]', function ( e ) {
+			if ( e.originalEvent ) {
+				$( 'body' ).trigger( 'update_checkout' );
+			}
 		} );
 	} );
 	if ( ! surchargeData ) {

@@ -15,6 +15,7 @@ class RestApi
     private MollieOrderService $mollieOrderService;
     private LoggerInterface $logger;
     private WebhookTestService $webhookTestService;
+    private WebhookSecret $webhookSecret;
 
     /**
      * Constructor method for initializing the class with necessary dependencies.
@@ -24,11 +25,16 @@ class RestApi
      *
      * @return void
      */
-    public function __construct(MollieOrderService $mollieOrderService, LoggerInterface $logger, WebhookTestService $webhookTestService)
-    {
+    public function __construct(
+        MollieOrderService $mollieOrderService,
+        LoggerInterface $logger,
+        WebhookTestService $webhookTestService,
+        WebhookSecret $webhookSecret
+    ) {
         $this->mollieOrderService = $mollieOrderService;
         $this->logger = $logger;
         $this->webhookTestService = $webhookTestService;
+        $this->webhookSecret = $webhookSecret;
     }
 
     /**
@@ -41,13 +47,13 @@ class RestApi
      */
     public function registerRoutes()
     {
-        $this->getOrCreateWebhookSecret();
+        $this->webhookSecret->getOrCreate();
         register_rest_route(self::ROUTE_NAMESPACE, self::WEBHOOK_ROUTE, [
             [
                 'methods' => 'POST',
                 'callback' => [$this, 'callback'],
                 'permission_callback' => function (\WP_REST_Request $request) {
-                    if (!$this->checkWebhookSecret($request->get_param('mollie_webhook_secret'))) {
+                    if (!$this->webhookSecret->check($request->get_param('mollie_webhook_secret'))) {
                         return new \WP_Error('rest_forbidden', 'Invalid webhook secret.', ['status' => 401]);
                     }
                     return true;
@@ -58,24 +64,12 @@ class RestApi
 
     public function getOrCreateWebhookSecret(): string
     {
-        $secret = get_option('mollie_webhook_secret', '');
-        if (!$secret) {
-            $secret = wp_generate_password(32, false);
-            update_option('mollie_webhook_secret', $secret);
-        }
-        return $secret;
+        return $this->webhookSecret->getOrCreate();
     }
 
     public function checkWebhookSecret(?string $incoming): bool
     {
-        if (!$incoming) {
-            return false;
-        }
-        $stored = $this->getOrCreateWebhookSecret();
-        if (!$stored) {
-            return false;
-        }
-        return hash_equals($stored, $incoming);
+        return $this->webhookSecret->check($incoming);
     }
 
     /**

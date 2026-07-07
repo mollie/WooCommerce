@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Settings\Webhooks;
 
 use Mockery;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerceTests\TestCase;
 use Psr\Log\LoggerInterface;
 
+use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\when;
 
 /**
@@ -35,7 +37,12 @@ class WebhookTestServiceTest extends TestCase
         $this->apiHelper = Mockery::mock(Api::class);
         $this->settingsHelper = Mockery::mock(Settings::class);
         $this->logger = Mockery::mock(LoggerInterface::class);
-        $this->sut = new WebhookTestService($this->apiHelper, $this->settingsHelper, $this->logger);
+        $this->sut = new WebhookTestService(
+            $this->apiHelper,
+            $this->settingsHelper,
+            $this->logger,
+            new WebhookSecret()
+        );
     }
 
     /**
@@ -60,7 +67,7 @@ class WebhookTestServiceTest extends TestCase
         $apiHelper = $this->apiHelper;
         $settingsHelper = $this->settingsHelper;
         $logger = $this->logger;
-        $exposed = new class($apiHelper, $settingsHelper, $logger) extends WebhookTestService {
+        $exposed = new class($apiHelper, $settingsHelper, $logger, new WebhookSecret()) extends WebhookTestService {
             public function exposeGetWebhookUrl(string $testId): string
             {
                 return $this->getWebhookUrl($testId);
@@ -72,5 +79,42 @@ class WebhookTestServiceTest extends TestCase
 
         // Then
         self::assertStringContainsString('mollie_webhook_secret=' . $secret, $result);
+    }
+
+    /**
+     * @scenario When the mollie_webhook_secret option has never been generated, the test
+     * webhook URL must still contain a freshly generated secret rather than an empty one.
+     * @covers \Mollie\WooCommerce\Settings\Webhooks\WebhookTestService::getWebhookUrl
+     */
+    public function testGetWebhookUrlGeneratesSecretWhenOptionIsEmpty(): void
+    {
+        // Arrange
+        $generated = 'freshly-generated-32-char-secret';
+        when('get_option')->justReturn('');
+        when('wp_generate_password')->justReturn($generated);
+        expect('update_option')->once()->andReturn(true);
+        when('rest_url')->justReturn('https://example.com/wp-json/mollie/v1/webhook');
+        when('add_query_arg')->alias(static function (array $args, string $url): string {
+            $separator = strpos($url, '?') === false ? '?' : '&';
+            return $url . $separator . http_build_query($args);
+        });
+        when('wp_parse_url')->alias(static fn(string $url): array|false => parse_url($url));
+
+        $apiHelper = $this->apiHelper;
+        $settingsHelper = $this->settingsHelper;
+        $logger = $this->logger;
+        $exposed = new class($apiHelper, $settingsHelper, $logger, new WebhookSecret()) extends WebhookTestService {
+            public function exposeGetWebhookUrl(string $testId): string
+            {
+                return $this->getWebhookUrl($testId);
+            }
+        };
+
+        // When
+        $result = $exposed->exposeGetWebhookUrl('test_abc123');
+
+        // Then
+        self::assertStringContainsString('mollie_webhook_secret=' . $generated, $result);
+        self::assertStringNotContainsString('mollie_webhook_secret=&', $result);
     }
 }

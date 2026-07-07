@@ -7,12 +7,10 @@ namespace Mollie\WooCommerceTests\Unit\Payment\Webhooks;
 use Mockery;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerceTests\TestCase;
 use Psr\Log\LoggerInterface;
-
-use function Brain\Monkey\Functions\expect;
-use function Brain\Monkey\Functions\when;
 
 /**
  * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi
@@ -28,6 +26,9 @@ class RestApiTest extends TestCase
     /** @var Mockery\MockInterface&WebhookTestService */
     private $webhookTestService;
 
+    /** @var Mockery\MockInterface&WebhookSecret */
+    private $webhookSecret;
+
     private RestApi $sut;
 
     protected function setUp(): void
@@ -36,66 +37,54 @@ class RestApiTest extends TestCase
         $this->orderService = Mockery::mock(MollieOrderService::class);
         $this->logger = Mockery::mock(LoggerInterface::class);
         $this->webhookTestService = Mockery::mock(WebhookTestService::class);
-        $this->sut = new RestApi($this->orderService, $this->logger, $this->webhookTestService);
+        $this->webhookSecret = Mockery::mock(WebhookSecret::class);
+        $this->sut = new RestApi($this->orderService, $this->logger, $this->webhookTestService, $this->webhookSecret);
     }
 
     /**
-     * @scenario POST without mollie_webhook_secret returns HTTP 401
+     * @scenario checkWebhookSecret() delegates to the injected WebhookSecret
      * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::checkWebhookSecret
      */
-    public function testCheckWebhookSecretReturnsFalseWhenNoSecretProvided(): void
+    public function testCheckWebhookSecretDelegatesToWebhookSecret(): void
     {
-        when('get_option')->justReturn('stored-secret-that-is-exactly-32chars!');
+        $this->webhookSecret->shouldReceive('check')->once()->with('incoming-token')->andReturn(true);
 
-        $result = $this->sut->checkWebhookSecret(null);
-
-        self::assertFalse($result);
-    }
-
-    /**
-     * @scenario POST with incorrect mollie_webhook_secret returns HTTP 401
-     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::checkWebhookSecret
-     */
-    public function testCheckWebhookSecretReturnsFalseWhenWrongSecretProvided(): void
-    {
-        when('get_option')->justReturn('stored-secret-that-is-exactly-32chars!');
-
-        $result = $this->sut->checkWebhookSecret('wrong-token');
-
-        self::assertFalse($result);
-    }
-
-    /**
-     * @scenario POST with correct mollie_webhook_secret proceeds to callback
-     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::checkWebhookSecret
-     */
-    public function testCheckWebhookSecretReturnsTrueWhenCorrectSecretProvided(): void
-    {
-        $secret = 'stored-secret-that-is-exactly-32chars!';
-        when('get_option')->justReturn($secret);
-
-        $result = $this->sut->checkWebhookSecret($secret);
+        $result = $this->sut->checkWebhookSecret('incoming-token');
 
         self::assertTrue($result);
     }
 
     /**
-     * @scenario Stored secret is at least 32 chars produced by wp_generate_password(32, false)
+     * @scenario getOrCreateWebhookSecret() delegates to the injected WebhookSecret
      * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::getOrCreateWebhookSecret
      */
-    public function testGetOrCreateWebhookSecretGeneratesAndStoresSecretWhenOptionEmpty(): void
+    public function testGetOrCreateWebhookSecretDelegatesToWebhookSecret(): void
     {
-        // Arrange
-        $generated = 'abcdefghijklmnopqrstuvwxyz123456'; // 32 chars
-        when('get_option')->justReturn('');
-        when('wp_generate_password')->justReturn($generated);
-        expect('update_option')->once()->andReturn(true);
+        $this->webhookSecret->shouldReceive('getOrCreate')->once()->andReturn('the-secret');
 
-        // When
         $result = $this->sut->getOrCreateWebhookSecret();
 
-        // Then
-        self::assertSame($generated, $result);
-        self::assertGreaterThanOrEqual(32, strlen($result));
+        self::assertSame('the-secret', $result);
+    }
+
+    /**
+     * @scenario registerRoutes() ensures the secret exists before registering the route,
+     * so the route is never registered while the option is still empty.
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::registerRoutes
+     */
+    public function testRegisterRoutesEnsuresSecretExists(): void
+    {
+        $this->webhookSecret->shouldReceive('getOrCreate')->once()->andReturn('the-secret');
+
+        $registered = null;
+        \Brain\Monkey\Functions\when('register_rest_route')->alias(
+            function (string $namespace, string $route, array $args) use (&$registered) {
+                $registered = $args[0];
+            }
+        );
+
+        $this->sut->registerRoutes();
+
+        self::assertIsCallable($registered['permission_callback']);
     }
 }

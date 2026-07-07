@@ -4,6 +4,7 @@
 namespace Mollie\WooCommerceTests\Functional\Shared;
 
 
+use Mockery;
 use Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
@@ -150,5 +151,107 @@ class SurchargeHandlerTest extends TestCase
             ]
         );
         return $gateway;
+    }
+
+    /**
+     *
+     * GIVEN WPML String Translation is active and a translation exists
+     * WHEN surchargeFeeOption() reads the stored gatewayFeeLabel option
+     * THEN it registers the raw value with icl_register_string and returns the WPML-translated label
+     *
+     * @test
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function surchargeFeeOptionReturnsWpmlTranslatedLabelWhenAvailable()
+    {
+        require_once TEST_PATH . '/../overrides/wpml.php';
+
+        expect('get_option')
+            ->once()
+            ->with('mollie-payments-for-woocommerce_gatewayFeeLabel', Mockery::any())
+            ->andReturn('Gateway Fee');
+        expect('icl_register_string')
+            ->once()
+            ->with('mollie-payments-for-woocommerce', 'gatewayFeeLabel', 'Gateway Fee');
+        expect('apply_filters')
+            ->once()
+            ->with('wpml_translate_single_string', 'Gateway Fee', 'mollie-payments-for-woocommerce', 'gatewayFeeLabel')
+            ->andReturn('Kosten betaalmethode');
+
+        $testee = $this->buildTesteeMock(GatewaySurchargeHandler::class, [new Surcharge()], [])->getMock();
+
+        $this->assertSame('Kosten betaalmethode', $this->invokeProtectedMethod($testee, 'surchargeFeeOption'));
+    }
+
+    /**
+     *
+     * GIVEN WPML is not active (icl_register_string is unavailable)
+     * WHEN surchargeFeeOption() reads the stored gatewayFeeLabel option
+     * THEN it returns the raw option value unchanged, same as before the WPML integration
+     *
+     * @test
+     */
+    public function surchargeFeeOptionReturnsRawLabelWhenWpmlUnavailable()
+    {
+        expect('get_option')
+            ->once()
+            ->with('mollie-payments-for-woocommerce_gatewayFeeLabel', Mockery::any())
+            ->andReturn('Gateway Fee');
+        expect('apply_filters')
+            ->with('wpml_translate_single_string', 'Gateway Fee', 'mollie-payments-for-woocommerce', 'gatewayFeeLabel')
+            ->andReturnArg(1);
+
+        $testee = $this->buildTesteeMock(GatewaySurchargeHandler::class, [new Surcharge()], [])->getMock();
+
+        $this->assertSame('Gateway Fee', $this->invokeProtectedMethod($testee, 'surchargeFeeOption'));
+    }
+
+    /**
+     *
+     * GIVEN a fresh GatewaySurchargeHandler is constructed
+     * WHEN it registers its WordPress hooks
+     * THEN initializeGatewayFeeLabel is hooked on init (not after_setup_theme), so the WPML
+     * language context is available before the label is fetched and cached
+     *
+     * @test
+     */
+    public function initializeGatewayFeeLabelHookMovesFromAfterSetupThemeToInit()
+    {
+        $hooks = (object) ['actions' => []];
+        expect('add_action')
+            ->andReturnUsing(static function () use ($hooks): bool {
+                $args = func_get_args();
+                $hook = $args[0];
+                $callback = $args[1];
+                if (!isset($hooks->actions[$hook])) {
+                    $hooks->actions[$hook] = [];
+                }
+                $hooks->actions[$hook][] = $callback;
+                return true;
+            });
+
+        $testee = new GatewaySurchargeHandler(new Surcharge());
+
+        $this->assertArrayNotHasKey(
+            'after_setup_theme',
+            $hooks->actions,
+            'GatewaySurchargeHandler must not hook initializeGatewayFeeLabel on after_setup_theme anymore'
+        );
+        $this->assertArrayHasKey('init', $hooks->actions);
+        $this->assertContains(
+            [$testee, 'initializeGatewayFeeLabel'],
+            $hooks->actions['init'],
+            'initializeGatewayFeeLabel must be hooked on init'
+        );
+    }
+
+    private function invokeProtectedMethod($object, string $method, array $args = [])
+    {
+        $reflection = new \ReflectionMethod($object, $method);
+        if (PHP_VERSION_ID < 80100) {
+            $reflection->setAccessible(true);
+        }
+        return $reflection->invokeArgs($object, $args);
     }
 }

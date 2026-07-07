@@ -728,6 +728,7 @@ class Settings
                     $sanitizer = new \enshrined\svgSanitize\Sanitizer();
                     $sanitized = ($svgContent !== false) ? $sanitizer->sanitize($svgContent) : false;
                     if (!$sanitized) {
+                        $this->addFileUploadErrorNotice();
                         wp_delete_file($movefile['file']);
                         return;
                     }
@@ -737,7 +738,26 @@ class Settings
                 $gatewaySettings["iconFileUrl"] = $movefile['url'];
                 $gatewaySettings["iconFilePath"] = $movefile['file'];
                 update_option(sprintf('%s_settings', $gatewayId), $gatewaySettings);
+            } else {
+                $this->addFileUploadErrorNotice();
             }
         }
+    }
+
+    private function addFileUploadErrorNotice(): void
+    {
+        $notice = new AdminNotice();
+        $notice->addNotice(
+            'notice-error is-dismissible',
+            sprintf(
+            /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
+                esc_html__(
+                    '%1$sMollie Payments for WooCommerce%2$s Unable to save the file.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                '<strong>',
+                '</strong>'
+            )
+        );
     }
 }

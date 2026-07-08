@@ -44,6 +44,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Mobilepay',
         'Mollie_WC_Gateway_Bizum',
         'Mollie_WC_Gateway_Wero',
+        'Mollie_WC_Gateway_Billink',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

@@ -20,4 +20,5 @@ class Constants
     public const VOUCHER = 'voucher';
     public const BIZUM = 'bizum';
     public const WERO = 'wero';
+    public const BILLINK = 'billink';
 }

@@ -28,6 +28,10 @@ class MollieObject
     protected static $order;
     protected static $payment;
     protected static $shop_country;
+    /** @var array<string, Payment|null> */
+    protected static $paymentObjectCache = [];
+    /** @var array<string, Order|null> */
+    protected static $orderObjectCache = [];
     /**
      * @var Logger
      */
@@ -111,15 +115,21 @@ class MollieObject
      */
     public function getPaymentObjectPayment($payment_id, $test_mode = false, $use_cache = true)
     {
+        if ($use_cache && array_key_exists($payment_id, static::$paymentObjectCache)) {
+            return static::$paymentObjectCache[$payment_id];
+        }
+
+        $result = null;
         try {
             $test_mode = $this->settingsHelper->isTestModeEnabled();
             $apiKey = $this->settingsHelper->getApiKey();
-            return $this->apiHelper->getApiClient($apiKey)->payments->get($payment_id);
+            $result = $this->apiHelper->getApiClient($apiKey)->payments->get($payment_id);
         } catch (ApiException $apiException) {
             $this->logger->debug(__FUNCTION__ . sprintf(': Could not load payment %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $apiException->getMessage() . ' (' . get_class($apiException) . ')');
         }
 
-        return null;
+        static::$paymentObjectCache[$payment_id] = $result;
+        return $result;
     }
 
     /**
@@ -135,16 +145,22 @@ class MollieObject
     public function getPaymentObjectOrder($payment_id, $test_mode = false, $use_cache = true)
     {
         // TODO David: Duplicate, send to child class.
+        if ($use_cache && array_key_exists($payment_id, static::$orderObjectCache)) {
+            return static::$orderObjectCache[$payment_id];
+        }
+
+        $result = null;
         try {
             // Is test mode enabled?
             $test_mode = $this->settingsHelper->isTestModeEnabled();
             $apiKey = $this->settingsHelper->getApiKey();
-            return $this->apiHelper->getApiClient($apiKey)->orders->get($payment_id, [ "embed" => "payments" ]);
+            $result = $this->apiHelper->getApiClient($apiKey)->orders->get($payment_id, [ "embed" => "payments" ]);
         } catch (ApiException $e) {
             $this->logger->debug(__FUNCTION__ . sprintf(': Could not load order %s (', $payment_id) . ( $test_mode ? 'test' : 'live' ) . "): " . $e->getMessage() . ' (' . get_class($e) . ')');
         }
 
-        return null;
+        static::$orderObjectCache[$payment_id] = $result;
+        return $result;
     }
 
     /**

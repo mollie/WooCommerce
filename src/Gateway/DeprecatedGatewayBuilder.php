@@ -74,7 +74,8 @@ class DeprecatedGatewayBuilder
                     $mollieObject,
                     $paymentFactory,
                     $pluginId,
-                    $apiHelper
+                    $apiHelper,
+                    $webhookSecret
                 );
             } elseif ($paymentMethod->getProperty('Subscription')) {
                 $gateways[$key] = new MollieSubscriptionGatewayHandler(

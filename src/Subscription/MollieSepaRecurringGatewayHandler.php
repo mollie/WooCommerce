@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -44,7 +45,8 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
         MollieObject $mollieObject,
         PaymentFactory $paymentFactory,
         string $pluginId,
-        Api $apiHelper
+        Api $apiHelper,
+        WebhookSecret $webhookSecret
     ) {
 
         parent::__construct(
@@ -59,7 +61,8 @@ class MollieSepaRecurringGatewayHandler extends MollieSubscriptionGatewayHandler
             $mollieObject,
             $paymentFactory,
             $pluginId,
-            $apiHelper
+            $apiHelper,
+            $webhookSecret
         );
         $directDebitSettings = get_option('mollie_wc_gateway_directdebit_settings');
         if (isset($directDebitSettings['enabled']) && $directDebitSettings['enabled'] === 'yes') {

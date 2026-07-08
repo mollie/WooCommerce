@@ -237,7 +237,9 @@ class WebhookTestService
                 ],
             ];
 
-            $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($paymentData));
+            $loggablePaymentData = $paymentData;
+            $loggablePaymentData['webhookUrl'] = remove_query_arg('mollie_webhook_secret', $webhookUrl);
+            $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($loggablePaymentData));
 
             $payment = $this->apiHelper->getApiClient($apiKey)->payments->create($paymentData);
             $checkoutUrl = $payment->getCheckoutUrl();

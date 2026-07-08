@@ -520,6 +520,13 @@ class WP_Error
     }
 }
 
+class WP_REST_Request
+{
+    public function get_param($key)
+    {
+    }
+}
+
 
 /**
  * This class is a partial mock to create an order

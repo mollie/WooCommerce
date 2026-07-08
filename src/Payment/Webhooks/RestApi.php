@@ -47,7 +47,6 @@ class RestApi
      */
     public function registerRoutes()
     {
-        $this->webhookSecret->getOrCreate();
         register_rest_route(self::ROUTE_NAMESPACE, self::WEBHOOK_ROUTE, [
             [
                 'methods' => 'POST',
@@ -60,16 +59,6 @@ class RestApi
                 },
             ],
         ]);
-    }
-
-    public function getOrCreateWebhookSecret(): string
-    {
-        return $this->webhookSecret->getOrCreate();
-    }
-
-    public function checkWebhookSecret(?string $incoming): bool
-    {
-        return $this->webhookSecret->check($incoming);
     }
 
     /**

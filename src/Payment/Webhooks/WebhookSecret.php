@@ -8,10 +8,10 @@ namespace Mollie\WooCommerce\Payment\Webhooks;
  * Owns the mollie_webhook_secret option: generates it on first use and
  * verifies incoming values against it.
  *
- * Extracted so every place that needs the secret (registering the REST
- * route, building the webhook URL, building the test-webhook URL) goes
- * through getOrCreate() instead of reading the option directly - reading
- * it directly returns '' before the secret has ever been generated.
+ * Extracted so every place that needs the secret (building the webhook URL,
+ * building the test-webhook URL) goes through getOrCreate() instead of reading
+ * the option directly - reading it directly returns '' before the secret has
+ * ever been generated.
  */
 class WebhookSecret
 {

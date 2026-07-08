@@ -46,53 +46,6 @@ class RestApiTest extends TestCase
     }
 
     /**
-     * @scenario checkWebhookSecret() delegates to the injected WebhookSecret
-     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::checkWebhookSecret
-     */
-    public function testCheckWebhookSecretDelegatesToWebhookSecret(): void
-    {
-        $this->webhookSecret->shouldReceive('check')->once()->with('incoming-token')->andReturn(true);
-
-        $result = $this->sut->checkWebhookSecret('incoming-token');
-
-        self::assertTrue($result);
-    }
-
-    /**
-     * @scenario getOrCreateWebhookSecret() delegates to the injected WebhookSecret
-     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::getOrCreateWebhookSecret
-     */
-    public function testGetOrCreateWebhookSecretDelegatesToWebhookSecret(): void
-    {
-        $this->webhookSecret->shouldReceive('getOrCreate')->once()->andReturn('the-secret');
-
-        $result = $this->sut->getOrCreateWebhookSecret();
-
-        self::assertSame('the-secret', $result);
-    }
-
-    /**
-     * @scenario registerRoutes() ensures the secret exists before registering the route,
-     * so the route is never registered while the option is still empty.
-     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::registerRoutes
-     */
-    public function testRegisterRoutesEnsuresSecretExists(): void
-    {
-        $this->webhookSecret->shouldReceive('getOrCreate')->once()->andReturn('the-secret');
-
-        $registered = null;
-        \Brain\Monkey\Functions\when('register_rest_route')->alias(
-            function (string $namespace, string $route, array $args) use (&$registered) {
-                $registered = $args[0];
-            }
-        );
-
-        $this->sut->registerRoutes();
-
-        self::assertIsCallable($registered['permission_callback']);
-    }
-
-    /**
      * @scenario A request carrying a valid mollie_webhook_secret is authorised.
      * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::registerRoutes
      */
@@ -172,8 +125,6 @@ class RestApiTest extends TestCase
      */
     private function permissionCallback(): callable
     {
-        $this->webhookSecret->shouldReceive('getOrCreate')->andReturn('the-secret');
-
         $registered = null;
         when('register_rest_route')->alias(
             function (string $namespace, string $route, array $args) use (&$registered) {

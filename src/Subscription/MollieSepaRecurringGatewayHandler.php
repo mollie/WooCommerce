@@ -12,6 +12,7 @@ use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
@@ -27,9 +28,9 @@ class MollieSepaRecurringGatewayHandler extends \Mollie\WooCommerce\Subscription
     /**
      * AbstractSepaRecurring constructor.
      */
-    public function __construct(PaymentMethodI $directDebitPaymentMethod, PaymentMethodI $paymentMethod, OrderInstructionsManager $orderInstructionsService, MollieOrderService $mollieOrderService, Data $dataService, Logger $logger, NoticeInterface $notice, HttpResponse $httpResponse, Settings $settingsHelper, MollieObject $mollieObject, PaymentFactory $paymentFactory, string $pluginId, Api $apiHelper)
+    public function __construct(PaymentMethodI $directDebitPaymentMethod, PaymentMethodI $paymentMethod, OrderInstructionsManager $orderInstructionsService, MollieOrderService $mollieOrderService, Data $dataService, Logger $logger, NoticeInterface $notice, HttpResponse $httpResponse, Settings $settingsHelper, MollieObject $mollieObject, PaymentFactory $paymentFactory, string $pluginId, Api $apiHelper, WebhookSecret $webhookSecret)
     {
-        parent::__construct($paymentMethod, $orderInstructionsService, $mollieOrderService, $dataService, $logger, $notice, $httpResponse, $settingsHelper, $mollieObject, $paymentFactory, $pluginId, $apiHelper);
+        parent::__construct($paymentMethod, $orderInstructionsService, $mollieOrderService, $dataService, $logger, $notice, $httpResponse, $settingsHelper, $mollieObject, $paymentFactory, $pluginId, $apiHelper, $webhookSecret);
         $directDebitSettings = get_option('mollie_wc_gateway_directdebit_settings');
         if (isset($directDebitSettings['enabled']) && $directDebitSettings['enabled'] === 'yes') {
             $this->recurringMollieMethod = $directDebitPaymentMethod;

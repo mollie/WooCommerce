@@ -60,7 +60,7 @@ class DeprecatedGatewayBuilder
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa && isset($paymentMethods[Constants::DIRECTDEBIT])) {
                 $directDebit = $paymentMethods[Constants::DIRECTDEBIT];
-                $gateways[$key] = new MollieSepaRecurringGatewayHandler($directDebit, $paymentMethod, $orderInstructionsManager, $mollieOrderService, $data, $logger, $notice, $HttpResponseService, $settingsHelper, $mollieObject, $paymentFactory, $pluginId, $apiHelper);
+                $gateways[$key] = new MollieSepaRecurringGatewayHandler($directDebit, $paymentMethod, $orderInstructionsManager, $mollieOrderService, $data, $logger, $notice, $HttpResponseService, $settingsHelper, $mollieObject, $paymentFactory, $pluginId, $apiHelper, $webhookSecret);
             } elseif ($paymentMethod->getProperty('Subscription')) {
                 $gateways[$key] = new MollieSubscriptionGatewayHandler($paymentMethod, $orderInstructionsManager, $mollieOrderService, $data, $logger, $notice, $HttpResponseService, $settingsHelper, $mollieObject, $paymentFactory, $pluginId, $apiHelper, $webhookSecret);
             } else {

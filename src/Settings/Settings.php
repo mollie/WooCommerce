@@ -640,14 +640,15 @@ class Settings
         }
         $fileMimeType = finfo_file($finfo, $fileTempName);
         finfo_close($finfo);
-        $fileIsNotAnImage = !$fileMimeType || strpos($fileMimeType, 'image') === false;
+        $isSvg = strtolower($fileExtension) === 'svg';
+        $fileIsNotAnImage = !$isSvg && (!$fileMimeType || strpos($fileMimeType, 'image') === false);
         $invalidFileSize = $fileSize > 500000 || $fileSize === 0;
         $notice = new AdminNotice();
         if ($extensionNotAllowed || $fileIsNotAnImage) {
             $message = sprintf(
             /* translators: Placeholder 1: opening tag Placeholder 2: closing tag */
                 esc_html__(
-                    '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Only jpg, jpeg, png and gif files are allowed.',
+                    '%1$sMollie Payments for WooCommerce%2$s Unable to upload the file. Only jpg, jpeg, png, gif and svg files are allowed.',
                     'mollie-payments-for-woocommerce'
                 ),
                 '<strong>',

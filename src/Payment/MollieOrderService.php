@@ -78,12 +78,6 @@ class MollieOrderService
             return;
         }
 
-        // Webhook test by Mollie
-        if (isset($_GET['testByMollie'])) {
-            $this->logger->debug(__METHOD__ . ': Webhook tested by Mollie.', [true]);
-            return;
-        }
-
         if (empty($_GET['order_id']) || empty($_GET['key'])) {
             $this->httpResponse->setHttpResponseCode(400);
             $this->logger->debug(__METHOD__ . ":  No order ID or order key provided.");

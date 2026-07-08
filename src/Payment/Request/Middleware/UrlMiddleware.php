@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use WC_Order;
-
 /**
  * Class UrlMiddleware
  *
@@ -15,23 +13,20 @@ use WC_Order;
  *
  * @package Mollie\WooCommerce\Payment\Request\Middleware
  */
-class UrlMiddleware implements RequestMiddlewareInterface
+class UrlMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * @var string The plugin ID.
      */
     private $pluginId;
-
     /**
      * @var mixed The logger instance.
      */
     private $logger;
-
     /**
      * @var WebhookSecret
      */
     private $webhookSecret;
-
     /**
      * UrlMiddleware constructor.
      *
@@ -45,7 +40,6 @@ class UrlMiddleware implements RequestMiddlewareInterface
         $this->logger = $logger;
         $this->webhookSecret = $webhookSecret;
     }
-
     /**
      * Invoke the middleware.
      *
@@ -62,13 +56,11 @@ class UrlMiddleware implements RequestMiddlewareInterface
             $returnUrl = $gateway->get_return_url($order);
             $returnUrl = $this->getReturnUrl($order, $returnUrl);
             $webhookUrl = $this->getWebhookUrl($order, $gateway->id);
-
             $requestData['redirectUrl'] = $returnUrl;
             $requestData['webhookUrl'] = $webhookUrl;
         }
         return $next($requestData, $order, $context);
     }
-
     /**
      * Get the URL to return to on Mollie return.
      * Saves the return redirect and failed redirect, so we save the page language in case there is one set.
@@ -84,20 +76,12 @@ class UrlMiddleware implements RequestMiddlewareInterface
         $returnUrl = $this->asciiDomainName($returnUrl);
         $orderId = $order->get_id();
         $orderKey = $order->get_order_key();
-
         $onMollieReturn = 'onMollieReturn';
-        $returnUrl = $this->appendOrderArgumentsToUrl(
-            $orderId,
-            $orderKey,
-            $returnUrl,
-            $onMollieReturn
-        );
+        $returnUrl = $this->appendOrderArgumentsToUrl($orderId, $orderKey, $returnUrl, $onMollieReturn);
         $returnUrl = untrailingslashit($returnUrl);
-        $this->logger->debug(" Order {$orderId} returnUrl: {$returnUrl}", [true]);
-
+        $this->logger->debug(" Order {$orderId} returnUrl: {$returnUrl}", [\true]);
         return apply_filters($this->pluginId . '_return_url', $returnUrl, $order);
     }
-
     /**
      * Get the webhook URL.
      * For example 'http://mollie-wc.docker.myhost/wc-api/mollie_return/mollie_wc_gateway_bancontact/?order_id=89&key=wc_order_eFZyH8jki6fge'.
@@ -109,30 +93,20 @@ class UrlMiddleware implements RequestMiddlewareInterface
     public function getWebhookUrl(WC_Order $order, string $gatewayId): string
     {
         $webhookUrl = get_rest_url(null, RestApi::ROUTE_NAMESPACE . '/' . RestApi::WEBHOOK_ROUTE);
-        if (! $webhookUrl ||  ! wc_is_valid_url($webhookUrl) || apply_filters('mollie_wc_gateway_disable_rest_webhook', false)) {
+        if (!$webhookUrl || !wc_is_valid_url($webhookUrl) || apply_filters('mollie_wc_gateway_disable_rest_webhook', \false)) {
             $webhookUrl = WC()->api_request_url($gatewayId);
             $webhookUrl = untrailingslashit($webhookUrl);
             $webhookUrl = $this->asciiDomainName($webhookUrl);
             $orderId = $order->get_id();
             $orderKey = $order->get_order_key();
-            $webhookUrl = $this->appendOrderArgumentsToUrl(
-                $orderId,
-                $orderKey,
-                $webhookUrl
-            );
+            $webhookUrl = $this->appendOrderArgumentsToUrl($orderId, $orderKey, $webhookUrl);
             $webhookUrl = untrailingslashit($webhookUrl);
         } else {
-            $webhookUrl = add_query_arg(
-                ['mollie_webhook_secret' => $this->webhookSecret->getOrCreate()],
-                $webhookUrl
-            );
+            $webhookUrl = add_query_arg(['mollie_webhook_secret' => $this->webhookSecret->getOrCreate()], $webhookUrl);
         }
-
-        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$webhookUrl}", [true]);
-
+        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$webhookUrl}", [\true]);
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }
-
     /**
      * Convert the domain name in a URL to ASCII.
      *
@@ -143,21 +117,18 @@ class UrlMiddleware implements RequestMiddlewareInterface
     {
         $parsed = wp_parse_url($url);
         $scheme = isset($parsed['scheme']) ? $parsed['scheme'] : '';
-        $domain = isset($parsed['host']) ? $parsed['host'] : false;
+        $domain = isset($parsed['host']) ? $parsed['host'] : \false;
         $query = isset($parsed['query']) ? $parsed['query'] : '';
         $path = isset($parsed['path']) ? $parsed['path'] : '';
         if (!$domain) {
             return $url;
         }
-
         if (function_exists('idn_to_ascii')) {
             $domain = $this->idnEncodeDomain($domain);
             $url = $scheme . "://" . $domain . $path . '?' . $query;
         }
-
         return $url;
     }
-
     /**
      * Append order arguments to a URL.
      *
@@ -169,17 +140,9 @@ class UrlMiddleware implements RequestMiddlewareInterface
      */
     protected function appendOrderArgumentsToUrl(int $order_id, string $order_key, string $webhook_url, string $filterFlag = ''): string
     {
-        $webhook_url = add_query_arg(
-            [
-                'order_id' => $order_id,
-                'key' => $order_key,
-                'filter_flag' => $filterFlag,
-            ],
-            $webhook_url
-        );
+        $webhook_url = add_query_arg(['order_id' => $order_id, 'key' => $order_key, 'filter_flag' => $filterFlag], $webhook_url);
         return $webhook_url;
     }
-
     /**
      * Encode a domain name to ASCII.
      *
@@ -188,19 +151,8 @@ class UrlMiddleware implements RequestMiddlewareInterface
      */
     protected function idnEncodeDomain(string $domain): string
     {
-        if (
-            defined('IDNA_NONTRANSITIONAL_TO_ASCII')
-            && defined('INTL_IDNA_VARIANT_UTS46')
-        ) {
-            $domain = idn_to_ascii(
-                $domain,
-                IDNA_NONTRANSITIONAL_TO_ASCII,
-                INTL_IDNA_VARIANT_UTS46
-            ) ? idn_to_ascii(
-                $domain,
-                IDNA_NONTRANSITIONAL_TO_ASCII,
-                INTL_IDNA_VARIANT_UTS46
-            ) : $domain;
+        if (defined('IDNA_NONTRANSITIONAL_TO_ASCII') && defined('INTL_IDNA_VARIANT_UTS46')) {
+            $domain = idn_to_ascii($domain, \IDNA_NONTRANSITIONAL_TO_ASCII, \INTL_IDNA_VARIANT_UTS46) ? idn_to_ascii($domain, \IDNA_NONTRANSITIONAL_TO_ASCII, \INTL_IDNA_VARIANT_UTS46) : $domain;
         } else {
             $domain = idn_to_ascii($domain) ? idn_to_ascii($domain) : $domain;
         }

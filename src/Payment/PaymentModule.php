@@ -86,7 +86,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         add_action('woocommerce_api_mollie_return', function () use ($container) {
             $this->onMollieReturn($container);
         }, 10, 1);
-        add_action('template_redirect', function () use ($container) {
+        add_action('init', function () use ($container) {
             $this->mollieReturnRedirect($container);
         });
 

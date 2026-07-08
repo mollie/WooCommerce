@@ -7,6 +7,7 @@ use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\SDK\Api;
@@ -43,6 +44,8 @@ class DeprecatedGatewayBuilder
         $paymentFactory = $container->get(PaymentFactory::class);
         assert($paymentFactory instanceof PaymentFactory);
         $pluginId = $container->get('shared.plugin_id');
+        $webhookSecret = $container->get(WebhookSecret::class);
+        assert($webhookSecret instanceof WebhookSecret);
         $gateways = [];
         if (empty($paymentMethods)) {
             return $gateways;
@@ -86,7 +89,8 @@ class DeprecatedGatewayBuilder
                     $mollieObject,
                     $paymentFactory,
                     $pluginId,
-                    $apiHelper
+                    $apiHelper,
+                    $webhookSecret
                 );
             } else {
                 $gateways[$key] = new MolliePaymentGatewayHandler(

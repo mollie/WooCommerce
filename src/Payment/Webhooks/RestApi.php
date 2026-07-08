@@ -15,6 +15,7 @@ class RestApi
     private MollieOrderService $mollieOrderService;
     private LoggerInterface $logger;
     private WebhookTestService $webhookTestService;
+    private WebhookSecret $webhookSecret;
 
     /**
      * Constructor method for initializing the class with necessary dependencies.
@@ -24,11 +25,16 @@ class RestApi
      *
      * @return void
      */
-    public function __construct(MollieOrderService $mollieOrderService, LoggerInterface $logger, WebhookTestService $webhookTestService)
-    {
+    public function __construct(
+        MollieOrderService $mollieOrderService,
+        LoggerInterface $logger,
+        WebhookTestService $webhookTestService,
+        WebhookSecret $webhookSecret
+    ) {
         $this->mollieOrderService = $mollieOrderService;
         $this->logger = $logger;
         $this->webhookTestService = $webhookTestService;
+        $this->webhookSecret = $webhookSecret;
     }
 
     /**
@@ -41,13 +47,29 @@ class RestApi
      */
     public function registerRoutes()
     {
+        $this->webhookSecret->getOrCreate();
         register_rest_route(self::ROUTE_NAMESPACE, self::WEBHOOK_ROUTE, [
             [
                 'methods' => 'POST',
                 'callback' => [$this, 'callback'],
-                'permission_callback' => '__return_true',
+                'permission_callback' => function (\WP_REST_Request $request) {
+                    if (!$this->webhookSecret->check($request->get_param('mollie_webhook_secret'))) {
+                        return new \WP_Error('rest_forbidden', 'Invalid webhook secret.', ['status' => 401]);
+                    }
+                    return true;
+                },
             ],
         ]);
+    }
+
+    public function getOrCreateWebhookSecret(): string
+    {
+        return $this->webhookSecret->getOrCreate();
+    }
+
+    public function checkWebhookSecret(?string $incoming): bool
+    {
+        return $this->webhookSecret->check($incoming);
     }
 
     /**

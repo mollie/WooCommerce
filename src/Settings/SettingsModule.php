@@ -10,6 +10,7 @@ use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Notice\AdminNotice;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerce\Shared\Data;
@@ -118,10 +119,14 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 $logger = $container->get(Logger::class);
                 assert($logger instanceof Logger);
 
+                $webhookSecret = $container->get(WebhookSecret::class);
+                assert($webhookSecret instanceof WebhookSecret);
+
                 return new WebhookTestService(
                     $apiHelper,
                     $settingsHelper,
-                    $logger
+                    $logger,
+                    $webhookSecret
                 );
             },
         ];

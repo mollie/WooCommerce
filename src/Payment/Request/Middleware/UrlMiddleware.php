@@ -101,10 +101,10 @@ class UrlMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\Re
             $orderKey = $order->get_order_key();
             $webhookUrl = $this->appendOrderArgumentsToUrl($orderId, $orderKey, $webhookUrl);
             $webhookUrl = untrailingslashit($webhookUrl);
-        } else {
-            $webhookUrl = add_query_arg(['mollie_webhook_secret' => $this->webhookSecret->getOrCreate()], $webhookUrl);
         }
-        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$webhookUrl}", [\true]);
+        $webhookUrl = add_query_arg(['mollie_webhook_secret' => $this->webhookSecret->getOrCreate()], $webhookUrl);
+        $loggableUrl = remove_query_arg('mollie_webhook_secret', $webhookUrl);
+        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$loggableUrl}", [\true]);
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }
     /**

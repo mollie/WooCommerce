@@ -141,7 +141,9 @@ class WebhookTestService
             $webhookUrl = $this->getWebhookUrl($testId);
             $returnUrl = admin_url('admin.php?page=wc-settings&tab=mollie_settings&section=mollie_advanced');
             $paymentData = ['amount' => ['currency' => get_woocommerce_currency(), 'value' => '0.01'], 'description' => sprintf(__('Webhook Test - %s', 'mollie-payments-for-woocommerce'), $testId), 'redirectUrl' => $returnUrl, 'webhookUrl' => $webhookUrl, 'metadata' => ['webhook_test' => \true, 'test_id' => $testId]];
-            $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($paymentData));
+            $loggablePaymentData = $paymentData;
+            $loggablePaymentData['webhookUrl'] = remove_query_arg('mollie_webhook_secret', $webhookUrl);
+            $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($loggablePaymentData));
             $payment = $this->apiHelper->getApiClient($apiKey)->payments->create($paymentData);
             $checkoutUrl = $payment->getCheckoutUrl();
             $this->logger->debug(__METHOD__ . ": Test payment created - ID: {$payment->id}, Checkout URL: {$checkoutUrl}");

@@ -464,6 +464,7 @@ class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
         'Mollie\\WooCommerce\\Payment\\Request\\Strategies\\RequestStrategyInterface' => __DIR__ . '/../..' . '/src/Payment/Request/Strategies/RequestStrategyInterface.php',
         'Mollie\\WooCommerce\\Payment\\Webhooks\\RestApi' => __DIR__ . '/../..' . '/src/Payment/Webhooks/RestApi.php',
         'Mollie\\WooCommerce\\Payment\\Webhooks\\WebhookHandler' => __DIR__ . '/../..' . '/src/Payment/Webhooks/WebhookHandler.php',
+        'Mollie\\WooCommerce\\Payment\\Webhooks\\WebhookSecret' => __DIR__ . '/../..' . '/src/Payment/Webhooks/WebhookSecret.php',
         'Mollie\\WooCommerce\\Privacy\\PrivacyModule' => __DIR__ . '/../..' . '/src/Privacy/PrivacyModule.php',
         'Mollie\\WooCommerce\\SDK\\Api' => __DIR__ . '/../..' . '/src/SDK/Api.php',
         'Mollie\\WooCommerce\\SDK\\CouldNotConnectToMollie' => __DIR__ . '/../..' . '/src/SDK/CouldNotConnectToMollie.php',

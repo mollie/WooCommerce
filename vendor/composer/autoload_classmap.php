@@ -401,6 +401,7 @@ return array(
     'Mollie\\WooCommerce\\Payment\\Request\\Strategies\\RequestStrategyInterface' => $baseDir . '/src/Payment/Request/Strategies/RequestStrategyInterface.php',
     'Mollie\\WooCommerce\\Payment\\Webhooks\\RestApi' => $baseDir . '/src/Payment/Webhooks/RestApi.php',
     'Mollie\\WooCommerce\\Payment\\Webhooks\\WebhookHandler' => $baseDir . '/src/Payment/Webhooks/WebhookHandler.php',
+    'Mollie\\WooCommerce\\Payment\\Webhooks\\WebhookSecret' => $baseDir . '/src/Payment/Webhooks/WebhookSecret.php',
     'Mollie\\WooCommerce\\Privacy\\PrivacyModule' => $baseDir . '/src/Privacy/PrivacyModule.php',
     'Mollie\\WooCommerce\\SDK\\Api' => $baseDir . '/src/SDK/Api.php',
     'Mollie\\WooCommerce\\SDK\\CouldNotConnectToMollie' => $baseDir . '/src/SDK/CouldNotConnectToMollie.php',

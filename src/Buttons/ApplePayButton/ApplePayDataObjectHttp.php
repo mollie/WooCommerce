@@ -55,6 +55,10 @@ class ApplePayDataObjectHttp
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var string|null
+     */
+    protected $callerPage = null;
 
     /**
      * ApplePayDataObjectHttp constructor.

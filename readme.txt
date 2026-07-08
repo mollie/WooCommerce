@@ -233,6 +233,26 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 = 8.1.8 - 01-07-2026 =
 * Added - Mollie incentive campaign
 
+= 8.1.9 - 20-07-2026 =
+* Added - New payment method - Billink
+* Added - New payment method - Wero
+* Added - Notification when a gateway logo upload is declined
+* Added - Privacy policy text
+* Fixed - PayPal Payments Fastlane conflict
+* Fixed - Unwanted frame displayed around the PayPal button
+* Fixed - Gateway fee label not translatable via WPML
+* Fixed - Decimal product quantities causing Mollie API error
+* Fixed - Unnecessary checkout refresh triggered when no surcharge applies
+* Fixed - Order Received page being processed twice
+* Fixed - Missing margin for PayPal and Apple Pay buttons on the Product page
+* Fixed - Margin issue for KBC/CBC payment button on Classic Checkout
+* Fixed - Infinite order note loop for cancelled or open Bancontact/TWINT payments
+* Fixed - Top/bottom margins on credit card fields
+* Fixed - SVG gateway logo uploads silently rejected due to a gap in the file type check
+* Fixed - Repeated identical API calls on the order received page causing timeouts and a white screen
+* Fixed - PHP warning and deprecation notice in Apple Pay button
+* Security - Strengthened webhook request authentication
+
 = 8.1.7 - 15-06-2026 =
 * Fixed - Error exporting invoices in WooCommerce
 * Fixed - Undefined array key warning in Mollie PayPal button due to malformed color setting

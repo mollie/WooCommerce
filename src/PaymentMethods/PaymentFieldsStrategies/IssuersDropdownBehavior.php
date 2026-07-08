@@ -72,7 +72,7 @@ trait IssuersDropdownBehavior
         $selectedIssuer
     ): string {
 
-        $html = '<select name="' . $gateway->pluginId() . '_issuer_'
+        $html = '<select class="mollie-issuer-select" name="' . $gateway->pluginId() . '_issuer_'
             . $gateway->id . '">';
         $html .= $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         $html .= '</select>';

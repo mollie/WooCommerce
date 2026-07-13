@@ -121,14 +121,14 @@ class UrlMiddleware implements RequestMiddlewareInterface
                 $webhookUrl
             );
             $webhookUrl = untrailingslashit($webhookUrl);
-        } else {
-            $webhookUrl = add_query_arg(
-                ['mollie_webhook_secret' => $this->webhookSecret->getOrCreate()],
-                $webhookUrl
-            );
         }
+        $webhookUrl = add_query_arg(
+            ['mollie_webhook_secret' => $this->webhookSecret->getOrCreate()],
+            $webhookUrl
+        );
 
-        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$webhookUrl}", [true]);
+        $loggableUrl = remove_query_arg('mollie_webhook_secret', $webhookUrl);
+        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$loggableUrl}", [true]);
 
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }

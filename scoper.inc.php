@@ -71,6 +71,8 @@ return [
     ]),     // list<string|regex>
     'exclude-functions' => array_merge($wp_functions, [
         '/^wc/',
+        '/^icl_/',
+        '/^wpml_/',
     ]), // list<string|regex>
 
     'expose-global-constants' => false,   // bool

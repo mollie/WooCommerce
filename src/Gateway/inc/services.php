@@ -125,6 +125,14 @@ return static function (): array {
                 return $method['id'] !== Constants::BILLINK;
             });
         }
+        $settings = $container->get('settings.settings_helper');
+        \assert($settings instanceof Settings);
+        if ($settings->isOrderApiSetting()) {
+            $paymentApiOnlyMethods = [Constants::WERO, Constants::BILLINK];
+            $availablePaymentMethods = \array_filter($availablePaymentMethods, static function ($method) use ($paymentApiOnlyMethods) {
+                return !\in_array($method['id'], $paymentApiOnlyMethods, \true);
+            });
+        }
         return $availablePaymentMethods;
     }, IconFactory::class => static function (ContainerInterface $container): IconFactory {
         $pluginUrl = $container->get('shared.plugin_url');

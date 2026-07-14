@@ -8,7 +8,7 @@ namespace Mollie;
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
  * Version: 8.1.7-beta3
- * SHA: 92b85bd461e0ab750c4737c035b24c3c0cde5b88
+ * SHA: 6e34821330b0dd908287fd4a73368b425fbed47c
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3

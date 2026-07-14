@@ -239,7 +239,7 @@ class GatewaySurchargeHandler
     protected function surchargeFeeOption()
     {
         $rawLabel = get_option('mollie-payments-for-woocommerce_gatewayFeeLabel', $this->surcharge->defaultFeeLabel());
-        if (function_exists('Mollie\icl_register_string')) {
+        if (function_exists('icl_register_string')) {
             icl_register_string('mollie-payments-for-woocommerce', 'gatewayFeeLabel', $rawLabel);
         }
         return apply_filters('wpml_translate_single_string', $rawLabel, 'mollie-payments-for-woocommerce', 'gatewayFeeLabel');

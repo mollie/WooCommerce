@@ -1,9 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Mollie;
 
-use Inpsyde\Modularity\Module\Module;
-use Inpsyde\PaymentGateway\PaymentGatewayModule;
+use Mollie\Inpsyde\Modularity\Module\Module;
+use Mollie\Inpsyde\PaymentGateway\PaymentGatewayModule;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Assets\AssetsModule;
 use Mollie\WooCommerce\Components\ComponentsModule;
@@ -19,27 +20,6 @@ use Mollie\WooCommerce\Shared\SharedModule;
 use Mollie\WooCommerce\Subscription\SubscriptionModule;
 use Mollie\WooCommerce\Tracks\TracksModule;
 use Mollie\WooCommerce\Uninstall\UninstallModule;
-
-return /**
- * @return iterable<Module>
- */
-    static function (): iterable {
-        return [
-            new ActivationModule(),
-            new NoticeModule(),
-            new SharedModule(),
-            new PaymentGatewayModule(),
-            new SDKModule(),
-            new SettingsModule(),
-            new LogModule('mollie-payments-for-woocommerce-'),
-            new AssetsModule(),
-            new GatewayModule(),
-            new VoucherModule(),
-            new PaymentModule(),
-            new SubscriptionModule(),
-            new MerchantCaptureModule(),
-            new ComponentsModule(),
-            new TracksModule(),
-            new UninstallModule(),
-        ];
-    };
+return static function (): iterable {
+    return [new ActivationModule(), new NoticeModule(), new SharedModule(), new PaymentGatewayModule(), new SDKModule(), new SettingsModule(), new LogModule('mollie-payments-for-woocommerce-'), new AssetsModule(), new GatewayModule(), new VoucherModule(), new PaymentModule(), new SubscriptionModule(), new MerchantCaptureModule(), new ComponentsModule(), new TracksModule(), new UninstallModule()];
+};

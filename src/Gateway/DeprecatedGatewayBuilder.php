@@ -15,9 +15,8 @@ use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Subscription\MollieSepaRecurringGatewayHandler;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
-use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface as Logger;
-
+use Mollie\Psr\Container\ContainerInterface;
+use Mollie\Psr\Log\LoggerInterface as Logger;
 class DeprecatedGatewayBuilder
 {
     public function instantiatePaymentMethodGateways(ContainerInterface $container): array
@@ -51,56 +50,18 @@ class DeprecatedGatewayBuilder
         //we are using only the methods that are available and after feature flag
         foreach ($paymentMethods as $paymentMethod) {
             $paymentMethodId = $paymentMethod->getIdFromConfig();
-            if (! in_array($paymentMethodId, $enabledAtMollie, true)) {
+            if (!in_array($paymentMethodId, $enabledAtMollie, \true)) {
                 continue;
             }
             $isSepa = $paymentMethod->getProperty('SEPA');
             $key = 'mollie_wc_gateway_' . $paymentMethodId;
             if ($isSepa && isset($paymentMethods[Constants::DIRECTDEBIT])) {
                 $directDebit = $paymentMethods[Constants::DIRECTDEBIT];
-                $gateways[$key] = new MollieSepaRecurringGatewayHandler(
-                    $directDebit,
-                    $paymentMethod,
-                    $orderInstructionsManager,
-                    $mollieOrderService,
-                    $data,
-                    $logger,
-                    $notice,
-                    $HttpResponseService,
-                    $settingsHelper,
-                    $mollieObject,
-                    $paymentFactory,
-                    $pluginId,
-                    $apiHelper
-                );
+                $gateways[$key] = new MollieSepaRecurringGatewayHandler($directDebit, $paymentMethod, $orderInstructionsManager, $mollieOrderService, $data, $logger, $notice, $HttpResponseService, $settingsHelper, $mollieObject, $paymentFactory, $pluginId, $apiHelper);
             } elseif ($paymentMethod->getProperty('Subscription')) {
-                $gateways[$key] = new MollieSubscriptionGatewayHandler(
-                    $paymentMethod,
-                    $orderInstructionsManager,
-                    $mollieOrderService,
-                    $data,
-                    $logger,
-                    $notice,
-                    $HttpResponseService,
-                    $settingsHelper,
-                    $mollieObject,
-                    $paymentFactory,
-                    $pluginId,
-                    $apiHelper
-                );
+                $gateways[$key] = new MollieSubscriptionGatewayHandler($paymentMethod, $orderInstructionsManager, $mollieOrderService, $data, $logger, $notice, $HttpResponseService, $settingsHelper, $mollieObject, $paymentFactory, $pluginId, $apiHelper);
             } else {
-                $gateways[$key] = new MolliePaymentGatewayHandler(
-                    $paymentMethod,
-                    $orderInstructionsManager,
-                    $mollieOrderService,
-                    $data,
-                    $logger,
-                    $notice,
-                    $HttpResponseService,
-                    $mollieObject,
-                    $paymentFactory,
-                    $pluginId
-                );
+                $gateways[$key] = new \Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler($paymentMethod, $orderInstructionsManager, $mollieOrderService, $data, $logger, $notice, $HttpResponseService, $mollieObject, $paymentFactory, $pluginId);
             }
         }
         return $gateways;

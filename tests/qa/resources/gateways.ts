@@ -469,7 +469,7 @@ const voucher: MollieGateway = {
 	minAmount: '1.00',
 	slug: 'voucher',
 	name: 'Vouchers',
-	availableForApiMethods: [ 'order' ],
+	availableForApiMethods: [ 'payment', 'order' ],
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_voucher',

@@ -230,9 +230,6 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.1.8 - 01-07-2026 =
-* Added - Mollie incentive campaign
-
 = 8.1.9 - 20-07-2026 =
 * Added - New payment method - Billink
 * Added - New payment method - Wero
@@ -251,7 +248,10 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 * Fixed - SVG gateway logo uploads silently rejected due to a gap in the file type check
 * Fixed - Repeated identical API calls on the order received page causing timeouts and a white screen
 * Fixed - PHP warning and deprecation notice in Apple Pay button
-* Security - Strengthened webhook request authentication
+* Fixed - Strengthened webhook request authentication
+
+= 8.1.8 - 01-07-2026 =
+* Added - Mollie incentive campaign
 
 = 8.1.7 - 15-06-2026 =
 * Fixed - Error exporting invoices in WooCommerce

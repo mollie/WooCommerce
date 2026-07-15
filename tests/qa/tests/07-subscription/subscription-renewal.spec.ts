@@ -16,7 +16,6 @@ test.beforeAll( async ( { utils, wooCommerceApi } ) => {
 	} );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
-	await wooCommerceApi.deleteAllOrders();
 } );
 
 for ( const testOrder of subscriptionRenewal ) {

@@ -45,6 +45,10 @@ class GatewaySurchargeHandler
 
     public function renderHiddenOrderKeyFields($item_id, $item, $order, $bool = false)
     {
+        if (!is_callable([$order, 'get_order_key'])) {
+            return;
+        }
+
         $orderKey = $order->get_order_key();
         $nonce = wp_create_nonce('mollie_surcharge_' . $orderKey);
         ?>

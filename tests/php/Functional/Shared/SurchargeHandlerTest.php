@@ -91,6 +91,25 @@ class SurchargeHandlerTest extends TestCase
         $testee->updateSurchargeOrderPay();
     }
 
+    /**
+     *
+     * GIVEN the woocommerce_order_item_meta_end hook fires with an object that doesn't
+     * implement get_order_key() (e.g. WC_Order_Refund during PDF credit note generation)
+     * WHEN renderHiddenOrderKeyFields is invoked with that object as $order
+     * THEN it returns without fatally erroring and without rendering any output
+     *
+     * @test
+     */
+    public function rendersNothingWhenOrderDoesNotSupportGetOrderKey()
+    {
+        $testee = new GatewaySurchargeHandler(new Surcharge());
+        $orderWithoutOrderKey = new \stdClass();
+
+        $testee->renderHiddenOrderKeyFields(1, null, $orderWithoutOrderKey, false);
+
+        $this->expectOutputString('');
+    }
+
     protected function cartMock()
     {
         return $this->createConfiguredMock(

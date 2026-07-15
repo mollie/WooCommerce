@@ -563,6 +563,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         }
         $renewal_order->delete_meta_data('_mollie_payment_id');
         $renewal_order->delete_meta_data('_mollie_cancelled_payment_id');
+        $renewal_order->delete_meta_data('_mollie_order_id');
         $renewal_order->save();
         return $renewal_order;
     }

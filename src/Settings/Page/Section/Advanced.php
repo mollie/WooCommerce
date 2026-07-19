@@ -87,6 +87,8 @@ class Advanced extends AbstractSection
                     'pl_PL' => __('Polish', 'mollie-payments-for-woocommerce'),
                     'lv_LV' => __('Latvian', 'mollie-payments-for-woocommerce'),
                     'lt_LT' => __('Lithuanian', 'mollie-payments-for-woocommerce'),
+                    'cs_CZ' => __('Czech', 'mollie-payments-for-woocommerce'),
+                    'sk_SK' => __('Slovak', 'mollie-payments-for-woocommerce'),
                 ],
                 'desc' => sprintf(
                 /* translators: Placeholder 1: link tag Placeholder 2: closing tag */

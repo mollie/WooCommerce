@@ -19,7 +19,7 @@ class GatewaySurchargeHandler
     public function __construct(Surcharge $surcharge)
     {
         $this->surcharge = $surcharge;
-        add_action('after_setup_theme', [$this, 'initializeGatewayFeeLabel']);
+        add_action('init', [$this, 'initializeGatewayFeeLabel']);
         add_action('init', [$this, 'surchargeActions']);
     }
 
@@ -45,6 +45,10 @@ class GatewaySurchargeHandler
 
     public function renderHiddenOrderKeyFields($item_id, $item, $order, $bool = false)
     {
+        if (!is_callable([$order, 'get_order_key'])) {
+            return;
+        }
+
         $orderKey = $order->get_order_key();
         $nonce = wp_create_nonce('mollie_surcharge_' . $orderKey);
         ?>
@@ -295,9 +299,13 @@ class GatewaySurchargeHandler
 
     protected function surchargeFeeOption()
     {
-        return get_option(
+        $rawLabel = get_option(
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
             $this->surcharge->defaultFeeLabel()
         );
+        if (function_exists('icl_register_string')) {
+            icl_register_string('mollie-payments-for-woocommerce', 'gatewayFeeLabel', $rawLabel);
+        }
+        return apply_filters('wpml_translate_single_string', $rawLabel, 'mollie-payments-for-woocommerce', 'gatewayFeeLabel');
     }
 }

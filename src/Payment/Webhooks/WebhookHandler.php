@@ -266,6 +266,13 @@ class WebhookHandler
             return;
         }
 
+        if ($mollieObject->getCancelledMolliePaymentId($orderId) === $payment->id) {
+            $this->logger->debug(
+                __METHOD__ . " payment {$payment->id} already processed as cancelled for order {$orderId}, skipping."
+            );
+            return;
+        }
+
         $mollieObject->unsetActiveMolliePayment($orderId, $payment->id);
         $mollieObject->setCancelledMolliePaymentId($orderId, $payment->id);
 

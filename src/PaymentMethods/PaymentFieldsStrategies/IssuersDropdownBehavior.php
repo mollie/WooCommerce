@@ -44,7 +44,7 @@ trait IssuersDropdownBehavior
      */
     public function issuersDropdownMarkup($gateway, $issuers, $selectedIssuer): string
     {
-        $html = '<select name="' . $gateway->pluginId() . '_issuer_' . $gateway->id . '">';
+        $html = '<select class="mollie-issuer-select" name="' . $gateway->pluginId() . '_issuer_' . $gateway->id . '">';
         $html .= $this->dropdownOptions($gateway, $issuers, $selectedIssuer);
         $html .= '</select>';
         return $html;

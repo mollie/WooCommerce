@@ -4,6 +4,7 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use WC_Order;
 /**
  * Class UrlMiddleware
@@ -23,15 +24,21 @@ class UrlMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\Re
      */
     private $logger;
     /**
+     * @var WebhookSecret
+     */
+    private $webhookSecret;
+    /**
      * UrlMiddleware constructor.
      *
      * @param string $pluginId The plugin ID.
      * @param mixed $logger The logger instance.
+     * @param WebhookSecret $webhookSecret Provides the webhook secret.
      */
-    public function __construct($pluginId, $logger)
+    public function __construct($pluginId, $logger, WebhookSecret $webhookSecret)
     {
         $this->pluginId = $pluginId;
         $this->logger = $logger;
+        $this->webhookSecret = $webhookSecret;
     }
     /**
      * Invoke the middleware.
@@ -95,7 +102,9 @@ class UrlMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\Re
             $webhookUrl = $this->appendOrderArgumentsToUrl($orderId, $orderKey, $webhookUrl);
             $webhookUrl = untrailingslashit($webhookUrl);
         }
-        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$webhookUrl}", [\true]);
+        $webhookUrl = add_query_arg(['mollie_webhook_secret' => $this->webhookSecret->getOrCreate()], $webhookUrl);
+        $loggableUrl = remove_query_arg('mollie_webhook_secret', $webhookUrl);
+        $this->logger->debug(" Order {$order->get_id()} webhookUrl: {$loggableUrl}", [\true]);
         return apply_filters($this->pluginId . '_webhook_url', $webhookUrl, $order);
     }
     /**

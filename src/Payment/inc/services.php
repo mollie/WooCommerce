@@ -31,6 +31,7 @@ use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\Payment\Request\Strategies\RequestStrategyInterface;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
@@ -89,7 +90,7 @@ return static function (): array {
     }, AddressMiddleware::class => static function (): AddressMiddleware {
         return new AddressMiddleware();
     }, UrlMiddleware::class => static function (ContainerInterface $container): UrlMiddleware {
-        return new UrlMiddleware($container->get('shared.plugin_id'), $container->get(Logger::class));
+        return new UrlMiddleware($container->get('shared.plugin_id'), $container->get(Logger::class), $container->get(WebhookSecret::class));
     }, SelectedIssuerMiddleware::class => static function (ContainerInterface $container): SelectedIssuerMiddleware {
         $pluginId = $container->get('shared.plugin_id');
         return new SelectedIssuerMiddleware($pluginId);
@@ -121,10 +122,12 @@ return static function (): array {
         $middlewares = [$container->get(CaptureModeMiddleware::class), $issuer, $url, $address, $lines, $sequenceType, $cardToken, $applePayToken, $storeCustomer, $paymentDescription, $addCustomRequestFields];
         $middlewareHandler = new MiddlewareHandler($middlewares);
         return new PaymentRequestStrategy($dataHelper, $settingsHelper, $middlewareHandler);
+    }, WebhookSecret::class => static function (): WebhookSecret {
+        return new WebhookSecret();
     }, RestApi::class => static function (ContainerInterface $container): RestApi {
         $webhookTestService = $container->get(WebhookTestService::class);
         \assert($webhookTestService instanceof WebhookTestService);
-        return new RestApi($container->get(MollieOrderService::class), $container->get(Logger::class), $webhookTestService);
+        return new RestApi($container->get(MollieOrderService::class), $container->get(Logger::class), $webhookTestService, $container->get(WebhookSecret::class));
     }, WebhookHandler::class => static function (ContainerInterface $c): WebhookHandler {
         return new WebhookHandler($c->get(Logger::class), $c->get('settings.settings_helper'), $c->get('shared.plugin_id'), $c->get('settings.data_helper'));
     }];

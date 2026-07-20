@@ -166,6 +166,10 @@ class WebhookHandler
             $this->logger->debug(__METHOD__ . " called for payment {$orderId} has final status. Nothing to be done");
             return;
         }
+        if ($mollieObject->getCancelledMolliePaymentId($orderId) === $payment->id) {
+            $this->logger->debug(__METHOD__ . " payment {$payment->id} already processed as cancelled for order {$orderId}, skipping.");
+            return;
+        }
         $mollieObject->unsetActiveMolliePayment($orderId, $payment->id);
         $mollieObject->setCancelledMolliePaymentId($orderId, $payment->id);
         $orderStatusCancelledPayments = $this->settingsHelper->getOrderStatusCancelledPayments();

@@ -7,6 +7,7 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
@@ -57,9 +58,10 @@ class MollieOrderService
     }
     public function onWebhookAction()
     {
-        // Webhook test by Mollie
-        if (isset($_GET['testByMollie'])) {
-            $this->logger->debug(__METHOD__ . ': Webhook tested by Mollie.', [\true]);
+        // Reject unauthenticated callers before any processing (including the testByMollie probe).
+        if (!$this->isWebhookRequestAuthenticated()) {
+            $this->httpResponse->setHttpResponseCode(401);
+            $this->logger->debug(__METHOD__ . ': Unauthenticated webhook request rejected.');
             return;
         }
         if (empty($_GET['order_id']) || empty($_GET['key'])) {
@@ -106,6 +108,32 @@ class MollieOrderService
             $this->httpResponse->setHttpResponseCode(400);
         }
         // Status 200
+    }
+    /**
+     * Authenticate an incoming WC-API webhook request.
+     *
+     * A request is trusted when it carries EITHER:
+     *  - a valid mollie_webhook_secret (used by webhook URLs built after the secret was
+     *    introduced), OR
+     *  - a valid order_id + order key pair (used by webhook URLs created before the secret
+     *    existed, so in-flight payments keep working after an upgrade — the order key is the
+     *    per-order secret WooCommerce already relies on).
+     *
+     * An anonymous caller has neither and is rejected before any lookup or outbound call.
+     */
+    private function isWebhookRequestAuthenticated(): bool
+    {
+        $incomingSecret = isset($_GET['mollie_webhook_secret']) ? sanitize_text_field(wp_unslash($_GET['mollie_webhook_secret'])) : null;
+        if ($this->container->get(WebhookSecret::class)->check($incomingSecret)) {
+            return \true;
+        }
+        if (empty($_GET['order_id']) || empty($_GET['key'])) {
+            return \false;
+        }
+        $orderId = sanitize_text_field(wp_unslash($_GET['order_id']));
+        $key = sanitize_text_field(wp_unslash($_GET['key']));
+        $order = wc_get_order($orderId);
+        return $order instanceof WC_Order && $order->key_is_valid($key);
     }
     /**
      * Fallback webhook handler using the old implementation logic without lock mechanism

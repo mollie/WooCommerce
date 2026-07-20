@@ -250,7 +250,7 @@ class PaymentLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProv
     private function get_item_price($cart_item)
     {
         $item_subtotal = $cart_item['line_subtotal'] + $cart_item['line_subtotal_tax'];
-        return $item_subtotal / $cart_item['quantity'];
+        return $item_subtotal / $this->toIntegerQuantity((float) $cart_item['quantity']);
     }
     /**
      * Get cart item quantity.
@@ -264,7 +264,23 @@ class PaymentLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProv
      */
     private function get_item_quantity($cart_item)
     {
-        return $cart_item['quantity'];
+        return $this->toIntegerQuantity((float) $cart_item['quantity']);
+    }
+    /**
+     * Convert a fractional WooCommerce quantity to the smallest equivalent integer
+     * by finding the minimal decimal scale factor (e.g. 1.5 → ×10 → 15, 0.4 → ×10 → 4).
+     * Falls back to round()+clamp for repeating decimals that have no exact match in d=0..4.
+     */
+    private function toIntegerQuantity(float $qty): int
+    {
+        for ($d = 0; $d <= 4; $d++) {
+            $scale = (int) pow(10, $d);
+            $candidate = (int) round($qty * $scale);
+            if (abs($candidate / $scale - $qty) < 1.0E-9) {
+                return max(1, $candidate);
+            }
+        }
+        return max(1, (int) round($qty));
     }
     /**
      * Get cart item SKU.

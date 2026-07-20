@@ -15,6 +15,7 @@ use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Payment\Request\Middleware\SelectedIssuerMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\UrlMiddleware;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
@@ -52,11 +53,11 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
     /**
      * AbstractSubscription constructor.
      */
-    public function __construct(PaymentMethodI $paymentMethod, OrderInstructionsManager $orderInstructionsProcessor, MollieOrderService $mollieOrderService, Data $dataService, Logger $logger, NoticeInterface $notice, HttpResponse $httpResponse, Settings $settingsHelper, MollieObject $mollieObject, PaymentFactory $paymentFactory, string $pluginId, Api $apiHelper)
+    public function __construct(PaymentMethodI $paymentMethod, OrderInstructionsManager $orderInstructionsProcessor, MollieOrderService $mollieOrderService, Data $dataService, Logger $logger, NoticeInterface $notice, HttpResponse $httpResponse, Settings $settingsHelper, MollieObject $mollieObject, PaymentFactory $paymentFactory, string $pluginId, Api $apiHelper, WebhookSecret $webhookSecret)
     {
         parent::__construct($paymentMethod, $orderInstructionsProcessor, $mollieOrderService, $dataService, $logger, $notice, $httpResponse, $mollieObject, $paymentFactory, $pluginId);
         $this->apiHelper = $apiHelper;
-        $middlewares = [new UrlMiddleware($pluginId, $logger), new SelectedIssuerMiddleware($pluginId)];
+        $middlewares = [new UrlMiddleware($pluginId, $logger, $webhookSecret), new SelectedIssuerMiddleware($pluginId)];
         $middlewareHandler = new MiddlewareHandler($middlewares);
         $this->subscriptionObject = new MollieSubscription($pluginId, $apiHelper, $settingsHelper, $dataService, $logger, $paymentMethod, $middlewareHandler);
     }

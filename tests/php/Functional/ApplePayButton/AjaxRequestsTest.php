@@ -2,6 +2,7 @@
 
 namespace Mollie\WooCommerceTests\Functional\ApplePayButton;
 
+use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\MollieApiClient;
@@ -9,6 +10,7 @@ use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDataObjectHttp;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
 use Mollie\WooCommerce\Gateway\Refund\RefundLineItemsBuilder;
+use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
@@ -302,6 +304,78 @@ class AjaxRequestsTest extends TestCase
          * Execute Test
          */
         $testee->updateShippingContact();
+    }
+
+    /**
+     *
+     * GIVEN WPML String Translation is active and a translation exists for the gateway fee label
+     * WHEN cartCalculationResults() builds the ApplePay surcharge fee line
+     * THEN the fee label in the result is the WPML-translated label, not the raw stored option
+     *
+     * @test
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function cartCalculationResultsUsesWpmlTranslatedFeeLabel()
+    {
+        require_once TEST_PATH . '/../overrides/wpml.php';
+
+        $applepaySettings = $this->helperMocks->paymentMethodSettings(
+            [
+                'payment_surcharge' => Surcharge::FIXED_FEE,
+                'fixed_fee' => 2.00,
+            ]
+        );
+        expect('get_option')
+            ->andReturnUsing(static function ($key, $default = null) use ($applepaySettings) {
+                if ($key === 'mollie_wc_gateway_applepay_settings') {
+                    return $applepaySettings;
+                }
+                return 'Gateway Fee';
+            });
+        expect('icl_register_string')
+            ->with('mollie-payments-for-woocommerce', 'gatewayFeeLabel', 'Gateway Fee');
+        expect('apply_filters')
+            ->with('wpml_translate_single_string', 'Gateway Fee', 'mollie-payments-for-woocommerce', 'gatewayFeeLabel')
+            ->andReturn('Kosten betaalmethode');
+
+        list($logger, $responsesTemplate) = $this->responsesToApple();
+        $apiClientMock = $this->createConfiguredMock(MollieApiClient::class, []);
+
+        $testee = $this->buildTesteeMock(
+            AppleAjaxRequests::class,
+            [
+                $responsesTemplate,
+                $this->helperMocks->noticeMock(),
+                $logger,
+                $this->helperMocks->apiHelper($apiClientMock),
+                $this->helperMocks->settingsHelper(),
+            ],
+            []
+        )->getMock();
+
+        $cart = $this->createConfiguredMock(
+            'WC_Cart',
+            [
+                'get_total' => 20.00,
+                'get_subtotal' => 18.00,
+                'needs_shipping' => false,
+                'get_total_tax' => 2.00,
+            ]
+        );
+
+        $result = $this->invokeProtectedMethod($testee, 'cartCalculationResults', [$cart, [], []]);
+
+        $this->assertSame('Kosten betaalmethode', $result['fee']['label']);
+    }
+
+    private function invokeProtectedMethod($object, string $method, array $args = [])
+    {
+        $reflection = new \ReflectionMethod($object, $method);
+        if (PHP_VERSION_ID < 80100) {
+            $reflection->setAccessible(true);
+        }
+        return $reflection->invokeArgs($object, $args);
     }
 
     public function mollieGateway($paymentMethodName, $isSepa = false, $isSubscription = false){

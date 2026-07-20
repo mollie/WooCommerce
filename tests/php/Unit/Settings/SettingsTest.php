@@ -42,6 +42,13 @@ class SettingsTest extends TestCase
         $method->invoke($sut, $name, $tempName, $gatewayId);
     }
 
+    private function callValidateUploadedFile(Settings $sut, string $fileName, string $fileTempName, int $fileSize): bool
+    {
+        $method = new \ReflectionMethod(Settings::class, 'validateUploadedFile');
+        $method->setAccessible(true);
+        return $method->invoke($sut, $fileName, $fileTempName, $fileSize);
+    }
+
     private function createTempFile(string $content, string $extension): string
     {
         $path = sys_get_temp_dir() . '/mollie_test_' . uniqid() . '.' . $extension;
@@ -157,9 +164,12 @@ class SettingsTest extends TestCase
         @unlink($storedFile);
     }
 
-    // T7: wp_handle_upload returns an error array; settings are not written and no file deletion is attempted
+    // wp_handle_upload returns an error array; settings are not written and no file deletion is attempted
     public function testHandleUploadErrorSkipsSettingsAndFileCleanup(): void
     {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
         $tempFile = $this->createTempFile('<svg xmlns="http://www.w3.org/2000/svg"></svg>', 'svg');
         $this->setUpFilesGlobal(self::GATEWAY_ID, 'logo.svg', $tempFile);
 
@@ -172,9 +182,12 @@ class SettingsTest extends TestCase
         @unlink($tempFile);
     }
 
-    // T6: SVG with unparseable content causes sanitizer to return empty; file is deleted and settings not written
+    // SVG with unparseable content causes sanitizer to return empty; file is deleted and settings not written
     public function testEmptySanitizerOutputDeletesFileAndSkipsSettings(): void
     {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
         $invalidContent = 'not-valid-xml-or-svg-content';
         $storedFile     = $this->createTempFile($invalidContent, 'svg');
         $this->setUpFilesGlobal(self::GATEWAY_ID, 'logo.svg', $storedFile);
@@ -188,5 +201,168 @@ class SettingsTest extends TestCase
 
         self::assertSame($invalidContent, file_get_contents($storedFile));
         @unlink($storedFile);
+    }
+
+    // SVG .svg extension passes validateUploadedFile regardless of what finfo detects
+    public function testSvgFilePassesValidationRegardlessOfFinfoMime(): void
+    {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile  = $this->createTempFile('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg>', 'svg');
+        $fileSize = (int) filesize($tmpFile);
+
+        $result = $this->callValidateUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, $fileSize);
+
+        self::assertTrue($result);
+        @unlink($tmpFile);
+    }
+
+    // Non-image MIME type with non-svg extension is rejected by validateUploadedFile
+    public function testNonImageNonSvgFileIsRejectedByValidation(): void
+    {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile  = $this->createTempFile('<?php echo "hello"; ?>', 'php');
+        $fileSize = (int) filesize($tmpFile);
+
+        $result = $this->callValidateUploadedFile($this->makeSut(), 'shell.php', $tmpFile, $fileSize);
+
+        self::assertFalse($result);
+        @unlink($tmpFile);
+    }
+
+    // Error message produced on rejection mentions svg as an allowed format
+    public function testRejectionNoticeMessageMentionsSvg(): void
+    {
+        $capturedCallback = null;
+        when('add_action')->alias(static function (string $hook, callable $cb) use (&$capturedCallback): void {
+            if ($hook === 'admin_notices') {
+                $capturedCallback = $cb;
+            }
+        });
+        when('esc_html__')->returnArg(1);
+        when('esc_attr')->returnArg();
+        when('wp_kses_post')->returnArg();
+
+        $tmpFile  = $this->createTempFile('<?php echo "hello"; ?>', 'php');
+        $fileSize = (int) filesize($tmpFile);
+
+        $this->callValidateUploadedFile($this->makeSut(), 'shell.php', $tmpFile, $fileSize);
+
+        self::assertNotNull($capturedCallback, 'AdminNotice did not register an admin_notices callback');
+        ob_start();
+        ($capturedCallback)();
+        $output = ob_get_clean();
+        self::assertStringContainsString('svg', strtolower($output));
+        @unlink($tmpFile);
+    }
+
+    // Oversized SVG (>500kb) is rejected by the file-size check, not the MIME check
+    public function testOversizedSvgIsRejectedByFileSizeNotMimeCheck(): void
+    {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile = $this->createTempFile('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0"/></svg>', 'svg');
+
+        $result = $this->callValidateUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, 600000);
+
+        self::assertFalse($result);
+        @unlink($tmpFile);
+    }
+
+    // wp_handle_upload error array triggers an admin_notices hook registration
+    public function testHandleUploadErrorRegistersAdminNotice(): void
+    {
+        $capturedCallback = null;
+        when('add_action')->alias(static function (string $hook, callable $cb) use (&$capturedCallback): void {
+            if ($hook === 'admin_notices') {
+                $capturedCallback = $cb;
+            }
+        });
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile = $this->createTempFile('<svg xmlns="http://www.w3.org/2000/svg"></svg>', 'svg');
+        $this->setUpFilesGlobal(self::GATEWAY_ID, 'logo.svg', $tmpFile);
+        when('wp_handle_upload')->justReturn(['error' => 'Upload failed due to file type restriction.']);
+
+        $this->callProcessUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, self::GATEWAY_ID);
+
+        self::assertNotNull($capturedCallback, 'Expected an admin_notices callback to be registered on wp_handle_upload error');
+        @unlink($tmpFile);
+    }
+
+    // SVG sanitizer returning falsy output triggers an admin_notices hook registration
+    public function testSanitizerRejectionRegistersAdminNotice(): void
+    {
+        $capturedCallback = null;
+        when('add_action')->alias(static function (string $hook, callable $cb) use (&$capturedCallback): void {
+            if ($hook === 'admin_notices') {
+                $capturedCallback = $cb;
+            }
+        });
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile = $this->createTempFile('not-valid-xml-or-svg-content', 'svg');
+        $this->setUpFilesGlobal(self::GATEWAY_ID, 'logo.svg', $tmpFile);
+        when('wp_handle_upload')->justReturn(['url' => 'https://example.com/logo.svg', 'file' => $tmpFile]);
+        when('get_option')->justReturn([]);
+        expect('wp_delete_file')->once()->with($tmpFile);
+
+        $this->callProcessUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, self::GATEWAY_ID);
+
+        self::assertNotNull($capturedCallback, 'Expected an admin_notices callback to be registered when sanitizer rejects the file');
+        @unlink($tmpFile);
+    }
+
+    // Notice message shown on rejection contains no words revealing the cause
+    public function testRejectionNoticeMessageDoesNotRevealRejectionReason(): void
+    {
+        $capturedCallback = null;
+        when('add_action')->alias(static function (string $hook, callable $cb) use (&$capturedCallback): void {
+            if ($hook === 'admin_notices') {
+                $capturedCallback = $cb;
+            }
+        });
+        when('esc_html__')->returnArg(1);
+        when('esc_attr')->returnArg();
+        when('wp_kses_post')->returnArg();
+
+        $tmpFile = $this->createTempFile('not-valid-xml-or-svg-content', 'svg');
+        $this->setUpFilesGlobal(self::GATEWAY_ID, 'logo.svg', $tmpFile);
+        when('wp_handle_upload')->justReturn(['url' => 'https://example.com/logo.svg', 'file' => $tmpFile]);
+        when('get_option')->justReturn([]);
+        expect('wp_delete_file')->once();
+
+        $this->callProcessUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, self::GATEWAY_ID);
+
+        self::assertNotNull($capturedCallback, 'Expected an admin_notices callback to be registered');
+        ob_start();
+        ($capturedCallback)();
+        $output = strtolower((string) ob_get_clean());
+        foreach (['sanitize', 'malicious', 'blocked', 'script', 'invalid content'] as $bannedWord) {
+            self::assertStringNotContainsString($bannedWord, $output, "Notice must not reveal rejection reason via '{$bannedWord}'");
+        }
+        @unlink($tmpFile);
+    }
+
+    // Gateway logo setting is not written when sanitizer rejects the file (notice-enabled path)
+    public function testSanitizerRejectionLeavesSettingsUnchangedAfterNotice(): void
+    {
+        when('add_action')->justReturn(null);
+        when('esc_html__')->returnArg(1);
+
+        $tmpFile = $this->createTempFile('not-valid-xml-or-svg-content', 'svg');
+        $this->setUpFilesGlobal(self::GATEWAY_ID, 'logo.svg', $tmpFile);
+        when('wp_handle_upload')->justReturn(['url' => 'https://example.com/logo.svg', 'file' => $tmpFile]);
+        when('get_option')->justReturn([]);
+        expect('update_option')->never();
+        expect('wp_delete_file')->once()->with($tmpFile);
+
+        $this->callProcessUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, self::GATEWAY_ID);
+
+        @unlink($tmpFile);
     }
 }

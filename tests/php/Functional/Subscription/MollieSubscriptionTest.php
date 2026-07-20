@@ -9,6 +9,7 @@ use Mollie\Api\Resources\Mandate;
 use Mollie\Api\Resources\MandateCollection;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\MollieObject;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -118,7 +119,8 @@ class MollieSubscriptionTest extends TestCase
                 $mollieObject,
                 $paymentFactory,
                 $pluginId,
-                $apiHelper
+                $apiHelper,
+                new WebhookSecret()
             ],
             [
                 'init_form_fields',

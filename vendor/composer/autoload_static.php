@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
+class ComposerStaticInitaa9667a34f97928bf5acd6e4400e7ef3
 {
     public static $prefixLengthsPsr4 = array (
         'M' =>
@@ -16,7 +16,6 @@ class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
             'Mollie\\Inpsyde\\PaymentGateway\\' => 30,
             'Mollie\\Inpsyde\\Modularity\\' => 26,
             'Mollie\\Inpsyde\\EnvironmentChecker\\' => 34,
-            'Mollie\\Dhii\\Services\\' => 21,
             'Mollie\\Api\\' => 11,
         ),
         'C' =>
@@ -53,10 +52,6 @@ class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
         'Mollie\\Inpsyde\\EnvironmentChecker\\' =>
         array (
             0 => __DIR__ . '/../..' . '/pluginEnvironmentChecker',
-        ),
-        'Mollie\\Dhii\\Services\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/dhii/services/src',
         ),
         'Mollie\\Api\\' =>
         array (
@@ -220,18 +215,6 @@ class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
         'Mollie\\Api\\Types\\SettlementStatus' => __DIR__ . '/..' . '/mollie/mollie-api-php/src/Types/SettlementStatus.php',
         'Mollie\\Api\\Types\\SubscriptionStatus' => __DIR__ . '/..' . '/mollie/mollie-api-php/src/Types/SubscriptionStatus.php',
         'Mollie\\Api\\Types\\TerminalStatus' => __DIR__ . '/..' . '/mollie/mollie-api-php/src/Types/TerminalStatus.php',
-        'Mollie\\Dhii\\Services\\Extension' => __DIR__ . '/..' . '/dhii/services/src/Extension.php',
-        'Mollie\\Dhii\\Services\\Extensions\\ArrayExtension' => __DIR__ . '/..' . '/dhii/services/src/Extensions/ArrayExtension.php',
-        'Mollie\\Dhii\\Services\\Factories\\Alias' => __DIR__ . '/..' . '/dhii/services/src/Factories/Alias.php',
-        'Mollie\\Dhii\\Services\\Factories\\Constructor' => __DIR__ . '/..' . '/dhii/services/src/Factories/Constructor.php',
-        'Mollie\\Dhii\\Services\\Factories\\FuncService' => __DIR__ . '/..' . '/dhii/services/src/Factories/FuncService.php',
-        'Mollie\\Dhii\\Services\\Factories\\GlobalVar' => __DIR__ . '/..' . '/dhii/services/src/Factories/GlobalVar.php',
-        'Mollie\\Dhii\\Services\\Factories\\ServiceList' => __DIR__ . '/..' . '/dhii/services/src/Factories/ServiceList.php',
-        'Mollie\\Dhii\\Services\\Factories\\StringService' => __DIR__ . '/..' . '/dhii/services/src/Factories/StringService.php',
-        'Mollie\\Dhii\\Services\\Factories\\Value' => __DIR__ . '/..' . '/dhii/services/src/Factories/Value.php',
-        'Mollie\\Dhii\\Services\\Factory' => __DIR__ . '/..' . '/dhii/services/src/Factory.php',
-        'Mollie\\Dhii\\Services\\ResolveKeysCapableTrait' => __DIR__ . '/..' . '/dhii/services/src/ResolveKeysCapableTrait.php',
-        'Mollie\\Dhii\\Services\\Service' => __DIR__ . '/..' . '/dhii/services/src/Service.php',
         'Mollie\\Inpsyde\\EnvironmentChecker\\ConstraintsCollectionFactory' => __DIR__ . '/../..' . '/pluginEnvironmentChecker/ConstraintsCollectionFactory.php',
         'Mollie\\Inpsyde\\EnvironmentChecker\\ConstraintsCollectionFactoryInterface' => __DIR__ . '/../..' . '/pluginEnvironmentChecker/ConstraintsCollectionFactoryInterface.php',
         'Mollie\\Inpsyde\\EnvironmentChecker\\Constraints\\AbstractVersionConstraint' => __DIR__ . '/../..' . '/pluginEnvironmentChecker/Constraints/AbstractVersionConstraint.php',
@@ -527,9 +510,9 @@ class ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit7b563cd52561b132e3f0e82f3153a09f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitaa9667a34f97928bf5acd6e4400e7ef3::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitaa9667a34f97928bf5acd6e4400e7ef3::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitaa9667a34f97928bf5acd6e4400e7ef3::$classMap;
 
         }, null, ClassLoader::class);
     }

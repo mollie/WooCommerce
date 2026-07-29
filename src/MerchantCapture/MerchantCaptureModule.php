@@ -251,6 +251,9 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                     if ($disableShipAndCapture) {
                         return true;
                     }
+                    if ($container->get('merchant.manual_capture.on_status_change_enabled')) {
+                        return true;
+                    }
                     return $container->get('merchant.manual_capture.is_waiting')($order) || $container->get('merchant.manual_capture.is_authorized')($order);
                 },
                 10,

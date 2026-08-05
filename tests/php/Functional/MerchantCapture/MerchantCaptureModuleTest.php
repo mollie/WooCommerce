@@ -31,7 +31,8 @@ class MerchantCaptureModuleTest extends TestCase
      */
     public function disableShipAndCaptureReturnsTrueForKlarnaWhenStatusChangeSettingEnabled()
     {
-        $container = $this->createMockContainer(true);
+        // WooCommerce's checkbox save writes the literal string 'yes' when checked.
+        $container = $this->createMockContainer('yes');
         $order = $this->makeOrder('mollie_wc_gateway_klarna');
 
         $callback = $this->runModuleAndGetDisableFilterCallback($container);
@@ -40,12 +41,32 @@ class MerchantCaptureModuleTest extends TestCase
     }
 
     /**
-     * WHEN the setting is left at its default (disabled)
+     * WHEN the setting has been saved unchecked
      * THEN the filter still returns false for a Klarna order - unchanged from current behavior
      * @test
      */
-    public function disableShipAndCaptureReturnsFalseForKlarnaWhenStatusChangeSettingDisabledByDefault()
+    public function disableShipAndCaptureReturnsFalseForKlarnaWhenStatusChangeSettingSavedUnchecked()
     {
+        // WC_Admin_Settings::save_fields() writes the literal string 'no' for an unchecked
+        // checkbox (not an empty/false value) any time the settings page is saved - this is
+        // the realistic value for the overwhelming majority of merchants, not just an edge case.
+        $container = $this->createMockContainer('no');
+        $order = $this->makeOrder('mollie_wc_gateway_klarna');
+
+        $callback = $this->runModuleAndGetDisableFilterCallback($container);
+
+        self::assertFalse($callback(false, $order));
+    }
+
+    /**
+     * WHEN the setting has never been saved at all (option row does not exist)
+     * THEN the filter still returns false for a Klarna order
+     * @test
+     */
+    public function disableShipAndCaptureReturnsFalseForKlarnaWhenStatusChangeSettingNeverSaved()
+    {
+        // get_option(..., false) returns the raw boolean default when the option row
+        // was never created - distinct from the 'no' string WooCommerce saves on submit.
         $container = $this->createMockContainer(false);
         $order = $this->makeOrder('mollie_wc_gateway_klarna');
 
@@ -61,7 +82,7 @@ class MerchantCaptureModuleTest extends TestCase
      */
     public function disableShipAndCaptureStillTrueForCreditcardAuthorizedRegardlessOfSetting()
     {
-        $container = $this->createMockContainer(false, ['is_authorized' => true]);
+        $container = $this->createMockContainer('no', ['is_authorized' => true]);
         $order = $this->makeOrder('mollie_wc_gateway_creditcard');
 
         $callback = $this->runModuleAndGetDisableFilterCallback($container);
@@ -76,7 +97,7 @@ class MerchantCaptureModuleTest extends TestCase
      */
     public function disableShipAndCaptureReturnsTrueForNonCreditcardGatewayIndependentOfPaymentMethod()
     {
-        $container = $this->createMockContainer(true);
+        $container = $this->createMockContainer('yes');
         $order = $this->makeOrder('mollie_wc_gateway_bancontact');
 
         $callback = $this->runModuleAndGetDisableFilterCallback($container);
@@ -93,10 +114,12 @@ class MerchantCaptureModuleTest extends TestCase
     }
 
     /**
-     * @param bool $onStatusChangeEnabled Value returned for merchant.manual_capture.on_status_change_enabled.
+     * @param bool|string $onStatusChangeEnabled Raw value as returned by get_option() for
+     *        merchant.manual_capture.on_status_change_enabled: 'yes'/'no' (saved checkbox) or
+     *        boolean false (option row never created).
      * @param array $overrides Optional 'is_waiting' / 'is_authorized' booleans for the manual-capture closures.
      */
-    private function createMockContainer(bool $onStatusChangeEnabled, array $overrides = []): ContainerInterface
+    private function createMockContainer($onStatusChangeEnabled, array $overrides = []): ContainerInterface
     {
         $isWaiting = $overrides['is_waiting'] ?? false;
         $isAuthorized = $overrides['is_authorized'] ?? false;

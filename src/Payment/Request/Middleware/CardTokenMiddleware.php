@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
-
 /**
  * Middleware to handle Card Token in the request.
  */
-class CardTokenMiddleware implements RequestMiddlewareInterface
+class CardTokenMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * Invoke the middleware.

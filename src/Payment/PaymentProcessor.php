@@ -519,6 +519,12 @@ class PaymentProcessor implements PaymentProcessorInterface
      */
     protected function saveMollieInfo($order, $payment)
     {
+        // Record which gateway created this payment so a later method switch can be detected,
+        // independently of the mutable WooCommerce _payment_method meta.
+        if (isset($this->gateway)) {
+            MolliePaymentAttempt::rememberCreatingGateway($order, (string) $this->gateway->id);
+        }
+
         // Get correct Mollie Payment Object
         $payment_object = $this->paymentFactory->getPaymentObject($payment);
 
@@ -877,7 +883,11 @@ class PaymentProcessor implements PaymentProcessorInterface
                     return null;
                 }
 
-                return $this->buildActivePaymentResponse($mollieOrder->getCheckoutUrl(), $mollieOrderId);
+                return $this->activePaymentResponseOrMethodSwitch(
+                    $order,
+                    $mollieOrder->getCheckoutUrl(),
+                    $mollieOrderId
+                );
             }
 
             $molliePaymentId = $order->get_meta('_mollie_payment_id', true);
@@ -906,7 +916,11 @@ class PaymentProcessor implements PaymentProcessorInterface
                     return null;
                 }
 
-                return $this->buildActivePaymentResponse($payment->getCheckoutUrl(), $molliePaymentId);
+                return $this->activePaymentResponseOrMethodSwitch(
+                    $order,
+                    $payment->getCheckoutUrl(),
+                    $molliePaymentId
+                );
             }
         } catch (ApiException $e) {
             $this->logger->debug(
@@ -915,6 +929,39 @@ class PaymentProcessor implements PaymentProcessorInterface
         }
 
         return null;
+    }
+
+    /**
+     * Decide what to do with an open, non-cancellable Mollie payment: reuse it (redirect to
+     * its checkout URL / notice) when the customer stuck with the same method, or return null
+     * so a fresh payment is created when they switched to a different method.
+     */
+    private function activePaymentResponseOrMethodSwitch(WC_Order $order, ?string $checkoutUrl, string $paymentId): ?array
+    {
+        if ($this->selectedGatewayDiffersFromCreatingGateway($order)) {
+            $this->logger->debug(
+                "Order {$order->get_id()}: customer selected a different payment method than the open "
+                . "non-cancellable payment {$paymentId}; creating a new payment for the newly selected method."
+            );
+            return null;
+        }
+
+        return $this->buildActivePaymentResponse($checkoutUrl, $paymentId);
+    }
+
+    /**
+     * True only when the gateway that created the open payment is known and differs from the
+     * gateway the customer just selected. An unknown creating gateway (legacy/in-flight
+     * payment) or an unset selected gateway keeps the existing reuse behaviour.
+     */
+    private function selectedGatewayDiffersFromCreatingGateway(WC_Order $order): bool
+    {
+        $creatingGateway = MolliePaymentAttempt::creatingGateway($order);
+        if ($creatingGateway === '' || !isset($this->gateway)) {
+            return false;
+        }
+
+        return (string) $this->gateway->id !== $creatingGateway;
     }
 
     private function buildActivePaymentResponse(?string $checkoutUrl, string $paymentId): array

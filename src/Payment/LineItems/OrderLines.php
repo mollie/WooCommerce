@@ -13,6 +13,8 @@ use WC_Tax;
 
 class OrderLines implements LineItemProvider
 {
+    use LineItemPriceCalculationTrait;
+
     /**
      * Formatted order lines.
      *
@@ -395,41 +397,6 @@ class OrderLines implements LineItemProvider
     }
 
     /**
-     * Calculate item tax percentage.
-     *
-     * @since  1.0
-     * @access private
-     *
-     * @param  WC_Order_Item  $cart_item Cart item.
-     * @param  null|false|\WC_Product $product   Product object.
-     *
-     * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
-     */
-    private function get_item_vatRate($cart_item, $product)
-    {
-        if ($product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0) {
-            // Calculate tax rate.
-            $_tax = new WC_Tax();
-            $tmp_rates = $_tax->get_rates($product->get_tax_class());
-            $item_vatRate = 0;
-            foreach ($tmp_rates as $rate) {
-                if (isset($rate['rate'])) {
-                    if ($rate['compound'] === "yes") {
-                        $compoundRate = round($item_vatRate * ($rate['rate'] / 100)) + $rate['rate'];
-                        $item_vatRate += $compoundRate;
-                        continue;
-                    }
-                    $item_vatRate += $rate['rate'];
-                }
-            }
-        } else {
-            $item_vatRate = 0;
-        }
-
-        return $item_vatRate;
-    }
-
-    /**
      * Get cart item price.
      *
      * @since  1.0
@@ -538,22 +505,5 @@ class OrderLines implements LineItemProvider
     private function get_item_total_amount($cart_item)
     {
         return $cart_item['line_total'] + $cart_item['line_tax'];
-    }
-
-    /**
-     * Build price data for Mollie API.
-     *
-     * @param float $wcPrice
-     * @param float $vatRate
-     * @return float[]
-     */
-    private function getMolliePrice(float $wcPrice, float $vatRate): array
-    {
-        $grossPrice = wc_prices_include_tax() ? $wcPrice : $wcPrice * (1 + ($vatRate / 100));
-
-        return [
-            'grossPrice' => $grossPrice,
-            'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate)),
-        ];
     }
 }

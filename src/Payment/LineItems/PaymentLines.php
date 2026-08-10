@@ -14,6 +14,8 @@ use WC_Tax;
 
 class PaymentLines implements LineItemProvider
 {
+    use LineItemPriceCalculationTrait;
+
     /**
      * Formatted order lines.
      *
@@ -134,10 +136,13 @@ class PaymentLines implements LineItemProvider
 
                 $this->currency = $this->dataHelper->getOrderCurrency($this->order);
 
-                $vatRate = 0;
-                if ($cart_item['line_tax'] > 0 && $cart_item['line_total'] > 0) {
-                    $vatRate = round($cart_item['line_tax'] / $cart_item['line_total'], 4) * 100;
-                }
+                $vatRate = round($this->get_item_vatRate($cart_item, $product), 2);
+                $wcTotalValue = $this->get_item_total_amount($cart_item);
+                $wcUnitPrice = $this->get_item_price($cart_item);
+
+                // Calculate Mollie prices, they expect price including VAT
+                $mollieTotal = $this->getMolliePrice($wcTotalValue, $vatRate);
+                $mollieUnit = $this->getMolliePrice($wcUnitPrice, $vatRate);
 
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),
@@ -147,16 +152,16 @@ class PaymentLines implements LineItemProvider
                     'vatRate' => $vatRate,
                     'unitPrice' =>  [
                         'currency' => $this->currency,
-                        'value' => $this->dataHelper->formatCurrencyValue($this->get_item_price($cart_item), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($mollieUnit['grossPrice'], $this->currency),
                     ],
                     'totalAmount' =>  [
                         'currency' => $this->currency,
-                        'value' => $this->dataHelper->formatCurrencyValue($this->get_item_total_amount($cart_item), $this->currency),
+                        'value' => $this->dataHelper->formatCurrencyValue($mollieTotal['grossPrice'], $this->currency),
                     ],
                     'vatAmount' =>
                          [
                             'currency' => $this->currency,
-                            'value' => $this->dataHelper->formatCurrencyValue($this->get_item_tax_amount($cart_item), $this->currency),
+                            'value' => $this->dataHelper->formatCurrencyValue($mollieTotal['vatAmount'], $this->currency),
                         ],
                     'discountAmount' =>
                          [
@@ -361,21 +366,6 @@ class PaymentLines implements LineItemProvider
         $item_name = $cart_item->get_name();
 
         return html_entity_decode(wp_strip_all_tags($item_name));
-    }
-
-    /**
-     * Calculate item tax percentage.
-     *
-     * @since  1.0
-     * @access private
-     *
-     * @param  WC_Order_Item $cart_item Cart item.
-     *
-     * @return integer $item_tax_amount Item tax amount.
-     */
-    private function get_item_tax_amount($cart_item)
-    {
-        return $cart_item['line_tax'];
     }
 
     /**

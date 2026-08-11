@@ -7,6 +7,7 @@ use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;
 use Mollie\WooCommerceTests\Integration\API\Traits\APIMockTrait;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -57,7 +58,8 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
             $container->get(PaymentFactory::class),
             $container->get('settings.data_helper'),
             $container->get('shared.plugin_id'),
-            $container
+            $container,
+            $container->get(WebhookHandler::class)
         ])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $webhookService->shouldReceive('getPaymentIdFromRequest')
@@ -179,5 +181,72 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         // Should only have one payment started note
         $this->assertCount(1, $paymentNotes, 'Should only process payment once, even with concurrent webhooks');
+    }
+
+    /**
+     * Scenario: A late paid webhook does not revert an already-refunded authorized order (PIWOO-923)
+     *   Given an authorize-capture (pay-later) order that was authorized, captured and then refunded
+     *     (carrying _mollie_authorized and _mollie_paid_and_processed, WooCommerce status "refunded")
+     *   When a late 'paid' webhook arrives whose Mollie payment reports a non-zero amountRefunded
+     *   Then the order stays "refunded" and no "Order completed" note is added
+     *     (payment_complete() is not re-triggered and stock is not re-reduced)
+     *
+     * @test
+     * @group integration
+     * @group Webhooks
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookPaid
+     */
+    public function it_does_not_revert_a_refunded_authorized_order_on_late_paid_webhook()
+    {
+        $order = $this->getConfiguredOrder(
+            1,
+            'mollie_wc_gateway_ideal',
+            ['simple'],
+            [],
+            false
+        );
+
+        // Simulate an authorize-capture order that was authorized, captured, then refunded.
+        $order->update_meta_data('_mollie_authorized', '1');
+        $order->update_meta_data('_mollie_paid_and_processed', '1');
+        $order->set_status('refunded');
+        $order->save();
+
+        $orderId = $order->get_id();
+        $orderKey = $order->get_order_key();
+        $transactionId = $order->get_transaction_id();
+
+        // The late webhook: the payment is 'paid' at Mollie but already carries a refund.
+        $this->mockSuccessfulPaymentGet($transactionId, 'paid', [
+            'metadata' => ['order_id' => $orderId],
+            'method' => 'klarna',
+            'mode' => 'test',
+            'amountRefunded' => (object) ['value' => '10.00', 'currency' => 'EUR'],
+        ]);
+
+        $mockedServices = $this->getMockedApiServices();
+        $container = $this->bootstrapModule($mockedServices);
+        $this->setupWebhookRequest($orderId, $orderKey, $transactionId);
+
+        $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
+        $this->webhookService->onWebhookAction();
+
+        $order = wc_get_order($orderId);
+        $this->assertEquals(
+            'refunded',
+            $order->get_status(),
+            'A late paid webhook for a refunded order must not flip it back to processing.'
+        );
+
+        // And no "Order completed" note should have been added by a second payment_complete().
+        $notes = wc_get_order_notes(['order_id' => $orderId]);
+        $completedNotes = array_filter($notes, function ($note) {
+            return strpos($note->content, 'Order completed') !== false;
+        });
+        $this->assertCount(
+            0,
+            $completedNotes,
+            'No "Order completed" note should be added for an already-refunded order.'
+        );
     }
 }

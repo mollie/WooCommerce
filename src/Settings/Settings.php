@@ -523,9 +523,33 @@ class Settings
         $file = isset($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) ? wp_unslash($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) : [];
         if (!empty($file)) {
             $file = ['name' => $file['name'], 'type' => $file['type'], 'tmp_name' => $file['tmp_name'], 'error' => $file['error'], 'size' => $file['size']];
+            $isSvg = strtolower(pathinfo($name, \PATHINFO_EXTENSION)) === 'svg';
+            // WordPress excludes SVG from allowed MIME types by default; temporarily allow it
+            // so wp_handle_upload does not reject the file before we can sanitize it.
+            $svgMimeFilter = static function (array $mimes): array {
+                $mimes['svg'] = 'image/svg+xml';
+                return $mimes;
+            };
+            // finfo may return text/plain or text/xml for SVGs; override the filetype check
+            // so wp_handle_upload accepts the file regardless of what finfo detects.
+            $svgTypeFilter = static function (array $data, $file, string $filename): array {
+                if (strtolower(pathinfo($filename, \PATHINFO_EXTENSION)) === 'svg') {
+                    $data['ext'] = 'svg';
+                    $data['type'] = 'image/svg+xml';
+                }
+                return $data;
+            };
+            if ($isSvg) {
+                add_filter('upload_mimes', $svgMimeFilter);
+                add_filter('wp_check_filetype_and_ext', $svgTypeFilter, 10, 3);
+            }
             $movefile = wp_handle_upload($file, $upload_overrides);
+            if ($isSvg) {
+                remove_filter('upload_mimes', $svgMimeFilter);
+                remove_filter('wp_check_filetype_and_ext', $svgTypeFilter);
+            }
             if ($movefile && !isset($movefile['error'])) {
-                if (strtolower(pathinfo($name, \PATHINFO_EXTENSION)) === 'svg') {
+                if ($isSvg) {
                     $svgContent = file_get_contents($movefile['file']);
                     $sanitizer = new \Mollie\enshrined\svgSanitize\Sanitizer();
                     $sanitized = $svgContent !== \false ? $sanitizer->sanitize($svgContent) : \false;

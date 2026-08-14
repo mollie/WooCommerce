@@ -178,7 +178,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.resolve-playwright-matrix.outputs.matrix) }}
-    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@main
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@feature/cloudflare-for-parallel-tests
     with:
       PLAYWRIGHT_SCRIPT: ${{ matrix.script }}
       PLAYWRIGHT_ARTIFACT_NAME: ${{ matrix.artifact_name }}
@@ -189,7 +189,8 @@ jobs:
       PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES: true
       NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
-      NGROK_DOMAIN: ngrok-dev.mollie.syde.wpinfra.cloud
+      TUNNEL_PROVIDER: cloudflare
+      TUNNEL_ENABLED: true
       TESTRAIL_PLAN_ID: ${{ inputs.TESTRAIL_PLAN_ID }}
       TESTRAIL_RUN_ID: ${{ inputs.TESTRAIL_RUN_ID }}
       PRE_SCRIPT: |

@@ -7,22 +7,26 @@
   }
 
   .mollie-component {
-    width: 100%;
-    min-height: 34px;
-    background-color: #FFF;
-    border-radius: 6px;
-    color: #222;
-    transition: all .05s ease;
-    box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1),
-    0px 1px 3px 0px rgba(0, 0, 0, 0.1),
-    0px 0px 0px 1px rgba(0, 0, 0, 0.05);
-    border: 2px solid transparent;
-    padding: 0 .63em;
-
-    iframe {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 38px;
+      min-height: 38px;
+      box-sizing: border-box;
+      background-color: #FFF;
       border-radius: 6px;
-      margin: 0;
-    }
+      color: #222;
+      transition: all .05s ease;
+      box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.1),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1),
+      0px 0px 0px 1px rgba(0, 0, 0, 0.05);
+      border: 2px solid transparent;
+      padding: 0 .63em;
+
+      iframe {
+          border-radius: 6px;
+          margin: 0;
+      }
 
     &.is-invalid {
       box-shadow: 0px 1px 1px 0px rgba(255, 51, 68, 0.1),
@@ -48,19 +52,6 @@
     margin-top: .63em;
   }
 
-  #expiryDate,
-  #verificationCode {
-    max-width: 50%;
-    box-sizing: border-box;
-  }
-
-  #expiryDate {
-    padding-right: 5%;
-  }
-
-  #verificationCode {
-    padding-left: 5%;
-  }
 }
 
 .mollie-components-description {
@@ -167,11 +158,11 @@
 }
 
 .mollie-component-wrapper[data-component="expiryDate"] {
-    padding-right: 5%;
+    padding-right: .315em;
 }
 
 .mollie-component-wrapper[data-component="verificationCode"] {
-    padding-left: 5%;
+    padding-left: .315em;
 }
 
 /* Error notice for global component errors */

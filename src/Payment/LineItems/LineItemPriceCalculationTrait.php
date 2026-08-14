@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\LineItems;
 
 use WC_Tax;
-
 /**
  * Shared VAT-rate and Mollie price derivation for the Orders API (OrderLines) and
  * Payments API (PaymentLines) line-item builders.
@@ -45,10 +43,8 @@ trait LineItemPriceCalculationTrait
         } else {
             $item_vatRate = 0;
         }
-
         return $item_vatRate;
     }
-
     /**
      * Build gross price and VAT amount for the Mollie API from a single VAT rate.
      *
@@ -58,11 +54,7 @@ trait LineItemPriceCalculationTrait
      */
     protected function getMolliePrice(float $wcPrice, float $vatRate): array
     {
-        $grossPrice = wc_prices_include_tax() ? $wcPrice : $wcPrice * (1 + ($vatRate / 100));
-
-        return [
-            'grossPrice' => $grossPrice,
-            'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate)),
-        ];
+        $grossPrice = wc_prices_include_tax() ? $wcPrice : $wcPrice * (1 + $vatRate / 100);
+        return ['grossPrice' => $grossPrice, 'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate))];
     }
 }

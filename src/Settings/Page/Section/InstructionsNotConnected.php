@@ -31,12 +31,13 @@ class InstructionsNotConnected extends \Mollie\WooCommerce\Settings\Page\Section
         <ol>
             <li>
                 <?php 
-        echo wp_kses(sprintf(__("Don’t have a Mollie account yet? <a href='%s' target='_blank'>Get started with Mollie today.</a>", 'mollie-payments-for-woocommerce'), apply_filters('mollie-payments-for-woocommerce_signup_url', 'https://my.mollie.com/dashboard/signup?utm_campaign=GLO_Q4__Woo-Signup-tracker&utm_medium=referral&utm_source={woodashboard}&campaign_name=GLO_Q4__Woo-Signup-tracker')), ['a' => ['href' => [], 'target' => []]]);
+        echo wp_kses(sprintf(__("Don’t have a Mollie account yet? Create one now. For a limited time, new\nWooCommerce merchants can pay ZERO processing fees for their first month\nwith Mollie. Check the offer  <a href='%s' target='_blank'>here.</a>", 'mollie-payments-for-woocommerce'), apply_filters('mollie-payments-for-woocommerce_signup_url', 'https://woocommerce.com/products/mollie-payments-for-woocommerce/
+')), ['a' => ['href' => [], 'target' => []]]);
         ?>
             </li>
             <li>
                 <?php 
-        echo wp_kses(sprintf(__("Log in to your <a href='%s' target='_blank'>Mollie Dashboard</a>.", 'mollie-payments-for-woocommerce'), 'https://my.mollie.com/dashboard/login'), ['a' => ['href' => [], 'target' => []]]);
+        echo wp_kses(sprintf(__("Already have a Mollie account? Log in to your <a href='%s' target='_blank'>Mollie Dashboard</a>.", 'mollie-payments-for-woocommerce'), 'https://my.mollie.com/dashboard/login'), ['a' => ['href' => [], 'target' => []]]);
         ?>
             </li>
             <li>

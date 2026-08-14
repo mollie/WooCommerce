@@ -24,7 +24,7 @@ return [
     // list<string|regex>
     'exclude-classes' => \array_merge($wp_classes, ['WooCommerce', '/^WC_/', '\WCS_Retry_Manager']),
     // list<string|regex>
-    'exclude-functions' => \array_merge($wp_functions, ['/^wc/']),
+    'exclude-functions' => \array_merge($wp_functions, ['/^wc/', '/^icl_/', '/^wpml_/']),
     // list<string|regex>
     'expose-global-constants' => \false,
     // bool

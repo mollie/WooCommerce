@@ -3,6 +3,7 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\Settings\Webhooks;
 
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\Psr\Log\LoggerInterface as Logger;
@@ -28,17 +29,23 @@ class WebhookTestService
      */
     private $logger;
     /**
+     * @var WebhookSecret
+     */
+    private $webhookSecret;
+    /**
      * WebhookTestService constructor.
      *
      * @param Api $apiHelper Mollie API helper
      * @param Settings $settingsHelper Settings helper
      * @param Logger $logger Logger instance
+     * @param WebhookSecret $webhookSecret Provides the webhook secret
      */
-    public function __construct(Api $apiHelper, Settings $settingsHelper, Logger $logger)
+    public function __construct(Api $apiHelper, Settings $settingsHelper, Logger $logger, WebhookSecret $webhookSecret)
     {
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
         $this->logger = $logger;
+        $this->webhookSecret = $webhookSecret;
     }
     /**
      * Register AJAX handlers
@@ -134,7 +141,9 @@ class WebhookTestService
             $webhookUrl = $this->getWebhookUrl($testId);
             $returnUrl = admin_url('admin.php?page=wc-settings&tab=mollie_settings&section=mollie_advanced');
             $paymentData = ['amount' => ['currency' => get_woocommerce_currency(), 'value' => '0.01'], 'description' => sprintf(__('Webhook Test - %s', 'mollie-payments-for-woocommerce'), $testId), 'redirectUrl' => $returnUrl, 'webhookUrl' => $webhookUrl, 'metadata' => ['webhook_test' => \true, 'test_id' => $testId]];
-            $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($paymentData));
+            $loggablePaymentData = $paymentData;
+            $loggablePaymentData['webhookUrl'] = remove_query_arg('mollie_webhook_secret', $webhookUrl);
+            $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($loggablePaymentData));
             $payment = $this->apiHelper->getApiClient($apiKey)->payments->create($paymentData);
             $checkoutUrl = $payment->getCheckoutUrl();
             $this->logger->debug(__METHOD__ . ": Test payment created - ID: {$payment->id}, Checkout URL: {$checkoutUrl}");
@@ -150,11 +159,11 @@ class WebhookTestService
      * @param string $testId Test identifier
      * @return string Webhook URL
      */
-    private function getWebhookUrl(string $testId): string
+    protected function getWebhookUrl(string $testId): string
     {
         // Use the REST API webhook endpoint
         $webhookUrl = rest_url('mollie/v1/webhook');
-        $webhookUrl = add_query_arg(['test_id' => $testId], $webhookUrl);
+        $webhookUrl = add_query_arg(['test_id' => $testId, 'mollie_webhook_secret' => $this->webhookSecret->getOrCreate()], $webhookUrl);
         // Convert domain to ASCII for international domains
         return $this->asciiDomainName($webhookUrl);
     }

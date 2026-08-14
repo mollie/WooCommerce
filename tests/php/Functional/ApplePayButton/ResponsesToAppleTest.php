@@ -151,6 +151,30 @@ class ResponsesToAppleTest extends TestCase
         self::assertEquals($response, $expectedResponse);
     }
 
+    public function testReorderShippingMethodsHandlesMissingIdentifierWithoutWarning()
+    {
+        $paymentDetails = [
+            'subtotal' => 10,
+            'shipping' => ['amount' => null, 'label' => null],
+            'shippingMethods' => [
+                ['label' => 'Standard', 'amount' => '5.00', 'identifier' => 'standard'],
+                ['label' => 'Express', 'amount' => '10.00'], // missing 'identifier'
+            ],
+            'taxes' => 1,
+            'total' => 11,
+        ];
+        $dataObject = \Mockery::mock();
+        $dataObject->shouldReceive('shippingMethod')->andReturn(['identifier' => 'standard']);
+        expect('get_bloginfo')->once()->with('name')->andReturn('Test Shop');
+
+        $logger = $this->helperMocks->loggerMock();
+        $appleGateway = $this->mollieGateway('applepay', false, true);
+        $responsesTemplate = new ResponsesToApple($logger, $appleGateway);
+        $response = $responsesTemplate->appleFormattedResponse($paymentDetails, $dataObject);
+
+        self::assertArrayHasKey('newShippingMethods', $response);
+    }
+
     /**
      * @inheritDoc
      */

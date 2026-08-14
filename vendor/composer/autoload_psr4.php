@@ -13,7 +13,6 @@ return array(
     'Mollie\\Inpsyde\\PaymentGateway\\' => array($baseDir . '/lib/payment-gateway/src'),
     'Mollie\\Inpsyde\\Modularity\\' => array($vendorDir . '/inpsyde/modularity/src'),
     'Mollie\\Inpsyde\\EnvironmentChecker\\' => array($baseDir . '/pluginEnvironmentChecker'),
-    'Mollie\\Dhii\\Services\\' => array($vendorDir . '/dhii/services/src'),
     'Mollie\\Api\\' => array($vendorDir . '/mollie/mollie-api-php/src'),
     'Composer\\CaBundle\\' => array($vendorDir . '/composer/ca-bundle/src'),
 );

@@ -14,6 +14,7 @@ class RestApi
     private MollieOrderService $mollieOrderService;
     private LoggerInterface $logger;
     private WebhookTestService $webhookTestService;
+    private \Mollie\WooCommerce\Payment\Webhooks\WebhookSecret $webhookSecret;
     /**
      * Constructor method for initializing the class with necessary dependencies.
      *
@@ -22,11 +23,12 @@ class RestApi
      *
      * @return void
      */
-    public function __construct(MollieOrderService $mollieOrderService, LoggerInterface $logger, WebhookTestService $webhookTestService)
+    public function __construct(MollieOrderService $mollieOrderService, LoggerInterface $logger, WebhookTestService $webhookTestService, \Mollie\WooCommerce\Payment\Webhooks\WebhookSecret $webhookSecret)
     {
         $this->mollieOrderService = $mollieOrderService;
         $this->logger = $logger;
         $this->webhookTestService = $webhookTestService;
+        $this->webhookSecret = $webhookSecret;
     }
     /**
      * Registers REST API routes for the application.
@@ -38,7 +40,54 @@ class RestApi
      */
     public function registerRoutes()
     {
-        register_rest_route(self::ROUTE_NAMESPACE, self::WEBHOOK_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'callback'], 'permission_callback' => '__return_true']]);
+        register_rest_route(self::ROUTE_NAMESPACE, self::WEBHOOK_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'callback'], 'permission_callback' => function (WP_REST_Request $request) {
+            if ($this->isWebhookRequestAuthenticated($request)) {
+                return \true;
+            }
+            return new \WP_Error('rest_forbidden', 'Invalid webhook secret.', ['status' => 401]);
+        }]]);
+    }
+    /**
+     * Authenticate an incoming REST webhook request.
+     *
+     * A request is trusted when it carries EITHER:
+     *  - a valid mollie_webhook_secret (used by webhook URLs built after the secret was
+     *    introduced), OR
+     *  - a transaction id that resolves to an order we already know about. REST webhook URLs
+     *    created before the secret existed are bare (only the id is POSTed by Mollie), so this
+     *    keeps in-flight payments working after an upgrade without failing transactions.
+     *
+     * An anonymous caller has neither and is rejected. Note the id-based fallback is weaker
+     * than the secret: it authenticates by referencing a known payment rather than proving a
+     * shared secret, and it runs one indexed order lookup for well-formed ids.
+     */
+    private function isWebhookRequestAuthenticated(WP_REST_Request $request): bool
+    {
+        if ($this->webhookSecret->check($request->get_param('mollie_webhook_secret'))) {
+            return \true;
+        }
+        $transactionId = $request->get_param('id');
+        if (!is_string($transactionId) || $transactionId === '') {
+            return \false;
+        }
+        // Only spend a DB lookup on plausibly real Mollie ids.
+        if (strpos($transactionId, 'tr_') !== 0 && strpos($transactionId, 'ord_') !== 0) {
+            return \false;
+        }
+        return $this->orderExistsForTransactionId($transactionId);
+    }
+    /**
+     * Whether an order already exists for the given Mollie transaction id, using the same
+     * lookup order as callback(): transaction_id first, then the Mollie order/payment meta.
+     */
+    private function orderExistsForTransactionId(string $transactionId): bool
+    {
+        $orders = wc_get_orders(['transaction_id' => $transactionId, 'limit' => 1]);
+        if ($orders) {
+            return \true;
+        }
+        $orders = wc_get_orders(['limit' => 1, 'meta_key' => substr($transactionId, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id', 'meta_compare' => '=', 'meta_value' => $transactionId]);
+        return (bool) $orders;
     }
     /**
      * Handles the callback request from Mollie and processes the payment.

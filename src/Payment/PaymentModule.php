@@ -76,7 +76,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
         add_action('woocommerce_api_mollie_return', function () use ($container) {
             $this->onMollieReturn($container);
         }, 10, 1);
-        add_action('template_redirect', function () use ($container) {
+        add_action('init', function () use ($container) {
             $this->mollieReturnRedirect($container);
         });
         // Show Mollie instructions on order details page
@@ -137,7 +137,10 @@ class PaymentModule implements ServiceModule, ExecutableModule
                     $order = wc_get_order($unpaid_order);
                     $mollieOrderService = $this->container->get(\Mollie\WooCommerce\Payment\MollieOrderService::class);
                     if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
-                        continue;
+                        $order = wc_get_order($unpaid_order);
+                        if (!$order->has_status('pending')) {
+                            continue;
+                        }
                     }
                     add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
                         return SharedDataDictionary::STATUS_CANCELLED;

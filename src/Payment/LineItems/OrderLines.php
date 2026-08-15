@@ -139,12 +139,20 @@ class OrderLines implements LineItemProvider
 
                 $this->currency = $this->dataHelper->getOrderCurrency($this->order);
                 $vatRate = round($this->get_item_vatRate($cart_item, $product), 2);
-                $wcTotalValue = $this->get_item_total_amount($cart_item);
-                $wcUnitPrice = $this->get_item_price($cart_item);
+                $quantity = $this->get_item_quantity($cart_item);
 
-                // Calculate Mollie prices, they expect price including VAT
-                $mollieTotal = $this->getMolliePrice($wcTotalValue, $vatRate);
-                $mollieUnit = $this->getMolliePrice($wcUnitPrice, $vatRate);
+                // Mollie prices are gross (incl. VAT); getMolliePrice() passes the gross unit price through.
+                $mollieUnit = $this->getMolliePrice($this->get_item_price($cart_item), $vatRate);
+
+                // Round unit price and discount to the currency's minor unit FIRST, then derive the line
+                // total from them, so Mollie's cross-field rule (line total equals unit price times the
+                // quantity, less the discount) holds exactly on the transmitted values even at high
+                // price-decimals with a quantity above one (PIWOO-931). The residual against the real
+                // WooCommerce line gross is reconciled order-wide by process_mismatch().
+                $unitValue = (float) $this->dataHelper->formatCurrencyValue($mollieUnit['grossPrice'], $this->currency);
+                $discountValue = (float) $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency);
+                $totalValue = ($unitValue * $quantity) - $discountValue;
+                $mollieTotal = $this->getMolliePrice($totalValue, $vatRate);
 
                 $mollie_order_item =  [
                     'sku' => $this->get_item_reference($product),

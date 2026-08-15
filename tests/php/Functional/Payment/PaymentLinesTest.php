@@ -11,15 +11,17 @@ use Mollie\WooCommerceTests\TestCase;
 use function Brain\Monkey\Functions\when;
 
 /**
- * Fast unit guard for the price/VAT accessor that PIWOO-931 ports from OrderLines into PaymentLines.
+ * Fast unit guard for the shared price/VAT accessor (LineItemPriceCalculationTrait::getMolliePrice).
  *
- * getMolliePrice() derives grossPrice and vatAmount together from a single vatRate, so the two values
- * always satisfy Mollie's cross-field rule vatAmount == grossPrice * vatRate/(100+vatRate) by construction
- * — the property the old self-division approach (round(line_tax/line_total,4)*100) could not guarantee.
- * End-to-end coverage against a real taxed WC order lives in
+ * getMolliePrice() treats its input as an already-gross (VAT-inclusive) amount and derives vatAmount
+ * from it, so vatAmount == grossPrice * vatRate/(100+vatRate) holds by construction. It must NOT
+ * re-apply tax: its callers get_item_price()/get_item_total_amount() are always gross regardless of the
+ * shop's tax-entry setting, so re-grossing double-taxed tax-exclusive shops (PIWOO-931 regression).
+ * End-to-end coverage against real taxed WC orders lives in
  * tests/Integration/spec/Payment/PaymentLinesTest.php.
  *
  * @covers \Mollie\WooCommerce\Payment\LineItems\PaymentLines::getMolliePrice
+ * @covers \Mollie\WooCommerce\Payment\LineItems\LineItemPriceCalculationTrait::getMolliePrice
  */
 class PaymentLinesTest extends TestCase
 {
@@ -32,29 +34,28 @@ class PaymentLinesTest extends TestCase
         parent::setUp();
         $this->dataHelper = Mockery::mock(Data::class);
         $this->sut = new PaymentLines($this->dataHelper, 'mollie-test');
-        // getMolliePrice() treats wcPrice as the net amount when prices exclude tax.
+        // The gross input must pass through unchanged even in a tax-exclusive shop.
         when('wc_prices_include_tax')->justReturn(false);
     }
 
     /**
-     * PIWOO-931
-     *   Given a line's net price and a single configured VAT rate
+     *   Given a line's gross (VAT-inclusive) price and a single configured VAT rate
      *   When PaymentLines derives the Mollie gross price and VAT amount
-     *   Then vatAmount equals grossPrice * rate/(100+rate), the equation Mollie validates
+     *   Then grossPrice is returned unchanged (no re-grossing) and vatAmount == grossPrice * rate/(100+rate)
      *
-     * @dataProvider provide_net_price_and_rate
+     * @dataProvider provide_gross_price_and_rate
      * @covers \Mollie\WooCommerce\Payment\LineItems\PaymentLines::getMolliePrice
      */
-    public function test_get_mollie_price_satisfies_mollie_validation_formula(
-        float $netPrice,
+    public function test_get_mollie_price_passes_gross_through_and_derives_vat(
+        float $grossPrice,
         float $vatRate,
         float $expectedGross,
         float $expectedVat
     ): void {
         // Arrange / When
-        $result = $this->callPrivate($this->sut, 'getMolliePrice', $netPrice, $vatRate);
+        $result = $this->callPrivate($this->sut, 'getMolliePrice', $grossPrice, $vatRate);
 
-        // Then
+        // Then — gross is passed through unchanged
         self::assertEqualsWithDelta($expectedGross, $result['grossPrice'], 1e-9);
         self::assertEqualsWithDelta($expectedVat, $result['vatAmount'], 1e-9);
         // The invariant Mollie enforces server-side.
@@ -66,17 +67,16 @@ class PaymentLinesTest extends TestCase
         );
     }
 
-    public function provide_net_price_and_rate(): array
+    public function provide_gross_price_and_rate(): array
     {
         return [
-            // net, rate, expected gross, expected vat
-            'default 21% clean'        => [100.0, 21.0, 121.0, 21.0],
-            'DKK 25% non-clean net'    => [79.2, 25.0, 99.0, 19.8],
+            // gross in, rate, expected gross (unchanged), expected vat
+            'gross 121 @21%'        => [121.0, 21.0, 121.0, 21.0],
+            'gross 99 @25%'         => [99.0, 25.0, 99.0, 19.8],
         ];
     }
 
     /**
-     * PIWOO-931 (guards the PIWOO-516 Germanized/Billie B2B scenario)
      *   Given a 0% VAT line
      *   When PaymentLines derives the Mollie price
      *   Then the price is returned unchanged and vatAmount is 0, so no VAT mismatch is reintroduced
@@ -95,6 +95,8 @@ class PaymentLinesTest extends TestCase
 
     private function callPrivate(object $obj, string $method, ...$args)
     {
-        return (new \ReflectionMethod($obj, $method))->invoke($obj, ...$args);
+        $reflection = new \ReflectionMethod($obj, $method);
+        $reflection->setAccessible(true);
+        return $reflection->invoke($obj, ...$args);
     }
 }

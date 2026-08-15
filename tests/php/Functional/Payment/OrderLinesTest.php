@@ -10,6 +10,7 @@ use Mollie\WooCommerce\Payment\LineItems\OrderLines;
 use Mollie\WooCommerce\Payment\LineItems\PaymentLines;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerceTests\TestCase;
+use function Brain\Monkey\Functions\when;
 
 /**
  * @covers \Mollie\WooCommerce\Payment\LineItems\OrderLines
@@ -141,8 +142,33 @@ class OrderLinesTest extends TestCase
         self::assertEqualsWithDelta(0.8, $paymentPrice, 1e-10);
     }
 
+    /**
+     * @scenario getMolliePrice() passes the already-gross amount through unchanged for both builders,
+     *           deriving vatAmount == grossPrice * rate/(100+rate); it must not re-apply tax in a
+     *           tax-exclusive shop
+     * @covers \Mollie\WooCommerce\Payment\LineItems\OrderLines::getMolliePrice
+     * @covers \Mollie\WooCommerce\Payment\LineItems\PaymentLines::getMolliePrice
+     */
+    public function test_get_mollie_price_passes_gross_through_for_both_builders(): void
+    {
+        // Arrange — even when the shop enters prices excluding tax, the input is already gross.
+        when('wc_prices_include_tax')->justReturn(false);
+
+        // When
+        $order = $this->callPrivate($this->sut, 'getMolliePrice', 119.0, 19.0);
+        $payment = $this->callPrivate($this->paymentLinesSut, 'getMolliePrice', 119.0, 19.0);
+
+        // Then — gross unchanged (fails while getMolliePrice re-grosses), vat derived from it.
+        self::assertEqualsWithDelta(119.0, $order['grossPrice'], 1e-9);
+        self::assertEqualsWithDelta(19.0, $order['vatAmount'], 1e-9);
+        self::assertEqualsWithDelta(119.0, $payment['grossPrice'], 1e-9);
+        self::assertEqualsWithDelta(19.0, $payment['vatAmount'], 1e-9);
+    }
+
     private function callPrivate(object $obj, string $method, ...$args)
     {
-        return (new \ReflectionMethod($obj, $method))->invoke($obj, ...$args);
+        $reflection = new \ReflectionMethod($obj, $method);
+        $reflection->setAccessible(true);
+        return $reflection->invoke($obj, ...$args);
     }
 }

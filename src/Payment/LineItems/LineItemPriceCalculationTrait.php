@@ -46,15 +46,18 @@ trait LineItemPriceCalculationTrait
         return $item_vatRate;
     }
     /**
-     * Build gross price and VAT amount for the Mollie API from a single VAT rate.
+     * Split a gross (VAT-inclusive) amount into grossPrice and vatAmount for the Mollie API.
      *
-     * @param float $wcPrice
+     * The input is always gross: the callers get_item_price() and get_item_total_amount() add
+     * line_subtotal_tax / line_tax regardless of the shop's tax-entry setting. The amount is passed through
+     * unchanged and only the VAT portion is derived from it.
+     *
+     * @param float $grossPrice
      * @param float $vatRate
      * @return float[]
      */
-    protected function getMolliePrice(float $wcPrice, float $vatRate): array
+    protected function getMolliePrice(float $grossPrice, float $vatRate): array
     {
-        $grossPrice = wc_prices_include_tax() ? $wcPrice : $wcPrice * (1 + $vatRate / 100);
         return ['grossPrice' => $grossPrice, 'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate))];
     }
 }

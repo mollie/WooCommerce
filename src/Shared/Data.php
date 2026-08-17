@@ -562,9 +562,10 @@ class Data
     /**
      * @param int $userId
      * @param string $apiKey
+     * @param bool $allowCreate Whether creating a new Mollie Customer is permitted for this call.
      * @return null|string
      */
-    public function getUserMollieCustomerId($userId, $apiKey)
+    public function getUserMollieCustomerId($userId, $apiKey, bool $allowCreate)
     {
         // Guest users can't buy subscriptions and don't need a Mollie customer ID
         // https://github.com/mollie/WooCommerce/issues/132
@@ -605,6 +606,9 @@ class Data
 
         // If there is no Mollie Customer ID set, try to create a new Mollie Customer
         if (empty($customerId)) {
+            if (!$allowCreate) {
+                return null;
+            }
             try {
                 $userdata = get_userdata($userId);
 

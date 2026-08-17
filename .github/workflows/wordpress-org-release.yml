@@ -19,7 +19,18 @@ on:
         default: true
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject dev/* refs
+        run: |
+          if [[ "${{ inputs.GIT_REF }}" == dev/* ]]; then
+            echo "::error::GIT_REF '${{ inputs.GIT_REF }}' looks like a source branch, not a release ref. Publish from the branch/tag that carries the built release (e.g. a version tag or 'develop'), not a 'dev/' branch. Aborting."
+            exit 1
+          fi
+
   publish:
+    needs: validate
     uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-release.yml@chore/remove-extra-env-var
     with:
       SVN_PLUGIN_SLUG: mollie-payments-for-woocommerce

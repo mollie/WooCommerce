@@ -37,7 +37,7 @@ jobs:
       PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
       GIT_REF: ${{ inputs.GIT_REF }}
       UPDATE_TRUNK_ONLY: ${{ inputs.UPDATE_TRUNK_ONLY }}
-      DRY_RUN: ${{ inputs.DRY_RUN }}
+      DRY_RUN: true #Always set to true while testing this action. Replace with the following when ready to use it: ${{ inputs.DRY_RUN }}
     secrets:
       SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
       SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}

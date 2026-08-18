@@ -220,10 +220,10 @@ class AppleAjaxRequests
      */
     protected function whichCalculateTotals($applePayRequestDataObject)
     {
-        if ($applePayRequestDataObject->callerPage === 'productDetail') {
+        if ($applePayRequestDataObject->callerPage() === 'productDetail') {
             return $this->calculateTotalsSingleProduct($applePayRequestDataObject->productId(), $applePayRequestDataObject->productQuantity(), $applePayRequestDataObject->simplifiedContact(), $applePayRequestDataObject->shippingMethod());
         }
-        if ($applePayRequestDataObject->callerPage === 'cart') {
+        if ($applePayRequestDataObject->callerPage() === 'cart') {
             return $this->calculateTotalsCartPage($applePayRequestDataObject->simplifiedContact(), $applePayRequestDataObject->shippingMethod());
         }
         return \false;

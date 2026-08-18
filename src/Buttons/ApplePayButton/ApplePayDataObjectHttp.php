@@ -327,6 +327,10 @@ class ApplePayDataObjectHttp
     {
         return $this->simplifiedContact;
     }
+    public function callerPage()
+    {
+        return $this->callerPage;
+    }
     public function isNonceValid()
     {
         $nonce = filter_input(\INPUT_POST, 'woocommerce-process-checkout-nonce', \FILTER_SANITIZE_SPECIAL_CHARS);

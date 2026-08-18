@@ -7,7 +7,7 @@ on:
         description: 'Plugin version to publish (MAJOR.MINOR.PATCH)'
         required: true
       GIT_REF:
-        description: 'Git tag, branch, or commit to publish'
+        description: 'Release branch to publish from, must be release/MAJOR.MINOR.PATCH (e.g. release/1.2.3)'
         required: true
       UPDATE_TRUNK_ONLY:
         description: 'Only sync trunk, skip creating an SVN tag'
@@ -22,10 +22,10 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Reject dev/* refs
+      - name: Require release/MAJOR.MINOR.PATCH ref
         run: |
-          if [[ "${{ inputs.GIT_REF }}" == dev/* ]]; then
-            echo "::error::GIT_REF '${{ inputs.GIT_REF }}' looks like a source branch, not a release ref. Publish from the branch/tag that carries the built release (e.g. a version tag or 'develop'), not a 'dev/' branch. Aborting."
+          if [[ ! "${{ inputs.GIT_REF }}" =~ ^release/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::GIT_REF '${{ inputs.GIT_REF }}' is not a release branch. Publish from a 'release/MAJOR.MINOR.PATCH' branch (e.g. 'release/1.2.3'). Aborting."
             exit 1
           fi
 

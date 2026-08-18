@@ -369,6 +369,48 @@ class AjaxRequestsTest extends TestCase
         $this->assertSame('Kosten betaalmethode', $result['fee']['label']);
     }
 
+    /**
+     * GIVEN an ApplePayDataObjectHttp with callerPage set to 'productDetail'
+     * WHEN whichCalculateTotals() reads callerPage from AppleAjaxRequests (a different class)
+     * THEN it must not fatal on accessing the protected property directly
+     */
+    public function testWhichCalculateTotalsDoesNotFatalOnProtectedCallerPageAccess()
+    {
+        $logger = $this->helperMocks->loggerMock();
+        $dataObject = $this->createPartialMock(
+            ApplePayDataObjectHttp::class,
+            ['productId', 'productQuantity', 'simplifiedContact', 'shippingMethod']
+        );
+        $dataObject->method('productId')->willReturn('123');
+        $dataObject->method('productQuantity')->willReturn('1');
+        $dataObject->method('simplifiedContact')->willReturn(['country' => 'NL']);
+        $dataObject->method('shippingMethod')->willReturn([]);
+        $reflection = new \ReflectionProperty(ApplePayDataObjectHttp::class, 'callerPage');
+        $reflection->setAccessible(true);
+        $reflection->setValue($dataObject, 'productDetail');
+
+        list(, $responsesTemplate) = $this->responsesToApple();
+        $apiClientMock = $this->createConfiguredMock(MollieApiClient::class, []);
+        $testee = $this->buildTesteeMock(
+            AppleAjaxRequests::class,
+            [
+                $responsesTemplate,
+                $this->helperMocks->noticeMock(),
+                $logger,
+                $this->helperMocks->apiHelper($apiClientMock),
+                $this->helperMocks->settingsHelper(),
+            ],
+            ['calculateTotalsSingleProduct']
+        )->getMock();
+        $testee->expects($this->once())
+            ->method('calculateTotalsSingleProduct')
+            ->willReturn(['total' => 10]);
+
+        $result = $this->invokeProtectedMethod($testee, 'whichCalculateTotals', [$dataObject]);
+
+        $this->assertSame(['total' => 10], $result);
+    }
+
     private function invokeProtectedMethod($object, string $method, array $args = [])
     {
         $reflection = new \ReflectionMethod($object, $method);

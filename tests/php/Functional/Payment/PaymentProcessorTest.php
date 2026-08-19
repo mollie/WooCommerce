@@ -13,6 +13,8 @@ use Mollie\Api\Resources\Order as MollieApiOrder;
 use Mollie\Api\Resources\Payment as MollieApiPayment;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
+use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\TestCase;
 use Psr\Log\LoggerInterface;
@@ -520,5 +522,58 @@ class PaymentProcessorTest extends TestCase
         $result = $this->invokeCancel($this->buildSut(), $order);
 
         $this->assertNull($result);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // getUserMollieCustomerId() — passthrough to Data
+    // ──────────────────────────────────────────────────────────────────────
+
+    private function invokeGetUserMollieCustomerId(PaymentProcessor $sut, object $order)
+    {
+        $method = new ReflectionMethod(PaymentProcessor::class, 'getUserMollieCustomerId');
+        $method->setAccessible(true);
+        return $method->invoke($sut, $order);
+    }
+
+    /**
+     * @test
+     * @scenario getUserMollieCustomerId() delegates entirely to Data::getUserMollieCustomerId(),
+     *           passing the order's customer id, the API key, and the order id. Whether creating
+     *           a Mollie Customer is actually allowed is decided solely inside Data, not here.
+     */
+    public function test_delegates_to_data_helper_with_customer_id_api_key_and_order_id(): void
+    {
+        $order = Mockery::mock('WC_Order');
+        $order->shouldReceive('get_id')->andReturn(42);
+        $order->shouldReceive('get_customer_id')->andReturn(7);
+
+        $dataMock = $this->getMockBuilder(Data::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getUserMollieCustomerId'])
+            ->getMock();
+        $dataMock->expects($this->once())
+            ->method('getUserMollieCustomerId')
+            ->with(7, 'test_key', 42)
+            ->willReturn('cst_123');
+
+        $settings = $this->createConfiguredMock(Settings::class, [
+            'getApiKey' => 'test_key',
+        ]);
+
+        $sut = new PaymentProcessor(
+            $this->helperMocks->noticeMock(),
+            $this->logger,
+            $this->helperMocks->paymentFactory(),
+            $dataMock,
+            $this->helperMocks->apiHelper($this->apiClientMock),
+            $settings,
+            $this->helperMocks->pluginId(),
+            $this->createMock(PaymentCheckoutRedirectService::class),
+            []
+        );
+
+        $result = $this->invokeGetUserMollieCustomerId($sut, $order);
+
+        $this->assertSame('cst_123', $result);
     }
 }

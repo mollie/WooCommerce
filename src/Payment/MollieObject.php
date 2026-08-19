@@ -601,7 +601,9 @@ class MollieObject
             ) {
                 $order->update_meta_data('_mollie_mandate_id', $payment->mandateId);
                 $order->save();
-                $customerId = $this->getUserMollieCustomerId($order);
+                // A mandate can't exist without a Mollie Customer, so this is exempt from the
+                // "store customer details" setting.
+                $customerId = $this->getUserMollieCustomerId($order, true);
                 do_action($this->pluginId . '_after_mandate_created', $payment, $order, $customerId, $payment->mandateId);
 
                 $subscriptions = wcs_get_subscriptions_for_order($order);

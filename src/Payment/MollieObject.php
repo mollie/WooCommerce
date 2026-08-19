@@ -632,15 +632,15 @@ class MollieObject
 
     /**
      * @param $order
-     * @param $test_mode
+     * @param bool $allowCreate Whether creating a new Mollie Customer is permitted for this call.
      * @return null|string
      */
-    protected function getUserMollieCustomerId($order)
+    protected function getUserMollieCustomerId($order, bool $allowCreate)
     {
         $order_customer_id = $order->get_customer_id();
         $apiKey = $this->settingsHelper->getApiKey();
 
-        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
+        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey, $allowCreate);
     }
     /**
      * @param $order

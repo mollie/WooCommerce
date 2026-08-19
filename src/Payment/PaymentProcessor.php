@@ -187,15 +187,10 @@ class PaymentProcessor implements PaymentProcessorInterface
      */
     protected function getUserMollieCustomerId($order)
     {
-        $orderId = $order->get_id();
-        $allowCreate = $this->settingsHelper->shouldStoreCustomer()
-            || $this->dataHelper->isSubscription($orderId)
-            || $this->dataHelper->isWcSubscription($orderId);
-
         $order_customer_id = $order->get_customer_id();
         $apiKey = $this->settingsHelper->getApiKey();
 
-        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey, $allowCreate);
+        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey, $order->get_id());
     }
 
     protected function paymentTypeBasedOnGateway($paymentMethod)

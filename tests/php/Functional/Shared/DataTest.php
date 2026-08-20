@@ -83,7 +83,7 @@ class DataTest extends TestCase
     /**
      * @test
      * @scenario When a Mollie Customer is allowed for this order (setting enabled), a missing
-     *           Mollie customer ID is still created via the API as before.
+     *           Mollie customer ID is created via the API.
      */
     public function createsCustomerWhenAllowedViaSetting(): void
     {

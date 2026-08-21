@@ -4,4 +4,7 @@
         <custom-field action="copy">_mollie_voucher_category</custom-field>
         <custom-field action="copy">voucher</custom-field>
     </custom-fields>
+    <custom-term-fields>
+        <custom-term-field action="copy">mollie_voucher_translation_category</custom-term-field>
+    </custom-term-fields>
 </wpml-config>

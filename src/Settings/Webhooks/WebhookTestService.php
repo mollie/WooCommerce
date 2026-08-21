@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Webhooks;
 
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Psr\Log\LoggerInterface as Logger;
@@ -33,20 +34,28 @@ class WebhookTestService
     private $logger;
 
     /**
+     * @var WebhookSecret
+     */
+    private $webhookSecret;
+
+    /**
      * WebhookTestService constructor.
      *
      * @param Api $apiHelper Mollie API helper
      * @param Settings $settingsHelper Settings helper
      * @param Logger $logger Logger instance
+     * @param WebhookSecret $webhookSecret Provides the webhook secret
      */
     public function __construct(
         Api $apiHelper,
         Settings $settingsHelper,
-        Logger $logger
+        Logger $logger,
+        WebhookSecret $webhookSecret
     ) {
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
         $this->logger = $logger;
+        $this->webhookSecret = $webhookSecret;
     }
 
     /**
@@ -228,7 +237,9 @@ class WebhookTestService
                 ],
             ];
 
-            $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($paymentData));
+            $loggablePaymentData = $paymentData;
+            $loggablePaymentData['webhookUrl'] = remove_query_arg('mollie_webhook_secret', $webhookUrl);
+            $this->logger->debug(__METHOD__ . ': Creating test payment with data: ' . wp_json_encode($loggablePaymentData));
 
             $payment = $this->apiHelper->getApiClient($apiKey)->payments->create($paymentData);
             $checkoutUrl = $payment->getCheckoutUrl();
@@ -255,12 +266,13 @@ class WebhookTestService
      * @param string $testId Test identifier
      * @return string Webhook URL
      */
-    private function getWebhookUrl(string $testId): string
+    protected function getWebhookUrl(string $testId): string
     {
         // Use the REST API webhook endpoint
         $webhookUrl = rest_url('mollie/v1/webhook');
         $webhookUrl = add_query_arg([
                                         'test_id' => $testId,
+                                        'mollie_webhook_secret' => $this->webhookSecret->getOrCreate(),
                                     ], $webhookUrl);
 
         // Convert domain to ASCII for international domains

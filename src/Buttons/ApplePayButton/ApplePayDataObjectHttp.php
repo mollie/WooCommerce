@@ -55,6 +55,10 @@ class ApplePayDataObjectHttp
      * @var Logger
      */
     protected $logger;
+    /**
+     * @var string|null
+     */
+    protected $callerPage = null;
 
     /**
      * ApplePayDataObjectHttp constructor.
@@ -455,6 +459,11 @@ class ApplePayDataObjectHttp
     public function simplifiedContact()
     {
         return $this->simplifiedContact;
+    }
+
+    public function callerPage()
+    {
+        return $this->callerPage;
     }
 
     public function isNonceValid()

@@ -30,6 +30,7 @@ use Mollie\WooCommerce\Payment\Request\RequestFactory;
 use Mollie\WooCommerce\Payment\Request\Strategies\RequestStrategyInterface;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
@@ -126,6 +127,7 @@ return static function (): array {
             return new UrlMiddleware(
                 $container->get('shared.plugin_id'),
                 $container->get(Logger::class),
+                $container->get(WebhookSecret::class),
             );
         },
         SelectedIssuerMiddleware::class => static function (ContainerInterface $container): SelectedIssuerMiddleware {
@@ -196,13 +198,18 @@ return static function (): array {
                 $middlewareHandler
             );
         },
+        WebhookSecret::class => static function (): WebhookSecret {
+            return new WebhookSecret();
+        },
+
         RestApi::class => static function (ContainerInterface $container): RestApi {
             $webhookTestService = $container->get(WebhookTestService::class);
             assert($webhookTestService instanceof WebhookTestService);
             return new RestApi(
                 $container->get(MollieOrderService::class),
                 $container->get(Logger::class),
-                $webhookTestService
+                $webhookTestService,
+                $container->get(WebhookSecret::class)
             );
         },
 

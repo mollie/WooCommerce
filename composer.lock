@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7b563cd52561b132e3f0e82f3153a09f",
+    "content-hash": "aa9667a34f97928bf5acd6e4400e7ef3",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -77,53 +77,6 @@
                 }
             ],
             "time": "2026-03-30T09:16:10+00:00"
-        },
-        {
-            "name": "dhii/services",
-            "version": "v0.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Dhii/services.git",
-                "reference": "09cad8199a59d2003ad19126213075aefecaf17b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Dhii/services/zipball/09cad8199a59d2003ad19126213075aefecaf17b",
-                "reference": "09cad8199a59d2003ad19126213075aefecaf17b",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1 | ^8.0",
-                "psr/container": "^1.0"
-            },
-            "require-dev": {
-                "codeclimate/php-test-reporter": "<=0.3.2",
-                "phpunit/phpunit": "^7.0 | ^8.0 | ^9.0",
-                "slevomat/coding-standard": "^6.0",
-                "vimeo/psalm": "^4.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Dhii\\Services\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Dhii Team",
-                    "email": "development@dhii.co"
-                }
-            ],
-            "description": "A collection of useful DI service implementations.",
-            "support": {
-                "issues": "https://github.com/Dhii/services/issues",
-                "source": "https://github.com/Dhii/services/tree/v0.1.0"
-            },
-            "time": "2022-01-06T14:57:20+00:00"
         },
         {
             "name": "enshrined/svg-sanitize",

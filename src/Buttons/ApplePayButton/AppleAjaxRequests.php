@@ -274,7 +274,7 @@ class AppleAjaxRequests
         $applePayRequestDataObject
     ) {
 
-        if ($applePayRequestDataObject->callerPage === 'productDetail') {
+        if ($applePayRequestDataObject->callerPage() === 'productDetail') {
             return $this->calculateTotalsSingleProduct(
                 $applePayRequestDataObject->productId(),
                 $applePayRequestDataObject->productQuantity(),
@@ -282,7 +282,7 @@ class AppleAjaxRequests
                 $applePayRequestDataObject->shippingMethod()
             );
         }
-        if ($applePayRequestDataObject->callerPage === 'cart') {
+        if ($applePayRequestDataObject->callerPage() === 'cart') {
             return $this->calculateTotalsCartPage(
                 $applePayRequestDataObject->simplifiedContact(),
                 $applePayRequestDataObject->shippingMethod()
@@ -484,6 +484,10 @@ class AppleAjaxRequests
             'mollie-payments-for-woocommerce_gatewayFeeLabel',
             $surcharge->defaultFeeLabel()
         );
+        if (function_exists('icl_register_string')) {
+            icl_register_string('mollie-payments-for-woocommerce', 'gatewayFeeLabel', $surchargeLabel);
+        }
+        $surchargeLabel = apply_filters('wpml_translate_single_string', $surchargeLabel, 'mollie-payments-for-woocommerce', 'gatewayFeeLabel');
         $settings = get_option('mollie_wc_gateway_applepay_settings', false);
 
         $calculatedFee = round((float)$surcharge->calculateFeeAmount($cart, $settings), 2);

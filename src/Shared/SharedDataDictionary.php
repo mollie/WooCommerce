@@ -43,6 +43,8 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Vipps',
         'Mollie_WC_Gateway_Mobilepay',
         'Mollie_WC_Gateway_Bizum',
+        'Mollie_WC_Gateway_Wero',
+        'Mollie_WC_Gateway_Billink',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [
@@ -159,6 +161,8 @@ class SharedDataDictionary
         'pl_PL',
         'lv_LV',
         'lt_LT',
+        'cs_CZ',
+        'sk_SK',
     ];
     /**
      * @var string

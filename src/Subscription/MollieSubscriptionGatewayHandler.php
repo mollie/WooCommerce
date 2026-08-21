@@ -16,6 +16,7 @@ use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Payment\Request\Middleware\SelectedIssuerMiddleware;
 use Mollie\WooCommerce\Payment\Request\Middleware\UrlMiddleware;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
@@ -65,7 +66,8 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         MollieObject $mollieObject,
         PaymentFactory $paymentFactory,
         string $pluginId,
-        Api $apiHelper
+        Api $apiHelper,
+        WebhookSecret $webhookSecret
     ) {
 
         parent::__construct(
@@ -83,7 +85,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
 
         $this->apiHelper = $apiHelper;
         $middlewares = [
-            new UrlMiddleware($pluginId, $logger),
+            new UrlMiddleware($pluginId, $logger, $webhookSecret),
             new SelectedIssuerMiddleware($pluginId),
         ];
         $middlewareHandler = new MiddlewareHandler($middlewares);
@@ -563,6 +565,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         }
         $renewal_order->delete_meta_data('_mollie_payment_id');
         $renewal_order->delete_meta_data('_mollie_cancelled_payment_id');
+        $renewal_order->delete_meta_data('_mollie_order_id');
         $renewal_order->save();
         return $renewal_order;
     }

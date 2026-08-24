@@ -514,14 +514,13 @@ class MollieObject
     }
     /**
      * @param $order
-     * @param $test_mode
      * @return null|string
      */
     protected function getUserMollieCustomerId($order)
     {
         $order_customer_id = $order->get_customer_id();
         $apiKey = $this->settingsHelper->getApiKey();
-        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
+        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey, $order->get_id());
     }
     /**
      * @param $order

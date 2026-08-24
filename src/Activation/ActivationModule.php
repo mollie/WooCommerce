@@ -10,6 +10,7 @@ use Mollie\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Activation\Migrations\MigratorInterface;
 use Mollie\WooCommerce\Activation\Migrations\PaymentMethodSettingsMigrator;
+use Mollie\WooCommerce\Activation\Migrations\VoucherTermMetaTranslationMigrator;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\Psr\Container\ContainerInterface;
@@ -27,7 +28,7 @@ class ActivationModule implements ExecutableModule, ServiceModule
     public function services(): array
     {
         return ['activation.migrators' => static function (): array {
-            return [new PaymentMethodSettingsMigrator()];
+            return [new PaymentMethodSettingsMigrator(), new VoucherTermMetaTranslationMigrator()];
         }];
     }
     /**

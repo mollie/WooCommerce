@@ -21,12 +21,18 @@ class Paypal extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod im
     }
     public function getFormFields($generalFormFields): array
     {
-        $paymentMethodFormFieds = ['mollie_paypal_button_enabled_cart' => ['type' => 'checkbox', 'title' => __('Display on cart page', 'mollie-payments-for-woocommerce'), 'description' => __('Enable the PayPal button to be used in the cart page.', 'mollie-payments-for-woocommerce'), 'default' => 'no'], 'mollie_paypal_button_enabled_product' => ['type' => 'checkbox', 'title' => __('Display on product page', 'mollie-payments-for-woocommerce'), 'description' => __('Enable the PayPal button to be used in the product page.', 'mollie-payments-for-woocommerce'), 'default' => 'no'], 'color' => ['type' => 'select', 'id' => 'mollie_paypal_button_color', 'title' => _x('Button text language and color', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'), 'description' => _x('Select the text and the colour of the button.', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'), 'default' => 'en-buy-pill-golden', 'options' => $this->buttonOptions()], 'mollie_paypal_button_minimum_amount' => ['type' => 'number', 'title' => __('Minimum amount to display button', 'mollie-payments-for-woocommerce'), 'description' => __('If the product or the cart total amount is under this number, then the button will not show up.', 'mollie-payments-for-woocommerce'), 'custom_attributes' => ['step' => '0.01', 'min' => '0', 'max' => '100000000'], 'default' => 0, 'desc_tip' => \true]];
+        $paymentMethodFormFieds = ['mollie_paypal_button_enabled_cart' => ['type' => 'checkbox', 'title' => __('Display on cart page', 'mollie-payments-for-woocommerce'), 'description' => __('Enable the PayPal button to be used in the cart page.', 'mollie-payments-for-woocommerce'), 'default' => 'no'], 'mollie_paypal_button_enabled_product' => ['type' => 'checkbox', 'title' => __('Display on product page', 'mollie-payments-for-woocommerce'), 'description' => __('Enable the PayPal button to be used in the product page.', 'mollie-payments-for-woocommerce'), 'default' => 'no'], 'mollie_paypal_button_enabled_checkout' => ['type' => 'checkbox', 'title' => __('Display on checkout page', 'mollie-payments-for-woocommerce'), 'description' => __('Enable the PayPal button to be used in the Express Buttons section of the checkout page.', 'mollie-payments-for-woocommerce'), 'default' => 'no'], 'color' => ['type' => 'select', 'id' => 'mollie_paypal_button_color', 'title' => _x('Button text language and color', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'), 'description' => _x('Select the text and the colour of the button.', 'Mollie PayPal Button Settings', 'mollie-payments-for-woocommerce'), 'default' => 'en-buy-pill-golden', 'options' => $this->buttonOptions()], 'mollie_paypal_button_minimum_amount' => ['type' => 'number', 'title' => __('Minimum amount to display button', 'mollie-payments-for-woocommerce'), 'description' => __('If the product or the cart total amount is under this number, then the button will not show up.', 'mollie-payments-for-woocommerce'), 'custom_attributes' => ['step' => '0.01', 'min' => '0', 'max' => '100000000'], 'default' => 0, 'desc_tip' => \true]];
         return array_merge($generalFormFields, $paymentMethodFormFieds);
     }
     public function isExpressCheckoutEnabled(): bool
     {
-        return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
+        if (is_cart()) {
+            return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
+        }
+        if (is_checkout()) {
+            return $this->getProperty('mollie_paypal_button_enabled_checkout') === 'yes';
+        }
+        return \false;
     }
     protected function blocksExpressData(ContainerInterface $container): ?array
     {

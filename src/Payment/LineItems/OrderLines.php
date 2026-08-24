@@ -11,6 +11,7 @@ use WC_Order_Item;
 use WC_Tax;
 class OrderLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProvider
 {
+    use \Mollie\WooCommerce\Payment\LineItems\LineItemPriceCalculationTrait;
     /**
      * Formatted order lines.
      *
@@ -104,11 +105,18 @@ class OrderLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProvid
                 }
                 $this->currency = $this->dataHelper->getOrderCurrency($this->order);
                 $vatRate = round($this->get_item_vatRate($cart_item, $product), 2);
-                $wcTotalValue = $this->get_item_total_amount($cart_item);
-                $wcUnitPrice = $this->get_item_price($cart_item);
-                // Calculate Mollie prices, they expect price including VAT
-                $mollieTotal = $this->getMolliePrice($wcTotalValue, $vatRate);
-                $mollieUnit = $this->getMolliePrice($wcUnitPrice, $vatRate);
+                $quantity = $this->get_item_quantity($cart_item);
+                // Mollie prices are gross (incl. VAT); getMolliePrice() passes the gross unit price through.
+                $mollieUnit = $this->getMolliePrice($this->get_item_price($cart_item), $vatRate);
+                // Round unit price and discount to the currency's minor unit FIRST, then derive the line
+                // total from them, so Mollie's cross-field rule (line total equals unit price times the
+                // quantity, less the discount) holds exactly on the transmitted values even at high
+                // price-decimals with a quantity above one (PIWOO-931). The residual against the real
+                // WooCommerce line gross is reconciled order-wide by process_mismatch().
+                $unitValue = (float) $this->dataHelper->formatCurrencyValue($mollieUnit['grossPrice'], $this->currency);
+                $discountValue = (float) $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency);
+                $totalValue = $unitValue * $quantity - $discountValue;
+                $mollieTotal = $this->getMolliePrice($totalValue, $vatRate);
                 $mollie_order_item = ['sku' => $this->get_item_reference($product), 'type' => $product instanceof \WC_Product && $product->is_virtual() ? 'digital' : 'physical', 'name' => $this->get_item_name($cart_item), 'quantity' => $this->get_item_quantity($cart_item), 'vatRate' => $vatRate, 'unitPrice' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue($mollieUnit['grossPrice'], $this->currency)], 'totalAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue($mollieTotal['grossPrice'], $this->currency)], 'vatAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue($mollieTotal['vatAmount'], $this->currency)], 'discountAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency)], 'metadata' => ['order_item_id' => $cart_item->get_id()], 'productUrl' => $product instanceof \WC_Product ? $product->get_permalink() : null];
                 if ($this->get_item_total_amount($cart_item) < 0) {
                     $mollie_order_item['type'] = 'discount';
@@ -240,39 +248,6 @@ class OrderLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProvid
         return $cart_item['line_tax'];
     }
     /**
-     * Calculate item tax percentage.
-     *
-     * @since  1.0
-     * @access private
-     *
-     * @param  WC_Order_Item  $cart_item Cart item.
-     * @param  null|false|\WC_Product $product   Product object.
-     *
-     * @return integer $item_vatRate Item tax percentage formatted for Mollie Orders API.
-     */
-    private function get_item_vatRate($cart_item, $product)
-    {
-        if ($product && $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0) {
-            // Calculate tax rate.
-            $_tax = new WC_Tax();
-            $tmp_rates = $_tax->get_rates($product->get_tax_class());
-            $item_vatRate = 0;
-            foreach ($tmp_rates as $rate) {
-                if (isset($rate['rate'])) {
-                    if ($rate['compound'] === "yes") {
-                        $compoundRate = round($item_vatRate * ($rate['rate'] / 100)) + $rate['rate'];
-                        $item_vatRate += $compoundRate;
-                        continue;
-                    }
-                    $item_vatRate += $rate['rate'];
-                }
-            }
-        } else {
-            $item_vatRate = 0;
-        }
-        return $item_vatRate;
-    }
-    /**
      * Get cart item price.
      *
      * @since  1.0
@@ -373,17 +348,5 @@ class OrderLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProvid
     private function get_item_total_amount($cart_item)
     {
         return $cart_item['line_total'] + $cart_item['line_tax'];
-    }
-    /**
-     * Build price data for Mollie API.
-     *
-     * @param float $wcPrice
-     * @param float $vatRate
-     * @return float[]
-     */
-    private function getMolliePrice(float $wcPrice, float $vatRate): array
-    {
-        $grossPrice = wc_prices_include_tax() ? $wcPrice : $wcPrice * (1 + $vatRate / 100);
-        return ['grossPrice' => $grossPrice, 'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate))];
     }
 }

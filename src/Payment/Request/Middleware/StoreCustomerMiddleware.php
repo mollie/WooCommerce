@@ -3,7 +3,7 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
-use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
 /**
  * Class StoreCustomerMiddleware
@@ -15,17 +15,17 @@ use WC_Order;
 class StoreCustomerMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
-     * @var Settings The settings helper instance.
+     * @var Data The data helper instance.
      */
-    private Settings $settingsHelper;
+    private Data $dataHelper;
     /**
      * StoreCustomerMiddleware constructor.
      *
-     * @param Settings $settingsHelper The settings helper instance.
+     * @param Data $dataHelper The data helper instance.
      */
-    public function __construct(Settings $settingsHelper)
+    public function __construct(Data $dataHelper)
     {
-        $this->settingsHelper = $settingsHelper;
+        $this->dataHelper = $dataHelper;
     }
     /**
      * Invoke the middleware.
@@ -38,8 +38,8 @@ class StoreCustomerMiddleware implements \Mollie\WooCommerce\Payment\Request\Mid
      */
     public function __invoke(array $requestData, WC_Order $order, string $context, callable $next): array
     {
-        $storeCustomer = $this->settingsHelper->shouldStoreCustomer();
-        if (!$storeCustomer) {
+        $allowCustomer = $this->dataHelper->isMollieCustomerAllowedForOrder($order->get_id());
+        if (!$allowCustomer) {
             if ($context === 'order') {
                 unset($requestData['payment']['customerId']);
             } elseif ($context === 'payment') {

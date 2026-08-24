@@ -248,9 +248,12 @@ class VoucherModule implements ExecutableModule, ServiceModule
         }
         $metaOption = wc_clean(wp_unslash($metaOption));
         if (in_array($metaOption, [Voucher::MEAL, Voucher::ECO, Voucher::GIFT, Voucher::SPORT_CULTURE], \true)) {
-            update_term_meta($term_id, '_mollie_voucher_category', $metaOption);
+            update_term_meta($term_id, Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION, $metaOption);
+            // Mirror into the non-underscore translation twin so WPML/WCML copies it
+            update_term_meta($term_id, Voucher::MOLLIE_VOUCHER_CATEGORY_TRANSLATION_OPTION, $metaOption);
         } else {
-            delete_term_meta($term_id, '_mollie_voucher_category');
+            delete_term_meta($term_id, Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION);
+            delete_term_meta($term_id, Voucher::MOLLIE_VOUCHER_CATEGORY_TRANSLATION_OPTION);
         }
     }
     /**

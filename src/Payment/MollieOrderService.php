@@ -221,6 +221,14 @@ class MollieOrderService
         $this->logger->debug($this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") action call for order {$order->get_id()}.");
         $method_name = 'onWebhook' . ucfirst($payment->status);
         $payment_method_title = $this->getPaymentMethodTitle($payment);
+        // A superseded payment attempt (e.g. the method the customer abandoned before paying
+        // with another one) must not terminate an order that is linked to a different attempt.
+        // onWebhookExpired already guards this case itself (and records an order note), so we only
+        // shortcut the terminal statuses whose handlers have no such guard: failed and canceled.
+        if (!\Mollie\WooCommerce\Payment\MolliePaymentAttempt::isCurrentAttempt($order, (string) $payment->id) && $this->isTerminalPaymentStatus($payment)) {
+            $this->logger->debug(__METHOD__ . ": webhook for superseded payment {$payment->id} (status {$payment->status}) ignored — " . "order {$order->get_id()} is linked to a different attempt.");
+            return \true;
+        }
         if (!$this->orderNeedsPayment($order)) {
             $this->handlePaidOrderWebhook($order, $payment);
             $this->processRefunds($order, $payment);
@@ -249,6 +257,18 @@ class MollieOrderService
         }
         do_action($this->pluginId . '_after_webhook_action', $payment, $order);
         return \true;
+    }
+    /**
+     * A terminal Mollie payment status whose webhook handler (onWebhookFailed / onWebhookCanceled)
+     * has no own "different attempt" guard and would otherwise terminate the order. 'expired' is
+     * intentionally excluded: onWebhookExpired already guards the superseded-attempt case itself.
+     *
+     * @param object $payment
+     */
+    private function isTerminalPaymentStatus($payment): bool
+    {
+        $status = isset($payment->status) ? (string) $payment->status : '';
+        return in_array($status, ['failed', 'canceled', 'cancelled'], \true);
     }
     /**
      * @param \WC_Order $order

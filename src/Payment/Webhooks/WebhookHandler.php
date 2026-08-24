@@ -86,6 +86,13 @@ class WebhookHandler
             return;
         }
 
+        if ($this->paymentHasRefund($payment)) {
+            $this->logger->debug(
+                __METHOD__ . ' payment at Mollie is refunded, so no processing for order ' . $orderId
+            );
+            return;
+        }
+
         $order->payment_complete($payment->id);
 
         $this->logger->debug(
@@ -259,6 +266,14 @@ class WebhookHandler
             return;
         }
 
+        if ($this->orderIsAlreadySettled($order)) {
+            $this->logger->debug(
+                __METHOD__ . " called for order {$orderId}, not processed because the order is already"
+                . ' paid or authorized.'
+            );
+            return;
+        }
+
         if ($mollieObject->getCancelledMolliePaymentId($orderId) === $payment->id) {
             $this->logger->debug(
                 __METHOD__ . " payment {$payment->id} already processed as cancelled for order {$orderId}, skipping."
@@ -332,6 +347,14 @@ class WebhookHandler
 
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
 
+        if ($this->orderIsAlreadySettled($order)) {
+            $this->logger->debug(
+                __METHOD__ . ' called for order ' . $orderId
+                . ', not processed because the order is already paid or authorized.'
+            );
+            return;
+        }
+
         $gateway = wc_get_payment_gateway_by_order($order);
 
         $newOrderStatus = SharedDataDictionary::STATUS_FAILED;
@@ -387,11 +410,7 @@ class WebhookHandler
             return;
         }
 
-        $alreadyPaid = !$order->needs_payment()
-            || $order->get_status() === 'processing'
-            || $order->get_meta('_mollie_paid_and_processed', true);
-
-        if ($alreadyPaid) {
+        if ($this->orderIsAlreadySettled($order)) {
             $this->logger->log(
                 LogLevel::DEBUG,
                 __METHOD__ . ' called for order ' . $orderId
@@ -600,6 +619,42 @@ class WebhookHandler
                 $orderPaymentMethodTitle
             )
         );
+    }
+
+    /**
+     * Whether the order is already settled — paid, captured/processing, or authorized — so a late
+     * or unrelated webhook must not regress its status. Shared by onWebhookExpired, onWebhookCanceled
+     * and onWebhookFailed.
+     *
+     * @param WC_Order $order
+     * @return bool
+     */
+    private function orderIsAlreadySettled(WC_Order $order): bool
+    {
+        return !$order->needs_payment()
+            || in_array($order->get_status(), ['processing', 'completed'], true)
+            || (bool) $order->get_meta('_mollie_paid_and_processed', true)
+            || $order->get_meta('_mollie_authorized') === '1';
+    }
+
+    /**
+     * Whether the Mollie payment carries a refund (full or partial), so payment-completed side
+     * effects must not be re-applied to an already-refunded order.
+     *
+     * @param Payment|Order $payment
+     * @return bool
+     */
+    private function paymentHasRefund($payment): bool
+    {
+        if (empty($payment->amountRefunded)) {
+            return false;
+        }
+
+        if (isset($payment->amountRefunded->value)) {
+            return (float) $payment->amountRefunded->value > 0.0;
+        }
+
+        return true;
     }
 
     /**

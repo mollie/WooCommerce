@@ -53,8 +53,8 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 $isCorrectState = in_array($order->get_status(), $container->get('merchant.manual_capture.capture_statuses'));
                 return $isManualCaptureMethod && $orderIsAuthorized && $isCorrectState;
             };
-        }, 'merchant.manual_capture.on_status_change_enabled' => static function () {
-            return get_option('mollie-payments-for-woocommerce_capture_or_void', \false);
+        }, 'merchant.manual_capture.on_status_change_enabled' => static function (): bool {
+            return get_option('mollie-payments-for-woocommerce_capture_or_void', 'no') === 'yes';
         }, 'merchant.manual_capture.cart_can_be_captured' => static function (): bool {
             if (!class_exists(\WC_Product_Subscription::class)) {
                 return \true;
@@ -165,11 +165,10 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 if ($disableShipAndCapture) {
                     return \true;
                 }
+                $isAuthorizedOrWaiting = $container->get('merchant.manual_capture.is_waiting')($order) || $container->get('merchant.manual_capture.is_authorized')($order);
+                $laterCaptureEnabled = $container->get('merchant.manual_capture.enabled');
                 $onStatusChangeEnabled = $container->get('merchant.manual_capture.on_status_change_enabled');
-                if (!empty($onStatusChangeEnabled) && $onStatusChangeEnabled !== 'no') {
-                    return \true;
-                }
-                return $container->get('merchant.manual_capture.is_waiting')($order) || $container->get('merchant.manual_capture.is_authorized')($order);
+                return $isAuthorizedOrWaiting || $laterCaptureEnabled && !$onStatusChangeEnabled;
             }, 10, 2);
             add_filter('inpsyde.mollie-advanced-settings', [$captureSettings, 'settings'], 10, 2);
             new \Mollie\WooCommerce\MerchantCapture\OrderListPaymentColumn($container);

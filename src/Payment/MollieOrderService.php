@@ -122,7 +122,7 @@ class MollieOrderService
 
         $order = $orders[0];
 
-        if ($order->get_id() != $order_id) {
+        if ($order->get_id() !== (int) $order_id) {
             $this->httpResponse->setHttpResponseCode(401);
             $this->logger->debug(__METHOD__ . ":  found order {$order->get_id()} is not the same as provided order $order_id.");
             return;
@@ -562,7 +562,7 @@ class MollieOrderService
             asort($processedChargebackIds);
 
             // Check if there are new chargebacks that need processing
-            if ($chargebackIds != $processedChargebackIds) {
+            if (array_values($chargebackIds) !== array_values($processedChargebackIds)) {
                 // There are new chargebacks.
                 $chargebacksToProcess = array_diff(
                     $chargebackIds,

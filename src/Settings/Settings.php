@@ -687,7 +687,7 @@ class Settings
         }
 
         $upload_overrides = ['test_form' => false];
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- nonce already verified in processAdminOptionCustomLogo() before this method is called
         $file = isset($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) ? wp_unslash($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) : [];
         if (!empty($file)) {
             $file = [

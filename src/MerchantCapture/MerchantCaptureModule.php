@@ -144,7 +144,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
 
     public function run(ContainerInterface $container): bool
     {
-        add_action('init', static function () use ($container) {
+        add_action('init', static function () use ($container): void {
             $pluginId = $container->get('shared.plugin_id');
             $captureSettings = new MollieCaptureSettings();
             if (!apply_filters('mollie_wc_gateway_enable_merchant_capture_module', true)) {
@@ -153,7 +153,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
 
             add_action(
                 $pluginId . '_after_webhook_action',
-                static function ($payment, WC_Order $order) use ($container) {
+                static function ($payment, WC_Order $order) use ($container): void {
 
                     if (!$container->get('merchant.manual_capture.enabled') || !in_array($order->get_payment_method(), $container->get('merchant.manual_capture.supported_methods'), true)) {
                         return;
@@ -167,7 +167,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                         if ($order->get_meta(self::ORDER_PAYMENT_STATUS_META_KEY) === ManualCaptureStatus::STATUS_AUTHORIZED) {
                             return;
                         }
-                        if (!$payment->getAmountCaptured() == 0.0) {
+                        if ($payment->getAmountCaptured() !== 0.0) {
                             return;
                         }
                         $order->set_status(SharedDataDictionary::STATUS_ON_HOLD);
@@ -204,7 +204,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                 2
             );
 
-            add_action('woocommerce_order_refunded', static function (int $orderId) use ($container) {
+            add_action('woocommerce_order_refunded', static function (int $orderId) use ($container): void {
                 $order = wc_get_order($orderId);
                 if (!is_a($order, WC_Order::class)) {
                     return;
@@ -217,7 +217,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                     ($container->get(VoidPayment::class))($order->get_id());
                 }
             });
-            add_action('woocommerce_order_actions_start', static function (int $orderId) use ($container) {
+            add_action('woocommerce_order_actions_start', static function (int $orderId) use ($container): void {
                 $order = wc_get_order($orderId);
                 if (!is_a($order, WC_Order::class)) {
                     return;

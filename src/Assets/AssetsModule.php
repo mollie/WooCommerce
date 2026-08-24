@@ -488,8 +488,8 @@ class AssetsModule implements ExecutableModule, ServiceModule
                 add_action('wp_enqueue_scripts', function () use ($container) {
                     $this->enqueueFrontendScripts($container);
                 });
-                add_action('wp_enqueue_scripts', function () use ($container) {
-                    if(!mollieWooCommerceIsCheckoutContext()) {
+                add_action('wp_enqueue_scripts', function () use ($container): void {
+                    if (!mollieWooCommerceIsCheckoutContext()) {
                         return;
                     }
                     $componentDataService = $container->get('components.data_service');
@@ -513,7 +513,6 @@ class AssetsModule implements ExecutableModule, ServiceModule
                     $dependencies[] = 'mollie_block_index';
                     return $dependencies;
                 });
-
             }
         );
         add_action(

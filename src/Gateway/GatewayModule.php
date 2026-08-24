@@ -163,7 +163,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         $checkoutBlockHandler->bootstrapAjaxRequest();
         add_action(
             'woocommerce_rest_checkout_process_payment_with_context',
-            static function ($paymentContext) {
+            static function ($paymentContext): void {
                 if (strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === false) {
                     return;
                 }
@@ -233,7 +233,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 
         add_action(
             'woocommerce_thankyou',
-            static function ($orderId) use ($container) {
+            static function ($orderId) use ($container): void {
                 if (
                     !apply_filters(
                         'mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_woocommerce_thankyou_page',
@@ -277,7 +277,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
 
         add_action(
             'woocommerce_order_action_mollie_wc_check_payment_for_unpaid_order',
-            static function ($orderId) use ($container) {
+            static function ($orderId) use ($container): void {
                 $order = wc_get_order($orderId);
                 if (
                     !$order || $order->is_paid() || !$order->has_status('pending') || strpos(

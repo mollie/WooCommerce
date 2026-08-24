@@ -405,7 +405,7 @@ class WebhookHandler
      */
     private function orderIsAlreadySettled(WC_Order $order): bool
     {
-        return !$order->needs_payment() || $order->get_status() === 'processing' || (bool) $order->get_meta('_mollie_paid_and_processed', \true) || $order->get_meta('_mollie_authorized') === '1';
+        return !$order->needs_payment() || in_array($order->get_status(), ['processing', 'completed'], \true) || (bool) $order->get_meta('_mollie_paid_and_processed', \true) || $order->get_meta('_mollie_authorized') === '1';
     }
     /**
      * Whether the Mollie payment carries a refund (full or partial), so payment-completed side

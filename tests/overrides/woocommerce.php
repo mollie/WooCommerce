@@ -364,6 +364,23 @@ class WooCommerce
 
 class WC_Customer
 {
+    public function __construct($userId = 0)
+    {
+    }
+
+    public function get_meta($key)
+    {
+        return '';
+    }
+
+    public function update_meta_data($key, $value)
+    {
+    }
+
+    public function save()
+    {
+    }
+
     public function set_shipping_country()
     {
     }

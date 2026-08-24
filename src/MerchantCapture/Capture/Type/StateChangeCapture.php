@@ -34,7 +34,7 @@ class StateChangeCapture
     public function orderStatusChange(int $orderId, string $oldStatus, string $newStatus)
     {
         $stateChangeCaptureEnabled = $this->container->get('merchant.manual_capture.on_status_change_enabled');
-        if (empty($stateChangeCaptureEnabled) || $stateChangeCaptureEnabled === 'no') {
+        if (!$stateChangeCaptureEnabled) {
             return;
         }
 

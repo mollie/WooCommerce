@@ -25,14 +25,14 @@ class MerchantCaptureModuleTest extends TestCase
     }
 
     /**
-     * WHEN the 'Capture or cancel on status change' setting is enabled
-     * THEN the mollie_wc_gateway_disable_ship_and_capture filter returns true for a Klarna order
+     * Given later-capture mode is on and status-change capture is unchecked
+     * When the disable filter runs for a Klarna order
+     * Then it returns true so the legacy ship-and-capture is skipped
      * @test
      */
-    public function disableShipAndCaptureReturnsTrueForKlarnaWhenStatusChangeSettingEnabled()
+    public function disableShipAndCaptureReturnsTrueForKlarnaWhenLaterCaptureOnAndStatusChangeUnchecked()
     {
-        // WooCommerce's checkbox save writes the literal string 'yes' when checked.
-        $container = $this->createMockContainer('yes');
+        $container = $this->createMockContainer(['enabled' => true, 'onStatusChange' => false]);
         $order = $this->makeOrder('mollie_wc_gateway_klarna');
 
         $callback = $this->runModuleAndGetDisableFilterCallback($container);
@@ -41,16 +41,14 @@ class MerchantCaptureModuleTest extends TestCase
     }
 
     /**
-     * WHEN the setting has been saved unchecked
-     * THEN the filter still returns false for a Klarna order - unchanged from current behavior
+     * Given later-capture mode is on and status-change capture is checked
+     * When the disable filter runs for a Klarna order
+     * Then it returns false so the payment is captured on Completed
      * @test
      */
-    public function disableShipAndCaptureReturnsFalseForKlarnaWhenStatusChangeSettingSavedUnchecked()
+    public function disableShipAndCaptureReturnsFalseForKlarnaWhenLaterCaptureOnAndStatusChangeChecked()
     {
-        // WC_Admin_Settings::save_fields() writes the literal string 'no' for an unchecked
-        // checkbox (not an empty/false value) any time the settings page is saved - this is
-        // the realistic value for the overwhelming majority of merchants, not just an edge case.
-        $container = $this->createMockContainer('no');
+        $container = $this->createMockContainer(['enabled' => true, 'onStatusChange' => true]);
         $order = $this->makeOrder('mollie_wc_gateway_klarna');
 
         $callback = $this->runModuleAndGetDisableFilterCallback($container);
@@ -59,15 +57,15 @@ class MerchantCaptureModuleTest extends TestCase
     }
 
     /**
-     * WHEN the setting has never been saved at all (option row does not exist)
-     * THEN the filter still returns false for a Klarna order
+     * Given the store is in default immediate-capture mode (later capture off)
+     * When the disable filter runs for a Klarna order, whatever the status-change setting
+     * Then it returns false so capture-on-Completed keeps working as before - no regression
      * @test
+     * @dataProvider provideStatusChangeToggle
      */
-    public function disableShipAndCaptureReturnsFalseForKlarnaWhenStatusChangeSettingNeverSaved()
+    public function disableShipAndCaptureReturnsFalseForKlarnaWhenLaterCaptureOff(bool $onStatusChange)
     {
-        // get_option(..., false) returns the raw boolean default when the option row
-        // was never created - distinct from the 'no' string WooCommerce saves on submit.
-        $container = $this->createMockContainer(false);
+        $container = $this->createMockContainer(['enabled' => false, 'onStatusChange' => $onStatusChange]);
         $order = $this->makeOrder('mollie_wc_gateway_klarna');
 
         $callback = $this->runModuleAndGetDisableFilterCallback($container);
@@ -76,13 +74,19 @@ class MerchantCaptureModuleTest extends TestCase
     }
 
     /**
-     * WHEN a credit-card order is in the existing authorized on-hold state
-     * THEN the filter still returns true regardless of the status-change setting
+     * Given a credit-card order is in the authorized on-hold state
+     * When the disable filter runs, whatever the status-change setting
+     * Then it returns true - the legacy path stays off and only one capture path can fire
      * @test
+     * @dataProvider provideStatusChangeToggle
      */
-    public function disableShipAndCaptureStillTrueForCreditcardAuthorizedRegardlessOfSetting()
+    public function disableShipAndCaptureStillTrueForCreditcardAuthorizedRegardlessOfStatusChangeSetting(bool $onStatusChange)
     {
-        $container = $this->createMockContainer('no', ['is_authorized' => true]);
+        $container = $this->createMockContainer([
+            'enabled' => true,
+            'onStatusChange' => $onStatusChange,
+            'is_authorized' => true,
+        ]);
         $order = $this->makeOrder('mollie_wc_gateway_creditcard');
 
         $callback = $this->runModuleAndGetDisableFilterCallback($container);
@@ -91,18 +95,72 @@ class MerchantCaptureModuleTest extends TestCase
     }
 
     /**
-     * WHEN the setting is enabled for a non-Klarna, non-creditcard gateway
-     * THEN the filter still returns true - the condition is not limited to a specific gateway
+     * Given later-capture mode is on and status-change capture is unchecked
+     * When the disable filter runs for a non-Klarna, non-creditcard gateway
+     * Then it returns true - the later-capture rule is gateway independent
      * @test
      */
-    public function disableShipAndCaptureReturnsTrueForNonCreditcardGatewayIndependentOfPaymentMethod()
+    public function disableShipAndCaptureLaterCaptureTermIsGatewayIndependent()
     {
-        $container = $this->createMockContainer('yes');
+        $container = $this->createMockContainer(['enabled' => true, 'onStatusChange' => false]);
         $order = $this->makeOrder('mollie_wc_gateway_bancontact');
 
         $callback = $this->runModuleAndGetDisableFilterCallback($container);
 
         self::assertTrue($callback(false, $order));
+    }
+
+    /**
+     * Given later-capture mode is off
+     * When the disable filter runs for a non-creditcard gateway with status-change unchecked
+     * Then it returns false - the rule only ever suppresses capture in later-capture mode
+     * @test
+     */
+    public function disableShipAndCaptureLaterCaptureTermIsOffWhenNotLaterCapture()
+    {
+        $container = $this->createMockContainer(['enabled' => false, 'onStatusChange' => false]);
+        $order = $this->makeOrder('mollie_wc_gateway_bancontact');
+
+        $callback = $this->runModuleAndGetDisableFilterCallback($container);
+
+        self::assertFalse($callback(false, $order));
+    }
+
+    /**
+     * Given the raw capture_or_void option value returned by get_option()
+     * When the on_status_change_enabled service resolves it
+     * Then it yields strict boolean true only for the 'yes' string, false otherwise
+     * @test
+     * @dataProvider provideCaptureOrVoidOptionValues
+     */
+    public function onStatusChangeEnabledServiceReturnsBooleanTrueOnlyForYes($stored, bool $expected)
+    {
+        // WooCommerce saves the literal string 'no' for an unchecked checkbox (PHP-truthy),
+        // and boolean false when the option row was never created - both must resolve to false.
+        when('get_option')->justReturn($stored);
+
+        $services = (new MerchantCaptureModule())->services();
+        $result = $services['merchant.manual_capture.on_status_change_enabled']();
+
+        self::assertSame($expected, $result);
+    }
+
+    public function provideStatusChangeToggle(): array
+    {
+        return [
+            'status-change checked' => [true],
+            'status-change unchecked' => [false],
+        ];
+    }
+
+    public function provideCaptureOrVoidOptionValues(): array
+    {
+        return [
+            'checked' => ['yes', true],
+            'unchecked' => ['no', false],
+            'empty string' => ['', false],
+            'never saved' => [false, false],
+        ];
     }
 
     private function makeOrder(string $paymentMethod): WC_Order
@@ -114,19 +172,23 @@ class MerchantCaptureModuleTest extends TestCase
     }
 
     /**
-     * @param bool|string $onStatusChangeEnabled Raw value as returned by get_option() for
-     *        merchant.manual_capture.on_status_change_enabled: 'yes'/'no' (saved checkbox) or
-     *        boolean false (option row never created).
-     * @param array $overrides Optional 'is_waiting' / 'is_authorized' booleans for the manual-capture closures.
+     * @param array $config Filter inputs as the container resolves them:
+     *        'enabled'        bool - merchant.manual_capture.enabled (place_payment_onhold === later_capture)
+     *        'onStatusChange' bool - merchant.manual_capture.on_status_change_enabled (normalized capture_or_void)
+     *        'is_waiting'     bool - credit-card manual-capture waiting state
+     *        'is_authorized'  bool - credit-card manual-capture authorized state
      */
-    private function createMockContainer($onStatusChangeEnabled, array $overrides = []): ContainerInterface
+    private function createMockContainer(array $config = []): ContainerInterface
     {
-        $isWaiting = $overrides['is_waiting'] ?? false;
-        $isAuthorized = $overrides['is_authorized'] ?? false;
+        $enabled = $config['enabled'] ?? false;
+        $onStatusChange = $config['onStatusChange'] ?? false;
+        $isWaiting = $config['is_waiting'] ?? false;
+        $isAuthorized = $config['is_authorized'] ?? false;
 
         $map = [
             'shared.plugin_id' => 'mollie-payments-for-woocommerce',
-            'merchant.manual_capture.on_status_change_enabled' => $onStatusChangeEnabled,
+            'merchant.manual_capture.enabled' => $enabled,
+            'merchant.manual_capture.on_status_change_enabled' => $onStatusChange,
             'merchant.manual_capture.is_waiting' => static function () use ($isWaiting) {
                 return $isWaiting;
             },

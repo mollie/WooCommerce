@@ -651,7 +651,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      *
      * @return array ['customer_id' => string, 'mandate_id' => string|null]
      */
-    public function restore_mollie_customer_id_and_mandate($mollie_customer_id, $mollie_payment_id, $subscription)
+    public function restore_mollie_customer_id_and_mandate($mollie_customer_id, $mollie_payment_id, $subscription): array
     {
         try {
             // Get full payment object from Mollie API

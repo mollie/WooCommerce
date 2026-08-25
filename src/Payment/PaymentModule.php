@@ -189,12 +189,12 @@ class PaymentModule implements ServiceModule, ExecutableModule
                 continue;
             }
             foreach ($unpaid_orders as $unpaid_order) {
-                $this->maybeCancelUnpaidOrder($unpaid_order);
+                $this->cancelOrderIfStillUnpaid($unpaid_order);
             }
         }
     }
 
-    private function maybeCancelUnpaidOrder($unpaid_order)
+    private function cancelOrderIfStillUnpaid($unpaid_order)
     {
         $order = wc_get_order($unpaid_order);
         $mollieOrderService = $this->container->get(MollieOrderService::class);

@@ -20,6 +20,10 @@ class WC_Order
     {
     }
 
+    public function is_paid()
+    {
+    }
+
     public function add_order_note($note)
     {
     }

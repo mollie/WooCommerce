@@ -1,0 +1,674 @@
+{
+    "packages": [
+        {
+            "name": "composer\/ca-bundle",
+            "version": "1.5.14",
+            "version_normalized": "1.5.14.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/composer\/ca-bundle.git",
+                "reference": "0c8abba0634f637bd78c4e451981da368d403463"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/composer\/ca-bundle\/zipball\/0c8abba0634f637bd78c4e451981da368d403463",
+                "reference": "0c8abba0634f637bd78c4e451981da368d403463",
+                "shasum": ""
+            },
+            "require": {
+                "ext-openssl": "*",
+                "ext-pcre": "*",
+                "php": "^7.2 || ^8.0"
+            },
+            "require-dev": {
+                "phpstan\/phpstan": "^1.10",
+                "phpunit\/phpunit": "^8 || ^9",
+                "psr\/log": "^1.0 || ^2.0 || ^3.0",
+                "symfony\/process": "^4.0 || ^5.0 || ^6.0 || ^7.0"
+            },
+            "time": "2026-08-21T14:57:29+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.x-dev"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Composer\\CaBundle\\": "src"
+                }
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jordi Boggiano",
+                    "email": "j.boggiano@seld.be",
+                    "homepage": "http:\/\/seld.be"
+                }
+            ],
+            "description": "Lets you find a path to the system CA bundle, and includes a fallback to the Mozilla CA bundle.",
+            "keywords": [
+                "cabundle",
+                "cacert",
+                "certificate",
+                "ssl",
+                "tls"
+            ],
+            "support": {
+                "irc": "irc:\/\/irc.freenode.org\/composer",
+                "issues": "https:\/\/github.com\/composer\/ca-bundle\/issues",
+                "source": "https:\/\/github.com\/composer\/ca-bundle\/tree\/1.5.14"
+            },
+            "funding": [
+                {
+                    "url": "https:\/\/packagist.com",
+                    "type": "custom"
+                },
+                {
+                    "url": "https:\/\/github.com\/composer",
+                    "type": "github"
+                }
+            ],
+            "install-path": ".\/ca-bundle"
+        },
+        {
+            "name": "enshrined\/svg-sanitize",
+            "version": "0.22.0",
+            "version_normalized": "0.22.0.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/darylldoyle\/svg-sanitizer.git",
+                "reference": "0afa95ea74be155a7bcd6c6fb60c276c39984500"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/darylldoyle\/svg-sanitizer\/zipball\/0afa95ea74be155a7bcd6c6fb60c276c39984500",
+                "reference": "0afa95ea74be155a7bcd6c6fb60c276c39984500",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-libxml": "*",
+                "php": "^7.1 || ^8.0"
+            },
+            "require-dev": {
+                "phpunit\/phpunit": "^6.5 || ^8.5"
+            },
+            "time": "2025-08-12T10:13:48+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Mollie\\enshrined\\svgSanitize\\": "src"
+                }
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Daryll Doyle",
+                    "email": "daryll@enshrined.co.uk"
+                }
+            ],
+            "description": "An SVG sanitizer for PHP",
+            "support": {
+                "issues": "https:\/\/github.com\/darylldoyle\/svg-sanitizer\/issues",
+                "source": "https:\/\/github.com\/darylldoyle\/svg-sanitizer\/tree\/0.22.0"
+            },
+            "install-path": "..\/enshrined\/svg-sanitize"
+        },
+        {
+            "name": "giggsey\/libphonenumber-for-php",
+            "version": "8.13.55",
+            "version_normalized": "8.13.55.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/giggsey\/libphonenumber-for-php.git",
+                "reference": "6e28b3d53cf96d7f41c83d9b80b6021ecbd00537"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/giggsey\/libphonenumber-for-php\/zipball\/6e28b3d53cf96d7f41c83d9b80b6021ecbd00537",
+                "reference": "6e28b3d53cf96d7f41c83d9b80b6021ecbd00537",
+                "shasum": ""
+            },
+            "require": {
+                "giggsey\/locale": "^2.0",
+                "php": "^7.4|^8.0",
+                "symfony\/polyfill-mbstring": "^1.17"
+            },
+            "replace": {
+                "giggsey\/libphonenumber-for-php-lite": "self.version"
+            },
+            "require-dev": {
+                "friendsofphp\/php-cs-fixer": "^3.64",
+                "pear\/pear-core-minimal": "^1.10",
+                "pear\/pear_exception": "^1.0",
+                "pear\/versioncontrol_git": "^0.7",
+                "phing\/phing": "^3.0",
+                "php-coveralls\/php-coveralls": "^2.0",
+                "phpunit\/phpunit": "^9.6",
+                "symfony\/console": "^v5.2",
+                "symfony\/var-exporter": "^5.2"
+            },
+            "time": "2025-02-14T08:14:08+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "8.x-dev"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Mollie\\libphonenumber\\": "src\/"
+                },
+                "exclude-from-classmap": [
+                    "\/src\/data\/",
+                    "\/src\/carrier\/data\/",
+                    "\/src\/geocoding\/data\/",
+                    "\/src\/timezone\/data\/"
+                ]
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Joshua Gigg",
+                    "email": "giggsey@gmail.com",
+                    "homepage": "https:\/\/giggsey.com\/"
+                }
+            ],
+            "description": "PHP Port of Google's libphonenumber",
+            "homepage": "https:\/\/github.com\/giggsey\/libphonenumber-for-php",
+            "keywords": [
+                "geocoding",
+                "geolocation",
+                "libphonenumber",
+                "mobile",
+                "phonenumber",
+                "validation"
+            ],
+            "support": {
+                "issues": "https:\/\/github.com\/giggsey\/libphonenumber-for-php\/issues",
+                "source": "https:\/\/github.com\/giggsey\/libphonenumber-for-php"
+            },
+            "install-path": "..\/giggsey\/libphonenumber-for-php"
+        },
+        {
+            "name": "giggsey\/locale",
+            "version": "2.7.0",
+            "version_normalized": "2.7.0.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/giggsey\/Locale.git",
+                "reference": "a5c65ea3c2630f27ccb78977990eefbee6dd8f97"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/giggsey\/Locale\/zipball\/a5c65ea3c2630f27ccb78977990eefbee6dd8f97",
+                "reference": "a5c65ea3c2630f27ccb78977990eefbee6dd8f97",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "ext-json": "*",
+                "friendsofphp\/php-cs-fixer": "^3.64",
+                "pear\/pear-core-minimal": "^1.9",
+                "pear\/pear_exception": "^1.0",
+                "pear\/versioncontrol_git": "^0.5",
+                "phing\/phing": "^2.7",
+                "php-coveralls\/php-coveralls": "^2.0",
+                "phpunit\/phpunit": "^8.5|^9.5",
+                "symfony\/console": "^5.0|^6.0",
+                "symfony\/filesystem": "^5.0|^6.0",
+                "symfony\/finder": "^5.0|^6.0",
+                "symfony\/process": "^5.0|^6.0",
+                "symfony\/var-exporter": "^5.2|^6.0"
+            },
+            "time": "2024-11-04T11:18:07+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Mollie\\Giggsey\\Locale\\": "src\/"
+                }
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Joshua Gigg",
+                    "email": "giggsey@gmail.com",
+                    "homepage": "https:\/\/giggsey.com\/"
+                }
+            ],
+            "description": "Locale functions required by libphonenumber-for-php",
+            "support": {
+                "issues": "https:\/\/github.com\/giggsey\/Locale\/issues",
+                "source": "https:\/\/github.com\/giggsey\/Locale\/tree\/2.7.0"
+            },
+            "install-path": "..\/giggsey\/locale"
+        },
+        {
+            "name": "inpsyde\/modularity",
+            "version": "1.12.0",
+            "version_normalized": "1.12.0.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/inpsyde\/modularity.git",
+                "reference": "e1ca1c81b7b663355906b586525d21ac5d46bc65"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/inpsyde\/modularity\/zipball\/e1ca1c81b7b663355906b586525d21ac5d46bc65",
+                "reference": "e1ca1c81b7b663355906b586525d21ac5d46bc65",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": ">=7.4",
+                "psr\/container": "^1.1.0 || ^2"
+            },
+            "require-dev": {
+                "brain\/monkey": "^2.6.1",
+                "inpsyde\/wp-stubs-versions": "6.7",
+                "mikey179\/vfsstream": "^v1.6.11",
+                "phpstan\/phpstan": "^2.1.1",
+                "phpstan\/phpstan-deprecation-rules": "^2.0.1",
+                "phpstan\/phpstan-mockery": "^2.0.0",
+                "phpstan\/phpstan-phpunit": "^2.0.4",
+                "phpunit\/phpunit": "^9.6.19",
+                "swissspidy\/phpstan-no-private": "^v1.0.0",
+                "syde\/phpcs": "^1.0.0"
+            },
+            "time": "2025-05-09T12:13:17+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Mollie\\Inpsyde\\Modularity\\": "src\/"
+                }
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Syde GmbH",
+                    "email": "hello@syde.com",
+                    "homepage": "https:\/\/syde.com\/",
+                    "role": "Company"
+                }
+            ],
+            "description": "Modular PSR-11 implementation for WordPress plugins, themes or libraries.",
+            "support": {
+                "issues": "https:\/\/github.com\/inpsyde\/modularity\/issues",
+                "source": "https:\/\/github.com\/inpsyde\/modularity\/tree\/1.12.0"
+            },
+            "install-path": "..\/inpsyde\/modularity"
+        },
+        {
+            "name": "mollie\/mollie-api-php",
+            "version": "v2.79.1",
+            "version_normalized": "2.79.1.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/mollie\/mollie-api-php.git",
+                "reference": "4c1cf5f603178dd15bdf60b5e3999f91bb59f5b0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/mollie\/mollie-api-php\/zipball\/4c1cf5f603178dd15bdf60b5e3999f91bb59f5b0",
+                "reference": "4c1cf5f603178dd15bdf60b5e3999f91bb59f5b0",
+                "shasum": ""
+            },
+            "require": {
+                "composer\/ca-bundle": "^1.2",
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-openssl": "*",
+                "php": "^7.2|^8.0"
+            },
+            "require-dev": {
+                "eloquent\/liberator": "^2.0||^3.0",
+                "friendsofphp\/php-cs-fixer": "^3.0",
+                "guzzlehttp\/guzzle": "^6.3 || ^7.0",
+                "phpstan\/phpstan": "^1.12",
+                "phpunit\/phpunit": "^8.5 || ^9.5"
+            },
+            "suggest": {
+                "mollie\/oauth2-mollie-php": "Use OAuth to authenticate with the Mollie API. This is needed for some endpoints. Visit https:\/\/docs.mollie.com\/ for more information."
+            },
+            "time": "2025-05-06T10:55:09+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Mollie\\Api\\": "src\/"
+                }
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Mollie B.V.",
+                    "email": "info@mollie.com"
+                }
+            ],
+            "description": "Mollie API client library for PHP. Mollie is a European Payment Service provider and offers international payment methods such as Mastercard, VISA, American Express and PayPal, and local payment methods such as iDEAL, Bancontact, SOFORT Banking, SEPA direct debit, Belfius Direct Net, KBC Payment Button and various gift cards such as Podiumcadeaukaart and fashioncheque.",
+            "homepage": "https:\/\/www.mollie.com\/en\/developers",
+            "keywords": [
+                "Apple Pay",
+                "CBC",
+                "Przelewy24",
+                "api",
+                "bancontact",
+                "banktransfer",
+                "belfius",
+                "belfius direct net",
+                "charges",
+                "creditcard",
+                "direct debit",
+                "fashioncheque",
+                "gateway",
+                "gift cards",
+                "ideal",
+                "inghomepay",
+                "intersolve",
+                "kbc",
+                "klarna",
+                "mistercash",
+                "mollie",
+                "paylater",
+                "payment",
+                "payments",
+                "paypal",
+                "paysafecard",
+                "podiumcadeaukaart",
+                "recurring",
+                "refunds",
+                "sepa",
+                "service",
+                "sliceit",
+                "sofort",
+                "sofortbanking",
+                "subscriptions"
+            ],
+            "support": {
+                "issues": "https:\/\/github.com\/mollie\/mollie-api-php\/issues",
+                "source": "https:\/\/github.com\/mollie\/mollie-api-php\/tree\/v2.79.1"
+            },
+            "install-path": "..\/mollie\/mollie-api-php"
+        },
+        {
+            "name": "psr\/container",
+            "version": "1.1.0",
+            "version_normalized": "1.1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/php-fig\/container.git",
+                "reference": "9fc7aab7a78057a124384358ebae8a1711b6f6fc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/php-fig\/container\/zipball\/9fc7aab7a78057a124384358ebae8a1711b6f6fc",
+                "reference": "9fc7aab7a78057a124384358ebae8a1711b6f6fc",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0"
+            },
+            "time": "2021-03-05T15:48:30+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.1.x-dev"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Mollie\\Psr\\Container\\": "src\/"
+                }
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https:\/\/www.php-fig.org\/"
+                }
+            ],
+            "description": "Common Container Interface (PHP FIG PSR-11)",
+            "homepage": "https:\/\/github.com\/php-fig\/container",
+            "keywords": [
+                "PSR-11",
+                "container",
+                "container-interface",
+                "container-interop",
+                "psr"
+            ],
+            "support": {
+                "issues": "https:\/\/github.com\/php-fig\/container\/issues",
+                "source": "https:\/\/github.com\/php-fig\/container\/tree\/1.1.0"
+            },
+            "install-path": "..\/psr\/container"
+        },
+        {
+            "name": "psr\/log",
+            "version": "1.1.4",
+            "version_normalized": "1.1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/php-fig\/log.git",
+                "reference": "d49695b909c3b7628b6289db5479a1c204601f11"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/php-fig\/log\/zipball\/d49695b909c3b7628b6289db5479a1c204601f11",
+                "reference": "d49695b909c3b7628b6289db5479a1c204601f11",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "time": "2021-05-03T11:20:27+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.1.x-dev"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Mollie\\Psr\\Log\\": "Psr\/Log\/"
+                }
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https:\/\/www.php-fig.org\/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "homepage": "https:\/\/github.com\/php-fig\/log",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "support": {
+                "source": "https:\/\/github.com\/php-fig\/log\/tree\/1.1.4"
+            },
+            "install-path": "..\/psr\/log"
+        },
+        {
+            "name": "sniccowp\/php-scoper-wordpress-excludes",
+            "version": "6.9.1",
+            "version_normalized": "6.9.1.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/snicco\/php-scoper-wordpress-excludes.git",
+                "reference": "94867711087d0efc3d361dbe068044e0124f4c0b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/snicco\/php-scoper-wordpress-excludes\/zipball\/94867711087d0efc3d361dbe068044e0124f4c0b",
+                "reference": "94867711087d0efc3d361dbe068044e0124f4c0b",
+                "shasum": ""
+            },
+            "require-dev": {
+                "php": "^7.4",
+                "php-stubs\/wordpress-globals": "0.2.0",
+                "php-stubs\/wordpress-stubs": "6.9.1",
+                "sniccowp\/php-scoper-excludes": "dev-master"
+            },
+            "time": "2026-02-04T00:34:47+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Calvin Alkan",
+                    "email": "calvin@snicco.de"
+                },
+                {
+                    "name": "Marlon Alkan",
+                    "email": "marlon@snicco.de"
+                }
+            ],
+            "description": "A list of all WordPress core classes, functions and constants. Meant to be used with the PHP-Scoper exclusion functionality.",
+            "keywords": [
+                "php-scoper",
+                "scoping WordPress",
+                "wordpress"
+            ],
+            "support": {
+                "issues": "https:\/\/github.com\/snicco\/php-scoper-wordpress-excludes\/issues",
+                "source": "https:\/\/github.com\/snicco\/php-scoper-wordpress-excludes\/tree\/6.9.1"
+            },
+            "install-path": "..\/sniccowp\/php-scoper-wordpress-excludes"
+        },
+        {
+            "name": "symfony\/polyfill-mbstring",
+            "version": "v1.38.2",
+            "version_normalized": "1.38.2.0",
+            "source": {
+                "type": "git",
+                "url": "https:\/\/github.com\/symfony\/polyfill-mbstring.git",
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https:\/\/api.github.com\/repos\/symfony\/polyfill-mbstring\/zipball\/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "shasum": ""
+            },
+            "require": {
+                "ext-iconv": "*",
+                "php": ">=7.2"
+            },
+            "provide": {
+                "ext-mbstring": "*"
+            },
+            "suggest": {
+                "ext-mbstring": "For best performance"
+            },
+            "time": "2026-05-27T06:59:30+00:00",
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https:\/\/github.com\/symfony\/polyfill",
+                    "name": "symfony\/polyfill"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Mollie\\Symfony\\Polyfill\\Mbstring\\": ""
+                }
+            },
+            "notification-url": "https:\/\/packagist.org\/downloads\/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https:\/\/symfony.com\/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for the Mbstring extension",
+            "homepage": "https:\/\/symfony.com",
+            "keywords": [
+                "compatibility",
+                "mbstring",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https:\/\/github.com\/symfony\/polyfill-mbstring\/tree\/v1.38.2"
+            },
+            "funding": [
+                {
+                    "url": "https:\/\/symfony.com\/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https:\/\/github.com\/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https:\/\/github.com\/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https:\/\/tidelift.com\/funding\/github\/packagist\/symfony\/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "install-path": "..\/symfony\/polyfill-mbstring"
+        }
+    ],
+    "dev": false,
+    "dev-package-names": []
+}

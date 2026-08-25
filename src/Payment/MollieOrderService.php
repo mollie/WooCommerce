@@ -122,7 +122,7 @@ class MollieOrderService
 
         $order = $orders[0];
 
-        if ($order->get_id() !== (int) $order_id) {
+        if ((int) $order->get_id() !== (int) $order_id) {
             $this->httpResponse->setHttpResponseCode(401);
             $this->logger->debug(__METHOD__ . ":  found order {$order->get_id()} is not the same as provided order $order_id.");
             return;

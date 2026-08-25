@@ -31,7 +31,7 @@ jobs:
 
   publish:
     needs: validate
-    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-release.yml@fix/wporg-combined-commit
+    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-release.yml@main
     with:
       SVN_PLUGIN_SLUG: mollie-payments-for-woocommerce
       PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}

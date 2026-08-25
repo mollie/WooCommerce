@@ -231,8 +231,7 @@ if (!\function_exists('mb_chr') && !\function_exists('Mollie\mb_chr')) {
 if (!\function_exists('mb_scrub') && !\function_exists('Mollie\mb_scrub')) {
     function mb_scrub(?string $string, ?string $encoding = null): string
     {
-        $encoding ??= \mb_internal_encoding();
-        return \mb_convert_encoding((string) $string, $encoding, $encoding);
+        return p\Mbstring::mb_scrub($string, $encoding);
     }
 }
 if (!\function_exists('mb_str_split') && !\function_exists('Mollie\mb_str_split')) {
@@ -242,39 +241,39 @@ if (!\function_exists('mb_str_split') && !\function_exists('Mollie\mb_str_split'
     }
 }
 if (!\function_exists('mb_str_pad') && !\function_exists('Mollie\mb_str_pad')) {
-    function mb_str_pad(string $string, int $length, string $pad_string = ' ', int $pad_type = \STR_PAD_RIGHT, ?string $encoding = null): string
+    function mb_str_pad(?string $string, ?int $length, ?string $pad_string = ' ', ?int $pad_type = \STR_PAD_RIGHT, ?string $encoding = null): string
     {
-        return p\Mbstring::mb_str_pad($string, $length, $pad_string, $pad_type, $encoding);
+        return p\Mbstring::mb_str_pad((string) $string, (int) $length, (string) $pad_string, (int) $pad_type, $encoding);
     }
 }
 if (!\function_exists('mb_ucfirst') && !\function_exists('Mollie\mb_ucfirst')) {
-    function mb_ucfirst(string $string, ?string $encoding = null): string
+    function mb_ucfirst(?string $string, ?string $encoding = null): string
     {
-        return p\Mbstring::mb_ucfirst($string, $encoding);
+        return p\Mbstring::mb_ucfirst((string) $string, $encoding);
     }
 }
 if (!\function_exists('mb_lcfirst') && !\function_exists('Mollie\mb_lcfirst')) {
-    function mb_lcfirst(string $string, ?string $encoding = null): string
+    function mb_lcfirst(?string $string, ?string $encoding = null): string
     {
-        return p\Mbstring::mb_lcfirst($string, $encoding);
+        return p\Mbstring::mb_lcfirst((string) $string, $encoding);
     }
 }
 if (!\function_exists('mb_trim') && !\function_exists('Mollie\mb_trim')) {
-    function mb_trim(string $string, ?string $characters = null, ?string $encoding = null): string
+    function mb_trim(?string $string, ?string $characters = null, ?string $encoding = null): string
     {
-        return p\Mbstring::mb_trim($string, $characters, $encoding);
+        return p\Mbstring::mb_trim((string) $string, $characters, $encoding);
     }
 }
 if (!\function_exists('mb_ltrim') && !\function_exists('Mollie\mb_ltrim')) {
-    function mb_ltrim(string $string, ?string $characters = null, ?string $encoding = null): string
+    function mb_ltrim(?string $string, ?string $characters = null, ?string $encoding = null): string
     {
-        return p\Mbstring::mb_ltrim($string, $characters, $encoding);
+        return p\Mbstring::mb_ltrim((string) $string, $characters, $encoding);
     }
 }
 if (!\function_exists('mb_rtrim') && !\function_exists('Mollie\mb_rtrim')) {
-    function mb_rtrim(string $string, ?string $characters = null, ?string $encoding = null): string
+    function mb_rtrim(?string $string, ?string $characters = null, ?string $encoding = null): string
     {
-        return p\Mbstring::mb_rtrim($string, $characters, $encoding);
+        return p\Mbstring::mb_rtrim((string) $string, $characters, $encoding);
     }
 }
 if (\extension_loaded('mbstring')) {

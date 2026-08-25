@@ -29,19 +29,19 @@ class Notices extends \Mollie\WooCommerce\Settings\Page\Section\AbstractSection
         <div class="mollie-section mollie-section--notices">
             <?php 
         echo $this->warnAboutRequiredCheckoutFieldForBillie();
-        // WPCS: XSS ok.     
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via wp_kses() in notice() 
         ?>
             <?php 
         echo $this->warnAboutRequiredCheckoutFieldForKlarna();
-        // WPCS: XSS ok.     
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via wp_kses() in notice() 
         ?>
             <?php 
         echo $this->warnMollieBankTransferNotBACS();
-        // WPCS: XSS ok.     
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via wp_kses() in notice() 
         ?>
             <?php 
         echo $this->warnDirectDebitStatus();
-        // WPCS: XSS ok.     
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via wp_kses() in notice() 
         ?>
         </div>
         <?php 

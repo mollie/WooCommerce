@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "composer\/ca-bundle",
-            "version": "1.5.11",
-            "version_normalized": "1.5.11.0",
+            "version": "1.5.14",
+            "version_normalized": "1.5.14.0",
             "source": {
                 "type": "git",
                 "url": "https:\/\/github.com\/composer\/ca-bundle.git",
-                "reference": "68ff39175e8e94a4bb1d259407ce51a6a60f09e6"
+                "reference": "0c8abba0634f637bd78c4e451981da368d403463"
             },
             "dist": {
                 "type": "zip",
-                "url": "https:\/\/api.github.com\/repos\/composer\/ca-bundle\/zipball\/68ff39175e8e94a4bb1d259407ce51a6a60f09e6",
-                "reference": "68ff39175e8e94a4bb1d259407ce51a6a60f09e6",
+                "url": "https:\/\/api.github.com\/repos\/composer\/ca-bundle\/zipball\/0c8abba0634f637bd78c4e451981da368d403463",
+                "reference": "0c8abba0634f637bd78c4e451981da368d403463",
                 "shasum": ""
             },
             "require": {
@@ -26,7 +26,7 @@
                 "psr\/log": "^1.0 || ^2.0 || ^3.0",
                 "symfony\/process": "^4.0 || ^5.0 || ^6.0 || ^7.0"
             },
-            "time": "2026-03-30T09:16:10+00:00",
+            "time": "2026-08-21T14:57:29+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -61,7 +61,7 @@
             "support": {
                 "irc": "irc:\/\/irc.freenode.org\/composer",
                 "issues": "https:\/\/github.com\/composer\/ca-bundle\/issues",
-                "source": "https:\/\/github.com\/composer\/ca-bundle\/tree\/1.5.11"
+                "source": "https:\/\/github.com\/composer\/ca-bundle\/tree\/1.5.14"
             },
             "funding": [
                 {
@@ -582,17 +582,17 @@
         },
         {
             "name": "symfony\/polyfill-mbstring",
-            "version": "v1.37.0",
-            "version_normalized": "1.37.0.0",
+            "version": "v1.38.2",
+            "version_normalized": "1.38.2.0",
             "source": {
                 "type": "git",
                 "url": "https:\/\/github.com\/symfony\/polyfill-mbstring.git",
-                "reference": "6a21eb99c6973357967f6ce3708cd55a6bec6315"
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https:\/\/api.github.com\/repos\/symfony\/polyfill-mbstring\/zipball\/6a21eb99c6973357967f6ce3708cd55a6bec6315",
-                "reference": "6a21eb99c6973357967f6ce3708cd55a6bec6315",
+                "url": "https:\/\/api.github.com\/repos\/symfony\/polyfill-mbstring\/zipball\/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
                 "shasum": ""
             },
             "require": {
@@ -605,7 +605,7 @@
             "suggest": {
                 "ext-mbstring": "For best performance"
             },
-            "time": "2026-04-10T17:25:58+00:00",
+            "time": "2026-05-27T06:59:30+00:00",
             "type": "library",
             "extra": {
                 "thanks": {
@@ -646,7 +646,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https:\/\/github.com\/symfony\/polyfill-mbstring\/tree\/v1.37.0"
+                "source": "https:\/\/github.com\/symfony\/polyfill-mbstring\/tree\/v1.38.2"
             },
             "funding": [
                 {

@@ -275,7 +275,7 @@ class AssetsModule implements ExecutableModule, ServiceModule
             add_action('wp_enqueue_scripts', function () use ($container) {
                 $this->enqueueFrontendScripts($container);
             });
-            add_action('wp_enqueue_scripts', function () use ($container) {
+            add_action('wp_enqueue_scripts', function () use ($container): void {
                 if (!mollieWooCommerceIsCheckoutContext()) {
                     return;
                 }

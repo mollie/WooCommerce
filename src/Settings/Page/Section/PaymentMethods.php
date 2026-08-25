@@ -19,7 +19,7 @@ class PaymentMethods extends \Mollie\WooCommerce\Settings\Page\Section\AbstractS
             <div class="mollie-settings-pm">
                 <?php 
         echo $this->renderGateways();
-        // WPCS: XSS ok. 
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped in paymentGatewayButton() 
         ?>
             </div>
         </div>
@@ -74,7 +74,7 @@ class PaymentMethods extends \Mollie\WooCommerce\Settings\Page\Section\AbstractS
             <div class="mollie-settings-pm__list">
                 <?php 
         echo $html;
-        // phpcs:ignore XSS ok. 
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped in paymentGatewayButton() 
         ?>
             </div>
         </div>
@@ -186,11 +186,11 @@ class PaymentMethods extends \Mollie\WooCommerce\Settings\Page\Section\AbstractS
         ?>
             <?php 
         echo $messageOrLink;
-        // phpcs:ignore XSS ok.
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped above 
         ?>
             <?php 
         echo $button;
-        // phpcs:ignore XSS ok.
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped above 
         ?>
         </div>
         <?php 

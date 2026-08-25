@@ -212,6 +212,6 @@ class PayPalAjaxRequests
             return \false;
         }
         $verifyNonce = wp_verify_nonce($nonce, 'mollie_PayPal_button');
-        return $verifyNonce == 1 || $verifyNonce == 2;
+        return $verifyNonce === 1 || $verifyNonce === 2;
     }
 }

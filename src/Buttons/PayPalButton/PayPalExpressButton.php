@@ -79,7 +79,7 @@ class PayPalExpressButton extends AbstractExpressButton
     {
         $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_hook_product', 'woocommerce_after_add_to_cart_form');
         $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_after_add_to_cart_form';
-        add_action($renderPlaceholder, function () {
+        add_action($renderPlaceholder, function (): void {
             $product = wc_get_product(get_the_id());
             if (!$product || $product->is_type('subscription') || $product instanceof \WC_Product_Variable_Subscription) {
                 return;
@@ -97,7 +97,7 @@ class PayPalExpressButton extends AbstractExpressButton
     {
         $renderPlaceholder = apply_filters('mollie_wc_gateway_paypal_render_hook_cart', 'woocommerce_cart_totals_after_order_total');
         $renderPlaceholder = is_string($renderPlaceholder) ? $renderPlaceholder : 'woocommerce_cart_totals_after_order_total';
-        add_action($renderPlaceholder, function () {
+        add_action($renderPlaceholder, function (): void {
             $cart = WC()->cart;
             foreach ($cart->get_cart_contents() as $item) {
                 $product = $item['data'];

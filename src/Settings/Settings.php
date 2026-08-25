@@ -520,7 +520,7 @@ class Settings
             require_once \ABSPATH . 'wp-admin/includes/file.php';
         }
         $upload_overrides = ['test_form' => \false];
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- nonce already verified in processAdminOptionCustomLogo() before this method is called
         $file = isset($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) ? wp_unslash($_FILES['woocommerce_' . $gatewayId . '_upload_logo']) : [];
         if (!empty($file)) {
             $file = ['name' => $file['name'], 'type' => $file['type'], 'tmp_name' => $file['tmp_name'], 'error' => $file['error'], 'size' => $file['size']];

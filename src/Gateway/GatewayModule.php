@@ -111,7 +111,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
         assert($dataService instanceof Data);
         $checkoutBlockHandler = new CheckoutBlockService($dataService, $maybeDisableVoucher);
         $checkoutBlockHandler->bootstrapAjaxRequest();
-        add_action('woocommerce_rest_checkout_process_payment_with_context', static function ($paymentContext) {
+        add_action('woocommerce_rest_checkout_process_payment_with_context', static function ($paymentContext): void {
             if (strpos($paymentContext->payment_method, 'mollie_wc_gateway_') === \false) {
                 return;
             }
@@ -158,7 +158,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $mollieOrderService = $container->get(MollieOrderService::class);
             return !$mollieOrderService->checkPaymentForUnpaidOrder($order);
         }, 5, 2);
-        add_action('woocommerce_thankyou', static function ($orderId) use ($container) {
+        add_action('woocommerce_thankyou', static function ($orderId) use ($container): void {
             if (!apply_filters('mollie_payments_for_woocommerce_check_payment_for_unpaid_order_on_woocommerce_thankyou_page', \false)) {
                 return;
             }
@@ -178,7 +178,7 @@ class GatewayModule implements ServiceModule, ExecutableModule, ExtendingModule
             $actions['mollie_wc_check_payment_for_unpaid_order'] = __('Check payment on mollie', 'mollie-payments-for-woocommerce');
             return $actions;
         }, 10, 2);
-        add_action('woocommerce_order_action_mollie_wc_check_payment_for_unpaid_order', static function ($orderId) use ($container) {
+        add_action('woocommerce_order_action_mollie_wc_check_payment_for_unpaid_order', static function ($orderId) use ($container): void {
             $order = wc_get_order($orderId);
             if (!$order || $order->is_paid() || !$order->has_status('pending') || strpos($order->get_payment_method(), 'mollie_wc_gateway_') === \false) {
                 return;

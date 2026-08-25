@@ -37,19 +37,19 @@ class RefundProcessor implements RefundProcessorInterface
         if (!$payment_object_id) {
             $error_message = __("Can\\'t process refund. Could not find Mollie Payment object id for order %s.", 'mollie-payments-for-woocommerce');
             $this->deprecatedGatewayHelper->getLogger()->debug(__METHOD__ . ' - ' . sprintf($error_message, $order_id));
-            throw new Exception($error_message);
+            throw new Exception(esc_html($error_message));
         }
         try {
             $payment_object = $this->deprecatedGatewayHelper->getPaymentFactory()->getPaymentObject($payment_object_id, $this->deprecatedGatewayHelper->paymentMethod());
         } catch (ApiException $exception) {
             $exceptionMessage = $exception->getMessage();
             $this->deprecatedGatewayHelper->getLogger()->debug($exceptionMessage);
-            throw new Exception($exception->getMessage());
+            throw new Exception(esc_html($exception->getMessage()));
         }
         if (!$payment_object || !is_object($payment_object)) {
             $error_message = __("Can\\'t process refund. Could not find Mollie Payment object data for order %s.", 'mollie-payments-for-woocommerce');
             $this->deprecatedGatewayHelper->getLogger()->debug(__METHOD__ . ' - ' . sprintf($error_message, $order_id));
-            throw new Exception($error_message);
+            throw new Exception(esc_html($error_message));
         }
         $payment_object->refund($wcOrder, $order_id, $payment_object, $amount, $reason);
     }

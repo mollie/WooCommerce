@@ -52,7 +52,7 @@ class MollieSubscriptionTest extends TestCase
         );
         $testee->expects($this->once())->method(
             'restore_mollie_customer_id_and_mandate'
-        )->willReturn(false);
+        )->willReturn(['customer_id' => null, 'mandate_id' => null]);
         expect('wc_get_payment_gateway_by_order')->andReturn($gateway);
         $renewalOrder->expects($this->once())->method(
             'set_payment_method'

@@ -167,7 +167,7 @@ class MerchantCaptureModule implements ExecutableModule, ServiceModule
                         if ($order->get_meta(self::ORDER_PAYMENT_STATUS_META_KEY) === ManualCaptureStatus::STATUS_AUTHORIZED) {
                             return;
                         }
-                        if ($payment->getAmountCaptured() !== 0.0) {
+                        if ((float) $payment->getAmountCaptured() !== 0.0) {
                             return;
                         }
                         $order->set_status(SharedDataDictionary::STATUS_ON_HOLD);

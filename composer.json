@@ -33,7 +33,7 @@
     "ptrofimov/xpmock": "^1",
     "johnpbloch/wordpress-core": "^5.0",
     "fzaninotto/faker": "^1.9@dev",
-    "inpsyde/php-coding-standards": "^1.0.0",
+    "inpsyde/php-coding-standards": "^2.0.2",
     "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",
     "php-stubs/woocommerce-stubs": "^10.6",
@@ -60,7 +60,8 @@
   },
   "scripts": {
     "check-coding-standards": "vendor/bin/phpcs --parallel=8 -s",
-    "fix-coding-standards": "vendor/bin/phpcbf",
+    "check-coding-standards-transition": "vendor/bin/phpcs --standard=phpcs.transition.xml.dist --parallel=8 -s",
+    "fix-coding-standards": "vendor/bin/phpcbf --standard=phpcs.transition.xml.dist",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",
     "phpstan": "vendor/bin/phpstan analyse",
@@ -91,7 +92,7 @@
     },
     "hooks": {
       "pre-commit": [
-        "vendor/bin/phpcbf"
+        "vendor/bin/phpcbf --standard=phpcs.transition.xml.dist"
       ]
     }
   },

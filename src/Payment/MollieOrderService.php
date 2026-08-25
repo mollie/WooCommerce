@@ -122,7 +122,7 @@ class MollieOrderService
 
         $order = $orders[0];
 
-        if ($order->get_id() != $order_id) {
+        if ((int) $order->get_id() !== (int) $order_id) {
             $this->httpResponse->setHttpResponseCode(401);
             $this->logger->debug(__METHOD__ . ":  found order {$order->get_id()} is not the same as provided order $order_id.");
             return;
@@ -557,23 +557,9 @@ class MollieOrderService
                 . wp_json_encode($processedChargebackIds)
             );
 
-            // Order the chargeback arrays by value (chargeback ID)
-            asort($chargebackIds);
-            asort($processedChargebackIds);
-
             // Check if there are new chargebacks that need processing
-            if ($chargebackIds != $processedChargebackIds) {
-                // There are new chargebacks.
-                $chargebacksToProcess = array_diff(
-                    $chargebackIds,
-                    $processedChargebackIds
-                );
-                $this->logger->debug(
-                    __METHOD__
-                    . " Chargebacks that need to be processed for {$logId}: "
-                    . wp_json_encode($chargebacksToProcess)
-                );
-            } else {
+            $chargebacksToProcess = array_diff($chargebackIds, $processedChargebackIds);
+            if (!$chargebacksToProcess) {
                 // No new chargebacks, stop processing.
                 $this->logger->debug(
                     __METHOD__
@@ -582,6 +568,11 @@ class MollieOrderService
 
                 return;
             }
+            $this->logger->debug(
+                __METHOD__
+                . " Chargebacks that need to be processed for {$logId}: "
+                . wp_json_encode($chargebacksToProcess)
+            );
 
             $order = wc_get_order($orderId);
 

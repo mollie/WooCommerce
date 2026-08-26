@@ -53,3 +53,13 @@ export const enableBizumPlugin = {
 	slug: 'enable-bizum',
 	zipFilePath: `${ filePath }/enable-bizum.zip`,
 };
+
+/**
+ * QA-only probe for PIWOO-890 (order-received page double-counted by
+ * tracking tools). See tests/08-bug-verification/piwoo-890.spec.ts.
+ */
+export const piwoo890OrderReceivedProbePlugin = {
+	name: 'PIWOO-890 Order Received Probe',
+	slug: 'piwoo-890-order-received-probe',
+	zipFilePath: `${ filePath }/piwoo-890-order-received-probe.zip`,
+};

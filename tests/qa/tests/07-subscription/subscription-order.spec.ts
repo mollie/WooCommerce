@@ -6,7 +6,7 @@ import { products, shopConfigDefault } from '../../resources';
 import { testSubscriptionOrderOnClassicCheckout } from './_test-scenarios';
 import { subscriptionOrderOnClassicCheckout } from './_test-data';
 
-test.beforeAll( async ( { utils, wooCommerceApi } ) => {
+test.beforeAll( async ( { utils } ) => {
 	test.setTimeout( 2 * 60_000 );
 	await utils.configureStore( {
 		...shopConfigDefault,
@@ -16,7 +16,6 @@ test.beforeAll( async ( { utils, wooCommerceApi } ) => {
 	} );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
-	await wooCommerceApi.deleteAllOrders();
 } );
 
 for ( const testData of subscriptionOrderOnClassicCheckout ) {

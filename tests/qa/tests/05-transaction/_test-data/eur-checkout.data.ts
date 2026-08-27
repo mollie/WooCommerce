@@ -706,4 +706,68 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
                         status: 'expired',
                 },
         },
+	{
+		...baseOrder,
+		testId: 'C4567609',
+		payment: {
+			gateway: gateways.billink,
+			status: 'authorized',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567610',
+		payment: {
+			gateway: gateways.billink,
+			status: 'failed',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567611',
+		payment: {
+			gateway: gateways.billink,
+			status: 'canceled',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567612',
+		payment: {
+			gateway: gateways.billink,
+			status: 'expired',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567613',
+		payment: {
+			gateway: gateways.wero,
+			status: 'paid',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567614',
+		payment: {
+			gateway: gateways.wero,
+			status: 'failed',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567615',
+		payment: {
+			gateway: gateways.wero,
+			status: 'canceled',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567616',
+		payment: {
+			gateway: gateways.wero,
+			status: 'expired',
+		},
+	},
 ];

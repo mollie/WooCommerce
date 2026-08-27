@@ -122,6 +122,20 @@ const billie: MollieGateway = {
 	},
 };
 
+const billink: MollieGateway = {
+	country: 'netherlands', // Netherlands, Belgium also supported (Germany on request)
+	minAmount: '0.01',
+	maxAmount: '2500.00', // B2C limit; B2B is 10000.00
+	slug: 'billink',
+	name: 'Billink',
+	availableForApiMethods: [ 'payment' ], // Payments API only
+	settings: {
+		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_billink',
+		title: 'Billink',
+	},
+};
+
 const blik: MollieGateway = {
 	country: 'poland',
 	minAmount: '1.00',
@@ -478,6 +492,20 @@ const voucher: MollieGateway = {
 	},
 };
 
+const wero: MollieGateway = {
+	country: 'germany', // Belgium, France, Luxembourg also supported
+	minAmount: '0.01',
+	maxAmount: '10000.00', // default; scheme max is 99999.00, bank-dependent
+	slug: 'wero',
+	name: 'Wero',
+	availableForApiMethods: [ 'payment' ], // Payments API only
+	settings: {
+		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_wero',
+		title: 'Wero',
+	},
+};
+
 export const gateways: {
 	[ key: string ]: MollieGateway;
 } = {
@@ -488,6 +516,7 @@ export const gateways: {
 	banktransfer,
 	belfius,
 	billie, // >100.00
+	billink,
 	blik, // currency: PLN
 	bizum,
 	creditcard,
@@ -512,4 +541,5 @@ export const gateways: {
 	twint, // currency: CHF
 	vipps, // currency: NOK
 	voucher,
+	wero,
 };

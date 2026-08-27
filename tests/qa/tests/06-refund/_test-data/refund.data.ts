@@ -47,7 +47,7 @@ export const refundViaWooCommerce: MollieTestData.ShopRefund[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4567633',
 		payment: {
 			gateway: gateways.creditcard,
 			status: 'paid',
@@ -104,7 +104,7 @@ export const refundViaMollieDashboard: MollieTestData.ShopRefund[] = [
 	},
 	{
 		...baseOrder,
-		testId: 'C0000',
+		testId: 'C4567634',
 		payment: {
 			gateway: gateways.creditcard,
 			status: 'paid',

@@ -17,8 +17,7 @@ export const shopConfigClassic: ShopConfig = {
 	enableClassicPages: true,
 };
 
-// Billink only works with an NL merchant, so its shop must run under NL general
-// settings/customer too, not the default German ones.
+// Billink only works with an NL merchant, so its shop must run under NL general/settings/customer settings
 export const shopConfigNetherlands: ShopConfig = {
 	...shopConfigDefault,
 	settings: shopSettings.netherlands,

@@ -134,6 +134,13 @@ export default defineConfig< TestBaseExtend >( {
 			},
 		},
 		{
+			name: 'setup-mollie-nl',
+			dependencies: [ 'setup-woocommerce' ],
+			testMatch: /mollie\.setup\.ts/,
+			grep: /setup:mollie:nl;/,
+			fullyParallel: false,
+		},
+		{
 			name: 'setup-multistep',
 			testMatch: /multistep\.setup\.ts/,
 			fullyParallel: false,
@@ -148,16 +155,24 @@ export default defineConfig< TestBaseExtend >( {
 			name: 'payment-api',
 			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
+			testIgnore:
+				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 		},
 		{
 			name: 'order-api',
 			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
+			testIgnore:
+				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 			use: {
 				mollieApiMethod: 'order',
 			},
+		},
+		{
+			name: 'nl-payment-api',
+			dependencies: [ 'setup-mollie-nl' ],
+			fullyParallel: false,
+			testMatch: /nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 		},
 		{
 			name: 'refund-payment-api',

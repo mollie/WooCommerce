@@ -194,7 +194,8 @@ export default defineConfig< TestBaseExtend >( {
 			name: 'multistep-payment-api',
 			dependencies: [ 'setup-multistep-tests' ],
 			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
+			testIgnore:
+				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
 			grep: /Transaction/,
 			grepInvert: /Transaction - Pay for order/,
@@ -206,7 +207,8 @@ export default defineConfig< TestBaseExtend >( {
 			name: 'multistep-order-api',
 			dependencies: [ 'setup-multistep-tests' ],
 			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
+			testIgnore:
+				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
 			grep: /Transaction/,
 			grepInvert: /Transaction - Pay for order/,

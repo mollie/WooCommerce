@@ -292,12 +292,11 @@ export class Checkout extends CheckoutBase {
 		await this.continueWithConfirmationButton().click();
 		await this.page.waitForLoadState();
 
-		// Terms and conditions checkbox was removed (found on 04.12.2025)
-		await expect(
-			this.termsAndConditionsCheckbox(),
-			'Assert terms and conditions checkbox is visible'
-		).toBeVisible();
-		await this.termsAndConditionsCheckbox().check();
+		// await expect(
+		// 	this.termsAndConditionsCheckbox(),
+		// 	'Assert terms and conditions checkbox is visible'
+		// ).toBeVisible();
+		// await this.termsAndConditionsCheckbox().check();
 
 		await this.placeOrder();
 	};

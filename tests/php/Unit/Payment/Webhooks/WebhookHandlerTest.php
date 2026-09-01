@@ -219,8 +219,6 @@ class WebhookHandlerTest extends TestCase
         $order = Mockery::mock(WC_Order::class);
         $order->shouldReceive('get_id')->andReturn($orderId);
         $order->shouldReceive('get_status')->andReturn('processing');
-        $order->shouldReceive('needs_payment')->andReturn(false);
-        $order->shouldReceive('has_status')->with('on-hold')->andReturn(false);
         $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_klarna');
         // Any settled meta read (_mollie_authorized / _mollie_paid_and_processed / ids) is truthy.
         $order->shouldReceive('get_meta')->andReturn('1');
@@ -230,21 +228,21 @@ class WebhookHandlerTest extends TestCase
     }
 
     /**
-     * An order that is genuinely UNPAID but sitting at on-hold — the state every confirmationDelayed
-     * gateway (banktransfer, directdebit, iDEAL, Bancontact, eps, kbc, belfius, trustly, multibanco,
-     * billink, wero, paybybank) starts in. WC_Order::needs_payment() returns false for on-hold, yet the
-     * order is NOT settled: it carries no paid/authorized meta. orderIsAlreadySettled() must return false
-     * for it, so a late expired/canceled/failed webhook still transitions it instead of stranding it
-     * on-hold forever.
+     * An order that is genuinely UNPAID but sitting at on-hold — the state banktransfer and directdebit
+     * reach at checkout, and every other confirmationDelayed gateway (iDEAL, Bancontact, eps, kbc,
+     * belfius, trustly, multibanco, billink, wero, paybybank) reaches through the Initial order status
+     * setting. It carries no paid/authorized meta, so orderIsAlreadySettled() must return false for it
+     * and a late expired/canceled/failed webhook still transitions it instead of stranding it on-hold
+     * forever.
+     *
+     * The mock deliberately does NOT stub needs_payment()/has_status(): the guard must not consult them
+     * (WooCommerce reports on-hold as "does not need payment"), so a call would fail this mock loudly.
      */
     private function makeOnHoldUnpaidOrder(int $orderId): \Mockery\MockInterface
     {
         $order = Mockery::mock(WC_Order::class);
         $order->shouldReceive('get_id')->andReturn($orderId);
         $order->shouldReceive('get_status')->andReturn('on-hold');
-        $order->shouldReceive('has_status')->with('on-hold')->andReturn(true);
-        // WooCommerce reports on-hold as "does not need payment", even though it is unpaid.
-        $order->shouldReceive('needs_payment')->andReturn(false);
         $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_banktransfer');
         $order->shouldReceive('add_order_note')->zeroOrMoreTimes();
         // Not settled: no paid-and-processed and no authorized meta.
@@ -252,6 +250,36 @@ class WebhookHandlerTest extends TestCase
         $order->shouldReceive('get_meta')->with('_mollie_authorized')->andReturn('');
 
         return $order;
+    }
+
+    /**
+     * An order in a final status (cancelled/refunded) that carries NO Mollie settled meta, so the only
+     * thing that can hold it is MollieObject::isFinalOrderStatus(). The metas are stubbed as empty on
+     * purpose: if a handler falls through to orderIsAlreadySettled() the guard returns false and the
+     * order is mutated, which is exactly the regression these tests lock. The order tracks a Mollie
+     * payment id so the handler's stale-payment check is not what makes it bail.
+     */
+    private function makeFinalStatusOrder(int $orderId, string $status): \Mockery\MockInterface
+    {
+        $order = Mockery::mock(WC_Order::class);
+        $order->shouldReceive('get_id')->andReturn($orderId);
+        $order->shouldReceive('get_status')->andReturn($status);
+        $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_klarna');
+        $order->shouldReceive('add_order_note')->zeroOrMoreTimes();
+        $order->shouldReceive('get_meta')->with('_mollie_paid_and_processed', true)->andReturn('');
+        $order->shouldReceive('get_meta')->with('_mollie_authorized')->andReturn('');
+        $order->shouldReceive('get_meta')->with('_mollie_payment_id', true)->andReturn($this->trackedPaymentIdFor($status));
+
+        return $order;
+    }
+
+    /**
+     * The payment id a final-status order is tracking. It must equal the id of the late webhook's
+     * payment in those tests, so the handler bails on the final status and not on staleness.
+     */
+    private function trackedPaymentIdFor(string $status): string
+    {
+        return $status === 'cancelled' ? 'tr_LATE_FAIL_CANCELLED' : 'tr_LATE_FAIL_REFUNDED';
     }
 
     /**
@@ -501,6 +529,10 @@ class WebhookHandlerTest extends TestCase
         $gateway->id  = 'mollie_wc_gateway_banktransfer';
         $payment      = $this->makePayment('tr_ON_HOLD_FAIL');
         $payment->details = new \stdClass();
+        // The failing payment is the one the order currently tracks, not an older attempt.
+        $order->shouldReceive('get_meta')->with('_mollie_payment_id', true)->andReturn($payment->id);
+
+        $mollieObject->shouldReceive('isFinalOrderStatus')->with($order)->andReturn(false);
 
         when('wc_get_payment_gateway_by_order')->justReturn($gateway);
         when('apply_filters')->returnArg(2);
@@ -510,6 +542,172 @@ class WebhookHandlerTest extends TestCase
         $mollieObject->shouldReceive('failedSubscriptionProcess')->once();
 
         $this->sut->onWebhookFailed($order, $payment, 'Bank Transfer', $mollieObject);
+    }
+
+    /**
+     * Scenario: A late failed webhook must not fail an order in a final status (PR #1284 follow-up)
+     *   Given an order that is already cancelled and carries NO Mollie settled meta — the state a
+     *     pending order reaches when WooCommerce's hold-stock rule cancels it, or an admin does
+     *   When a late failed-payment webhook for the abandoned payment is handled
+     *   Then the failure pipeline does not run, so the order keeps its status and its stock is not
+     *     restored a second time by MollieObject::updateOrderStatus()
+     *
+     * This is the case the removed !needs_payment() clause covered by accident: with no paid or
+     * authorized meta to read, an explicit isFinalOrderStatus() check in onWebhookFailed — matching
+     * onWebhookCanceled and onWebhookExpired — is the only thing that holds the order.
+     *
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookFailed
+     */
+    public function test_on_webhook_failed_skips_cancelled_order_without_settled_meta(): void
+    {
+        // Arrange
+        $orderId      = 712;
+        $order        = $this->makeFinalStatusOrder($orderId, 'cancelled');
+        $mollieObject = Mockery::mock(MolliePayment::class);
+        $gateway      = Mockery::mock(PaymentGateway::class);
+        $gateway->id  = 'mollie_wc_gateway_banktransfer';
+        $payment      = $this->makePayment('tr_LATE_FAIL_CANCELLED');
+        $payment->details = new \stdClass();
+
+        $mollieObject->shouldReceive('isFinalOrderStatus')->with($order)->andReturn(true);
+
+        // Stubbed so that a handler which wrongly falls through fails on the expectations below,
+        // rather than on an undefined WooCommerce function.
+        when('wc_get_payment_gateway_by_order')->justReturn($gateway);
+        when('apply_filters')->returnArg(2);
+        when('esc_attr')->returnArg(1);
+
+        // When / Then — a cancelled order is final: nothing in the failure pipeline may run.
+        $mollieObject->shouldReceive('failedSubscriptionProcess')->never();
+        $mollieObject->shouldReceive('updateOrderStatus')->never();
+
+        $this->sut->onWebhookFailed($order, $payment, 'Bank Transfer', $mollieObject);
+    }
+
+    /**
+     * Scenario: A late failed webhook must not fail an already-refunded order (PIWOO-923, failed path)
+     *   Given an order that is already refunded and, like the cancelled case above, carries no Mollie
+     *     settled meta — the state of an order completed internally on an existing mandate (a $0.00
+     *     subscription switch calls WC_Order::payment_complete() without setOrderPaidAndProcessed())
+     *     and refunded afterwards
+     *   When a late failed-payment webhook is handled
+     *   Then the failure pipeline does not run and the order stays refunded
+     *
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookFailed
+     */
+    public function test_on_webhook_failed_skips_refunded_order_without_settled_meta(): void
+    {
+        // Arrange
+        $orderId      = 714;
+        $order        = $this->makeFinalStatusOrder($orderId, 'refunded');
+        $mollieObject = Mockery::mock(MolliePayment::class);
+        $gateway      = Mockery::mock(PaymentGateway::class);
+        $gateway->id  = 'mollie_wc_gateway_klarna';
+        $payment      = $this->makePayment('tr_LATE_FAIL_REFUNDED');
+        $payment->details = new \stdClass();
+
+        $mollieObject->shouldReceive('isFinalOrderStatus')->with($order)->andReturn(true);
+
+        // Stubbed so that a handler which wrongly falls through fails on the expectations below,
+        // rather than on an undefined WooCommerce function.
+        when('wc_get_payment_gateway_by_order')->justReturn($gateway);
+        when('apply_filters')->returnArg(2);
+        when('esc_attr')->returnArg(1);
+
+        // When / Then — a refunded order is final: its status and stock are left alone.
+        $mollieObject->shouldReceive('failedSubscriptionProcess')->never();
+        $mollieObject->shouldReceive('updateOrderStatus')->never();
+
+        $this->sut->onWebhookFailed($order, $payment, 'Klarna', $mollieObject);
+    }
+
+    /**
+     * Scenario: A zero-total order is not mistaken for a settled one (PR #1284 follow-up)
+     *   Given an unpaid order at pending with a zero order total and no paid/authorized meta —
+     *     WC_Order::needs_payment() reports false for it, because it multiplies the status check by
+     *     get_total() > 0
+     *   When a failed-payment webhook is handled
+     *   Then the settled guard must NOT trip and the failure is processed
+     *
+     * The order mock does not stub needs_payment(), so this also locks in that the guard reads no
+     * third-party-filterable WooCommerce state (woocommerce_valid_order_statuses_for_payment /
+     * woocommerce_order_needs_payment): a call would fail the mock.
+     *
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookFailed
+     */
+    public function test_on_webhook_failed_still_fails_zero_total_unpaid_order(): void
+    {
+        // Arrange
+        $orderId      = 713;
+        $order        = Mockery::mock(WC_Order::class);
+        $order->shouldReceive('get_id')->andReturn($orderId);
+        $order->shouldReceive('get_status')->andReturn('pending');
+        $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_directdebit');
+        $order->shouldReceive('add_order_note')->zeroOrMoreTimes();
+        $order->shouldReceive('get_meta')->with('_mollie_paid_and_processed', true)->andReturn('');
+        $order->shouldReceive('get_meta')->with('_mollie_authorized')->andReturn('');
+        $mollieObject = Mockery::mock(MolliePayment::class);
+        $gateway      = Mockery::mock(PaymentGateway::class);
+        $gateway->id  = 'mollie_wc_gateway_directdebit';
+        $payment      = $this->makePayment('tr_ZERO_TOTAL_FAIL');
+        $payment->details = new \stdClass();
+        // The failing payment is the one the order currently tracks, not an older attempt.
+        $order->shouldReceive('get_meta')->with('_mollie_payment_id', true)->andReturn($payment->id);
+
+        $mollieObject->shouldReceive('isFinalOrderStatus')->with($order)->andReturn(false);
+
+        when('wc_get_payment_gateway_by_order')->justReturn($gateway);
+        when('apply_filters')->returnArg(2);
+        when('esc_attr')->returnArg(1);
+
+        // When / Then — the order is unpaid, whatever its total: the failure is processed.
+        $mollieObject->shouldReceive('failedSubscriptionProcess')->once();
+
+        $this->sut->onWebhookFailed($order, $payment, 'SEPA Direct Debit', $mollieObject);
+    }
+
+    /**
+     * Scenario: A failed webhook for a superseded payment does not fail the order (PR #1284 follow-up)
+     *   Given an unpaid pending order that is already tracking a NEWER Mollie payment, because the
+     *     shopper retried checkout after abandoning the first attempt
+     *   When the older attempt reports failed
+     *   Then the order is left alone, so the pending retry is not destroyed by the stale failure
+     *
+     * onWebhookExpired has had this check since it was written; onWebhookFailed did not, and the
+     * removed !needs_payment() clause never covered it (a pending order needs payment).
+     *
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookFailed
+     */
+    public function test_on_webhook_failed_skips_stale_payment_when_a_newer_one_is_tracked(): void
+    {
+        // Arrange
+        $orderId      = 715;
+        $order        = Mockery::mock(WC_Order::class);
+        $order->shouldReceive('get_id')->andReturn($orderId);
+        $order->shouldReceive('get_status')->andReturn('pending');
+        $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_ideal');
+        $order->shouldReceive('add_order_note')->zeroOrMoreTimes();
+        $order->shouldReceive('get_meta')->with('_mollie_paid_and_processed', true)->andReturn('');
+        $order->shouldReceive('get_meta')->with('_mollie_authorized')->andReturn('');
+        // The order has moved on to a newer payment.
+        $order->shouldReceive('get_meta')->with('_mollie_payment_id', true)->andReturn('tr_NEWER_ATTEMPT');
+        $mollieObject = Mockery::mock(MolliePayment::class);
+        $gateway      = Mockery::mock(PaymentGateway::class);
+        $gateway->id  = 'mollie_wc_gateway_ideal';
+        $payment      = $this->makePayment('tr_OLDER_ATTEMPT');
+        $payment->details = new \stdClass();
+
+        $mollieObject->shouldReceive('isFinalOrderStatus')->with($order)->andReturn(false);
+
+        when('wc_get_payment_gateway_by_order')->justReturn($gateway);
+        when('apply_filters')->returnArg(2);
+        when('esc_attr')->returnArg(1);
+
+        // When / Then — the stale failure must not touch the order.
+        $mollieObject->shouldReceive('failedSubscriptionProcess')->never();
+        $mollieObject->shouldReceive('updateOrderStatus')->never();
+
+        $this->sut->onWebhookFailed($order, $payment, 'iDEAL', $mollieObject);
     }
 
     /**

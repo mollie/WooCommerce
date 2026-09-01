@@ -274,7 +274,7 @@ class AppleAjaxRequests
         $applePayRequestDataObject
     ) {
 
-        if ($applePayRequestDataObject->callerPage === 'productDetail') {
+        if ($applePayRequestDataObject->callerPage() === 'productDetail') {
             return $this->calculateTotalsSingleProduct(
                 $applePayRequestDataObject->productId(),
                 $applePayRequestDataObject->productQuantity(),
@@ -282,7 +282,7 @@ class AppleAjaxRequests
                 $applePayRequestDataObject->shippingMethod()
             );
         }
-        if ($applePayRequestDataObject->callerPage === 'cart') {
+        if ($applePayRequestDataObject->callerPage() === 'cart') {
             return $this->calculateTotalsCartPage(
                 $applePayRequestDataObject->simplifiedContact(),
                 $applePayRequestDataObject->shippingMethod()

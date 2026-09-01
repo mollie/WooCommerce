@@ -220,10 +220,36 @@ class WebhookHandlerTest extends TestCase
         $order->shouldReceive('get_id')->andReturn($orderId);
         $order->shouldReceive('get_status')->andReturn('processing');
         $order->shouldReceive('needs_payment')->andReturn(false);
+        $order->shouldReceive('has_status')->with('on-hold')->andReturn(false);
         $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_klarna');
         // Any settled meta read (_mollie_authorized / _mollie_paid_and_processed / ids) is truthy.
         $order->shouldReceive('get_meta')->andReturn('1');
         $order->shouldReceive('add_order_note')->zeroOrMoreTimes();
+
+        return $order;
+    }
+
+    /**
+     * An order that is genuinely UNPAID but sitting at on-hold — the state every confirmationDelayed
+     * gateway (banktransfer, directdebit, iDEAL, Bancontact, eps, kbc, belfius, trustly, multibanco,
+     * billink, wero, paybybank) starts in. WC_Order::needs_payment() returns false for on-hold, yet the
+     * order is NOT settled: it carries no paid/authorized meta. orderIsAlreadySettled() must return false
+     * for it, so a late expired/canceled/failed webhook still transitions it instead of stranding it
+     * on-hold forever.
+     */
+    private function makeOnHoldUnpaidOrder(int $orderId): \Mockery\MockInterface
+    {
+        $order = Mockery::mock(WC_Order::class);
+        $order->shouldReceive('get_id')->andReturn($orderId);
+        $order->shouldReceive('get_status')->andReturn('on-hold');
+        $order->shouldReceive('has_status')->with('on-hold')->andReturn(true);
+        // WooCommerce reports on-hold as "does not need payment", even though it is unpaid.
+        $order->shouldReceive('needs_payment')->andReturn(false);
+        $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_banktransfer');
+        $order->shouldReceive('add_order_note')->zeroOrMoreTimes();
+        // Not settled: no paid-and-processed and no authorized meta.
+        $order->shouldReceive('get_meta')->with('_mollie_paid_and_processed', true)->andReturn('');
+        $order->shouldReceive('get_meta')->with('_mollie_authorized')->andReturn('');
 
         return $order;
     }
@@ -420,5 +446,135 @@ class WebhookHandlerTest extends TestCase
         $mollieObject->shouldReceive('unsetCancelledMolliePaymentId')->never();
 
         $this->sut->onWebhookExpired($order, $payment, 'Klarna', $mollieObject);
+    }
+
+    /**
+     * Scenario: A canceled webhook still cancels a genuinely unpaid on-hold order (PIWOO-#1284 regression)
+     *   Given an unpaid order sitting at on-hold (as every confirmationDelayed gateway starts), no paid/
+     *     authorized meta, so needs_payment() is false but the order is NOT settled
+     *   When a canceled-payment webhook is handled
+     *   Then the settled guard must NOT trip and the cancellation is processed
+     *
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookCanceled
+     */
+    public function test_on_webhook_canceled_still_cancels_on_hold_unpaid_order(): void
+    {
+        // Arrange
+        $orderId      = 611;
+        $order        = $this->makeOnHoldUnpaidOrder($orderId);
+        $mollieObject = Mockery::mock(MolliePayment::class);
+        $gateway      = Mockery::mock(PaymentGateway::class);
+        $gateway->id  = 'mollie_wc_gateway_banktransfer';
+        $payment      = $this->makePayment('tr_ON_HOLD_CANCEL');
+
+        $mollieObject->shouldReceive('isFinalOrderStatus')->with($order)->andReturn(false);
+        $mollieObject->shouldReceive('getCancelledMolliePaymentId')->andReturn('');
+        $mollieObject->shouldReceive('deleteSubscriptionFromPending')->once()->with($order);
+
+        $this->settings->shouldReceive('getOrderStatusCancelledPayments')->andReturn('pending');
+        when('wc_get_payment_gateway_by_order')->justReturn($gateway);
+        when('apply_filters')->returnArg(2);
+
+        // When / Then — the on-hold order is genuinely unpaid, so the cancellation runs.
+        $mollieObject->shouldReceive('unsetActiveMolliePayment')->once()->with($orderId, 'tr_ON_HOLD_CANCEL');
+        $mollieObject->shouldReceive('setCancelledMolliePaymentId')->once()->with($orderId, 'tr_ON_HOLD_CANCEL');
+        $mollieObject->shouldReceive('updateOrderStatus')->once();
+
+        $this->sut->onWebhookCanceled($order, $payment, 'Bank Transfer', $mollieObject);
+    }
+
+    /**
+     * Scenario: A failed webhook still fails a genuinely unpaid on-hold order (PIWOO-#1284 regression)
+     *   Given an unpaid on-hold order with no paid/authorized meta
+     *   When a failed-payment webhook is handled
+     *   Then the settled guard must NOT trip and the failure pipeline runs
+     *
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookFailed
+     */
+    public function test_on_webhook_failed_still_fails_on_hold_unpaid_order(): void
+    {
+        // Arrange
+        $orderId      = 711;
+        $order        = $this->makeOnHoldUnpaidOrder($orderId);
+        $mollieObject = Mockery::mock(MolliePayment::class);
+        $gateway      = Mockery::mock(PaymentGateway::class);
+        $gateway->id  = 'mollie_wc_gateway_banktransfer';
+        $payment      = $this->makePayment('tr_ON_HOLD_FAIL');
+        $payment->details = new \stdClass();
+
+        when('wc_get_payment_gateway_by_order')->justReturn($gateway);
+        when('apply_filters')->returnArg(2);
+        when('esc_attr')->returnArg(1);
+
+        // When / Then — the failure pipeline runs for a genuinely unpaid on-hold order.
+        $mollieObject->shouldReceive('failedSubscriptionProcess')->once();
+
+        $this->sut->onWebhookFailed($order, $payment, 'Bank Transfer', $mollieObject);
+    }
+
+    /**
+     * Scenario: An expired webhook still cancels a genuinely unpaid on-hold order (PIWOO-#1284 regression)
+     *   Given an unpaid on-hold order whose stored payment id matches the expiring payment, no settled meta
+     *   When an expired-payment webhook is handled
+     *   Then the settled guard must NOT trip and the order is moved to the expired/cancelled status
+     *
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookExpired
+     */
+    public function test_on_webhook_expired_still_cancels_on_hold_unpaid_order(): void
+    {
+        // Arrange
+        $orderId      = 811;
+        $order        = $this->makeOnHoldUnpaidOrder($orderId);
+        $mollieObject = Mockery::mock(MolliePayment::class);
+        $gateway      = Mockery::mock(PaymentGateway::class);
+        $gateway->id  = 'mollie_wc_gateway_banktransfer';
+        $payment      = $this->makePayment('tr_ON_HOLD_EXPIRE');
+        // The expiring payment is the one currently tracked on the order (not an older attempt).
+        $order->shouldReceive('get_meta')->with('_mollie_payment_id', true)->andReturn($payment->id);
+
+        $this->logger->shouldReceive('log')->zeroOrMoreTimes();
+        $mollieObject->shouldReceive('isFinalOrderStatus')->with($order)->andReturn(false);
+
+        when('wc_get_payment_gateway_by_order')->justReturn($gateway);
+        when('apply_filters')->returnArg(2);
+
+        // When / Then — the on-hold order is genuinely unpaid, so it is expired/cancelled.
+        $mollieObject->shouldReceive('updateOrderStatus')->once();
+        $mollieObject->shouldReceive('unsetCancelledMolliePaymentId')->once()->with($orderId);
+
+        $this->sut->onWebhookExpired($order, $payment, 'Bank Transfer', $mollieObject);
+    }
+
+    /**
+     * Scenario: A paid webhook still completes an on-hold order (regression lock)
+     *   Given a genuine paid payment for an unpaid on-hold order (no refund, no chargeback)
+     *   When a paid webhook is handled
+     *   Then the order is completed — onWebhookPaid must NOT consult the settled guard, otherwise
+     *     banktransfer/directdebit (on-hold at checkout) would never complete on payment
+     *
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookPaid
+     */
+    public function test_on_webhook_paid_still_completes_on_hold_order(): void
+    {
+        // Arrange
+        $orderId      = 512;
+        $order        = Mockery::mock(WC_Order::class);
+        $mollieObject = Mockery::mock(MolliePayment::class);
+        $payment      = $this->makePaidPayment(null, null);
+
+        $order->shouldReceive('get_id')->andReturn($orderId);
+        $order->shouldReceive('get_status')->andReturn('on-hold');
+        $order->shouldReceive('has_status')->with('on-hold')->andReturn(true);
+        $order->shouldReceive('needs_payment')->andReturn(false);
+        $order->shouldReceive('get_meta')->andReturn('');
+
+        // When / Then — an on-hold order that is genuinely paid is completed exactly once.
+        $order->shouldReceive('payment_complete')->once()->with($payment->id);
+        $order->shouldReceive('add_order_note')->once();
+        $mollieObject->shouldReceive('setOrderPaidAndProcessed')->once()->with($order);
+        $mollieObject->shouldReceive('unsetCancelledMolliePaymentId')->once()->with($orderId);
+        $mollieObject->shouldReceive('addMandateIdMetaToFirstPaymentSubscriptionOrder')->once();
+
+        $this->sut->onWebhookPaid($order, $payment, 'Bank Transfer', $mollieObject);
     }
 }

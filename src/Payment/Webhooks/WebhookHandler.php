@@ -638,8 +638,13 @@ class WebhookHandler
      */
     private function orderIsAlreadySettled(WC_Order $order): bool
     {
-        return !$order->needs_payment()
-            || in_array($order->get_status(), ['processing', 'completed'], true)
+        $settledStatuses = [
+            SharedDataDictionary::STATUS_PROCESSING,
+            SharedDataDictionary::STATUS_COMPLETED,
+        ];
+
+        return (!$order->needs_payment() && !$order->has_status(SharedDataDictionary::STATUS_ON_HOLD))
+            || in_array($order->get_status(), $settledStatuses, true)
             || (bool) $order->get_meta('_mollie_paid_and_processed', true)
             || $order->get_meta('_mollie_authorized') === '1';
     }

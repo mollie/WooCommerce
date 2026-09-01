@@ -249,4 +249,150 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
             'No "Order completed" note should be added for an already-refunded order.'
         );
     }
+
+    /**
+     * Scenario: An expired webhook still cancels an unpaid on-hold order (PIWOO-#1284 regression)
+     *   Given a confirmationDelayed gateway order (banktransfer/iDEAL) sitting UNPAID at on-hold —
+     *     WC_Order::needs_payment() is false there, but the order is not settled (no paid/authorized meta)
+     *   When Mollie expires the tracked payment and calls the webhook
+     *   Then the order is cancelled, not left stranded on-hold
+     *
+     * @test
+     * @group integration
+     * @group Webhooks
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookExpired
+     */
+    public function it_cancels_an_unpaid_on_hold_order_when_payment_expires()
+    {
+        $order = $this->makeUnpaidOnHoldOrder();
+        $orderId = $order->get_id();
+        $orderKey = $order->get_order_key();
+        $transactionId = $order->get_transaction_id();
+
+        $this->mockSuccessfulPaymentGet($transactionId, 'expired', [
+            'metadata' => ['order_id' => $orderId],
+            'method' => 'ideal',
+            'mode' => 'test',
+        ]);
+
+        $container = $this->bootstrapModule($this->getMockedApiServices());
+        $this->setupWebhookRequest($orderId, $orderKey, $transactionId);
+
+        $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
+        $this->webhookService->onWebhookAction();
+
+        $order = wc_get_order($orderId);
+        $this->assertEquals(
+            'cancelled',
+            $order->get_status(),
+            'An expired webhook must cancel an unpaid on-hold order, not leave it stranded on-hold.'
+        );
+    }
+
+    /**
+     * Scenario: A canceled webhook still moves an unpaid on-hold order off on-hold (PIWOO-#1284 regression)
+     *   Given a confirmationDelayed gateway order sitting UNPAID at on-hold
+     *   When Mollie cancels the tracked payment and calls the webhook
+     *   Then the order leaves on-hold (to the configured cancelled-payments status, 'pending' by default)
+     *
+     * @test
+     * @group integration
+     * @group Webhooks
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookCanceled
+     */
+    public function it_moves_an_unpaid_on_hold_order_off_hold_when_payment_is_canceled()
+    {
+        $order = $this->makeUnpaidOnHoldOrder();
+        $orderId = $order->get_id();
+        $orderKey = $order->get_order_key();
+        $transactionId = $order->get_transaction_id();
+
+        $this->mockSuccessfulPaymentGet($transactionId, 'canceled', [
+            'metadata' => ['order_id' => $orderId],
+            'method' => 'ideal',
+            'mode' => 'test',
+        ]);
+
+        $container = $this->bootstrapModule($this->getMockedApiServices());
+        $this->setupWebhookRequest($orderId, $orderKey, $transactionId);
+
+        $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
+        $this->webhookService->onWebhookAction();
+
+        $order = wc_get_order($orderId);
+        $this->assertNotEquals(
+            'on-hold',
+            $order->get_status(),
+            'A canceled webhook must not leave an unpaid on-hold order stranded on-hold.'
+        );
+        $this->assertEquals(
+            'pending',
+            $order->get_status(),
+            'A canceled payment returns the order to the default cancelled-payments status (pending).'
+        );
+    }
+
+    /**
+     * Scenario: A failed webhook still fails an unpaid on-hold order (PIWOO-#1284 regression)
+     *   Given a confirmationDelayed gateway order sitting UNPAID at on-hold
+     *   When Mollie marks the tracked payment failed and calls the webhook
+     *   Then the order is moved to failed, not left stranded on-hold
+     *
+     * @test
+     * @group integration
+     * @group Webhooks
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookFailed
+     */
+    public function it_fails_an_unpaid_on_hold_order_when_payment_fails()
+    {
+        $order = $this->makeUnpaidOnHoldOrder();
+        $orderId = $order->get_id();
+        $orderKey = $order->get_order_key();
+        $transactionId = $order->get_transaction_id();
+
+        $this->mockSuccessfulPaymentGet($transactionId, 'failed', [
+            'metadata' => ['order_id' => $orderId],
+            'method' => 'ideal',
+            'mode' => 'test',
+        ]);
+
+        $container = $this->bootstrapModule($this->getMockedApiServices());
+        $this->setupWebhookRequest($orderId, $orderKey, $transactionId);
+
+        $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
+        $this->webhookService->onWebhookAction();
+
+        $order = wc_get_order($orderId);
+        $this->assertEquals(
+            'failed',
+            $order->get_status(),
+            'A failed webhook must fail an unpaid on-hold order, not leave it stranded on-hold.'
+        );
+    }
+
+    /**
+     * Builds a real order for a confirmationDelayed gateway, tracked to a Mollie payment id, sitting
+     * UNPAID at on-hold — the exact state banktransfer/directdebit reach at checkout and iDEAL and the
+     * other delayed methods reach while awaiting confirmation.
+     */
+    private function makeUnpaidOnHoldOrder(): \WC_Order
+    {
+        $order = $this->getConfiguredOrder(
+            1,
+            'mollie_wc_gateway_ideal',
+            ['simple'],
+            [],
+            false
+        );
+
+        // The order is tracked to its Mollie payment/order and is waiting for payment on-hold.
+        // Set both meta keys so the expiry handler matches regardless of whether the payment object
+        // resolves to a MolliePayment (_mollie_payment_id) or a MollieOrder (_mollie_order_id).
+        $order->update_meta_data('_mollie_payment_id', $order->get_transaction_id());
+        $order->update_meta_data('_mollie_order_id', $order->get_transaction_id());
+        $order->set_status('on-hold');
+        $order->save();
+
+        return $order;
+    }
 }

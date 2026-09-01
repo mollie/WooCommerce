@@ -58,7 +58,7 @@ class UrlMiddlewareTest extends TestCase
         when('get_option')->justReturn($secret);
         when('get_rest_url')->justReturn('https://example.com/wp-json/mollie/v1/webhook');
         when('wc_is_valid_url')->justReturn(true);
-        when('apply_filters')->alias(static function (string $hook, ...$args): mixed {
+        when('apply_filters')->alias(static function (string $hook, ...$args) {
             // Return false for the disable-rest-webhook filter; pass URL through for everything else.
             if ($hook === 'mollie_wc_gateway_disable_rest_webhook') {
                 return false;
@@ -95,7 +95,7 @@ class UrlMiddlewareTest extends TestCase
         expect('update_option')->once()->andReturn(true);
         when('get_rest_url')->justReturn('https://example.com/wp-json/mollie/v1/webhook');
         when('wc_is_valid_url')->justReturn(true);
-        when('apply_filters')->alias(static function (string $hook, ...$args): mixed {
+        when('apply_filters')->alias(static function (string $hook, ...$args) {
             if ($hook === 'mollie_wc_gateway_disable_rest_webhook') {
                 return false;
             }
@@ -131,8 +131,8 @@ class UrlMiddlewareTest extends TestCase
         // Force the fallback branch.
         when('wc_is_valid_url')->justReturn(false);
         when('untrailingslashit')->alias(static fn(string $url): string => rtrim($url, '/'));
-        when('wp_parse_url')->alias(static fn(string $url): array|false => parse_url($url));
-        when('apply_filters')->alias(static function (string $hook, ...$args): mixed {
+        when('wp_parse_url')->alias(static fn(string $url) => parse_url($url));
+        when('apply_filters')->alias(static function (string $hook, ...$args) {
             if ($hook === 'mollie_wc_gateway_disable_rest_webhook') {
                 return false;
             }
@@ -173,7 +173,7 @@ class UrlMiddlewareTest extends TestCase
         when('get_option')->justReturn($secret);
         when('get_rest_url')->justReturn('https://example.com/wp-json/mollie/v1/webhook');
         when('wc_is_valid_url')->justReturn(true);
-        when('apply_filters')->alias(static function (string $hook, ...$args): mixed {
+        when('apply_filters')->alias(static function (string $hook, ...$args) {
             if ($hook === 'mollie_wc_gateway_disable_rest_webhook') {
                 return false;
             }

@@ -62,7 +62,7 @@ class WebhookTestServiceTest extends TestCase
             $separator = strpos($url, '?') === false ? '?' : '&';
             return $url . $separator . http_build_query($args);
         });
-        when('wp_parse_url')->alias(static fn(string $url): array|false => parse_url($url));
+        when('wp_parse_url')->alias(static fn(string $url) => parse_url($url));
 
         $apiHelper = $this->apiHelper;
         $settingsHelper = $this->settingsHelper;
@@ -98,7 +98,7 @@ class WebhookTestServiceTest extends TestCase
             $separator = strpos($url, '?') === false ? '?' : '&';
             return $url . $separator . http_build_query($args);
         });
-        when('wp_parse_url')->alias(static fn(string $url): array|false => parse_url($url));
+        when('wp_parse_url')->alias(static fn(string $url) => parse_url($url));
 
         $apiHelper = $this->apiHelper;
         $settingsHelper = $this->settingsHelper;

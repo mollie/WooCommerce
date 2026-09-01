@@ -26,7 +26,7 @@ class PaymentMethods extends AbstractSection
         ?>
         <div class="mollie-section mollie-section--pm">
             <div class="mollie-settings-pm">
-                <?= $this->renderGateways(); // WPCS: XSS ok. ?>
+                <?= $this->renderGateways(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped in paymentGatewayButton() ?>
             </div>
         </div>
         <?php
@@ -98,7 +98,7 @@ class PaymentMethods extends AbstractSection
             <h3><?= esc_html($title); ?></h3>
             <p><?= esc_html($description); ?></p>
             <div class="mollie-settings-pm__list">
-                <?= $html; // phpcs:ignore XSS ok. ?>
+                <?= $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped in paymentGatewayButton() ?>
             </div>
         </div>
         <?php
@@ -224,8 +224,8 @@ class PaymentMethods extends AbstractSection
         <div class="mollie-settings-pm__single">
             <img src="<?= esc_url($icon->src()); ?>" class="mollie-gateway-icon" alt="<?= esc_attr($paymentMethod->title($this->container)); ?>"/>
             <?= esc_html($paymentMethod->title($this->container));?>
-            <?= $messageOrLink;  // phpcs:ignore XSS ok.?>
-            <?= $button;  // phpcs:ignore XSS ok.?>
+            <?= $messageOrLink;  // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped above ?>
+            <?= $button;  // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped above ?>
         </div>
         <?php
         return ob_get_clean();

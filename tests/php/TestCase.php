@@ -6,7 +6,7 @@ namespace Mollie\WooCommerceTests;
 
 use Faker\Generator;
 use Faker;
-use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit_Framework_MockObject_MockBuilder;
 use PHPUnit_Framework_MockObject_MockObject;
 use WP_Error;
@@ -23,6 +23,8 @@ use Xpmock\TestCaseTrait;
 class TestCase extends PhpUnitTestCase
 {
     use TestCaseTrait;
+    use MockeryPHPUnitIntegration;
+
     /**
      * @var Generator
      */
@@ -63,7 +65,6 @@ class TestCase extends PhpUnitTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-        Mockery::close();
         tearDown();
     }
 

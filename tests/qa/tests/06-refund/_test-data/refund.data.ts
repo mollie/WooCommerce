@@ -59,6 +59,30 @@ export const refundViaWooCommerce: MollieTestData.ShopRefund[] = [
 		refundPaymentStatus: 'pending',
 		isMollieClientApiRefund: false,
 	},
+	{
+		...baseOrder,
+		testId: 'C4567635',
+		payment: {
+			gateway: gateways.klarna,
+			status: 'authorized',
+		},
+		refundPercentage: 100,
+		refundOrderStatus: 'refunded', // UNVERIFIED - confirm via real run
+		refundPaymentStatus: 'pending',
+		isMollieClientApiRefund: false,
+	},
+	{
+		...baseOrder,
+		testId: 'C4567636',
+		payment: {
+			gateway: gateways.klarna,
+			status: 'authorized',
+		},
+		refundPercentage: 50,
+		refundOrderStatus: 'completed', // UNVERIFIED - confirm via real run
+		refundPaymentStatus: 'pending',
+		isMollieClientApiRefund: false,
+	},
 ];
 
 export const refundViaMollieDashboard: MollieTestData.ShopRefund[] = [

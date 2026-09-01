@@ -115,6 +115,7 @@ const billie: MollieGateway = {
 	slug: 'billie',
 	name: 'Pay by Invoice for Businesses - Billie',
 	availableForApiMethods: [ 'order', 'payment' ],
+	isCaptureRequired: true,
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_billie',
@@ -129,6 +130,7 @@ const billink: MollieGateway = {
 	slug: 'billink',
 	name: 'Billink',
 	availableForApiMethods: [ 'payment' ], // Payments API only
+	isCaptureRequired: true,
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_billink',
@@ -284,6 +286,7 @@ const klarna: MollieGateway = {
 	slug: 'klarna',
 	name: 'Pay with Klarna',
 	availableForApiMethods: [ 'order', 'payment' ],
+	isCaptureRequired: true,
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_klarna',
@@ -414,6 +417,7 @@ const riverty: MollieGateway = {
 	slug: 'riverty',
 	name: 'Buy now, pay later with Riverty',
 	availableForApiMethods: [ 'order', 'payment' ],
+	isCaptureRequired: true,
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_riverty',

@@ -54,30 +54,68 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 
 	test(
 		testTitle,
-		async ( {
-			wooCommerceApi,
-			utils,
-			checkout,
-			mollieHostedCheckout,
-			mollieClientApi,
-			orderReceived,
-			payForOrder,
-			wooCommerceOrderEdit,
-			mollieApiMethod,
-		}, testInfo ) => {
+		async (
+			{
+				wooCommerceApi,
+				utils,
+				checkout,
+				mollieHostedCheckout,
+				mollieClientApi,
+				orderReceived,
+				payForOrder,
+				wooCommerceOrderEdit,
+				mollieApiMethod,
+			},
+			testInfo
+		) => {
 			// exclude tests for payment methods if not available for tested API
 			test.skip(
-				! gateway.availableForApiMethods.includes( mollieApiMethod ), 
+				! gateway.availableForApiMethods.includes( mollieApiMethod ),
 				`Test is not eligible for ${ mollieApiMethod } API method.`
 			);
 
 			// Sets the default orderStatus based on API method, if specific is not set
 			if ( ! testData.orderStatus ) {
-				testData.orderStatus =
-					await getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+				testData.orderStatus = await getOrderStatusFromMollieStatus(
+					payment.status,
+					mollieApiMethod
+				);
 			}
-			
-			test.setTimeout( 30 * 60_000 );
+
+			// Manual-capture gateways add a ship/capture precondition on top of the
+			// existing checkout + refund-webhook waits, so give them more headroom.
+			test.setTimeout(
+				gateway.isCaptureRequired ? 40 * 60_000 : 30 * 60_000
+			);
+
+			// Manual-capture gateways (e.g. Klarna) sit authorized-but-uncaptured at
+			// Mollie after checkout - refunding now would route through Mollie's
+			// cancel-on-authorized logic instead of a genuine refund. Completing the
+			// WC order triggers shipAndCaptureOrderAtMollie() (src/Payment/PaymentModule.php),
+			// which ships the order lines at Mollie synchronously within that same
+			// request - but that PHP method catches ApiException and only logs it
+			// (no re-throw), and the WC status is already committed to "completed"
+			// *before* the hook even runs (WC's save() persists the status, then
+			// fires woocommerce_order_status_completed). So polling the WC order's
+			// own status is a tautology - it can never detect a failed/skipped
+			// capture. Poll for the specific success order note the PHP method adds
+			// instead, which is the only real signal capture actually happened.
+			const captureOrderAtMollie = async ( id: number ) => {
+				await wooCommerceApi.updateOrder( id, { status: 'completed' } );
+				await expect( async () => {
+					const notes = await wooCommerceApi.getOrderNotes( id );
+					const captured = notes.some( ( n ) =>
+						n.note.includes(
+							'successfully updated to shipped at Mollie'
+						)
+					);
+					await expect(
+						captured,
+						'Assert order was shipped/captured at Mollie (order note present)'
+					).toBe( true );
+				} ).toPass( { intervals: [ 5_000 ], timeout: 60_000 } );
+			};
+
 			let transactionId: string;
 			let molliePaymentId: string;
 			let orderId: number;
@@ -131,6 +169,11 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				).toBeDefined();
 			} );
 
+			if ( gateway.isCaptureRequired ) {
+				await test.step( 'Precondition: capture authorized order at Mollie', () =>
+					captureOrderAtMollie( orderId ) );
+			}
+
 			// Test
 
 			// Make refund via Mollie client API
@@ -182,34 +225,62 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 				} );
 			}
 
-			await test.step( 'Wait for webhook and assert refund meta ~15 min', async () => {
-				// Assert via API WooCommerce Order refund status and presence of refunds
-				// Delayed webhooks cause following values to arrive in ~10-30 minutes after refund creation
-				await expect( async () => {
+			// `_mollie_processed_refund_ids` is only ever written by
+			// MollieOrderService::processRefunds(), which itself only runs
+			// inside the incoming-webhook handler (doPaymentForOrder()). A
+			// refund made via the Mollie client API happens entirely outside
+			// WooCommerce, so WC genuinely has no other way to learn about it
+			// - it has to wait for the next webhook to reconcile, which can
+			// take up to ~10-30 minutes.
+			// A refund made via the WooCommerce admin UI is the opposite:
+			// RefundProcessor/MollieOrder::refund() creates it at Mollie
+			// synchronously in the same request, so WC already knows about
+			// it immediately. Mollie also doesn't re-ping the webhook just
+			// because a refund was created via its API, so polling for the
+			// meta here would just wait out the full timeout for a signal
+			// that never arrives - check order.refunds instead.
+			if ( isMollieClientApiRefund ) {
+				await test.step( 'Wait for webhook and assert refund meta ~15 min', async () => {
+					await expect( async () => {
+						const order = await wooCommerceApi.getOrder( orderId );
+						orderTotal = order.total;
+						statusAfterRefund = order.status;
+						refunds = order.refunds;
+						refundMeta = order.meta_data.find(
+							( meta ) =>
+								meta.key === '_mollie_processed_refund_ids'
+						);
+
+						await expect(
+							refundMeta,
+							'Assert refund meta is defined'
+						).toBeDefined();
+						await wooCommerceOrderEdit.page.reload();
+					} ).toPass( {
+						intervals: [ 60_000 ],
+						timeout: 30 * 60_000,
+					} );
+
+					await expect(
+						refundMeta.value,
+						'Assert refund meta value has length 1'
+					).toHaveLength( 1 );
+					refundTransactionId = refundMeta.value[ 0 ];
+				} );
+			} else {
+				await test.step( 'Assert refund is reflected on the order', async () => {
 					const order = await wooCommerceApi.getOrder( orderId );
 					orderTotal = order.total;
 					statusAfterRefund = order.status;
 					refunds = order.refunds;
-					refundMeta = order.meta_data.find(
-						( meta ) => meta.key === '_mollie_processed_refund_ids'
-					);
 
 					await expect(
-						refundMeta,
-						'Assert refund meta is defined'
-					).toBeDefined();
-					await wooCommerceOrderEdit.page.reload();
-				} ).toPass( {
-					intervals: [ 60_000 ],
-					timeout: 30 * 60_000,
+						refunds,
+						'Assert refund is present on the order'
+					).toHaveLength( 1 );
+					refundTransactionId = refunds[ 0 ].id;
 				} );
-
-				await expect(
-					refundMeta.value,
-					'Assert refund meta value has length 1'
-				).toHaveLength( 1 );
-				refundTransactionId = refundMeta.value[ 0 ];
-			} );
+			}
 
 			await test.step( 'Assert refund details', async ( step ) => {
 				step.skip(

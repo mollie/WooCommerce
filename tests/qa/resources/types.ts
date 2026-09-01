@@ -204,6 +204,7 @@ export type MollieGateway = {
 	maxAmount?: string;
 	availableForApiMethods?: MollieSettings.ApiMethod[];
 	settings?: MollieSettings.Gateway;
+	isCaptureRequired?: boolean; // Mirrors `paymentCaptureMode: 'manual'` in the gateway's PHP config
 };
 
 export type MolliePaymentStatus =

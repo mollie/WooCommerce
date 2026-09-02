@@ -17,9 +17,10 @@ class MollieObject
 {
     protected $data;
     /**
+     *
      * @var string[]
      */
-    protected const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
+    protected const FINAL_STATUSES = [SharedDataDictionary::STATUS_COMPLETED, SharedDataDictionary::STATUS_REFUNDED, SharedDataDictionary::STATUS_CANCELLED];
     protected static $paymentId;
     protected static $customerId;
     protected static $order;

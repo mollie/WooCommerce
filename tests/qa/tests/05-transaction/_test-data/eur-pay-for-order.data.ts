@@ -517,6 +517,7 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C3007283',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.klarna,
 			status: 'authorized',

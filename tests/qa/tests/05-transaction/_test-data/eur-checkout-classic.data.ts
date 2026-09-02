@@ -72,6 +72,7 @@ export const classicCheckoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C3731',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.in3,
 			status: 'paid',
@@ -80,6 +81,7 @@ export const classicCheckoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C3732',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.in3,
 			status: 'failed',
@@ -88,6 +90,7 @@ export const classicCheckoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C3733',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.in3,
 			status: 'canceled',
@@ -96,6 +99,7 @@ export const classicCheckoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C3734',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.in3,
 			status: 'expired',

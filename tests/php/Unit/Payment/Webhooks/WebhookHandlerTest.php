@@ -944,7 +944,6 @@ class WebhookHandlerTest extends TestCase
         $order->shouldReceive('get_id')->andReturn($orderId);
         $order->shouldReceive('get_status')->andReturn('on-hold');
         $order->shouldReceive('has_status')->with('on-hold')->andReturn(true);
-        $order->shouldReceive('needs_payment')->andReturn(false);
         $order->shouldReceive('get_meta')->andReturn('');
 
         // When / Then — an on-hold order that is genuinely paid is completed exactly once.

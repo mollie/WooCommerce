@@ -214,20 +214,13 @@ class WebhookHandler
             $mollieObject->addPaypalTransactionIdToOrder($order);
         }
 
-        add_filter('woocommerce_valid_order_statuses_for_payment_complete', static function ($statuses) {
-            $statuses[] = 'processing';
-            return $statuses;
-        });
-        add_filter('woocommerce_payment_complete_order_status', static function ($status) use ($order) {
-            return $order->get_status() === 'processing' ? 'completed' : $status;
-        });
+        if ($order->get_status() === 'processing') {
+            $order->update_status('completed', '');
 
-        $order->payment_complete($payment->id);
-
-        $this->logger->debug(
-            __METHOD__ . ' WooCommerce payment_complete() processed and returned to '
-            . __METHOD__ . ' for order ' . $orderId
-        );
+            $this->logger->debug(
+                __METHOD__ . ' WooCommerce order status updated to completed for order ' . $orderId
+            );
+        }
 
         $order->add_order_note(sprintf(
                                /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */

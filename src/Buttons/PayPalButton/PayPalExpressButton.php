@@ -107,7 +107,7 @@ class PayPalExpressButton extends AbstractExpressButton
             ? $renderPlaceholder
             : 'woocommerce_after_add_to_cart_form';
 
-        add_action($renderPlaceholder, function () {
+        add_action($renderPlaceholder, function (): void {
             $product = wc_get_product(get_the_id());
 
             if (
@@ -139,7 +139,7 @@ class PayPalExpressButton extends AbstractExpressButton
             ? $renderPlaceholder
             : 'woocommerce_cart_totals_after_order_total';
 
-        add_action($renderPlaceholder, function () {
+        add_action($renderPlaceholder, function (): void {
             $cart = WC()->cart;
 
             foreach ($cart->get_cart_contents() as $item) {

@@ -206,6 +206,9 @@ class AppleAjaxRequests
      */
     public function createWcOrder()
     {
+        if (!$this->isNonceValid()) {
+            return;
+        }
         $this->responseAfterSuccessfulResult();
         $cart = WC()->cart;
         $this->oldCartContents = WC()->cart->get_cart_contents();
@@ -237,6 +240,9 @@ class AppleAjaxRequests
      */
     public function createWcOrderFromCart()
     {
+        if (!$this->isNonceValid()) {
+            return;
+        }
         $this->responseAfterSuccessfulResult();
         $applePayRequestDataObject = $this->applePayDataObjectHttp();
         $applePayRequestDataObject->orderData('cart');
@@ -616,9 +622,9 @@ class AppleAjaxRequests
         $nonce = filter_input(INPUT_POST, 'woocommerce-process-checkout-nonce', FILTER_SANITIZE_SPECIAL_CHARS);
 
         return wp_verify_nonce(
-                $nonce,
-                'woocommerce-process_checkout'
-            ) || wp_verify_nonce($nonce, 'mollie_apple_pay_blocks');
+            $nonce,
+            'woocommerce-process_checkout'
+        ) || wp_verify_nonce($nonce, 'mollie_apple_pay_blocks');
     }
 
     /**

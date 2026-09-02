@@ -69,7 +69,7 @@ class AddSequenceTypeForSubscriptionsMiddleware implements RequestMiddlewareInte
             $disable_automatic_payments = apply_filters($this->pluginId . '_is_automatic_payment_disabled', false);
             $supports_subscriptions = $gateway->supports('subscriptions');
 
-            if ($supports_subscriptions == true && $disable_automatic_payments == false) {
+            if ($supports_subscriptions === true && $disable_automatic_payments === false) {
                 $requestData = $this->addSequenceTypeFirst($requestData, $context);
             }
         }

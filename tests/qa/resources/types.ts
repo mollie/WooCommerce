@@ -273,4 +273,10 @@ export namespace MollieTestData {
 		refundOrderStatus?: WooCommerce.OrderStatus; // WooCommerce refunded order status
 		refundPaymentStatus?: string; // Payment status obtained from PayPal Payment
 	};
+	
+	export type OrderTransition = 'onHoldToFinal' | 'authorizedToVoided';
+
+	export type ShopOrderTransition = ShopOrder & {
+		transition: OrderTransition;
+	};
 }

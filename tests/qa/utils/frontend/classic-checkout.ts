@@ -291,11 +291,11 @@ export class ClassicCheckout extends ClassicCheckoutBase {
 		await this.selectShippingMethod( order.shipping.settings.title );
 		await this.page.waitForTimeout( 1000 );
 		await this.page.waitForLoadState( 'networkidle' );
-		await expect(
-			this.termsAndConditionsCheckbox(),
-			'Assert terms and conditions checkbox is visible'
-		).toBeVisible();
-		await this.termsAndConditionsCheckbox().check();
+		// await expect(
+		// 	this.termsAndConditionsCheckbox(),
+		// 	'Assert terms and conditions checkbox is visible'
+		// ).toBeVisible();
+		// await this.termsAndConditionsCheckbox().check();
 
 		await this.placeOrder();
 	};

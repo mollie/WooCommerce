@@ -134,6 +134,13 @@ export default defineConfig< TestBaseExtend >( {
 			},
 		},
 		{
+			name: 'setup-mollie-nl',
+			dependencies: [ 'setup-woocommerce' ],
+			testMatch: /mollie\.setup\.ts/,
+			grep: /setup:mollie:nl;/,
+			fullyParallel: false,
+		},
+		{
 			name: 'setup-multistep',
 			testMatch: /multistep\.setup\.ts/,
 			fullyParallel: false,
@@ -148,16 +155,24 @@ export default defineConfig< TestBaseExtend >( {
 			name: 'payment-api',
 			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
+			testIgnore:
+				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 		},
 		{
 			name: 'order-api',
 			dependencies: [ 'setup-woocommerce' ],
 			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
+			testIgnore:
+				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 			use: {
 				mollieApiMethod: 'order',
 			},
+		},
+		{
+			name: 'nl-payment-api',
+			dependencies: [ 'setup-mollie-nl' ],
+			fullyParallel: false,
+			testMatch: /nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 		},
 		{
 			name: 'refund-payment-api',
@@ -179,7 +194,8 @@ export default defineConfig< TestBaseExtend >( {
 			name: 'multistep-payment-api',
 			dependencies: [ 'setup-multistep-tests' ],
 			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
+			testIgnore:
+				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
 			grep: /Transaction/,
 			grepInvert: /Transaction - Pay for order/,
@@ -191,7 +207,8 @@ export default defineConfig< TestBaseExtend >( {
 			name: 'multistep-order-api',
 			dependencies: [ 'setup-multistep-tests' ],
 			fullyParallel: false,
-			testIgnore: /refund\.spec\.ts/,
+			testIgnore:
+				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 			// grep: /Transaction - (Classic checkout|Checkout) - (iDEAL -|PayPal|Card|KBC)|Transaction - Checkout - (iDEAL Pay in 3|Przelewy24|MyBank)/,
 			grep: /Transaction/,
 			grepInvert: /Transaction - Pay for order/,

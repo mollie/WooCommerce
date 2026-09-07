@@ -66,6 +66,18 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                 ),
                 'default' => 'no',
             ],
+            'mollie_paypal_button_enabled_checkout' => [
+                'type' => 'checkbox',
+                'title' => __(
+                    'Display on checkout page',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'description' => __(
+                    'Enable the PayPal button to be used in the Express Buttons section of the checkout page.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'default' => 'no',
+            ],
             'color' => [
                 'type' => 'select',
                 'id' => 'mollie_paypal_button_color',
@@ -98,7 +110,13 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
 
     public function isExpressCheckoutEnabled(): bool
     {
-        return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
+        if (is_cart()) {
+            return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
+        }
+        if (is_checkout()) {
+            return $this->getProperty('mollie_paypal_button_enabled_checkout') === 'yes';
+        }
+        return false;
     }
 
     protected function blocksExpressData(ContainerInterface $container): ?array

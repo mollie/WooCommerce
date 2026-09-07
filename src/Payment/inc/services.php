@@ -108,7 +108,7 @@ return static function (): array {
             return new CardTokenMiddleware();
         },
         StoreCustomerMiddleware::class => static function (ContainerInterface $container): StoreCustomerMiddleware {
-            return new StoreCustomerMiddleware($container->get('settings.settings_helper'));
+            return new StoreCustomerMiddleware($container->get('settings.data_helper'));
         },
         AddSequenceTypeForSubscriptionsMiddleware::class => static function (ContainerInterface $container): AddSequenceTypeForSubscriptionsMiddleware {
             $dataHelper = $container->get('settings.data_helper');

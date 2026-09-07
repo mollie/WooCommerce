@@ -266,6 +266,6 @@ class PayPalAjaxRequests
             $nonce,
             'mollie_PayPal_button'
         );
-        return $verifyNonce == 1 || $verifyNonce == 2;
+        return $verifyNonce === 1 || $verifyNonce === 2;
     }
 }

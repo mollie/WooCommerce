@@ -320,7 +320,7 @@ class MollieOrder extends MollieObject
                     $lineTotalRefundAmount = abs($item->get_quantity()) * $line->unitPrice->value;
 
                     // Mollie doesn't allow a partial refund of the full amount or quantity of at least one order line, so when merchants try that, warn them and block the process
-                    if ((number_format($lineTotalRefundAmount, 2) != number_format($itemRefundAmount, 2)) || ( abs($item->get_quantity()) < 1 )) {
+                    if ((number_format($lineTotalRefundAmount, 2) !== number_format($itemRefundAmount, 2)) || ( abs($item->get_quantity()) < 1 )) {
                         $noteMessage = sprintf(
                             "Mollie doesn't allow a partial refund of the full amount or quantity of at least one order line. Use 'Refund amount' instead. The WooCommerce order item ID is %s, Mollie order line ID is %s.",
                             $originalOrderItemId,

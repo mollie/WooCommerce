@@ -40,4 +40,4 @@ jobs:
         run: ./vendor/bin/phpstan analyze --error-format=github
 
       - name: Run PhpCS
-        run: ./vendor/bin/phpcs -n --parallel=2 --runtime-set ignore_warnings_on_exit 1
+        run: ./vendor/bin/phpcs --standard=phpcs.transition.xml.dist -n --parallel=2 --runtime-set ignore_warnings_on_exit 1

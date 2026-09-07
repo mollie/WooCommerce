@@ -230,6 +230,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.1.10 - 07-09-2026 =
 * Fixed - Voucher payment method missing for translated variable products (WPML)
 * Fixed - PayPal advanced missed setting for Express checkout
 * Fixed - Webhook double payment_complete issue

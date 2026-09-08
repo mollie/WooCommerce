@@ -132,24 +132,29 @@ class PaymentModule implements ServiceModule, ExecutableModule
             }
             $args = ['limit' => -1, 'status' => 'pending', 'payment_method' => strtolower($gateway), 'date_modified' => '<' . (time() - $heldDurationInSeconds), 'return' => 'ids'];
             $unpaid_orders = wc_get_orders($args);
-            if ($unpaid_orders) {
-                foreach ($unpaid_orders as $unpaid_order) {
-                    $order = wc_get_order($unpaid_order);
-                    $mollieOrderService = $this->container->get(\Mollie\WooCommerce\Payment\MollieOrderService::class);
-                    if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
-                        $order = wc_get_order($unpaid_order);
-                        if (!$order->has_status('pending')) {
-                            continue;
-                        }
-                    }
-                    add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
-                        return SharedDataDictionary::STATUS_CANCELLED;
-                    });
-                    $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'));
-                    $this->cancelOrderAtMollie($order->get_id());
-                }
+            if (!$unpaid_orders) {
+                continue;
+            }
+            foreach ($unpaid_orders as $unpaid_order) {
+                $this->cancelOrderIfStillUnpaid($unpaid_order);
             }
         }
+    }
+    private function cancelOrderIfStillUnpaid($unpaid_order)
+    {
+        $order = wc_get_order($unpaid_order);
+        $mollieOrderService = $this->container->get(\Mollie\WooCommerce\Payment\MollieOrderService::class);
+        if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
+            $order = wc_get_order($unpaid_order);
+            if (!$order->has_status('pending')) {
+                return;
+            }
+        }
+        add_filter('mollie-payments-for-woocommerce_order_status_cancelled', static function ($newOrderStatus) {
+            return SharedDataDictionary::STATUS_CANCELLED;
+        });
+        $order->update_status('cancelled', __('Unpaid order cancelled - time limit reached.', 'woocommerce'));
+        $this->cancelOrderAtMollie($order->get_id());
     }
     /**
      * @param Refund $refund

@@ -29,6 +29,13 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
      * @var string
      */
     public const MOLLIE_VOUCHER_CATEGORY_OPTION = '_mollie_voucher_category';
+    /**
+     * Non-underscore "translation twin" of the category term meta. WPML/WCML
+     * term-meta sync skips "system" keys that start with "_".
+     *
+     * @var string
+     */
+    public const MOLLIE_VOUCHER_CATEGORY_TRANSLATION_OPTION = 'mollie_voucher_translation_category';
     protected function getConfig(): array
     {
         return ['id' => 'voucher', 'defaultTitle' => 'Voucher', 'settingsDescription' => '', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \false, 'supports' => ['products'], 'filtersOnBuild' => \true, 'confirmationDelayed' => \false, 'docs' => 'https://www.mollie.com/gb/payments/meal-eco-gift-vouchers'];
@@ -149,7 +156,13 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
         if ($catTermIds) {
             $categoryCategories = [];
             foreach ($catTermIds as $catTermId) {
-                $metaCategory = get_term_meta($catTermId, '_mollie_voucher_category', \true);
+                $metaCategory = get_term_meta($catTermId, \Mollie\WooCommerce\PaymentMethods\Voucher::MOLLIE_VOUCHER_CATEGORY_OPTION, \true);
+                // On WPML/WCML the underscore-prefixed key above is not copied to
+                // translated category terms, so in secondary languages fall back to
+                // the translation twin that WPML does propagate. See VoucherModule.
+                if (!$metaCategory) {
+                    $metaCategory = get_term_meta($catTermId, \Mollie\WooCommerce\PaymentMethods\Voucher::MOLLIE_VOUCHER_CATEGORY_TRANSLATION_OPTION, \true);
+                }
                 if ($metaCategory && $metaCategory !== \Mollie\WooCommerce\PaymentMethods\Voucher::NO_CATEGORY) {
                     $categoryCategories[] = $metaCategory;
                 }

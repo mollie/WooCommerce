@@ -42,7 +42,7 @@ class RequestFactory
         $serviceName = "request.strategy.{$type}";
         $strategy = $this->container->get($serviceName);
         if (!$strategy instanceof RequestStrategyInterface) {
-            throw new \InvalidArgumentException("Invalid strategy for type: {$type}");
+            throw new \InvalidArgumentException(esc_html("Invalid strategy for type: {$type}"));
         }
         return $strategy->createRequest($order, $customerId);
     }

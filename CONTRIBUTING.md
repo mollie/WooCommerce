@@ -71,6 +71,12 @@ and then run tests using `yarn playwright test`
 
 Note: Local installation might fail if the playwright install script does not recognize your OS/distribution
 
+## Releasing to WordPress.org
+
+Publishing to the WordPress.org SVN repository is done via the `Publish to WordPress.org` GitHub Actions workflow (`.github/workflows/wordpress-org-release.yml`), triggered manually (`workflow_dispatch`).
+
+The workflow only accepts a release branch named `release/MAJOR.MINOR.PATCH` (e.g. `release/1.2.3`) as `GIT_REF` — any other ref (a `dev/*` branch, a tag, `develop`, a commit SHA) is rejected before publishing runs.
+
 ## Debugging GHA
 
 If you need to debug the GitHub Actions, you can do so by installing the [ACT tool](https://github.com/nektos/act). This is an example command to run the workflow locally:

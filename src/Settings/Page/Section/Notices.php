@@ -37,10 +37,10 @@ class Notices extends AbstractSection
         ob_start();
         ?>
         <div class="mollie-section mollie-section--notices">
-            <?= $this->warnAboutRequiredCheckoutFieldForBillie(); // WPCS: XSS ok.     ?>
-            <?= $this->warnAboutRequiredCheckoutFieldForKlarna(); // WPCS: XSS ok.     ?>
-            <?= $this->warnMollieBankTransferNotBACS(); // WPCS: XSS ok.     ?>
-            <?= $this->warnDirectDebitStatus(); // WPCS: XSS ok.     ?>
+            <?= $this->warnAboutRequiredCheckoutFieldForBillie(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via wp_kses() in notice() ?>
+            <?= $this->warnAboutRequiredCheckoutFieldForKlarna(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via wp_kses() in notice() ?>
+            <?= $this->warnMollieBankTransferNotBACS(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via wp_kses() in notice() ?>
+            <?= $this->warnDirectDebitStatus(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via wp_kses() in notice() ?>
         </div>
         <?php
         return ob_get_clean();

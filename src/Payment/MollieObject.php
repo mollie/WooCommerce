@@ -19,9 +19,14 @@ class MollieObject
 {
     protected $data;
     /**
+     *
      * @var string[]
      */
-    protected const FINAL_STATUSES = ['completed', 'refunded', 'canceled'];
+    protected const FINAL_STATUSES = [
+        SharedDataDictionary::STATUS_COMPLETED,
+        SharedDataDictionary::STATUS_REFUNDED,
+        SharedDataDictionary::STATUS_CANCELLED,
+    ];
 
     protected static $paymentId;
     protected static $customerId;
@@ -632,7 +637,6 @@ class MollieObject
 
     /**
      * @param $order
-     * @param $test_mode
      * @return null|string
      */
     protected function getUserMollieCustomerId($order)
@@ -640,7 +644,7 @@ class MollieObject
         $order_customer_id = $order->get_customer_id();
         $apiKey = $this->settingsHelper->getApiKey();
 
-        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
+        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey, $order->get_id());
     }
     /**
      * @param $order

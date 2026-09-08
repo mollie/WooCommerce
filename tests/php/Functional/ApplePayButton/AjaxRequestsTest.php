@@ -308,6 +308,68 @@ class AjaxRequestsTest extends TestCase
 
     /**
      *
+     * GIVEN a request to createWcOrder with an invalid/missing checkout nonce
+     * WHEN createWcOrder() is invoked
+     * THEN it returns early before touching the cart or processing the checkout
+     */
+    public function testCreateWcOrderReturnsEarlyOnInvalidNonce()
+    {
+        list($logger, $responsesTemplate) = $this->responsesToApple();
+        $apiClientMock = $this->createConfiguredMock(MollieApiClient::class, []);
+
+        $testee = $this->buildTesteeMock(
+            AppleAjaxRequests::class,
+            [
+                $responsesTemplate,
+                $this->helperMocks->noticeMock(),
+                $logger,
+                $this->helperMocks->apiHelper($apiClientMock),
+                $this->helperMocks->settingsHelper(),
+            ],
+            ['isNonceValid', 'responseAfterSuccessfulResult', 'applePayDataObjectHttp', 'addAddressesToOrder']
+        )->getMock();
+
+        $testee->expects($this->once())->method('isNonceValid')->willReturn(false);
+        $testee->expects($this->never())->method('responseAfterSuccessfulResult');
+        $testee->expects($this->never())->method('applePayDataObjectHttp');
+        $testee->expects($this->never())->method('addAddressesToOrder');
+
+        $testee->createWcOrder();
+    }
+
+    /**
+     *
+     * GIVEN a request to createWcOrderFromCart with an invalid/missing checkout nonce
+     * WHEN createWcOrderFromCart() is invoked
+     * THEN it returns early before adding addresses or processing the checkout
+     */
+    public function testCreateWcOrderFromCartReturnsEarlyOnInvalidNonce()
+    {
+        list($logger, $responsesTemplate) = $this->responsesToApple();
+        $apiClientMock = $this->createConfiguredMock(MollieApiClient::class, []);
+
+        $testee = $this->buildTesteeMock(
+            AppleAjaxRequests::class,
+            [
+                $responsesTemplate,
+                $this->helperMocks->noticeMock(),
+                $logger,
+                $this->helperMocks->apiHelper($apiClientMock),
+                $this->helperMocks->settingsHelper(),
+            ],
+            ['isNonceValid', 'responseAfterSuccessfulResult', 'applePayDataObjectHttp', 'addAddressesToOrder']
+        )->getMock();
+
+        $testee->expects($this->once())->method('isNonceValid')->willReturn(false);
+        $testee->expects($this->never())->method('responseAfterSuccessfulResult');
+        $testee->expects($this->never())->method('applePayDataObjectHttp');
+        $testee->expects($this->never())->method('addAddressesToOrder');
+
+        $testee->createWcOrderFromCart();
+    }
+
+    /**
+     *
      * GIVEN WPML String Translation is active and a translation exists for the gateway fee label
      * WHEN cartCalculationResults() builds the ApplePay surcharge fee line
      * THEN the fee label in the result is the WPML-translated label, not the raw stored option
@@ -367,6 +429,48 @@ class AjaxRequestsTest extends TestCase
         $result = $this->invokeProtectedMethod($testee, 'cartCalculationResults', [$cart, [], []]);
 
         $this->assertSame('Kosten betaalmethode', $result['fee']['label']);
+    }
+
+    /**
+     * GIVEN an ApplePayDataObjectHttp with callerPage set to 'productDetail'
+     * WHEN whichCalculateTotals() reads callerPage from AppleAjaxRequests (a different class)
+     * THEN it must not fatal on accessing the protected property directly
+     */
+    public function testWhichCalculateTotalsDoesNotFatalOnProtectedCallerPageAccess()
+    {
+        $logger = $this->helperMocks->loggerMock();
+        $dataObject = $this->createPartialMock(
+            ApplePayDataObjectHttp::class,
+            ['productId', 'productQuantity', 'simplifiedContact', 'shippingMethod']
+        );
+        $dataObject->method('productId')->willReturn('123');
+        $dataObject->method('productQuantity')->willReturn('1');
+        $dataObject->method('simplifiedContact')->willReturn(['country' => 'NL']);
+        $dataObject->method('shippingMethod')->willReturn([]);
+        $reflection = new \ReflectionProperty(ApplePayDataObjectHttp::class, 'callerPage');
+        $reflection->setAccessible(true);
+        $reflection->setValue($dataObject, 'productDetail');
+
+        list(, $responsesTemplate) = $this->responsesToApple();
+        $apiClientMock = $this->createConfiguredMock(MollieApiClient::class, []);
+        $testee = $this->buildTesteeMock(
+            AppleAjaxRequests::class,
+            [
+                $responsesTemplate,
+                $this->helperMocks->noticeMock(),
+                $logger,
+                $this->helperMocks->apiHelper($apiClientMock),
+                $this->helperMocks->settingsHelper(),
+            ],
+            ['calculateTotalsSingleProduct']
+        )->getMock();
+        $testee->expects($this->once())
+            ->method('calculateTotalsSingleProduct')
+            ->willReturn(['total' => 10]);
+
+        $result = $this->invokeProtectedMethod($testee, 'whichCalculateTotals', [$dataObject]);
+
+        $this->assertSame(['total' => 10], $result);
     }
 
     private function invokeProtectedMethod($object, string $method, array $args = [])

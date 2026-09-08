@@ -36,5 +36,7 @@ class AcceptedLocaleValuesDictionary
         'pl_PL',
         'lv_LV',
         'lt_LT',
+        'cs_CZ',
+        'sk_SK',
     ];
 }

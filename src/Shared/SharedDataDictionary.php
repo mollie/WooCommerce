@@ -161,6 +161,8 @@ class SharedDataDictionary
         'pl_PL',
         'lv_LV',
         'lt_LT',
+        'cs_CZ',
+        'sk_SK',
     ];
     /**
      * @var string

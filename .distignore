@@ -34,3 +34,9 @@ node_modules/
 playwright.config.ts
 tsconfig.json
 wp-cli.yml
+vendor/giggsey/locale/
+vendor/giggsey/libphonenumber-for-php/src/geocoding/
+vendor/giggsey/libphonenumber-for-php/src/carrier/
+vendor/giggsey/libphonenumber-for-php/src/timezone/
+vendor/giggsey/libphonenumber-for-php/src/PhoneNumberToCarrierMapper.php
+vendor/giggsey/libphonenumber-for-php/src/PhoneNumberToTimeZonesMapper.php

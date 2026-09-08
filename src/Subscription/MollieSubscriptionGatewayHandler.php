@@ -565,6 +565,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
         }
         $renewal_order->delete_meta_data('_mollie_payment_id');
         $renewal_order->delete_meta_data('_mollie_cancelled_payment_id');
+        $renewal_order->delete_meta_data('_mollie_order_id');
         $renewal_order->save();
         return $renewal_order;
     }
@@ -650,7 +651,7 @@ class MollieSubscriptionGatewayHandler extends MolliePaymentGatewayHandler
      *
      * @return array ['customer_id' => string, 'mandate_id' => string|null]
      */
-    public function restore_mollie_customer_id_and_mandate($mollie_customer_id, $mollie_payment_id, $subscription)
+    public function restore_mollie_customer_id_and_mandate($mollie_customer_id, $mollie_payment_id, $subscription): array
     {
         try {
             // Get full payment object from Mollie API

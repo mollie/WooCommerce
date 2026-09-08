@@ -1,0 +1,44 @@
+name: Publish to WordPress.org
+
+on:
+  workflow_dispatch:
+    inputs:
+      PLUGIN_VERSION:
+        description: 'Plugin version to publish (MAJOR.MINOR.PATCH)'
+        required: true
+      GIT_REF:
+        description: 'Release branch to publish from, must be release/MAJOR.MINOR.PATCH (e.g. release/1.2.3)'
+        required: true
+      UPDATE_TRUNK_ONLY:
+        description: 'Only sync trunk, skip creating an SVN tag'
+        type: boolean
+        default: true
+      DRY_RUN:
+        description: 'Upload trunk as an artifact instead of committing to SVN'
+        type: boolean
+        default: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require release/MAJOR.MINOR.PATCH ref
+        run: |
+          if [[ ! "${{ inputs.GIT_REF }}" =~ ^release/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::GIT_REF '${{ inputs.GIT_REF }}' is not a release branch. Publish from a 'release/MAJOR.MINOR.PATCH' branch (e.g. 'release/1.2.3'). Aborting."
+            exit 1
+          fi
+
+  publish:
+    needs: validate
+    uses: inpsyde/reusable-workflows/.github/workflows/wordpress-org-release.yml@fix/wporg-combined-commit
+    with:
+      SVN_PLUGIN_SLUG: mollie-payments-for-woocommerce
+      PLUGIN_VERSION: ${{ inputs.PLUGIN_VERSION }}
+      GIT_REF: ${{ inputs.GIT_REF }}
+      UPDATE_TRUNK_ONLY: ${{ inputs.UPDATE_TRUNK_ONLY }}
+      DRY_RUN: true #Always set to true while testing this action. Replace with the following when ready to use it: ${{ inputs.DRY_RUN }}
+    secrets:
+      SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+      SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+      GITHUB_USER_SSH_KEY: ${{ secrets.DEPLOYBOT_SSH_PRIVATE_KEY }}

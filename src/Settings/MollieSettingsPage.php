@@ -58,13 +58,13 @@ class MollieSettingsPage extends WC_Settings_Page
                 <td class="forminp">
                     <?php
                     if (!empty($value['value'])) : ?>
-                        <?= $value['value']; // WPCS: XSS ok. ?>
+                        <?= $value['value']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-built field HTML, not raw user input ?>
                         <?php
                     endif; ?>
 
                     <?php
                     if (!empty($value['desc'])) : ?>
-                        <p class="description"><?= $value['desc']; // WPCS: XSS ok. ?></p>
+                        <p class="description"><?= $value['desc']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-built field HTML, not raw user input ?></p>
                         <?php
                     endif; ?>
                 </td>
@@ -74,7 +74,7 @@ class MollieSettingsPage extends WC_Settings_Page
 
         add_action('woocommerce_admin_field_mollie_content', static function ($value): void {
             if (!empty($value['value'])) {
-                echo $value['value']; // WPCS: XSS ok.
+                echo $value['value']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-built field HTML, not raw user input
             }
         });
     }

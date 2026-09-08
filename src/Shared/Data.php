@@ -562,9 +562,11 @@ class Data
     /**
      * @param int $userId
      * @param string $apiKey
+     * @param int $orderId Order this customer ID lookup is for, used to decide whether creating
+     *                      a new Mollie Customer is permitted (see isMollieCustomerAllowedForOrder()).
      * @return null|string
      */
-    public function getUserMollieCustomerId($userId, $apiKey)
+    public function getUserMollieCustomerId($userId, $apiKey, $orderId)
     {
         // Guest users can't buy subscriptions and don't need a Mollie customer ID
         // https://github.com/mollie/WooCommerce/issues/132
@@ -605,6 +607,9 @@ class Data
 
         // If there is no Mollie Customer ID set, try to create a new Mollie Customer
         if (empty($customerId)) {
+            if (!$this->isMollieCustomerAllowedForOrder($orderId)) {
+                return null;
+            }
             try {
                 $userdata = get_userdata($userId);
 
@@ -713,6 +718,21 @@ class Data
     {
         $isSubscription = false;
         return apply_filters($this->pluginId . '_is_subscription_payment', $isSubscription, $orderId);
+    }
+
+    /**
+     * Single source of truth for whether a Mollie Customer may be associated with an order:
+     * either the merchant opted in to storing customer details, or Mollie's recurring-payment/
+     * mandate model requires a Customer to exist regardless of that setting (subscriptions).
+     *
+     * @param int $orderId
+     * @return bool
+     */
+    public function isMollieCustomerAllowedForOrder($orderId): bool
+    {
+        return $this->settingsHelper->shouldStoreCustomer()
+            || $this->isSubscription($orderId)
+            || $this->isWcSubscription($orderId);
     }
 
     public function getAllAvailablePaymentMethods($useCache = true)

@@ -317,7 +317,7 @@ return static function (): array {
                 $deprecatedGatewayHelper = $oldGatewayInstances[$gatewayId];
                 add_action(
                     'woocommerce_thankyou_' . $paymentGateway->id,
-                    static function ($order_id) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper) {
+                    static function ($order_id) use ($instructionsManager, $paymentGateway, $deprecatedGatewayHelper): void {
                         $order = wc_get_order($order_id);
 
                         // Order not found
@@ -394,7 +394,7 @@ return static function (): array {
                                     $pluginId . '_is_automatic_payment_disabled',
                                     static function ($filteredOption) {
                                         if (
-                                            'yes' == get_option(
+                                            'yes' === get_option(
                                                 \WC_Subscriptions_Admin::$option_prefix . '_turn_off_automatic_payments'
                                             )
                                         ) {

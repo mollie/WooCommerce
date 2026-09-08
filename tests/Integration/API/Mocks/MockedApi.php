@@ -66,6 +66,14 @@ class MockedApi extends Api
 
         $this->mockedApiClient->payments = Mockery::mock(PaymentEndpoint::class);
         $this->mockedApiClient->methods = Mockery::mock(MethodEndpoint::class);
+        // The gateway/module bootstrap resolves available payment methods
+        // (Data::getAllAvailablePaymentMethods -> methods->allAvailable()) to decide which Mollie
+        // gateways to register. Return a minimal set by default so booting the module in a test both
+        // succeeds AND registers the gateways the webhook handlers need (wc_get_payment_gateway_by_order).
+        // Individual tests can override with their own list.
+        $this->mockedApiClient->methods->shouldReceive('allAvailable')
+            ->andReturn($this->defaultAvailableMethods())
+            ->byDefault();
         $this->mockedApiClient->customers = Mockery::mock(CustomerEndpoint::class);
         $this->mockedApiClient->orders = Mockery::mock(OrderEndpoint::class);
         $this->mockedApiClient->refunds = Mockery::mock(RefundEndpoint::class);
@@ -77,6 +85,24 @@ class MockedApi extends Api
         $this->mockedApiClient->invoices = Mockery::mock(InvoiceEndpoint::class);
         $this->mockedApiClient->settlements = Mockery::mock(SettlementsEndpoint::class);
         $this->mockedApiClient->chargebacks = Mockery::mock(ChargebackEndpoint::class);
+    }
+
+    /**
+     * Minimal set of available Mollie methods used to register gateways when booting the module in a
+     * test. get_object_vars() in Data::getAllAvailablePaymentMethods() keeps only the public props, so
+     * plain stdClass objects carrying at least an 'id' are enough for gateway registration.
+     *
+     * @return array<\stdClass>
+     */
+    protected function defaultAvailableMethods(): array
+    {
+        return array_map(static function (string $id): \stdClass {
+            return (object) [
+                'id' => $id,
+                'description' => ucfirst($id),
+                'status' => 'activated',
+            ];
+        }, ['ideal', 'banktransfer', 'creditcard']);
     }
 
     /**

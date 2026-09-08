@@ -41,7 +41,9 @@ export namespace MollieSettings {
 		| 'hu_HU'
 		| 'pl_PL'
 		| 'lv_LV'
-		| 'lt_LT';
+		| 'lt_LT'
+		| 'cs_CZ'
+		| 'sk_SK';
 
 	export type ApiMethod = 'order' | 'payment';
 

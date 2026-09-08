@@ -50,7 +50,7 @@ class RefundProcessor implements RefundProcessorInterface
                 __METHOD__ . ' - ' . sprintf($error_message, $order_id)
             );
 
-            throw new Exception($error_message);
+            throw new Exception(esc_html($error_message));
         }
 
         try {
@@ -62,7 +62,7 @@ class RefundProcessor implements RefundProcessorInterface
         } catch (ApiException $exception) {
             $exceptionMessage = $exception->getMessage();
             $this->deprecatedGatewayHelper->getLogger()->debug($exceptionMessage);
-            throw new Exception($exception->getMessage());
+            throw new Exception(esc_html($exception->getMessage()));
         }
 
         if (!$payment_object || !is_object($payment_object)) {
@@ -71,7 +71,7 @@ class RefundProcessor implements RefundProcessorInterface
                 __METHOD__ . ' - ' . sprintf($error_message, $order_id)
             );
 
-            throw new Exception($error_message);
+            throw new Exception(esc_html($error_message));
         }
 
         $payment_object->refund(

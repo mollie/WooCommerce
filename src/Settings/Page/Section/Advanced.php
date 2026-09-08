@@ -87,6 +87,8 @@ class Advanced extends AbstractSection
                     'pl_PL' => __('Polish', 'mollie-payments-for-woocommerce'),
                     'lv_LV' => __('Latvian', 'mollie-payments-for-woocommerce'),
                     'lt_LT' => __('Lithuanian', 'mollie-payments-for-woocommerce'),
+                    'cs_CZ' => __('Czech', 'mollie-payments-for-woocommerce'),
+                    'sk_SK' => __('Slovak', 'mollie-payments-for-woocommerce'),
                 ],
                 'desc' => sprintf(
                 /* translators: Placeholder 1: link tag Placeholder 2: closing tag */
@@ -102,7 +104,7 @@ class Advanced extends AbstractSection
                 'desc' => sprintf(
                 /* translators: Placeholder 1: enabled or disabled Placeholder 2: translated string */
                     __(
-                        'Should Mollie store customers name and email address for Single Click Payments? Default <code>%1$s</code>. Required if WooCommerce Subscriptions is being used! Read more about <a href=\'https://help.mollie.com/hc/en-us/articles/115000671249-What-are-single-click-payments-and-how-does-it-work-\'>%2$s</a> and how it improves your conversion.',
+                        'Should Mollie store customers name and email address for Single Click Payments? Default <code>%1$s</code>. Required if WooCommerce Subscriptions is being used! Read more about <a href=\'https://help.mollie.com/hc/en-us/articles/115000671249-What-are-single-click-payments-and-how-does-it-work-\'>%2$s</a> and how it improves your conversion. Note: this setting does not apply to WooCommerce Subscriptions orders — a Mollie Customer is always created for those, since Mollie\'s recurring-payment/mandate feature requires one.',
                         'mollie-payments-for-woocommerce'
                     ),
                     strtolower(__('Enabled', 'mollie-payments-for-woocommerce')),

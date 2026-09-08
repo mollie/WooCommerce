@@ -191,7 +191,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
                 $this->isTestNoticePrinted = true;
             }
         });
-        add_action('admin_init', function () {
+        add_action('admin_init', function (): void {
             if ($this->isTestNoticePrinted) {
                 return;
             }

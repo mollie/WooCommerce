@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Webhooks;
 
 /**
@@ -16,25 +15,23 @@ namespace Mollie\WooCommerce\Payment\Webhooks;
 class WebhookSecret
 {
     private const OPTION_NAME = 'mollie_webhook_secret';
-
     public function getOrCreate(): string
     {
         $secret = get_option(self::OPTION_NAME, '');
         if (!$secret) {
-            $secret = wp_generate_password(32, false);
+            $secret = wp_generate_password(32, \false);
             update_option(self::OPTION_NAME, $secret);
         }
         return $secret;
     }
-
     public function check(?string $incoming): bool
     {
         if (!$incoming) {
-            return false;
+            return \false;
         }
         $stored = $this->getOrCreate();
         if (!$stored) {
-            return false;
+            return \false;
         }
         return hash_equals($stored, $incoming);
     }

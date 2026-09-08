@@ -1,7 +1,6 @@
 <?php
 
-namespace Inpsyde\EnvironmentChecker;
-
+namespace Mollie\Inpsyde\EnvironmentChecker;
 
 interface ConstraintsCollectionFactoryInterface
 {

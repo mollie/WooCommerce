@@ -61,6 +61,10 @@ class WebhookHandler
             $this->logger->debug(__METHOD__ . ' payment at Mollie has a chargeback, so no processing for order ' . $orderId);
             return;
         }
+        if ($this->paymentHasRefund($payment)) {
+            $this->logger->debug(__METHOD__ . ' payment at Mollie is refunded, so no processing for order ' . $orderId);
+            return;
+        }
         $order->payment_complete($payment->id);
         $this->logger->debug(__METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . " for order {$orderId}");
         $order->add_order_note(sprintf(
@@ -132,15 +136,10 @@ class WebhookHandler
         if ($payment->method === 'paypal') {
             $mollieObject->addPaypalTransactionIdToOrder($order);
         }
-        add_filter('woocommerce_valid_order_statuses_for_payment_complete', static function ($statuses) {
-            $statuses[] = 'processing';
-            return $statuses;
-        });
-        add_filter('woocommerce_payment_complete_order_status', static function ($status) use ($order) {
-            return $order->get_status() === 'processing' ? 'completed' : $status;
-        });
-        $order->payment_complete($payment->id);
-        $this->logger->debug(__METHOD__ . ' WooCommerce payment_complete() processed and returned to ' . __METHOD__ . ' for order ' . $orderId);
+        if ($order->get_status() === 'processing') {
+            $order->update_status('completed', '');
+            $this->logger->debug(__METHOD__ . ' WooCommerce order status updated to completed for order ' . $orderId);
+        }
         $order->add_order_note(sprintf(
             /* translators: Placeholder 1: payment method title, placeholder 2: payment ID */
             __('Order completed at Mollie for %1$s order (%2$s). At least one order line completed. Remember: Completed status for an order at Mollie is not the same as Completed status in WooCommerce!', 'mollie-payments-for-woocommerce'),
@@ -164,6 +163,10 @@ class WebhookHandler
         $this->logger->debug(__METHOD__ . " called for order {$orderId}");
         if ($mollieObject->isFinalOrderStatus($order)) {
             $this->logger->debug(__METHOD__ . " called for payment {$orderId} has final status. Nothing to be done");
+            return;
+        }
+        if ($this->orderIsAlreadySettled($order)) {
+            $this->logger->debug(__METHOD__ . " called for order {$orderId}, not processed because the order is already" . ' paid or authorized.');
             return;
         }
         if ($mollieObject->getCancelledMolliePaymentId($orderId) === $payment->id) {
@@ -215,7 +218,24 @@ class WebhookHandler
     public function onWebhookFailed(WC_Order $order, $payment, string $paymentMethodTitle, MollieObject $mollieObject): void
     {
         $orderId = $order->get_id();
+        $metaKey = $mollieObject instanceof MollieOrder ? '_mollie_order_id' : '_mollie_payment_id';
+        $molliePaymentId = $order->get_meta($metaKey, \true);
         $this->logger->debug(__METHOD__ . ' called for order ' . $orderId);
+        if ($mollieObject->isFinalOrderStatus($order)) {
+            $this->logger->debug(__METHOD__ . " called for order {$orderId} has final status. Nothing to be done");
+            return;
+        }
+        if ($this->orderIsAlreadySettled($order)) {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ', not processed because the order is already paid or authorized.');
+            return;
+        }
+        // A failure reported for a superseded attempt must not fail an order that is already tracking a
+        // newer payment, mirroring onWebhookExpired. Logged only, no order note: repeated webhooks for a
+        // stale payment would otherwise pile identical notes onto the order.
+        if ($molliePaymentId !== $payment->id) {
+            $this->logger->debug(__METHOD__ . ' called for order ' . $orderId . ' and payment ' . $payment->id . ', not processed because of a newer pending payment ' . $molliePaymentId);
+            return;
+        }
         $gateway = wc_get_payment_gateway_by_order($order);
         $newOrderStatus = SharedDataDictionary::STATUS_FAILED;
         $newOrderStatus = apply_filters($this->pluginId . '_order_status_failed', $newOrderStatus);
@@ -244,8 +264,7 @@ class WebhookHandler
             $this->logger->debug(__METHOD__ . " called for order {$orderId} has final status. Nothing to be done");
             return;
         }
-        $alreadyPaid = !$order->needs_payment() || $order->get_status() === 'processing' || $order->get_meta('_mollie_paid_and_processed', \true);
-        if ($alreadyPaid) {
+        if ($this->orderIsAlreadySettled($order)) {
             $this->logger->log(LogLevel::DEBUG, __METHOD__ . ' called for order ' . $orderId . ', not processed because the order is already paid.');
             return;
         }
@@ -383,6 +402,39 @@ class WebhookHandler
             __('Mollie webhook called, but payment also started via %s, so the order status is not updated.', 'mollie-payments-for-woocommerce'),
             $orderPaymentMethodTitle
         ));
+    }
+    /**
+     * Whether the order is already settled — paid, captured/processing, or authorized — so a late
+     * or unrelated webhook must not regress its status. Shared by onWebhookExpired, onWebhookCanceled
+     * and onWebhookFailed.
+     *
+     * Refunded and cancelled orders are covered by MollieObject::isFinalOrderStatus(), which every
+     * consumer of this guard checks first.
+     *
+     * @param WC_Order $order
+     * @return bool
+     */
+    private function orderIsAlreadySettled(WC_Order $order): bool
+    {
+        $settledStatuses = [SharedDataDictionary::STATUS_PROCESSING, SharedDataDictionary::STATUS_COMPLETED];
+        return in_array($order->get_status(), $settledStatuses, \true) || (bool) $order->get_meta('_mollie_paid_and_processed', \true) || $order->get_meta('_mollie_authorized') === '1';
+    }
+    /**
+     * Whether the Mollie payment carries a refund (full or partial), so payment-completed side
+     * effects must not be re-applied to an already-refunded order.
+     *
+     * @param Payment|Order $payment
+     * @return bool
+     */
+    private function paymentHasRefund($payment): bool
+    {
+        if (empty($payment->amountRefunded)) {
+            return \false;
+        }
+        if (isset($payment->amountRefunded->value)) {
+            return (float) $payment->amountRefunded->value > 0.0;
+        }
+        return \true;
     }
     /**
      * @param Payment|Order $payment

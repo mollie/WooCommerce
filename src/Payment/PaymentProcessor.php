@@ -138,7 +138,7 @@ class PaymentProcessor implements PaymentProcessorInterface
     {
         $order_customer_id = $order->get_customer_id();
         $apiKey = $this->settingsHelper->getApiKey();
-        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey);
+        return $this->dataHelper->getUserMollieCustomerId($order_customer_id, $apiKey, $order->get_id());
     }
     protected function paymentTypeBasedOnGateway($paymentMethod)
     {
@@ -313,6 +313,11 @@ class PaymentProcessor implements PaymentProcessorInterface
      */
     protected function saveMollieInfo($order, $payment)
     {
+        // Record which gateway created this payment so a later method switch can be detected,
+        // independently of the mutable WooCommerce _payment_method meta.
+        if (isset($this->gateway)) {
+            \Mollie\WooCommerce\Payment\MolliePaymentAttempt::rememberCreatingGateway($order, (string) $this->gateway->id);
+        }
         // Get correct Mollie Payment Object
         $payment_object = $this->paymentFactory->getPaymentObject($payment);
         // Set active Mollie payment
@@ -548,7 +553,7 @@ class PaymentProcessor implements PaymentProcessorInterface
                     $this->logger->debug("Previous Mollie order {$mollieOrderId} is already completed or expired — no cancellation needed, proceeding with new payment.");
                     return null;
                 }
-                return $this->buildActivePaymentResponse($mollieOrder->getCheckoutUrl(), $mollieOrderId);
+                return $this->activePaymentResponseOrMethodSwitch($order, $mollieOrder->getCheckoutUrl(), $mollieOrderId);
             }
             $molliePaymentId = $order->get_meta('_mollie_payment_id', \true);
             if (!empty($molliePaymentId) && strpos($molliePaymentId, 'tr_') === 0) {
@@ -562,12 +567,38 @@ class PaymentProcessor implements PaymentProcessorInterface
                     $this->logger->debug("Previous Mollie payment {$molliePaymentId} is already paid, canceled, expired, failed, or authorized — no cancellation needed, proceeding with new payment.");
                     return null;
                 }
-                return $this->buildActivePaymentResponse($payment->getCheckoutUrl(), $molliePaymentId);
+                return $this->activePaymentResponseOrMethodSwitch($order, $payment->getCheckoutUrl(), $molliePaymentId);
             }
         } catch (ApiException $e) {
             $this->logger->debug("Failed to cancel previous Mollie payment before creating new one: " . $e->getMessage());
         }
         return null;
+    }
+    /**
+     * Decide what to do with an open, non-cancellable Mollie payment: reuse it (redirect to
+     * its checkout URL / notice) when the customer stuck with the same method, or return null
+     * so a fresh payment is created when they switched to a different method.
+     */
+    private function activePaymentResponseOrMethodSwitch(WC_Order $order, ?string $checkoutUrl, string $paymentId): ?array
+    {
+        if ($this->selectedGatewayDiffersFromCreatingGateway($order)) {
+            $this->logger->debug("Order {$order->get_id()}: customer selected a different payment method than the open " . "non-cancellable payment {$paymentId}; creating a new payment for the newly selected method.");
+            return null;
+        }
+        return $this->buildActivePaymentResponse($checkoutUrl, $paymentId);
+    }
+    /**
+     * True only when the gateway that created the open payment is known and differs from the
+     * gateway the customer just selected. An unknown creating gateway (legacy/in-flight
+     * payment) or an unset selected gateway keeps the existing reuse behaviour.
+     */
+    private function selectedGatewayDiffersFromCreatingGateway(WC_Order $order): bool
+    {
+        $creatingGateway = \Mollie\WooCommerce\Payment\MolliePaymentAttempt::creatingGateway($order);
+        if ($creatingGateway === '' || !isset($this->gateway)) {
+            return \false;
+        }
+        return (string) $this->gateway->id !== $creatingGateway;
     }
     private function buildActivePaymentResponse(?string $checkoutUrl, string $paymentId): array
     {

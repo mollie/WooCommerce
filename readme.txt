@@ -230,6 +230,19 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.1.10 - 07-09-2026 =
+* Fixed - Voucher payment method missing for translated variable products (WPML)
+* Fixed - PayPal advanced missed setting for Express checkout
+* Fixed - Webhook double payment_complete issue
+* Fixed - Refund webhook mistreated as paid webhook, leading to wrong status transition
+* Fixed - Subscription renewals through Orders API first payments fail
+* Fixed - Payment method switch silently redirects customer back to the old checkout URL
+* Fixed - Inconsistent VAT rate calculation for Payments API order lines
+* Fixed - Mollie Customer created in Mollie Dashboard even when "Store customer details at Mollie" is disabled
+* Fixed - PHP fatal error in Apple Pay Express Checkout when updating shipping contact
+* Fixed - Move nonce verification for Apple Pay AJAX order creation to previous gate, for consistency
+* Improvement - Automatically format phone fields as E.164
+
 = 8.1.9 - 20-07-2026 =
 * Added - New payment method - Billink
 * Added - New payment method - Wero

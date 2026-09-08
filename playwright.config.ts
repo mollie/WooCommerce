@@ -153,14 +153,14 @@ export default defineConfig< TestBaseExtend >( {
 		},
 		{
 			name: 'payment-api',
-			dependencies: [ 'setup-woocommerce' ],
+			dependencies: [ 'setup-mollie-payment-api' ],
 			fullyParallel: false,
 			testIgnore:
 				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,
 		},
 		{
 			name: 'order-api',
-			dependencies: [ 'setup-woocommerce' ],
+			dependencies: [ 'setup-mollie-order-api' ],
 			fullyParallel: false,
 			testIgnore:
 				/refund\.spec\.ts|nl-(checkout|classic-checkout|pay-for-order)\.spec\.ts/,

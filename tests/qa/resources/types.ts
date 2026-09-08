@@ -179,6 +179,7 @@ export namespace MollieSettings {
 
 		mollie_paypal_button_enabled_cart?: 'yes' | 'no'; // paypal
 		mollie_paypal_button_enabled_product?: 'yes' | 'no'; // paypal
+		mollie_paypal_button_enabled_checkout?: 'yes' | 'no'; // paypal
 		paypal_color?: PaypalButtonTextLanguageAndColor; // paypal
 		mollie_paypal_button_minimum_amount?: string; // paypal
 

@@ -378,6 +378,7 @@ const paypal: MollieGateway = {
 		title: 'PayPal',
 		mollie_paypal_button_enabled_cart: 'no',
 		mollie_paypal_button_enabled_product: 'no',
+		mollie_paypal_button_enabled_checkout: 'no',
 		paypal_color: 'en-buy-pill-blue',
 		mollie_paypal_button_minimum_amount: '0',
 	},

@@ -115,10 +115,26 @@ const billie: MollieGateway = {
 	slug: 'billie',
 	name: 'Pay by Invoice for Businesses - Billie',
 	availableForApiMethods: [ 'order', 'payment' ],
+	isCaptureRequired: true,
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_billie',
 		title: 'Pay by Invoice for Businesses - Billie',
+	},
+};
+
+const billink: MollieGateway = {
+	country: 'netherlands', // Netherlands, Belgium also supported (Germany on request)
+	minAmount: '0.01',
+	maxAmount: '2500.00', // B2C limit; B2B is 10000.00
+	slug: 'billink',
+	name: 'Billink',
+	availableForApiMethods: [ 'payment' ], // Payments API only
+	isCaptureRequired: true,
+	settings: {
+		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_billink',
+		title: 'Billink',
 	},
 };
 
@@ -270,6 +286,7 @@ const klarna: MollieGateway = {
 	slug: 'klarna',
 	name: 'Pay with Klarna',
 	availableForApiMethods: [ 'order', 'payment' ],
+	isCaptureRequired: true,
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_klarna',
@@ -361,6 +378,7 @@ const paypal: MollieGateway = {
 		title: 'PayPal',
 		mollie_paypal_button_enabled_cart: 'no',
 		mollie_paypal_button_enabled_product: 'no',
+		mollie_paypal_button_enabled_checkout: 'no',
 		paypal_color: 'en-buy-pill-blue',
 		mollie_paypal_button_minimum_amount: '0',
 	},
@@ -400,6 +418,7 @@ const riverty: MollieGateway = {
 	slug: 'riverty',
 	name: 'Buy now, pay later with Riverty',
 	availableForApiMethods: [ 'order', 'payment' ],
+	isCaptureRequired: true,
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_riverty',
@@ -478,6 +497,20 @@ const voucher: MollieGateway = {
 	},
 };
 
+const wero: MollieGateway = {
+	country: 'germany', // Belgium, France, Luxembourg also supported
+	minAmount: '0.01',
+	maxAmount: '10000.00', // default; scheme max is 99999.00, bank-dependent
+	slug: 'wero',
+	name: 'Wero',
+	availableForApiMethods: [ 'payment' ], // Payments API only
+	settings: {
+		...defaultGatewaySettings,
+		id: 'mollie_wc_gateway_wero',
+		title: 'Wero',
+	},
+};
+
 export const gateways: {
 	[ key: string ]: MollieGateway;
 } = {
@@ -488,6 +521,7 @@ export const gateways: {
 	banktransfer,
 	belfius,
 	billie, // >100.00
+	billink,
 	blik, // currency: PLN
 	bizum,
 	creditcard,
@@ -512,4 +546,5 @@ export const gateways: {
 	twint, // currency: CHF
 	vipps, // currency: NOK
 	voucher,
+	wero,
 };

@@ -72,6 +72,7 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420334',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.in3,
 			status: 'paid',
@@ -80,6 +81,7 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420335',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.in3,
 			status: 'failed',
@@ -88,6 +90,7 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420336',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.in3,
 			status: 'canceled',
@@ -96,6 +99,7 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420337',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.in3,
 			status: 'expired',
@@ -517,6 +521,7 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C3007283',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.klarna,
 			status: 'authorized',
@@ -706,4 +711,36 @@ export const payForOrderEur: MollieTestData.ShopOrder[] = [
                         status: 'expired',
                 },
         },
+	{
+		...baseOrder,
+		testId: 'C4567629',
+		payment: {
+			gateway: gateways.wero,
+			status: 'paid',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567630',
+		payment: {
+			gateway: gateways.wero,
+			status: 'failed',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567631',
+		payment: {
+			gateway: gateways.wero,
+			status: 'canceled',
+		},
+	},
+	{
+		...baseOrder,
+		testId: 'C4567632',
+		payment: {
+			gateway: gateways.wero,
+			status: 'expired',
+		},
+	},
 ];

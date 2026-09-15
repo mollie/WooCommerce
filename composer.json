@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "php": "^7.4 | ^8.0",
+    "php": "^8.0",
     "ext-intl": "*",
     "ext-json": "*",
     "mollie/mollie-api-php": "^v2.40",
@@ -98,7 +98,7 @@
   },
   "config": {
     "platform": {
-      "php": "7.4"
+      "php": "8.0"
     },
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,

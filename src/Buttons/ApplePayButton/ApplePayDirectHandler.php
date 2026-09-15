@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Mollie\WooCommerce\Notice\AdminNotice;
-
 class ApplePayDirectHandler
 {
     /**
@@ -106,10 +104,10 @@ class ApplePayDirectHandler
     {
         ?>
         <div id="mollie-applepayDirect-button">
-            <?php
-            wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
-            ?>
+            <?php 
+        wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
+        ?>
         </div>
-        <?php
+        <?php 
     }
 }

@@ -32,7 +32,7 @@
     "brain/monkey": "^2.3",
     "ptrofimov/xpmock": "^1",
     "johnpbloch/wordpress-core": "^5.0",
-    "fzaninotto/faker": "^1.9@dev",
+    "fakerphp/faker": "^1.23",
     "inpsyde/php-coding-standards": "^2.0.2",
     "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",

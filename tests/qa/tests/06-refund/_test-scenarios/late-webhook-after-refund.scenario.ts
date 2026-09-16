@@ -18,9 +18,13 @@ import { WooCommerceOrderEdit } from '../../../utils/admin';
 import { MollieTestData, guests } from '../../../resources';
 
 /**
- * Refunds a paid order via WooCommerce admin, then replays the original
- * "paid" webhook Mollie already holds for the payment, and asserts the order
- * stays refunded instead of being un-refunded by the late replay.
+ * Refunds a paid order via WooCommerce admin, delivers the webhook Mollie
+ * holds for the payment once to let it reconcile the refund (the one
+ * legitimate notification a real Mollie webhook would also send - a
+ * WooCommerce-admin refund is created at Mollie synchronously, so nothing
+ * has reconciled it yet at this point), then replays that same webhook a
+ * second time as the genuine late/duplicate delivery under test, and asserts
+ * nothing changes between the two deliveries.
  *
  * @param param0
  * @param param0.wooCommerceApi
@@ -51,17 +55,16 @@ const assertLateWebhookDoesNotUnrefund = async (
 ) => {
 	// --- Refund the order fully via WooCommerce admin ---
 	await wooCommerceOrderEdit.visit( orderId );
-	await wooCommerceOrderEdit.refundButton().click();
+	await wooCommerceOrderEdit.refundButton().click( { force: true } );
 	await wooCommerceOrderEdit.makeRefund( gatewayName );
 	await wooCommerceOrderEdit.assertUrl( orderId );
 
 	const refundedOrder = await wooCommerceApi.getOrder( orderId );
 	await expect(
 		refundedOrder.status,
-		'Assert order is Refunded before replaying the webhook'
+		'Assert order is Refunded before delivering the webhook'
 	).toEqual( 'refunded' );
 
-	// --- Replay the webhook Mollie already holds for this payment ---
 	const payment = await mollieClientApi.payments.get( {
 		paymentId: molliePaymentId,
 	} );
@@ -71,20 +74,83 @@ const assertLateWebhookDoesNotUnrefund = async (
 		'Assert the payment has a webhookUrl registered to replay'
 	).toBeTruthy();
 
-	const replayResponse = await visitorRequest.post( webhookUrl as string, {
-		form: { id: transactionId },
+	const postWebhook = () =>
+		visitorRequest.post( webhookUrl as string, { form: { id: transactionId } } );
+
+	// --- First delivery: the legitimate, one-time reconciliation. This
+	// establishes the baseline a genuine late *duplicate* (the second
+	// delivery below) must not disturb.
+	const firstDeliveryResponse = await postWebhook();
+	await expect(
+		firstDeliveryResponse.status(),
+		'Assert the first post-refund webhook delivery is accepted (200)'
+	).toBe( 200 );
+
+	const orderAfterFirstDelivery = await wooCommerceApi.getOrder( orderId );
+	await expect(
+		orderAfterFirstDelivery.status,
+		'Assert the order is still Refunded after the first (legitimate) webhook delivery'
+	).toEqual( 'refunded' );
+
+	const paymentAfterFirstDelivery = await mollieClientApi.payments.get( {
+		paymentId: molliePaymentId,
 	} );
+	const amountRefundedBaseline = paymentAfterFirstDelivery.amountRefunded?.value;
+
+	const refundProcessedIdsBaseline = orderAfterFirstDelivery.meta_data.find(
+		( meta ) => meta.key === '_mollie_processed_refund_ids'
+	)?.value;
+
+	const notesAfterFirstDelivery = await wooCommerceApi.getOrderNotes( orderId );
+	const refundNoteCountBaseline = notesAfterFirstDelivery.filter( ( note ) =>
+		note.note.startsWith( 'Refunded ' )
+	).length;
+
+	// --- Second delivery: the genuine late/duplicate webhook under test ---
+	const replayResponse = await postWebhook();
 	await expect(
 		replayResponse.status(),
 		'Assert the replayed webhook is accepted (200) - a rejection would mean the secret/lookup itself is broken, not the fix under test'
 	).toBe( 200 );
 
-	// --- Fix-agnostic gate: status must not regress ---
+	// --- Necessary but not sufficient: status must not regress ---
 	const orderAfterReplay = await wooCommerceApi.getOrder( orderId );
 	await expect(
 		orderAfterReplay.status,
 		'Assert the order stays Refunded after the late webhook replay - must not flip back to Processing/Completed'
 	).toEqual( 'refunded' );
+
+	// --- The fix-agnostic gate: the refund itself must stay exactly as it
+	// was after the first (legitimate) delivery - one refund, unchanged ---
+	const paymentAfterReplay = await mollieClientApi.payments.get( {
+		paymentId: molliePaymentId,
+	} );
+	await expect(
+		paymentAfterReplay.amountRefunded?.value,
+		'Assert Mollie-side amountRefunded is unchanged - the late replay must not trigger a second refund'
+	).toEqual( amountRefundedBaseline );
+
+	await expect(
+		orderAfterReplay.refunds,
+		'Assert the WooCommerce refund record(s) are unchanged - same refunds, not a new one'
+	).toEqual( orderAfterFirstDelivery.refunds );
+
+	const refundProcessedIdsAfter = orderAfterReplay.meta_data.find(
+		( meta ) => meta.key === '_mollie_processed_refund_ids'
+	)?.value;
+	await expect(
+		refundProcessedIdsAfter,
+		'Assert _mollie_processed_refund_ids gained no extra entry from the late replay'
+	).toEqual( refundProcessedIdsBaseline );
+
+	const notesAfterReplay = await wooCommerceApi.getOrderNotes( orderId );
+	const refundNoteCountAfter = notesAfterReplay.filter( ( note ) =>
+		note.note.startsWith( 'Refunded ' )
+	).length;
+	await expect(
+		refundNoteCountAfter,
+		'Assert no second "Refunded" order note was added by the late replay'
+	).toEqual( refundNoteCountBaseline );
 };
 
 export const testLateWebhookAfterRefundOnCheckout = (

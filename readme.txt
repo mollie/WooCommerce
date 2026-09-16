@@ -2,8 +2,8 @@
 Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndijkstra, wido, carmen222
 Tags: mollie, woocommerce, payments, ecommerce, credit card
 Requires at least: 5.0
-Tested up to: 7.0
-Stable tag: 8.1.7
+Tested up to: 7.1
+Stable tag: 8.1.10
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -230,7 +230,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
-= 8.1.10 - 07-09-2026 =
+= 8.1.10 - 08-09-2026 =
 * Fixed - Voucher payment method missing for translated variable products (WPML)
 * Fixed - PayPal advanced missed setting for Express checkout
 * Fixed - Webhook double payment_complete issue

@@ -45,6 +45,10 @@ class OrderInstructionsManager
             if (!$payment || $payment->method !== $methodId) {
                 return;
             }
+            // Payment can no longer be paid; its instructions (IBAN, reference, expiry date) are stale
+            if ($payment->isExpired() || $payment->isCanceled() || $payment->isFailed()) {
+                return;
+            }
             $this->setStrategy($deprecatedGatewayHelper);
             $instructions = $this->executeStrategy($paymentGateway, $payment, $order, $admin_instructions);
             if (!empty($instructions)) {

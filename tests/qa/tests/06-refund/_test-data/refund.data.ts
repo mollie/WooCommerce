@@ -67,7 +67,7 @@ export const refundViaWooCommerce: MollieTestData.ShopRefund[] = [
 			status: 'authorized',
 		},
 		refundPercentage: 100,
-		refundOrderStatus: 'refunded', // UNVERIFIED - confirm via real run
+		refundOrderStatus: 'refunded',
 		refundPaymentStatus: 'pending',
 		isMollieClientApiRefund: false,
 	},
@@ -79,7 +79,7 @@ export const refundViaWooCommerce: MollieTestData.ShopRefund[] = [
 			status: 'authorized',
 		},
 		refundPercentage: 50,
-		refundOrderStatus: 'completed', // UNVERIFIED - confirm via real run
+		refundOrderStatus: 'completed',
 		refundPaymentStatus: 'pending',
 		isMollieClientApiRefund: false,
 	},

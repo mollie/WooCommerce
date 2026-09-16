@@ -16,4 +16,9 @@ export const mollieApiKeys: {
 		liveApiKey: process.env.MOLLIE_LIVE_API_KEY,
 		testApiKey: process.env.MOLLIE_TEST_API_KEY,
 	},
+	nl: {
+		testModeEnabled: 'yes',
+		liveApiKey: process.env.MOLLIE_LIVE_API_KEY_NL,
+		testApiKey: process.env.MOLLIE_TEST_API_KEY_NL,
+	},
 };

@@ -49,7 +49,7 @@ test.beforeAll( async ( { utils } ) => {
 } );
 
 test.describe( 'Webhook authentication (mollie_webhook_secret)', () => {
-	test( 'REST webhook rejects requests with no secret, a wrong secret, or an unknown transaction', async ( {
+	test( 'C4567601 | REST webhook rejects requests with no secret, a wrong secret, or an unknown transaction', async ( {
 		visitorRequest,
 		requestUtils,
 	} ) => {
@@ -103,7 +103,7 @@ test.describe( 'Webhook authentication (mollie_webhook_secret)', () => {
 		).toBe( 401 );
 	} );
 
-	test( 'A real Mollie payment still completes the order automatically, and the webhook endpoint accepts the secret it embeds', async ( {
+	test( 'C4567602 | A real Mollie payment still completes the order automatically, and the webhook endpoint accepts the secret it embeds', async ( {
 		utils,
 		checkout,
 		mollieHostedCheckout,

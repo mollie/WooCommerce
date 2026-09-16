@@ -152,6 +152,10 @@ class WC_Order
     {
     }
 
+    public function has_status($status)
+    {
+    }
+
     public function get_checkout_payment_url()
     {
     }

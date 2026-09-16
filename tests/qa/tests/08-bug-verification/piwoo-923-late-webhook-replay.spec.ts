@@ -22,16 +22,20 @@
  *
  * This can't be observed by waiting for a real duplicate webhook - Mollie's
  * redelivery timing isn't controllable from a test and there's no guarantee
- * one arrives during a test run. Instead, this replays the webhook
+ * one arrives during a test run. Instead, this delivers the webhook
  * directly: RestApi::callback() (RestApi.php) authenticates a POST to
  * /wp-json/mollie/v1/webhook via the mollie_webhook_secret embedded in the
- * webhookUrl Mollie already holds for the payment (same mechanism verified
+ * webhookUrl Mollie already holds for the order (same mechanism verified
  * in piwoo-910-webhook-authentication.spec.ts). Mollie's Payment/Order
  * resources have no "refunded" status value - status stays "completed"
  * forever once captured (refund info is carried separately via
- * amountRefunded/_links.refunds) - so POSTing to that same webhookUrl again
- * after the order has been refunded reproduces exactly the payload a
- * genuine late redelivery would carry, deterministically and on demand.
+ * amountRefunded/_links.refunds).
+ *
+ * The refund is created synchronously, so no webhook has reconciled it yet
+ * here - a single POST would be the first delivery, not a late duplicate.
+ * So this posts twice: the first establishes the baseline, the second is
+ * the late duplicate under test. Assertions compare against that baseline,
+ * not a pre-webhook snapshot.
  *
  * Out of scope here: the equivalent race for late "canceled"/"failed"
  * webhooks against an already-settled order (same ticket, and PIWOO-927 for
@@ -101,7 +105,6 @@ test( 'C4567637 | A late "completed" webhook replay must not un-refund an alread
 	orderReceived,
 	wooCommerceApi,
 	wooCommerceOrderEdit,
-	mollieClientApi,
 	visitorRequest,
 } ) => {
 	test.setTimeout( 3 * 60_000 );
@@ -163,53 +166,116 @@ test( 'C4567637 | A late "completed" webhook replay must not un-refund an alread
 
 	// --- Refund the order fully via WooCommerce admin ---
 	await wooCommerceOrderEdit.visit( orderId );
-	await wooCommerceOrderEdit.refundButton().click();
+	await wooCommerceOrderEdit.refundButton().click( { force: true } );
 	await wooCommerceOrderEdit.makeRefund( testOrder.payment.gateway.name );
 	await wooCommerceOrderEdit.assertUrl( orderId );
 
 	const refundedOrder = await wooCommerceApi.getOrder( orderId );
 	await expect(
 		refundedOrder.status,
-		'Assert order is Refunded before replaying the webhook'
+		'Assert order is Refunded before delivering the webhook'
 	).toEqual( 'refunded' );
 
 	const stockAfterRefund = (
 		await wooCommerceApi.getProduct( testProductId )
 	).stock_quantity;
 
-	// --- Replay the webhook Mollie already holds for this payment ---
-	const payment = await mollieClientApi.payments.get( {
-		paymentId: molliePaymentId,
-	} );
-	const webhookUrl = payment.webhookUrl;
+	// Klarna never fires onWebhookPaid(), so webhookUrl/amountRefunded never land
+	// on the payment sub-resource - fetch the Mollie Order directly instead.
+	const getMollieOrder = async () => {
+		const response = await visitorRequest.get(
+			`https://api.mollie.com/v2/orders/${ transactionId }`,
+			{
+				headers: {
+					Authorization: `Bearer ${ process.env.MOLLIE_TEST_API_KEY }`,
+				},
+			}
+		);
+		return response.json();
+	};
+
+	const mollieOrder = await getMollieOrder();
+	const webhookUrl = mollieOrder.webhookUrl;
 	await expect(
 		webhookUrl,
-		'Assert the payment has a webhookUrl registered to replay'
+		'Assert the order has a webhookUrl registered to replay'
 	).toBeTruthy();
 
-	const replayResponse = await visitorRequest.post( webhookUrl as string, {
-		form: { id: transactionId },
-	} );
+	const postWebhook = () =>
+		visitorRequest.post( webhookUrl as string, { form: { id: transactionId } } );
+
+	// --- First delivery: legitimate reconciliation, establishes the baseline ---
+	const firstDeliveryResponse = await postWebhook();
+	await expect(
+		firstDeliveryResponse.status(),
+		'Assert the first post-refund webhook delivery is accepted (200)'
+	).toBe( 200 );
+
+	const orderAfterFirstDelivery = await wooCommerceApi.getOrder( orderId );
+	await expect(
+		orderAfterFirstDelivery.status,
+		'Assert the order is still Refunded after the first (legitimate) webhook delivery'
+	).toEqual( 'refunded' );
+
+	const mollieOrderAfterFirstDelivery = await getMollieOrder();
+	const amountRefundedBaseline = mollieOrderAfterFirstDelivery.amountRefunded?.value;
+
+	const refundProcessedIdsBaseline = orderAfterFirstDelivery.meta_data.find(
+		( meta ) => meta.key === '_mollie_processed_refund_ids'
+	)?.value;
+
+	const notesAfterFirstDelivery = await wooCommerceApi.getOrderNotes( orderId );
+	const refundNoteCountBaseline = notesAfterFirstDelivery.filter( ( note ) =>
+		note.note.startsWith( 'Refunded ' )
+	).length;
+	const completedNoteCountBaseline = notesAfterFirstDelivery.filter( ( note ) =>
+		note.note.includes( 'Order completed at Mollie for' )
+	).length;
+
+	// --- Second delivery: the late duplicate under test ---
+	const replayResponse = await postWebhook();
 	await expect(
 		replayResponse.status(),
 		'Assert the replayed webhook is accepted (200) - a rejection would mean the secret/lookup itself is broken, not the fix under test'
 	).toBe( 200 );
 
-	// --- The fix-agnostic gate: status must not regress ---
+	// --- Status must not regress (not sufficient on its own; see refund gate below) ---
 	const orderAfterReplay = await wooCommerceApi.getOrder( orderId );
 	await expect(
 		orderAfterReplay.status,
 		'Assert the order stays Refunded after the late webhook replay - must not flip back to Processing/Completed'
 	).toEqual( 'refunded' );
 
-	// --- Diagnostics: informative, not a hard gate (see file header) ---
-	await expect
-		.soft(
-			orderAfterReplay.refunds.map( ( refund ) => refund.total ),
-			'Diagnostic: refund record(s) must not be lost'
-		)
-		.toEqual( refundedOrder.refunds.map( ( refund ) => refund.total ) );
+	// --- Refund must stay exactly as it was after the first delivery ---
+	const mollieOrderAfterReplay = await getMollieOrder();
+	await expect(
+		mollieOrderAfterReplay.amountRefunded?.value,
+		'Assert Mollie-side amountRefunded is unchanged - the late replay must not trigger a second refund'
+	).toEqual( amountRefundedBaseline );
 
+	await expect(
+		orderAfterReplay.refunds,
+		'Assert the WooCommerce refund record(s) are unchanged - same refunds, not a new one'
+	).toEqual( orderAfterFirstDelivery.refunds );
+
+	const refundProcessedIdsAfter = orderAfterReplay.meta_data.find(
+		( meta ) => meta.key === '_mollie_processed_refund_ids'
+	)?.value;
+	await expect(
+		refundProcessedIdsAfter,
+		'Assert _mollie_processed_refund_ids gained no extra entry from the late replay'
+	).toEqual( refundProcessedIdsBaseline );
+
+	const notesAfterReplay = await wooCommerceApi.getOrderNotes( orderId );
+	const refundNoteCountAfter = notesAfterReplay.filter( ( note ) =>
+		note.note.startsWith( 'Refunded ' )
+	).length;
+	await expect(
+		refundNoteCountAfter,
+		'Assert no second "Refunded" order note was added by the late replay'
+	).toEqual( refundNoteCountBaseline );
+
+	// --- Diagnostics: informative, not a hard gate (see file header) ---
 	const stockAfterReplay = (
 		await wooCommerceApi.getProduct( testProductId )
 	).stock_quantity;
@@ -220,13 +286,13 @@ test( 'C4567637 | A late "completed" webhook replay must not un-refund an alread
 		)
 		.toEqual( stockAfterRefund );
 
-	const notesAfterReplay = await wooCommerceApi.getOrderNotes( orderId );
+	const completedNoteCountAfter = notesAfterReplay.filter( ( note ) =>
+		note.note.includes( 'Order completed at Mollie for' )
+	).length;
 	await expect
 		.soft(
-			notesAfterReplay.some( ( note ) =>
-				note.note.includes( 'Order completed at Mollie for' )
-			),
-			'Diagnostic: an onWebhookCompleted() note appearing here is direct evidence the handler re-ran against a refunded order'
+			completedNoteCountAfter,
+			'Diagnostic: an EXTRA onWebhookCompleted() note from the late replay (beyond the one the first, legitimate delivery already added) is direct evidence the handler re-ran again against an already-refunded order'
 		)
-		.toBe( false );
+		.toEqual( completedNoteCountBaseline );
 } );

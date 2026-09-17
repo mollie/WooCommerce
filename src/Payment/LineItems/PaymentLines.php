@@ -179,11 +179,14 @@ class PaymentLines implements LineItemProvider
                     'productUrl' => ($product instanceof \WC_Product) ? $product->get_permalink() : null,
                 ];
 
-                if ($this->get_item_total_amount($cart_item) < 0) {
-                    $mollie_order_item['type'] = 'discount';
-                    unset($mollie_order_item['discountAmount']);
-                    $mollie_order_item['vatAmount']['value'] = $this->dataHelper->formatCurrencyValue(0, $this->currency);
-                }
+                // A line pushed below zero (over-discount) must be sent as a discount line whose unitPrice
+                // follows the discounted value, or Mollie rejects it; the shared trait owns that shape.
+                $mollie_order_item = $this->toDiscountLine(
+                    $mollie_order_item,
+                    (float) $this->get_item_total_amount($cart_item),
+                    $quantity,
+                    $this->currency
+                );
 
                 if ($product instanceof \WC_Product && $product->get_image_id()) {
                     $productImage = wp_get_attachment_image_src((int)$product->get_image_id(), 'full');

@@ -3,7 +3,6 @@
 namespace Mollie\WooCommerceTests\Functional\ApplePayButton;
 
 use Mockery;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Buttons\ApplePayButton\AppleAjaxRequests;
@@ -25,8 +24,6 @@ use function Brain\Monkey\Functions\when;
 
 class AjaxRequestsTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
     /**
      * @var RefundLineItemsBuilder
      */

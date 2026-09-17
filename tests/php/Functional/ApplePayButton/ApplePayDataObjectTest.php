@@ -2,7 +2,6 @@
 
 namespace Mollie\WooCommerceTests\Functional\ApplePayButton;
 
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDataObjectHttp;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -15,7 +14,6 @@ use function Brain\Monkey\Functions\when;
 
 class ApplePayDataObjectTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
     /** @var HelperMocks */
     private $helperMocks;
 

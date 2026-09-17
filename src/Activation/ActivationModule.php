@@ -142,7 +142,7 @@ class ActivationModule implements ExecutableModule, ServiceModule
             '</a>'
         );
 
-        $notice->addNotice('notice-error is-dismissible', $message);
+        $notice->addNotice('notice-warning is-dismissible', $message);
     }
 
     protected function markUpdatedOrNew()

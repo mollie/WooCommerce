@@ -3,7 +3,6 @@
 namespace Mollie\WooCommerce\Payment\Request\Strategies;
 
 use WC_Order;
-
 /**
  * Interface RequestStrategyInterface
  *

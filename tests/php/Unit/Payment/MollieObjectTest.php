@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Payment;
 
 use Mockery;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Endpoints\PaymentEndpoint;
 use Mollie\Api\Exceptions\ApiException;
@@ -29,8 +28,6 @@ use function Brain\Monkey\Functions\when;
  */
 class MollieObjectTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
     /** @var LoggerInterface&\Mockery\MockInterface */
     private $logger;
 

@@ -327,14 +327,18 @@ class TracksModuleTest extends TestCase
         });
         when('sanitize_text_field')->returnArg();
         when('wp_unslash')->returnArg();
+        when('wp_strip_all_tags')->alias(static function ($text) {
+            return trim(strip_tags((string) $text));
+        });
 
         $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldReceive('isTestModeEnabled')->andReturn(true);
         $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(false);
         $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn([
             'connected' => false,
+            'error_kind' => Settings::ERROR_KIND_API,
             'error_code' => 401,
-            'error_message' => '[2026-05-15T12:00:00+0000] Invalid API key',
+            'error_message' => '[2026-05-15T12:00:00+0000] Invalid <a href="https://example.com">API key</a>',
         ]);
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
@@ -345,7 +349,9 @@ class TracksModuleTest extends TestCase
             ->once()
             ->with('mollie_connection_failed', Mockery::on(function ($props) {
                 return $props['payment_mode'] === 'test'
+                    && $props['error_kind'] === Settings::ERROR_KIND_API
                     && $props['error_code'] === 401
+                    // Timestamp prefix stripped, markup stripped: telemetry stays plain text.
                     && $props['error_message'] === 'Invalid API key';
             }));
 

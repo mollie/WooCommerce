@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Unit\Settings;
 
+use Mollie\Api\Exceptions\ApiException;
+use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerceTests\TestCase;
 
 use function Brain\Monkey\Functions\expect;
@@ -346,6 +349,230 @@ class SettingsTest extends TestCase
             self::assertStringNotContainsString($bannedWord, $output, "Notice must not reveal rejection reason via '{$bannedWord}'");
         }
         @unlink($tmpFile);
+    }
+
+    // getConnectionStatus() must report whatever the getConnectionStatusWithError() accessor decided
+    public function testGetConnectionStatusReturnsConnectedValueFromWithErrorAccessor(): void
+    {
+        when('get_option')->justReturn('test_dummyapikeydummyapikeydummy');
+        when('is_admin')->justReturn(true);
+
+        $statusHelper = \Mockery::mock(Status::class);
+        $statusHelper->shouldReceive('isCompatible')->andReturn(true);
+        $apiHelper = \Mockery::mock(Api::class);
+        // The legacy in-method connection attempt fails; only the accessor's verdict may count.
+        $apiHelper->shouldReceive('getApiClient')->andThrow(new ApiException('unreachable', 0));
+
+        $sut = \Mockery::mock(
+            Settings::class . '[getConnectionStatusWithError]',
+            ['mollie_wc', $statusHelper, '8.1.4', 'https://example.com', $apiHelper, false]
+        );
+        $sut->shouldAllowMockingProtectedMethods();
+        $sut->shouldReceive('getConnectionStatusWithError')->andReturn(['connected' => true]);
+
+        self::assertTrue($sut->getConnectionStatus());
+    }
+
+    // getConnectionStatus() must not run a second connection attempt of its own
+    public function testGetConnectionStatusPerformsExactlyOneApiConnectionAttempt(): void
+    {
+        when('get_option')->justReturn('test_dummyapikeydummyapikeydummy');
+        when('is_admin')->justReturn(true);
+
+        $apiClient = new \stdClass();
+        $statusHelper = \Mockery::mock(Status::class);
+        $statusHelper->shouldReceive('isCompatible')->andReturn(true);
+        $statusHelper->shouldReceive('getMollieApiStatus')->once()->with($apiClient);
+        $apiHelper = \Mockery::mock(Api::class);
+        $apiHelper->shouldReceive('getApiClient')->once()->andReturn($apiClient);
+
+        $sut = new Settings('mollie_wc', $statusHelper, '8.1.4', 'https://example.com', $apiHelper, false);
+
+        self::assertTrue($sut->getConnectionStatus());
+    }
+
+    /**
+     * An API client whose first call fails the way the Mollie SDK fails.
+     */
+    private function apiClientFailingWith(\Throwable $failure): object
+    {
+        $methods = new class ($failure) {
+            /** @var \Throwable */
+            private $failure;
+
+            public function __construct(\Throwable $failure)
+            {
+                $this->failure = $failure;
+            }
+
+            public function all()
+            {
+                throw $this->failure;
+            }
+        };
+
+        return new class ($methods) {
+            /** @var object */
+            public $methods;
+
+            public function __construct(object $methods)
+            {
+                $this->methods = $methods;
+            }
+        };
+    }
+
+    /**
+     * Real Status, so the re-throw in getMollieApiStatus() is exercised rather than mocked away.
+     */
+    private function realStatusHelper(): Status
+    {
+        $statusHelper = \Mockery::mock(
+            Status::class . '[isCompatible]',
+            [\Mockery::mock(\Mollie\Api\CompatibilityChecker::class), 'Mollie Payments for WooCommerce']
+        );
+        $statusHelper->shouldReceive('isCompatible')->andReturn(true);
+
+        return $statusHelper;
+    }
+
+    private function settingsWithApiClient(object $apiClient): Settings
+    {
+        when('get_option')->justReturn('test_dummyapikeydummyapikeydummy');
+        when('is_admin')->justReturn(true);
+
+        $apiHelper = \Mockery::mock(Api::class);
+        $apiHelper->shouldReceive('getApiClient')->andReturn($apiClient);
+
+        return new Settings('mollie_wc', $this->realStatusHelper(), '8.1.4', 'https://example.com', $apiHelper, false);
+    }
+
+    /**
+     * The HTTP status of a failed call must survive the re-throw in Status::getMollieApiStatus(),
+     * otherwise every failure looks identical to the settings page.
+     *
+     * @dataProvider provideApiHttpStatuses
+     */
+    public function testApiHttpStatusSurvivesIntoTheConnectionStatusArray(int $httpStatus): void
+    {
+        $sut = $this->settingsWithApiClient(
+            $this->apiClientFailingWith(
+                new ApiException("Error executing API call ({$httpStatus}: Failed)", $httpStatus)
+            )
+        );
+
+        $result = $sut->getConnectionStatusWithError();
+
+        self::assertFalse($result['connected']);
+        self::assertSame($httpStatus, $result['error_code']);
+        self::assertSame(Settings::ERROR_KIND_API, $result['error_kind']);
+    }
+
+    public function provideApiHttpStatuses(): array
+    {
+        return [
+            'unauthorized' => [401],
+            'bad request' => [400],
+            'rate limited' => [429],
+            'server error' => [500],
+            'gateway timeout' => [504],
+        ];
+    }
+
+    // A transport failure never reached Mollie, so it has no HTTP status
+    public function testTransportFailureIsReportedWithoutAnHttpStatus(): void
+    {
+        $sut = $this->settingsWithApiClient(
+            $this->apiClientFailingWith(new ApiException('cURL error 28: Operation timed out', 0))
+        );
+
+        $result = $sut->getConnectionStatusWithError();
+
+        self::assertSame(0, $result['error_code']);
+        self::assertSame(Settings::ERROR_KIND_API, $result['error_kind']);
+        self::assertStringContainsString('cURL error 28', $result['error_message']);
+    }
+
+    // A missing or malformed key fails before any request, and must be reported as a key problem
+    public function testApiKeyFailureIsReportedAsAKeyProblemNotAsAnApiFailure(): void
+    {
+        when('get_option')->justReturn('');
+        when('is_admin')->justReturn(false);
+
+        $apiHelper = \Mockery::mock(Api::class);
+        $apiHelper->shouldReceive('getApiClient')
+            ->andThrow(new ApiException('No API key provided. Please set your Mollie API keys below.'));
+
+        $sut = new Settings('mollie_wc', $this->realStatusHelper(), '8.1.4', 'https://example.com', $apiHelper, false);
+
+        $result = $sut->getConnectionStatusWithError();
+
+        self::assertFalse($result['connected']);
+        self::assertSame(Settings::ERROR_KIND_API_KEY, $result['error_kind']);
+        self::assertStringContainsString('No API key provided', $result['error_message']);
+    }
+
+    // An incompatible environment reports the real compatibility errors, not a placeholder
+    public function testIncompatibleEnvironmentReportsTheCompatibilityErrors(): void
+    {
+        $statusHelper = \Mockery::mock(Status::class);
+        $statusHelper->shouldReceive('isCompatible')->andReturn(false);
+        $statusHelper->shouldReceive('getErrors')->andReturn(['Mollie requires PHP 7.4 or higher.']);
+
+        $sut = new Settings('mollie_wc', $statusHelper, '8.1.4', 'https://example.com', \Mockery::mock(Api::class), false);
+
+        $result = $sut->getConnectionStatusWithError();
+
+        self::assertSame(Settings::ERROR_KIND_INCOMPATIBLE, $result['error_kind']);
+        self::assertStringContainsString('PHP 7.4 or higher', $result['error_message']);
+        self::assertNotSame('Incompatible environment', $result['error_message']);
+    }
+
+    // The message handed to the settings page carries no ISO-8601 prefix from ApiException
+    public function testReportedMessageIsFreeOfExceptionDecoration(): void
+    {
+        $sut = $this->settingsWithApiClient(
+            $this->apiClientFailingWith(new ApiException('Error executing API call (503: Service Unavailable)', 503))
+        );
+
+        $result = $sut->getConnectionStatusWithError();
+
+        self::assertRegExp('/^Error executing API call/', $result['error_message']);
+        self::assertStringNotContainsString('[', $result['error_message']);
+    }
+
+    // End to end: a wrong API key must not be presented as a server connectivity problem
+    public function testWrongApiKeyRendersAsAKeyProblemOnTheSettingsPage(): void
+    {
+        when('esc_html')->returnArg();
+        when('esc_html__')->returnArg(1);
+
+        $sut = $this->settingsWithApiClient(
+            $this->apiClientFailingWith(
+                new ApiException(
+                    'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate',
+                    401
+                )
+            )
+        );
+
+        $renderer = new class {
+            use \Mollie\WooCommerce\Settings\Page\Section\ConnectionStatusTrait;
+
+            public function render(Settings $settings, array $connectionStatus): ?string
+            {
+                return $this->connectionStatus($settings, $connectionStatus);
+            }
+        };
+
+        $settingsForRender = \Mockery::mock(Settings::class);
+        $settingsForRender->shouldReceive('isTestModeEnabled')->andReturn(true);
+
+        $message = (string) $renderer->render($settingsForRender, $sut->getConnectionStatusWithError());
+
+        self::assertStringContainsStringIgnoringCase('api key', $message);
+        self::assertStringNotContainsStringIgnoringCase('ssl', $message);
+        self::assertStringNotContainsStringIgnoringCase('outbound connectivity', $message);
     }
 
     // Gateway logo setting is not written when sanitizer rejects the file (notice-enabled path)

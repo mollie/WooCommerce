@@ -18,6 +18,10 @@ abstract class AbstractSection
     protected array $pages;
     protected Data $dataHelper;
     protected ContainerInterface $container;
+    /**
+     * @var array{connected?: bool, error_code?: int, error_message?: string}
+     */
+    protected array $connectionResult;
 
     public function __construct(
         Settings $settings,
@@ -27,7 +31,8 @@ abstract class AbstractSection
         bool $connectionStatus,
         bool $testModeEnabled,
         Data $dataHelper,
-        ContainerInterface $container
+        ContainerInterface $container,
+        array $connectionResult = []
     ) {
 
         $this->settings = $settings;
@@ -38,6 +43,7 @@ abstract class AbstractSection
         $this->pages = $pages;
         $this->dataHelper = $dataHelper;
         $this->container = $container;
+        $this->connectionResult = $connectionResult ?: ['connected' => $connectionStatus];
     }
 
     abstract public function config(): array;

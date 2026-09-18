@@ -2,7 +2,6 @@
 
 namespace Mollie\WooCommerceTests\Functional\PayPalButton;
 
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\Stubs\WC_Product;
@@ -18,9 +17,6 @@ use function Brain\Monkey\Functions\when;
 
 class DataToPayPalButtonScriptsTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
-
     /**
      *
      */

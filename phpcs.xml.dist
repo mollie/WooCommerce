@@ -14,7 +14,7 @@
         <exclude-pattern>*.scss</exclude-pattern>
         <exclude-pattern>*.json</exclude-pattern>
 
-    <config name="testVersion" value="7.4"/>
+    <config name="testVersion" value="8.0"/>
     <config name="ignore_warnings_on_exit" value="1"/>
     <rule ref="Inpsyde">
         <exclude name="NeutronStandard.StrictTypes.RequireStrictTypes.StrictTypes"/>

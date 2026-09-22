@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Core\Types\ExpressSession;
+use Mollie\WooCommerce\Core\Types\MollieAddress;
 use Mollie\WooCommerce\Core\Types\Money;
 use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
 use Mollie\WooCommerce\SDK\Api;
@@ -80,8 +81,36 @@ final class SdkMollieApi implements MollieApi
             (string) $payment->status,
             $method !== '' ? $method : null,
             Money::fromDecimal((string) $payment->amount->value, (string) $payment->amount->currency),
-            $payment
+            $payment,
+            mode: (string) ($payment->mode ?? 'live'),
+            expressRef: $this->expressRef($payment->metadata ?? null),
+            billingAddress: $this->address($payment->billingAddress ?? null),
+            shippingAddress: $this->address($payment->shippingAddress ?? null)
         );
+    }
+
+    /**
+     * metadata.express_ref, which a payment created from an express session inherits.
+     *
+     * @param mixed $metadata
+     */
+    private function expressRef($metadata): ?string
+    {
+        $ref = is_object($metadata) ? ($metadata->express_ref ?? null) : (is_array($metadata) ? ($metadata['express_ref'] ?? null) : null);
+
+        return is_string($ref) && $ref !== '' ? $ref : null;
+    }
+
+    /**
+     * @param mixed $address
+     */
+    private function address($address): ?MollieAddress
+    {
+        if (!is_object($address) && !is_array($address)) {
+            return null;
+        }
+
+        return MollieAddress::fromArray(is_object($address) ? get_object_vars($address) : $address);
     }
 
     private function client(): MollieApiClient

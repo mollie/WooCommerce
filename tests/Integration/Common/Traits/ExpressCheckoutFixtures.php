@@ -14,8 +14,8 @@ use WP_REST_Response;
 /**
  * The block checkout an express scenario starts from, for ExpressFlowTestCase subclasses.
  *
- * The shop: live, HTTPS, PayPal the only wallet with its checkout express button on. PayPal takes
- * its address from the checkout form, so the shipping rules apply. Prices include 21% VAT; zone LU
+ * The shop: live, HTTPS, PayPal the only wallet with its checkout express button on. It takes its
+ * address from the checkout form, like every wallet, so the shipping rules apply. Prices include 21% VAT; zone LU
  * has two flat rates ('standard' 5.00, 'express' 7.50), zone AT one ('austria' 9.00), zone MT none.
  * Every scenario is a new shopper with a full session budget.
  *
@@ -266,8 +266,8 @@ trait ExpressCheckoutFixtures
     }
 
     /**
-     * PayPal takes its address from the checkout form. With Apple Pay (its own sheet) off, a cart
-     * that ships is blocked until the form is complete, which is what the shipping scenarios need.
+     * PayPal alone, so the scenarios name one wallet. Every wallet takes its address from the checkout
+     * form, so a cart that ships is blocked until the form is complete.
      */
     private function payPalIsTheOnlyExpressWallet(): void
     {

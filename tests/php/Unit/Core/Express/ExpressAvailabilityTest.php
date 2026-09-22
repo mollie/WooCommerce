@@ -25,8 +25,8 @@ use Mollie\WooCommerceTests\TestCase;
  * and "nothing is visible" are one answer: no_wallet_visible.
  *
  * A cart that ships is blocked, not unavailable, while every visible wallet still needs the checkout
- * form's address (PayPal, Google Pay) and the form is incomplete. A wallet with its own address sheet
- * (Apple Pay) does not wait for the form. The wallets, surfaces and allowed modes come from the real
+ * form's address and the form is incomplete. In the Express Component that is every wallet, Apple
+ * Pay included (owner, 2026-09-22), so a cart that ships waits for the form. The wallets, surfaces and allowed modes come from the real
  * config/express.php, so a change to that table is seen here.
  *
  * @covers \Mollie\WooCommerce\Core\Express\ExpressAvailability
@@ -137,7 +137,7 @@ class ExpressAvailabilityTest extends TestCase
      *   Then it is blocked with shipping_incomplete, not unavailable, if every visible wallet takes
      *        its address from the checkout form
      *   And it is available once the destination is complete and a rate is chosen
-     *   And it is available whatever the form says if a visible wallet has its own address sheet
+     *   And Apple Pay waits for the form like PayPal: it has no address sheet of its own here
      *   And a cart that needs no shipping is available whatever the form says
      *
      * @dataProvider shippingCases
@@ -177,9 +177,11 @@ class ExpressAvailabilityTest extends TestCase
             'PayPal only, ships, neither' => [[false], ['paypal'], true, false, false, 'blocked', 'shipping_incomplete'],
             'PayPal only, ships, destination and rate complete' => [[false], ['paypal'], true, true, true, 'available', null],
             'PayPal only, nothing to ship, form empty' => [[false], ['paypal'], false, false, false, 'available', null],
-            // Apple Pay takes the address from its own sheet, so the checkout form is not needed.
-            'Apple Pay only, ships, form empty' => [[false], ['applepay'], true, false, false, 'available', null],
-            'both wallets, ships, form empty: Apple Pay is enough' => [[false], self::ALL_WALLETS, true, false, false, 'available', null],
+            // Every wallet takes the shipping address from the checkout form, Apple Pay included.
+            'Apple Pay only, ships, form empty' => [[false], ['applepay'], true, false, false, 'blocked', 'shipping_incomplete'],
+            'Apple Pay only, ships, no rate chosen' => [[false], ['applepay'], true, true, false, 'blocked', 'shipping_incomplete'],
+            'Apple Pay only, ships, destination and rate complete' => [[false], ['applepay'], true, true, true, 'available', null],
+            'both wallets, ships, form empty: both wait' => [[false], self::ALL_WALLETS, true, false, false, 'blocked', 'shipping_incomplete'],
             // Filling in the form cannot fix a subscription, so it is unavailable, not blocked.
             'PayPal only, ships incomplete, with a subscription' => [[true], ['paypal'], true, false, false, 'unavailable', 'subscription_in_cart'],
         ];

@@ -6,11 +6,13 @@ use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
 use Mollie\WooCommerce\Adapter\Mollie\SdkMollieApi;
 use Mollie\WooCommerce\Adapter\WooCommerce\CartFactsBuilder;
 use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
+use Mollie\WooCommerce\Adapter\WooCommerce\ExpressBlocksData;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactory;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressSessionBudget;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressSessionStore;
 use Mollie\WooCommerce\Adapter\WordPress\EventLog;
+use Mollie\WooCommerce\Adapter\WordPress\ExpressAssets;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressReturnHandler;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
@@ -169,6 +171,17 @@ return static function (): array {
                     return array_keys(WC()->payment_gateways()->payment_gateways());
                 }
             );
+        },
+        ExpressBlocksData::class => static function (): ExpressBlocksData {
+            return new ExpressBlocksData();
+        },
+        ExpressAssets::class => static function (ContainerInterface $container): ExpressAssets {
+            $facts = $container->get(ExpressFactsBuilder::class);
+            assert($facts instanceof ExpressFactsBuilder);
+            $blocksData = $container->get(ExpressBlocksData::class);
+            assert($blocksData instanceof ExpressBlocksData);
+
+            return new ExpressAssets($facts, $blocksData);
         },
         ExpressRoutes::class => static function (ContainerInterface $container): ExpressRoutes {
             return new ExpressRoutes(

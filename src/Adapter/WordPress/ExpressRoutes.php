@@ -103,7 +103,7 @@ class ExpressRoutes
     {
         $result = $this->startSession->start(self::SURFACE);
         if (!$result->isStarted()) {
-            return new WP_Error($result->code(), $this->messageFor($result->code()), ['status' => $result->httpStatus()]);
+            return new WP_Error($result->code(), self::messageFor($result->code()), ['status' => $result->httpStatus()]);
         }
 
         $response = new WP_REST_Response([
@@ -158,7 +158,7 @@ class ExpressRoutes
             $data = [
                 'ok' => false,
                 'code' => $result->code(),
-                'message' => $result->reason() ?? $this->messageFor($result->code()),
+                'message' => $result->reason() ?? self::messageFor($result->code()),
             ];
         }
 
@@ -187,7 +187,11 @@ class ExpressRoutes
         );
     }
 
-    private function messageFor(string $code): string
+    /**
+     * The shopper-facing message for a refusal code. Also the one source of the messages the block
+     * checkout shows before it asks the store anything (ExpressBlocksData).
+     */
+    public static function messageFor(string $code): string
     {
         return match ($code) {
             'shipping_incomplete' => __(

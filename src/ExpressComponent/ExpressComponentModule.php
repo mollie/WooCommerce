@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\ExpressComponent;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Adapter\WordPress\ExpressAssets;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressReturnHandler;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
@@ -48,6 +49,13 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $routes = $container->get(ExpressRoutes::class);
             assert($routes instanceof ExpressRoutes);
             $routes->register();
+        });
+
+        // Mollie.js v2 and mollieExpressData, on a block checkout that Express owns only.
+        add_action('wp_enqueue_scripts', static function () use ($container): void {
+            $assets = $container->get(ExpressAssets::class);
+            assert($assets instanceof ExpressAssets);
+            $assets->enqueue();
         });
 
         add_action('woocommerce_api_' . ExpressUrls::RETURN_API, static function () use ($container): void {

@@ -25,9 +25,9 @@ $express = [
     // Express has no switch of its own: it takes over what the merchant already turned on per method.
     //
     // addressFrom says where the shipping address comes from: 'form' is the WooCommerce checkout form, so
-    // a cart that ships must wait for it; 'wallet' is the wallet's own sheet, as today's Apple Pay button
-    // does. Apple Pay is 'wallet' by the owner's decision of 2026-09-21; whether the component can do it
-    // is unconfirmed and is on the real-key checklist, so flipping it here is a data change only.
+    // a cart that ships must wait for it; 'wallet' would be the wallet's own sheet, as today's Apple Pay
+    // button does. In the Express Component every wallet waits for the form, Apple Pay included (owner,
+    // 2026-09-22), so no row uses 'wallet'; switching one back is a data change only.
     //
     // googlepay has no payment method yet, so it stays hidden until one with this gateway id exists; its
     // checkoutSetting is the name the future method should expose, to be aligned then.
@@ -37,7 +37,7 @@ $express = [
             'mollieMethod' => 'applepay',
             'needsHttps' => true,
             'checkoutSetting' => 'mollie_apple_pay_button_enabled_express_checkout',
-            'addressFrom' => 'wallet',
+            'addressFrom' => 'form',
         ],
         'paypal' => [
             'gatewayId' => 'mollie_wc_gateway_paypal',

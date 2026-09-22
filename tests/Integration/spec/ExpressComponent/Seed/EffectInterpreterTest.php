@@ -69,7 +69,7 @@ class EffectInterpreterTest extends ExpressFlowTestCase
         $this->assertSame('NL', $fresh->get_billing_country());
 
         $this->assertSame($notesBefore + 1, $this->noteCount($fresh), 'Exactly one note belongs to one apply.');
-        $this->assertOrderHasNoteContaining($fresh, 'applepay');
+        $this->assertOrderHasNoteContaining($fresh, 'Express checkout started');
         $this->assertNoteIsNotARawMessageKey($fresh);
 
         $this->assertNothingLeakedToLog();

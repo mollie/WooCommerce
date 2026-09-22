@@ -111,8 +111,9 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $paymentMethods = $container->get('gateway.paymentMethods');
         add_action(
             'init',
-            function () use ($paymentMethods) {
-                $this->handleExpiryDateCancelation($paymentMethods);
+            function () use ($paymentMethods, $container) {
+                $expressEnabled = $container->has('express.enabled') && ($container->get('express.enabled'))();
+                $this->handleExpiryDateCancelation($paymentMethods, $expressEnabled);
             },
             10,
             0

@@ -12,7 +12,7 @@ use Mollie\WooCommerce\Core\Types\Effect;
 use WC_Order;
 
 /**
- * The only writer of order status, notes and _mollie_* meta for new code (blueprint chokepoint 3, ADR-007).
+ * The only writer of order status, created_via, notes and _mollie_* meta for new code.
  *
  * It takes the per-order lock, re-reads the order inside it with the object cache bypassed, applies
  * the effects, saves once and logs one event. Applying the same effects again changes nothing, so a
@@ -124,6 +124,7 @@ final class EffectInterpreter
             Effect::SET_PAYMENT_METHOD => $this->setPaymentMethod($order, $data['gatewayId']),
             Effect::SET_STATUS => $this->setStatus($order, $data['status']),
             Effect::SET_ADDRESS => $this->setAddress($order, $data['addressType'], $data['fields']),
+            Effect::SET_CREATED_VIA => $this->setCreatedVia($order, $data['createdVia']),
             Effect::ADD_NOTE => false, // Notes are written after the save, see renderedNotes().
             default => throw new InvalidArgumentException(sprintf('Unknown effect type "%s".', $effect->type())),
         };
@@ -166,6 +167,16 @@ final class EffectInterpreter
             return false;
         }
         $order->set_status($status);
+
+        return true;
+    }
+
+    private function setCreatedVia(WC_Order $order, string $createdVia): bool
+    {
+        if ($order->get_created_via() === $createdVia) {
+            return false;
+        }
+        $order->set_created_via($createdVia);
 
         return true;
     }
@@ -216,7 +227,8 @@ final class EffectInterpreter
     private function messages(): array
     {
         return [
-            'express.order.created' => __('Order created by Mollie express checkout ({wallet}).', 'mollie-payments-for-woocommerce'),
+            'express.order.created' => __('Express checkout started', 'mollie-payments-for-woocommerce'),
+            'express.order.abandoned' => __('Express checkout was started and not completed', 'mollie-payments-for-woocommerce'),
         ];
     }
 

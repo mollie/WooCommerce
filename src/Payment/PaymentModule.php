@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Mollie\WooCommerce\Core\Payment\CancelUnpaidSchedule;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
@@ -520,13 +521,15 @@ class PaymentModule implements ServiceModule, ExecutableModule
     }
 
     /**
-     * Add/remove scheduled action to cancel orders on expiration date
+     * Add/remove scheduled action to cancel orders on expiration date, and to clean up abandoned
+     * express orders, which run on the same action
      * @param $paymentMethods
+     * @param bool $expressEnabled
      * @return void
      */
-    public function handleExpiryDateCancelation($paymentMethods)
+    public function handleExpiryDateCancelation($paymentMethods, bool $expressEnabled = false)
     {
-        if (!$this->IsExpiryDateEnabled($paymentMethods)) {
+        if (!CancelUnpaidSchedule::needed($this->gatewaySettings($paymentMethods), $expressEnabled)) {
             as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;
         }
@@ -551,17 +554,22 @@ class PaymentModule implements ServiceModule, ExecutableModule
      */
     public function IsExpiryDateEnabled($paymentMethods): bool
     {
+        return CancelUnpaidSchedule::needed($this->gatewaySettings($paymentMethods), false);
+    }
+
+    /**
+     * Each payment method's stored settings, as get_option() returns them.
+     *
+     * @param $paymentMethods
+     * @return array<int, mixed>
+     */
+    private function gatewaySettings($paymentMethods): array
+    {
+        $settings = [];
         foreach ($paymentMethods as $paymentMethod) {
-            $optionName = "mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings";
-            $option = get_option($optionName, false);
-            if (!empty($option) && isset($option['enabled']) && $option['enabled'] !== 'yes') {
-                continue;
-            }
-            if (!empty($option["activate_expiry_days_setting"]) && $option["activate_expiry_days_setting"] === 'yes') {
-                return true;
-            }
+            $settings[] = get_option("mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings", false);
         }
-        return false;
+        return $settings;
     }
 
     /**

@@ -282,15 +282,16 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         return $apiTitle ?: $this->config['defaultTitle'];
     }
 
-    private function getApiIcon(ContainerInterface $container): string
+    /**
+     * Mollie's SVG for this method from the (cached) methods list, or null when its entry has none —
+     * no image, or no SVG in it — so the caller keeps the plugin's own icon.
+     */
+    private function getApiIcon(ContainerInterface $container): ?string
     {
         $apiMethod = $container->get('gateway.getPaymentMethodsAfterFeatureFlag')[$this->getIdFromConfig()];
-        $apiIcon = null;
-        if (isset($apiMethod["image"]) && property_exists($apiMethod["image"], "svg")) {
-            $apiIcon = $apiMethod["image"]->svg;
-        }
+        $svg = $apiMethod['image']->svg ?? null;
 
-        return $apiIcon;
+        return is_string($svg) && $svg !== '' ? $svg : null;
     }
 
     protected function titleIsDefault(): bool
@@ -388,7 +389,10 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
         $useAPIImage = apply_filters('mollie_wc_gateway_use_api_icon', empty($this->getUploadedImage()), $this->getIdFromConfig());
 
         if (!$this->isCreditCardSelectorEnabled() && $useAPIImage) {
-            $iconUrlArray = [$this->getApiIcon($container)];
+            $apiIcon = $this->getApiIcon($container);
+            if ($apiIcon !== null) {
+                $iconUrlArray = [$apiIcon];
+            }
         }
 
         $alt = $this->getIdFromConfig() . ' icon';

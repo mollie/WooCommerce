@@ -12,6 +12,7 @@ declare(strict_types=1);
  *     wallets: array<string, array{gatewayId: string, mollieMethod: string, needsHttps: bool, checkoutSetting: string, addressFrom: string}>,
  *     surfaces: array<int, string>,
  *     allowedModes: array<int, string>,
+ *     sessionLifetimeSeconds: int,
  *     sessionReuseMarginSeconds: int,
  *     maxNewSessions: int,
  *     windowSeconds: int,
@@ -55,8 +56,11 @@ $express = [
         ],
     ],
     'surfaces' => ['checkout'],
-    // Sessions may have no test mode (REQ-H4 is unanswered), so live only until it is answered.
+    // Sessions may have no test mode, so live only until it is answered.
     'allowedModes' => ['live'],
+    // How long the plugin treats a Checkout Session as usable after Mollie created it.
+    // This is deliberately a floor, not Mollie's number. Raise it only against a measured expiry.
+    'sessionLifetimeSeconds' => 900,
     // An open session is handed out again only while it has more than this left before it expires,
     // so the shopper is not given a token that dies while they are in the wallet.
     'sessionReuseMarginSeconds' => 60,
@@ -65,9 +69,8 @@ $express = [
     // price change needs a new session), not for one request per keystroke.
     'maxNewSessions' => 10,
     'windowSeconds' => 600,
-    // Cleanup looks at a pending express order only this long after its session expired (15 minutes
-    // after it was created), so an order is never cancelled while its payment could still arrive
-    // (AC-31). Even then it is cancelled only when Mollie says it can no longer be paid.
+    // Cleanup looks at a pending express order only this long after its session expired,
+    // so an order is never cancelled while its payment could still arrive
     'abandonGraceSeconds' => 3600,
 ];
 

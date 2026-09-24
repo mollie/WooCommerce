@@ -54,6 +54,7 @@ const shippable = ( overrides = {} ) => ( {
 	shippingAddress: completeAddress,
 	requiredShippingFields: requiredForLu,
 	hasSelectedRate: true,
+	hasShippingAmount: true,
 	isCalculating: false,
 	...overrides,
 } );
@@ -71,6 +72,7 @@ const virtual = ( overrides = {} ) => ( {
 	shippingAddress: {},
 	requiredShippingFields: requiredForLu,
 	hasSelectedRate: false,
+	hasShippingAmount: false,
 	isCalculating: false,
 	...overrides,
 } );
@@ -124,6 +126,13 @@ describe( 'expressReadiness', () => {
 		[
 			'shipping needed, totals calculating',
 			shippable( { isCalculating: true } ),
+			BLOCKED,
+		],
+		[
+			// A country on its own gets a rate out of WooCommerce, which once priced a session for an
+			// address the shopper had not finished (owner, 2026-09-24).
+			'shipping needed, a rate chosen but no shipping cost worked out yet',
+			shippable( { hasShippingAmount: false } ),
 			BLOCKED,
 		],
 		[

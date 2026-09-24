@@ -30,10 +30,13 @@ final class SdkMollieApi implements MollieApi
 
     private Settings $settings;
 
-    public function __construct(Api $api, Settings $settings)
+    private int $sessionLifetimeSeconds;
+
+    public function __construct(Api $api, Settings $settings, int $sessionLifetimeSeconds)
     {
         $this->api = $api;
         $this->settings = $settings;
+        $this->sessionLifetimeSeconds = $sessionLifetimeSeconds;
     }
 
     public function createSession(array $payload, string $idempotencyKey): ExpressSession
@@ -131,8 +134,28 @@ final class SdkMollieApi implements MollieApi
             (string) $response->id,
             (string) $response->status,
             (string) ($response->clientAccessToken ?? ''),
-            (string) ($response->expiresAt ?? ''),
+            $this->expiresAt($response),
             $response
         );
+    }
+
+    /**
+     * Mollie answers an open session without an expiry; expiredAt appears only once it has expired.
+     * So the expiry is createdAt plus the session lifetime, unless Mollie names one. Empty when
+     * neither is there, which the caller treats as an unusable session.
+     */
+    private function expiresAt(object $response): string
+    {
+        foreach (['expiresAt', 'expiredAt'] as $field) {
+            if (isset($response->{$field}) && is_string($response->{$field}) && $response->{$field} !== '') {
+                return $response->{$field};
+            }
+        }
+
+        $createdAt = isset($response->createdAt) && is_string($response->createdAt)
+            ? strtotime($response->createdAt)
+            : false;
+
+        return $createdAt === false ? '' : gmdate('c', $createdAt + $this->sessionLifetimeSeconds);
     }
 }

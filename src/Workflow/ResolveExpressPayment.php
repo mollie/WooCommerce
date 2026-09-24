@@ -9,8 +9,10 @@ use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\Adapter\WordPress\EventLog;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout;
+use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
 use Mollie\WooCommerce\Core\Express\ExpressOrderMatch;
 use Mollie\WooCommerce\Core\Express\FirstSightEffects;
+use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
 use Mollie\WooCommerce\Core\Types\Refuse;
 use Throwable;
 use WC_Order;
@@ -27,6 +29,27 @@ use WC_Order;
 final class ResolveExpressPayment
 {
     /**
+     * An express payment Mollie captured that no order represents.
+     */
+    private function reportOrphan(PaymentSnapshot $payment, ?WC_Order $order, string $reason): void
+    {
+        $ref = (string) $payment->expressRef();
+        if ($order instanceof WC_Order || $ref === '' || !in_array($payment->status(), ['paid', 'authorized'], true)) {
+            return;
+        }
+
+        $amount = $payment->amount();
+        $this->log->error('express.payment.orphaned', [
+            'mollie_id' => $payment->id(),
+            'reason' => $reason,
+            'status' => $payment->status(),
+            'amount' => $amount->toDecimal(),
+            'currency' => $amount->currency(),
+        ]);
+        $this->orphaned->remember($payment->id(), $reason, $amount->toDecimal(), $amount->currency());
+    }
+
+    /**
      * @param array<string, array{gatewayId: string, mollieMethod: string}> $wallets The wallets table of config/express.php.
      * @param callable(): array<int, string> $registeredGatewayIds
      */
@@ -35,6 +58,7 @@ final class ResolveExpressPayment
         private ExpressOrderFactsBuilder $orderFacts,
         private EffectInterpreter $effects,
         private EventLog $log,
+        private OrphanedExpressPayments $orphaned,
         private array $wallets,
         private $registeredGatewayIds
     ) {
@@ -66,10 +90,12 @@ final class ResolveExpressPayment
 
         $decision = ExpressOrderMatch::decide($payment, $facts);
         if ($decision instanceof Refuse || $order === null || $facts === null) {
+            $reason = $decision instanceof Refuse ? $decision->code() : 'unknown_ref';
             $this->log->warning('express.webhook.unmatched', [
                 'mollie_id' => $paymentId,
-                'reason' => $decision instanceof Refuse ? $decision->code() : 'unknown_ref',
+                'reason' => $reason,
             ]);
+            $this->reportOrphan($payment, $order, $reason);
 
             return null;
         }

@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\ExpressComponent;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressAssets;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressReturnHandler;
@@ -62,6 +63,14 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $handler = $container->get(ExpressReturnHandler::class);
             assert($handler instanceof ExpressReturnHandler);
             $handler->handle();
+        });
+
+        // Discovered in a webhook, which is no place to show anything: the notice waits for an
+        // administrator to load a page.
+        add_action('admin_notices', static function () use ($container): void {
+            $orphaned = $container->get(OrphanedExpressPayments::class);
+            assert($orphaned instanceof OrphanedExpressPayments);
+            $orphaned->renderNotice();
         });
 
         // Runs on the plugin's existing cleanup action, which PaymentModule keeps scheduled while

@@ -41,6 +41,11 @@ class ExpressBlocksData
                 'shippingIncomplete' => ExpressRoutes::messageFor('shipping_incomplete'),
                 'unavailable' => ExpressRoutes::messageFor('mollie_unavailable'),
                 'placeholder' => __('Express checkout', 'mollie-payments-for-woocommerce'),
+                // What the grey placeholder says while a cart that ships waits for the form
+                'waitingForShipping' => __(
+                    'Waiting for the shipping cost…',
+                    'mollie-payments-for-woocommerce'
+                ),
             ],
         ];
     }

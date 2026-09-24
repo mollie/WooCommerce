@@ -119,6 +119,8 @@ function readCart( select ) {
 			packages.every( ( pack ) =>
 				( pack.shipping_rates ?? [] ).some( ( rate ) => rate.selected )
 			),
+		// A cost the store has actually worked out for this address, free shipping included.
+		hasShippingAmount: totals.total_shipping !== undefined && totals.total_shipping !== null,
 		isCalculating:
 			store.isCustomerDataUpdating() ||
 			store.isShippingRateBeingSelected() ||
@@ -127,10 +129,26 @@ function readCart( select ) {
 
 	return {
 		status,
+		// Everything PricingFingerprint::of() hashes server-side, and nothing more. The destination
+		// counts only while something ships — a new city with the same flat rate still reprices the
+		// session as far as the store is concerned — and the lines count for a swap of two equally
+		// priced items. For a cart with nothing to ship the store ignores the address, because
+		// WooCommerce fills the shipping fields from the billing ones behind the page's back.
 		fingerprint: [
 			totals.currency_code,
 			totals.total_price,
 			...selectedRates,
+			...( store.getNeedsShipping()
+				? [
+						address.country ?? '',
+						address.state ?? '',
+						address.postcode ?? '',
+						address.city ?? '',
+				  ]
+				: [] ),
+			...( cart.items ?? [] ).map(
+				( item ) => `${ item.key }:${ item.quantity }`
+			),
 		].join( '|' ),
 	};
 }
@@ -211,6 +229,10 @@ export default function MollieExpressComponent( {
 	const ready = settled.status === 'ready' && ! blocked && ! failed;
 
 	async function submit( event ) {
+		// First, synchronously: without defer() Mollie does not wait for this handler and creates
+		// the payment straight away, so a later reject() would arrive after the shopper has paid.
+		event.defer();
+
 		const current = latest.current;
 		interacted.current = true;
 		setNotice( '' );
@@ -218,8 +240,9 @@ export default function MollieExpressComponent( {
 
 		const answer = await postToStore( current.data, ORDER_ROUTE );
 		if ( answer.ok ) {
-			const { ok, ...details } = answer.data; // eslint-disable-line no-unused-vars
-			event.resolve( details );
+			// Nothing is passed on purpose: details handed to resolve() override what the wallet
+			// collected, and the wallet's contact and billing address are the ones that count
+			event.resolve();
 			return;
 		}
 
@@ -337,7 +360,7 @@ export default function MollieExpressComponent( {
 						cursor: 'not-allowed',
 					} }
 				>
-					{ data.messages.placeholder }
+					{ data.messages.waitingForShipping }
 				</button>
 			</div>
 		);

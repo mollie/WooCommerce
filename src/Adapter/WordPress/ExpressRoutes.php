@@ -136,24 +136,14 @@ class ExpressRoutes
     }
 
     /**
-     * Answers Mollie's submit handler: the details to pass to event.resolve(), or the message to pass
-     * to event.reject(). The order id and key never leave the server.
+     * Answers Mollie's submit handler: whether the order was started, or the message to pass to
+     * event.reject(). The order id and key never leave the server.
      */
     public function startOrder(WP_REST_Request $request): WP_REST_Response
     {
         $result = $this->startOrder->start();
         if ($result->isOk()) {
             $data = ['ok' => true];
-            $billing = $result->billing();
-            if (isset($billing['email'])) {
-                $data['email'] = $billing['email'];
-            }
-            if ($billing !== []) {
-                $data['billingAddress'] = $billing;
-            }
-            if ($result->shipping() !== []) {
-                $data['shippingAddress'] = $result->shipping();
-            }
         } else {
             $data = [
                 'ok' => false,

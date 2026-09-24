@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\Common;
 
+use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
@@ -62,6 +63,13 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
     private int $userBackup = 0;
 
     /**
+     * Every hook of the site as setUp() found it, restored in tearDown().
+     *
+     * @var array<string, \WP_Hook>
+     */
+    private array $hookBackup = [];
+
+    /**
      * Every order that existed when the test started; any other is the test's own and is deleted.
      *
      * @var array<int, true>
@@ -72,6 +80,11 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
     {
         parent::setUp();
 
+        $this->hookBackup = [];
+        foreach ($GLOBALS['wp_filter'] as $name => $hook) {
+            $this->hookBackup[$name] = clone $hook;
+        }
+
         $this->fakeMollie = new FakeMollieApi(new InMemoryStore());
         $this->transport = new FakeMollieTransport($this->fakeMollie);
         $this->transport->install();
@@ -79,6 +92,17 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
         $this->userBackup = get_current_user_id();
         $this->ordersBefore = array_fill_keys($this->everyOrderId(), true);
 
+        foreach ([
+            'mollie_webhook_secret' => CanaryData::WEBHOOK_SECRET,
+            self::PLUGIN_ID . '_live_api_key' => CanaryData::LIVE_API_KEY,
+            self::PLUGIN_ID . '_test_api_key' => CanaryData::TEST_API_KEY,
+        ] as $option => $canary) {
+            if (get_option($option) === $canary) {
+                delete_option($option);
+            }
+        }
+
+        $this->setOptionForTest(OrphanedExpressPayments::OPTION, []);
         $this->setOptionForTest(self::PLUGIN_ID . '_live_api_key', CanaryData::LIVE_API_KEY);
         $this->setOptionForTest(self::PLUGIN_ID . '_test_api_key', CanaryData::TEST_API_KEY);
         $this->setOptionForTest('mollie_webhook_secret', CanaryData::WEBHOOK_SECRET);
@@ -105,6 +129,12 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
             }
             $GLOBALS['wp_rest_server'] = null;
             $this->restApiInitCleared = false;
+        }
+
+        if ($this->hookBackup !== []) {
+            $GLOBALS['wp_filter'] = $this->hookBackup;
+            $this->hookBackup = [];
+            $GLOBALS['wp_rest_server'] = null;
         }
 
         parent::tearDown();

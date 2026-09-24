@@ -12,8 +12,8 @@ use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
 /**
  * What a matched express order is given the first time its payment is seen.
  *
- * Addresses, per type: what the order holds wins; the wallet's fill only a type the order holds
- * nothing for; and an order that needs shipping keeps its shipping address, which priced it.
+ * Addresses, per type: the wallet's billing address and contact details win over whatever the order
+ * holds, because the sheet is where the shopper chose them.
  * Applying the result twice changes nothing.
  */
 final class FirstSightEffects
@@ -44,9 +44,8 @@ final class FirstSightEffects
             ? Effect::setPaymentMethod($gatewayId)
             : Effect::addNote(self::NOTE_UNKNOWN_WALLET, ['method' => $method]);
 
-        if (!$order->holdsBilling()) {
-            array_push($effects, ...self::address('billing', $payment->billingAddress()));
-        }
+        // Upstream wins: the wallet's billing address and email replace what the order was given.
+        array_push($effects, ...self::address('billing', $payment->billingAddress()));
         if (!$order->needsShipping() && !$order->holdsShipping()) {
             array_push($effects, ...self::address('shipping', $payment->shippingAddress()));
         }

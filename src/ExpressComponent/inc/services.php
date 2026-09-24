@@ -25,6 +25,7 @@ use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Workflow\ExpireAbandonedExpressOrders;
+use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
 use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
 use Mollie\WooCommerce\Workflow\StartExpressOrder;
 use Mollie\WooCommerce\Workflow\StartExpressSession;
@@ -42,7 +43,11 @@ return static function (): array {
             $settings = $container->get('settings.settings_helper');
             assert($settings instanceof Settings);
 
-            return new SdkMollieApi($api, $settings);
+            return new SdkMollieApi(
+                $api,
+                $settings,
+                (int) $container->get('express.config')['sessionLifetimeSeconds']
+            );
         },
         Clock::class => static function (): Clock {
             return new SystemClock();
@@ -160,12 +165,16 @@ return static function (): array {
             );
         },
         // The webhook's express stage. Its callers, RestApi and MollieOrderService, get it through their factories.
+        OrphanedExpressPayments::class => static function (): OrphanedExpressPayments {
+            return new OrphanedExpressPayments();
+        },
         ResolveExpressPayment::class => static function (ContainerInterface $container): ResolveExpressPayment {
             return new ResolveExpressPayment(
                 $container->get(MollieApi::class),
                 $container->get(ExpressOrderFactsBuilder::class),
                 $container->get(EffectInterpreter::class),
                 $container->get(EventLog::class),
+                $container->get(OrphanedExpressPayments::class),
                 $container->get('express.config')['wallets'],
                 static function (): array {
                     return array_keys(WC()->payment_gateways()->payment_gateways());

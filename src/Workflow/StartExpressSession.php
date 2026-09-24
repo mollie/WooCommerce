@@ -92,7 +92,7 @@ final class StartExpressSession
             $this->urls->returnUrl($ref),
             $this->urls->webhookUrl(),
             ['express_ref' => $ref],
-            SessionPayload::requiredCustomerDetails($this->cartFacts->holdsEmail(), $this->cartFacts->holdsBillingAddress())
+            SessionPayload::requiredCustomerDetails()
         );
         $key = IdempotencyKey::for(self::INTENT, [
             'customer' => $customer,

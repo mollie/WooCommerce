@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Types;
 
 /**
@@ -12,14 +11,9 @@ final class CartFacts
     /**
      * @param list<CartLine> $lines
      */
-    public function __construct(
-        private array $lines,
-        private bool $needsShipping,
-        private bool $shippingDestinationComplete,
-        private bool $shippingRateChosen
-    ) {
+    public function __construct(private array $lines, private bool $needsShipping, private bool $shippingDestinationComplete, private bool $shippingRateChosen)
+    {
     }
-
     /**
      * @return list<CartLine>
      */
@@ -27,17 +21,14 @@ final class CartFacts
     {
         return $this->lines;
     }
-
     public function needsShipping(): bool
     {
         return $this->needsShipping;
     }
-
     public function shippingDestinationComplete(): bool
     {
         return $this->shippingDestinationComplete;
     }
-
     public function shippingRateChosen(): bool
     {
         return $this->shippingRateChosen;

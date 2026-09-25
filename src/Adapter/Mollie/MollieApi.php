@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Adapter\Mollie;
 
 use Mollie\WooCommerce\Core\Types\ExpressSession;
 use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
-
 /**
  * Everything new code may ask of Mollie. One of the two interfaces the blueprint allows, because
  * it is one of the two things worth faking. Implementations return plain immutable snapshots.
@@ -20,8 +18,6 @@ interface MollieApi
      * @param string $idempotencyKey Built with Core\Security\IdempotencyKey::for().
      */
     public function createSession(array $payload, string $idempotencyKey): ExpressSession;
-
     public function session(string $sessionId): ExpressSession;
-
     public function payment(string $paymentId): PaymentSnapshot;
 }

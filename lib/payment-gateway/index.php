@@ -1,12 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Mollie;
+
 /**
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version:     {VERSION}
- * SHA:         ${GIT_SHA}
+ * Version: 8.1.10+piwoo-944-spec2-settings-mutual-exclusion.4ac22b3
+ * SHA: 4ac22b369479fbb36760285a4463b73bf7aad994
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3
@@ -17,15 +19,8 @@ declare(strict_types=1);
  * Text Domain: ddev-wordpress-plugin-example
  * Domain Path: /languages
  */
-
-add_action('rest_api_init', function () {
-    register_rest_route('inpsyde', 'example', [
-        'method' => 'GET',
-        'callback' => function () {
-            return ['hello' => __('world', 'ddev-wordpress-plugin-example')];
-        },
-        'permission_callback' => '__return_true',
-    ]);
+\add_action('rest_api_init', function () {
+    \register_rest_route('inpsyde', 'example', ['method' => 'GET', 'callback' => function () {
+        return ['hello' => \__('world', 'ddev-wordpress-plugin-example')];
+    }, 'permission_callback' => '__return_true']);
 });
-
-

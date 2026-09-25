@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Notice;
 
-class FrontendNotice implements NoticeInterface
+class FrontendNotice implements \Mollie\WooCommerce\Notice\NoticeInterface
 {
     public function addNotice($level, $message): void
     {

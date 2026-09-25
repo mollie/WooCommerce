@@ -5,9 +5,8 @@ namespace Mollie\WooCommerce\Payment\Webhooks;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
-use Psr\Log\LoggerInterface;
+use Mollie\Psr\Log\LoggerInterface;
 use WP_REST_Request;
-
 class RestApi
 {
     public const ROUTE_NAMESPACE = 'mollie/v1';
@@ -15,8 +14,7 @@ class RestApi
     private MollieOrderService $mollieOrderService;
     private LoggerInterface $logger;
     private WebhookTestService $webhookTestService;
-    private WebhookSecret $webhookSecret;
-
+    private \Mollie\WooCommerce\Payment\Webhooks\WebhookSecret $webhookSecret;
     /**
      * Constructor method for initializing the class with necessary dependencies.
      *
@@ -25,18 +23,13 @@ class RestApi
      *
      * @return void
      */
-    public function __construct(
-        MollieOrderService $mollieOrderService,
-        LoggerInterface $logger,
-        WebhookTestService $webhookTestService,
-        WebhookSecret $webhookSecret
-    ) {
+    public function __construct(MollieOrderService $mollieOrderService, LoggerInterface $logger, WebhookTestService $webhookTestService, \Mollie\WooCommerce\Payment\Webhooks\WebhookSecret $webhookSecret)
+    {
         $this->mollieOrderService = $mollieOrderService;
         $this->logger = $logger;
         $this->webhookTestService = $webhookTestService;
         $this->webhookSecret = $webhookSecret;
     }
-
     /**
      * Registers REST API routes for the application.
      *
@@ -47,20 +40,13 @@ class RestApi
      */
     public function registerRoutes()
     {
-        register_rest_route(self::ROUTE_NAMESPACE, self::WEBHOOK_ROUTE, [
-            [
-                'methods' => 'POST',
-                'callback' => [$this, 'callback'],
-                'permission_callback' => function (WP_REST_Request $request) {
-                    if ($this->isWebhookRequestAuthenticated($request)) {
-                        return true;
-                    }
-                    return new \WP_Error('rest_forbidden', 'Invalid webhook secret.', ['status' => 401]);
-                },
-            ],
-        ]);
+        register_rest_route(self::ROUTE_NAMESPACE, self::WEBHOOK_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'callback'], 'permission_callback' => function (WP_REST_Request $request) {
+            if ($this->isWebhookRequestAuthenticated($request)) {
+                return \true;
+            }
+            return new \WP_Error('rest_forbidden', 'Invalid webhook secret.', ['status' => 401]);
+        }]]);
     }
-
     /**
      * Authenticate an incoming REST webhook request.
      *
@@ -78,45 +64,31 @@ class RestApi
     private function isWebhookRequestAuthenticated(WP_REST_Request $request): bool
     {
         if ($this->webhookSecret->check($request->get_param('mollie_webhook_secret'))) {
-            return true;
+            return \true;
         }
-
         $transactionId = $request->get_param('id');
         if (!is_string($transactionId) || $transactionId === '') {
-            return false;
+            return \false;
         }
         // Only spend a DB lookup on plausibly real Mollie ids.
         if (strpos($transactionId, 'tr_') !== 0 && strpos($transactionId, 'ord_') !== 0) {
-            return false;
+            return \false;
         }
-
         return $this->orderExistsForTransactionId($transactionId);
     }
-
     /**
      * Whether an order already exists for the given Mollie transaction id, using the same
      * lookup order as callback(): transaction_id first, then the Mollie order/payment meta.
      */
     private function orderExistsForTransactionId(string $transactionId): bool
     {
-        $orders = wc_get_orders([
-            'transaction_id' => $transactionId,
-            'limit' => 1,
-        ]);
+        $orders = wc_get_orders(['transaction_id' => $transactionId, 'limit' => 1]);
         if ($orders) {
-            return true;
+            return \true;
         }
-
-        $orders = wc_get_orders([
-            'limit' => 1,
-            'meta_key' => substr($transactionId, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
-            'meta_compare' => '=',
-            'meta_value' => $transactionId,
-        ]);
-
+        $orders = wc_get_orders(['limit' => 1, 'meta_key' => substr($transactionId, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id', 'meta_compare' => '=', 'meta_value' => $transactionId]);
         return (bool) $orders;
     }
-
     /**
      * Handles the callback request from Mollie and processes the payment.
      *
@@ -132,36 +104,24 @@ class RestApi
         if ($testId) {
             return $this->handleWebhookTest($request, $testId);
         }
-
         // Answer Mollie Test request.
         if ($request->get_param('testByMollie') === '') {
             $this->logger->debug(__METHOD__ . ': REST Webhook tested by Mollie.');
             return new \WP_REST_Response(null, 200);
         }
-
         //check that id in post is set with transaction_id
         $transactionID = $request->get_param('id');
-        if (! $transactionID) {
+        if (!$transactionID) {
             $this->logger->debug(__METHOD__ . ': No transaction ID provided.');
             return new \WP_REST_Response(null, 404);
         }
         $this->logger->debug(__METHOD__ . ': Received WP-REST-API webhook with transaction ID: ' . $transactionID);
-
-        $orders = wc_get_orders([
-            'transaction_id' => $transactionID,
-            'limit' => 2,
-        ]);
-
-        if (! $orders) {
+        $orders = wc_get_orders(['transaction_id' => $transactionID, 'limit' => 2]);
+        if (!$orders) {
             $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID . ' fall back to search in meta data');
             //Fallback search order in order mollie oder meta
-            $orders = wc_get_orders([
-                'limit' => 2,
-                'meta_key' => substr($transactionID, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
-                'meta_compare' => '=',
-                'meta_value' => $transactionID,
-            ]);
-            if (! $orders) {
+            $orders = wc_get_orders(['limit' => 2, 'meta_key' => substr($transactionID, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id', 'meta_compare' => '=', 'meta_value' => $transactionID]);
+            if (!$orders) {
                 $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
                 try {
                     $redirectUrl = $this->mollieOrderService->getRedirectUrlFromPaymentObject($transactionID);
@@ -175,17 +135,13 @@ class RestApi
                 }
             }
         }
-
         if (count($orders) > 1) {
             $this->logger->debug(__METHOD__ . ': More than one order found for transaction ID: ' . $transactionID);
             return new \WP_REST_Response(null, 200);
         }
-
         $this->mollieOrderService->doPaymentForOrder($orders[0]);
-
         return new \WP_REST_Response(null, 200);
     }
-
     /**
      * Handle webhook test request
      *
@@ -196,29 +152,23 @@ class RestApi
     private function handleWebhookTest(WP_REST_Request $request, string $testId): \WP_REST_Response
     {
         $this->logger->debug(__METHOD__ . ": Received webhook test request for test ID: {$testId}");
-
         // Get transaction ID from request
         $transactionId = $request->get_param('id');
-
         if (!$transactionId) {
             $this->logger->debug(__METHOD__ . ': Webhook test received but no transaction ID provided.');
             // Still mark as received - the test payment was created successfully
             $this->webhookTestService->markWebhookReceived($testId);
             return new \WP_REST_Response(null, 200);
         }
-
         // Log the payment ID
         $this->logger->debug(__METHOD__ . ": Webhook test received with payment ID: {$transactionId}");
-
         // Mark webhook as received
         $marked = $this->webhookTestService->markWebhookReceived($testId);
-
         if ($marked) {
             $this->logger->debug(__METHOD__ . ": Successfully marked webhook test {$testId} as received.");
         } else {
             $this->logger->debug(__METHOD__ . ": Failed to mark webhook test {$testId} - test may have expired.");
         }
-
         // Return 200 OK to acknowledge receipt
         return new \WP_REST_Response(null, 200);
     }

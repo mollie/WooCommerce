@@ -6,7 +6,6 @@ use Mollie\WooCommerce\Payment\Request\Middleware\MiddlewareHandler;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
-
 /**
  * Class OrderRequestStrategy
  *
@@ -14,23 +13,20 @@ use WC_Order;
  *
  * @package Mollie\WooCommerce\Payment\Request\Strategies
  */
-class OrderRequestStrategy implements RequestStrategyInterface
+class OrderRequestStrategy implements \Mollie\WooCommerce\Payment\Request\Strategies\RequestStrategyInterface
 {
     /**
      * @var Data
      */
     private Data $dataHelper;
-
     /**
      * @var Settings
      */
     private Settings $settingsHelper;
-
     /**
      * @var MiddlewareHandler
      */
     private MiddlewareHandler $middlewareHandler;
-
     /**
      * OrderRequestStrategy constructor.
      *
@@ -44,7 +40,6 @@ class OrderRequestStrategy implements RequestStrategyInterface
         $this->settingsHelper = $settingsHelper;
         $this->middlewareHandler = $middlewareHandler;
     }
-
     /**
      * Create a payment request for the given order.
      *
@@ -55,38 +50,13 @@ class OrderRequestStrategy implements RequestStrategyInterface
     public function createRequest(WC_Order $order, $customerId): array
     {
         $settingsHelper = $this->settingsHelper;
-
         $gateway = wc_get_payment_gateway_by_order($order);
-
-        if (! $gateway || ! ( mollieWooCommerceIsMollieGateway($gateway->id) )) {
-            return  [ 'result' => 'failure' ];
+        if (!$gateway || !mollieWooCommerceIsMollieGateway($gateway->id)) {
+            return ['result' => 'failure'];
         }
-
         $methodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
         $paymentLocale = $settingsHelper->getPaymentLocale();
-        $requestData = [
-            'amount' => [
-                'currency' => $this->dataHelper->getOrderCurrency($order),
-                'value' => $this->dataHelper->formatCurrencyValue(
-                    $order->get_total(),
-                    $this->dataHelper->getOrderCurrency($order)
-                ),
-            ],
-            'method' => $methodId,
-            'locale' => $paymentLocale,
-            'metadata' => apply_filters(
-                $this->dataHelper->getPluginId() . '_payment_object_metadata',
-                [
-                    'order_id' => $order->get_id(),
-                    'order_number' => $order->get_order_number(),
-                ]
-            ),
-            'orderNumber' => $order->get_order_number(),
-            'payment' => [
-                'customerId' => $customerId,
-            ],
-        ];
-
+        $requestData = ['amount' => ['currency' => $this->dataHelper->getOrderCurrency($order), 'value' => $this->dataHelper->formatCurrencyValue($order->get_total(), $this->dataHelper->getOrderCurrency($order))], 'method' => $methodId, 'locale' => $paymentLocale, 'metadata' => apply_filters($this->dataHelper->getPluginId() . '_payment_object_metadata', ['order_id' => $order->get_id(), 'order_number' => $order->get_order_number()]), 'orderNumber' => $order->get_order_number(), 'payment' => ['customerId' => $customerId]];
         $context = 'order';
         return $this->middlewareHandler->handle($requestData, $order, $context);
     }

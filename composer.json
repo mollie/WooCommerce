@@ -56,7 +56,10 @@
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
       "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional",
       "Mollie\\WooCommerceTests\\Integration\\": "tests/Integration"
-    }
+    },
+    "exclude-from-classmap": [
+      "tests/php/Unit/Architecture/fixtures/"
+    ]
   },
   "scripts": {
     "check-coding-standards": "vendor/bin/phpcs --parallel=8 -s",
@@ -64,7 +67,7 @@
     "fix-coding-standards": "vendor/bin/phpcbf --standard=phpcs.transition.xml.dist",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",
-    "phpstan": "vendor/bin/phpstan analyse",
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G",
     "phpstan:raw": "vendor/bin/phpstan analyse --no-progress --error-format=raw",
     "check-psalm": "vendor/bin/psalm",
     "check-psalm:no-cache": "vendor/bin/psalm --no-cache"

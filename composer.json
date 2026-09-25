@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "php": "^7.4 | ^8.0",
+    "php": "^8.0",
     "ext-intl": "*",
     "ext-json": "*",
     "mollie/mollie-api-php": "^v2.40",
@@ -32,7 +32,7 @@
     "brain/monkey": "^2.3",
     "ptrofimov/xpmock": "^1",
     "johnpbloch/wordpress-core": "^5.0",
-    "fzaninotto/faker": "^1.9@dev",
+    "fakerphp/faker": "^1.23",
     "inpsyde/php-coding-standards": "^2.0.2",
     "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",
@@ -56,7 +56,10 @@
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
       "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional",
       "Mollie\\WooCommerceTests\\Integration\\": "tests/Integration"
-    }
+    },
+    "exclude-from-classmap": [
+      "tests/php/Unit/Architecture/fixtures/"
+    ]
   },
   "scripts": {
     "check-coding-standards": "vendor/bin/phpcs --parallel=8 -s",
@@ -64,7 +67,7 @@
     "fix-coding-standards": "vendor/bin/phpcbf --standard=phpcs.transition.xml.dist",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",
-    "phpstan": "vendor/bin/phpstan analyse",
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G",
     "phpstan:raw": "vendor/bin/phpstan analyse --no-progress --error-format=raw",
     "check-psalm": "vendor/bin/psalm",
     "check-psalm:no-cache": "vendor/bin/psalm --no-cache"
@@ -98,7 +101,7 @@
   },
   "config": {
     "platform": {
-      "php": "7.4"
+      "php": "8.0"
     },
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,

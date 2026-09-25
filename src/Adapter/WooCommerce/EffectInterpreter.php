@@ -95,7 +95,7 @@ final class EffectInterpreter
             Effect::SET_ADDRESS => $this->setAddress($order, $data['addressType'], $data['fields']),
             Effect::ADD_NOTE => \false,
             // Notes are written after the save, see renderedNotes().
-            default => throw new InvalidArgumentException(sprintf('Unknown effect type "%s".', $effect->type())),
+            default => throw new InvalidArgumentException(esc_html(sprintf('Unknown effect type "%s".', $effect->type()))),
         };
     }
     private function setMeta(WC_Order $order, string $key, string $value): bool
@@ -187,7 +187,7 @@ final class EffectInterpreter
             }
             $data = $effect->data();
             if (!isset($messages[$data['messageKey']])) {
-                throw new InvalidArgumentException(sprintf('No message for note key "%s".', $data['messageKey']));
+                throw new InvalidArgumentException(esc_html(sprintf('No message for note key "%s".', $data['messageKey'])));
             }
             $replacements = [];
             foreach ($data['params'] as $name => $value) {

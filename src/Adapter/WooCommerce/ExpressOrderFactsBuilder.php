@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Adapter\WooCommerce;
 
+use InvalidArgumentException;
 use Mollie\WooCommerce\Core\Express\StartOrderDecision;
 use Mollie\WooCommerce\Core\Types\ExpressOrderFacts;
+use Mollie\WooCommerce\Core\Types\Money;
+use Mollie\WooCommerce\Payment\MolliePaymentAttempt;
 use WC_Customer;
 use WC_Order;
 
@@ -85,6 +88,31 @@ class ExpressOrderFactsBuilder
     }
 
     /**
+     * The order that carries a payment's express_ref, as the webhook's match needs it. An address
+     * type is held when any of its fields but the country is filled; WooCommerce may default the
+     * country on its own.
+     */
+    public function forResolution(WC_Order $order): ExpressOrderFacts
+    {
+        $tracked = MolliePaymentAttempt::paymentId($order);
+        if ($tracked === '') {
+            $tracked = (string) $order->get_transaction_id();
+        }
+
+        return new ExpressOrderFacts(
+            expressRef: (string) $order->get_meta('_mollie_express_ref'),
+            existingOrderId: $order->get_id(),
+            createdVia: $order->get_created_via(),
+            total: $this->total($order),
+            trackedPaymentId: $tracked !== '' ? $tracked : null,
+            needsPayment: $order->needs_payment(),
+            holdsBilling: $this->holds($order, 'billing', self::BILLING_FIELDS),
+            holdsShipping: $this->holds($order, 'shipping', self::SHIPPING_FIELDS),
+            needsShipping: $order->needs_shipping_address()
+        );
+    }
+
+    /**
      * What the store holds for this shopper: the checkout form as WooCommerce keeps it on the
      * customer session for a guest, the account (overlaid by the form) for a logged-in shopper.
      *
@@ -129,6 +157,40 @@ class ExpressOrderFactsBuilder
         return array_values(array_filter($orders, static function ($order): bool {
             return $order instanceof WC_Order && $order->get_created_via() === StartOrderDecision::CREATED_VIA;
         }));
+    }
+
+    /**
+     * The order total with the precision of its currency, as Mollie was asked for it.
+     */
+    private function total(WC_Order $order): ?Money
+    {
+        $currency = $order->get_currency();
+        $amount = (float) $order->get_total('edit');
+        try {
+            return Money::fromDecimal(number_format($amount, 2, '.', ''), $currency);
+        } catch (InvalidArgumentException $exception) {
+            try {
+                // A currency without decimals.
+                return Money::fromDecimal(number_format($amount, 0, '.', ''), $currency);
+            } catch (InvalidArgumentException $unusable) {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * @param list<string> $names
+     */
+    private function holds(WC_Order $order, string $type, array $names): bool
+    {
+        foreach ($names as $name) {
+            $getter = [$order, "get_{$type}_{$name}"];
+            if ($name !== 'country' && is_callable($getter) && trim((string) $getter()) !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

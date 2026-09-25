@@ -43,4 +43,29 @@ final class AddressMapping
 
         return $mollie;
     }
+
+    /**
+     * The reverse, for what a wallet collected: Mollie's region is WooCommerce's state, as given.
+     * A field Mollie did not supply is left out, never set to null or '', so writing the result
+     * with WC_Order::set_address() leaves the order's own value in place.
+     *
+     * @param array<string, mixed> $mollieFields Mollie field names, as on the payment.
+     * @return array<string, string> WooCommerce field names without the billing_/shipping_ prefix.
+     */
+    public static function toWooCommerce(array $mollieFields): array
+    {
+        $wooCommerce = [];
+        foreach (self::TO_MOLLIE as $wooField => $mollieField) {
+            $value = $mollieFields[$mollieField] ?? null;
+            if (!is_scalar($value)) {
+                continue;
+            }
+            $value = trim((string) $value);
+            if ($value !== '') {
+                $wooCommerce[$wooField] = $value;
+            }
+        }
+
+        return $wooCommerce;
+    }
 }

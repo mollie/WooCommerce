@@ -3,8 +3,11 @@
 namespace Mollie\WooCommerce\Payment\Webhooks;
 
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\WooCommerce\Adapter\WordPress\EventLog;
+use Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
+use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
 use Psr\Log\LoggerInterface;
 use WP_REST_Request;
 
@@ -16,12 +19,16 @@ class RestApi
     private LoggerInterface $logger;
     private WebhookTestService $webhookTestService;
     private WebhookSecret $webhookSecret;
+    private EventLog $log;
+    private ResolveExpressPayment $resolveExpressPayment;
 
     /**
      * Constructor method for initializing the class with necessary dependencies.
      *
      * @param MollieOrderService $mollieOrderService Service to handle orders through Mollie.
      * @param LoggerInterface $logger Logger interface for logging purposes.
+     * @param EventLog $log Named, allowlisted events for the webhook callback.
+     * @param ResolveExpressPayment $resolveExpressPayment The lookup stage for payments the plugin never created.
      *
      * @return void
      */
@@ -29,12 +36,16 @@ class RestApi
         MollieOrderService $mollieOrderService,
         LoggerInterface $logger,
         WebhookTestService $webhookTestService,
-        WebhookSecret $webhookSecret
+        WebhookSecret $webhookSecret,
+        EventLog $log,
+        ResolveExpressPayment $resolveExpressPayment
     ) {
         $this->mollieOrderService = $mollieOrderService;
         $this->logger = $logger;
         $this->webhookTestService = $webhookTestService;
         $this->webhookSecret = $webhookSecret;
+        $this->log = $log;
+        $this->resolveExpressPayment = $resolveExpressPayment;
     }
 
     /**
@@ -120,11 +131,16 @@ class RestApi
     /**
      * Handles the callback request from Mollie and processes the payment.
      *
+     * The order is looked up by transaction id, then by the Mollie order/payment meta, then — for a
+     * payment the plugin never created — by the express_ref in the payment's metadata, and last by
+     * the order id and key in the payment's redirectUrl.
+     *
      * @param WP_REST_Request $request The REST request object containing callback parameters.
      *
      * @return \WP_REST_Response A response object with the corresponding status code.
      * - 200: When the request is successfully handled, whether for testing, no results, or successful processing.
      * - 404: When the "id" parameter is not provided in the request.
+     * - 503: When the order's lock could not be taken; nothing was written and Mollie retries.
      */
     public function callback(WP_REST_Request $request)
     {
@@ -135,55 +151,78 @@ class RestApi
 
         // Answer Mollie Test request.
         if ($request->get_param('testByMollie') === '') {
-            $this->logger->debug(__METHOD__ . ': REST Webhook tested by Mollie.');
+            $this->log->info('webhook.probe');
             return new \WP_REST_Response(null, 200);
         }
 
         //check that id in post is set with transaction_id
         $transactionID = $request->get_param('id');
         if (! $transactionID) {
-            $this->logger->debug(__METHOD__ . ': No transaction ID provided.');
+            $this->log->info('webhook.refused', ['reason' => 'no_id']);
             return new \WP_REST_Response(null, 404);
         }
-        $this->logger->debug(__METHOD__ . ': Received WP-REST-API webhook with transaction ID: ' . $transactionID);
+        $this->log->info('webhook.received', ['mollie_id' => (string) $transactionID]);
 
-        $orders = wc_get_orders([
-            'transaction_id' => $transactionID,
-            'limit' => 2,
-        ]);
+        $orders = $this->findOrders((string) $transactionID);
 
         if (! $orders) {
-            $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID . ' fall back to search in meta data');
-            //Fallback search order in order mollie oder meta
-            $orders = wc_get_orders([
-                'limit' => 2,
-                'meta_key' => substr($transactionID, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
-                'meta_compare' => '=',
-                'meta_value' => $transactionID,
-            ]);
-            if (! $orders) {
-                $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
-                try {
-                    $redirectUrl = $this->mollieOrderService->getRedirectUrlFromPaymentObject($transactionID);
-                    $order_id = $this->mollieOrderService->getOrderIdFromRedirectUrl($redirectUrl);
-                    $key = $this->mollieOrderService->getKeyFromRedirectUrl($redirectUrl);
-                    $this->mollieOrderService->onWebhookActionFallback($order_id, $key, $transactionID);
-                    return new \WP_REST_Response(null, 200);
-                } catch (ApiException $exception) {
-                    $this->logger->debug($exception->getMessage());
-                    return new \WP_REST_Response(null, 500);
-                }
+            try {
+                $expressOrder = $this->resolveExpressPayment->resolve((string) $transactionID);
+            } catch (OrderLockTimeout $timeout) {
+                return new \WP_REST_Response(null, 503);
+            }
+            if ($expressOrder !== null) {
+                $orders = [$expressOrder];
+            }
+        }
+
+        if (! $orders) {
+            $this->log->info('webhook.fallback', ['mollie_id' => (string) $transactionID]);
+            try {
+                $redirectUrl = $this->mollieOrderService->getRedirectUrlFromPaymentObject($transactionID);
+                $order_id = $this->mollieOrderService->getOrderIdFromRedirectUrl($redirectUrl);
+                $key = $this->mollieOrderService->getKeyFromRedirectUrl($redirectUrl);
+                $this->mollieOrderService->onWebhookActionFallback($order_id, $key, $transactionID);
+                return new \WP_REST_Response(null, 200);
+            } catch (ApiException $exception) {
+                // The exception text carries Mollie's response body; it is never logged (S-09).
+                $this->log->warning('webhook.failed', ['mollie_id' => (string) $transactionID, 'kind' => 'outage']);
+                return new \WP_REST_Response(null, 500);
             }
         }
 
         if (count($orders) > 1) {
-            $this->logger->debug(__METHOD__ . ': More than one order found for transaction ID: ' . $transactionID);
+            $this->log->warning('webhook.ambiguous', ['mollie_id' => (string) $transactionID]);
             return new \WP_REST_Response(null, 200);
         }
 
         $this->mollieOrderService->doPaymentForOrder($orders[0]);
 
         return new \WP_REST_Response(null, 200);
+    }
+
+    /**
+     * The indexed lookups, in order: transaction_id, then the Mollie order or payment meta. At most
+     * two orders, so an ambiguous id can be told apart from a unique one.
+     *
+     * @return array<int, \WC_Order>
+     */
+    private function findOrders(string $transactionId): array
+    {
+        $orders = wc_get_orders([
+            'transaction_id' => $transactionId,
+            'limit' => 2,
+        ]);
+        if ($orders) {
+            return $orders;
+        }
+
+        return wc_get_orders([
+            'limit' => 2,
+            'meta_key' => substr($transactionId, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
+            'meta_compare' => '=',
+            'meta_value' => $transactionId,
+        ]);
     }
 
     /**

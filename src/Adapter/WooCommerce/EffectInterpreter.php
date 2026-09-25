@@ -231,6 +231,8 @@ final class EffectInterpreter
         return [
             'express.order.created' => __('Express checkout started', 'mollie-payments-for-woocommerce'),
             'express.order.abandoned' => __('Express checkout was started and not completed', 'mollie-payments-for-woocommerce'),
+            /* translators: {method} is the Mollie payment method id, e.g. creditcard. */
+            'express.payment.unknown_wallet' => __('Express checkout was paid with the Mollie method {method}, which has no payment method in this shop; the order keeps its payment method.', 'mollie-payments-for-woocommerce'),
         ];
     }
 

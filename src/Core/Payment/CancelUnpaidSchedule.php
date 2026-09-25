@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Payment;
 
 /**
@@ -21,7 +20,6 @@ final class CancelUnpaidSchedule
     {
         return $expressEnabled || self::expiryEnabled($gatewaySettings);
     }
-
     /**
      * @param array<int, mixed> $gatewaySettings
      */
@@ -32,10 +30,9 @@ final class CancelUnpaidSchedule
                 continue;
             }
             if (!empty($option['activate_expiry_days_setting']) && $option['activate_expiry_days_setting'] === 'yes') {
-                return true;
+                return \true;
             }
         }
-
-        return false;
+        return \false;
     }
 }

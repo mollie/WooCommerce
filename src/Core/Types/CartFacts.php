@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Types;
 
 /**
@@ -20,20 +19,9 @@ final class CartFacts
      * @param string $cartHash WooCommerce's hash of the cart contents.
      * @param string $destination The shipping destination the rates were calculated for.
      */
-    public function __construct(
-        private array $lines,
-        private bool $needsShipping,
-        private bool $shippingDestinationComplete,
-        private bool $shippingRateChosen,
-        private ?Money $total = null,
-        private array $fees = [],
-        private array $coupons = [],
-        private ?CartShipping $shipping = null,
-        private string $cartHash = '',
-        private string $destination = ''
-    ) {
+    public function __construct(private array $lines, private bool $needsShipping, private bool $shippingDestinationComplete, private bool $shippingRateChosen, private ?\Mollie\WooCommerce\Core\Types\Money $total = null, private array $fees = [], private array $coupons = [], private ?\Mollie\WooCommerce\Core\Types\CartShipping $shipping = null, private string $cartHash = '', private string $destination = '')
+    {
     }
-
     /**
      * @return list<CartLine>
      */
@@ -41,27 +29,22 @@ final class CartFacts
     {
         return $this->lines;
     }
-
     public function needsShipping(): bool
     {
         return $this->needsShipping;
     }
-
     public function shippingDestinationComplete(): bool
     {
         return $this->shippingDestinationComplete;
     }
-
     public function shippingRateChosen(): bool
     {
         return $this->shippingRateChosen;
     }
-
-    public function total(): ?Money
+    public function total(): ?\Mollie\WooCommerce\Core\Types\Money
     {
         return $this->total;
     }
-
     /**
      * @return list<CartFee>
      */
@@ -69,7 +52,6 @@ final class CartFacts
     {
         return $this->fees;
     }
-
     /**
      * @return list<CartCoupon>
      */
@@ -77,17 +59,14 @@ final class CartFacts
     {
         return $this->coupons;
     }
-
-    public function shipping(): ?CartShipping
+    public function shipping(): ?\Mollie\WooCommerce\Core\Types\CartShipping
     {
         return $this->shipping;
     }
-
     public function cartHash(): string
     {
         return $this->cartHash;
     }
-
     public function destination(): string
     {
         return $this->destination;

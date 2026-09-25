@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Types;
 
 /**
@@ -13,14 +12,9 @@ final class CartShipping
     /**
      * @param list<string> $rateIds
      */
-    public function __construct(
-        private array $rateIds,
-        private string $label,
-        private Money $cost,
-        private string $vatRate
-    ) {
+    public function __construct(private array $rateIds, private string $label, private \Mollie\WooCommerce\Core\Types\Money $cost, private string $vatRate)
+    {
     }
-
     /**
      * @return list<string>
      */
@@ -28,17 +22,14 @@ final class CartShipping
     {
         return $this->rateIds;
     }
-
     public function label(): string
     {
         return $this->label;
     }
-
-    public function cost(): Money
+    public function cost(): \Mollie\WooCommerce\Core\Types\Money
     {
         return $this->cost;
     }
-
     /**
      * Two decimals, as Mollie writes it: '21.00'.
      */

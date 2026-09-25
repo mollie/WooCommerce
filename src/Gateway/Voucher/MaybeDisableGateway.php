@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Gateway\Voucher;
 
 use Mollie\WooCommerce\PaymentMethods\Voucher;
-
 class MaybeDisableGateway
 {
     /**
@@ -22,10 +20,8 @@ class MaybeDisableGateway
         if (!$this->haveCartProductsCategories()) {
             unset($gateways['mollie_wc_gateway_voucher']);
         }
-
         return $gateways;
     }
-
     /**
      * Compares the products in the cart with the categories associated with
      * every product in the cart. So it returns 0 if no products have category
@@ -38,14 +34,13 @@ class MaybeDisableGateway
     {
         $voucherSettings = Voucher::voucherDefaultCategories();
         if ($voucherSettings) {
-            return true;
+            return \true;
         }
-
         $cart = WC()->cart;
         // phpstan:ignore [wc-stub] WC()->cart is WC_Cart|null at runtime; WooCommerce stubs declare it non-nullable
         // @phpstan-ignore-next-line
         if (!$cart) {
-            return false;
+            return \false;
         }
         $products = $cart->get_cart_contents();
         foreach ($products as $product) {
@@ -54,10 +49,9 @@ class MaybeDisableGateway
             }
             $categories = Voucher::getCategoriesForProduct($product['data']);
             if ($categories) {
-                return true;
+                return \true;
             }
         }
-
-        return false;
+        return \false;
     }
 }

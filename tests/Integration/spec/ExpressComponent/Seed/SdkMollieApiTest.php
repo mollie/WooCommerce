@@ -6,6 +6,7 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent\Seed;
 
 use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
 use Mollie\WooCommerce\Core\Security\IdempotencyKey;
+use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
 
@@ -121,9 +122,9 @@ class SdkMollieApiTest extends ExpressFlowTestCase
 
         $session = $api->createSession($this->sessionPayload(), IdempotencyKey::for('express.session.v1', ['attempt' => 1]));
 
-        $raw = $session->raw();
-        $this->assertNotNull($raw);
-        $this->assertObjectNotHasAttribute('expiresAt', $raw, 'The fake must answer like the real API.');
+        $answer = $this->fakeMollie()->handle('GET', 'sessions/' . $session->id(), ['Authorization' => 'Bearer ' . CanaryData::LIVE_API_KEY], null);
+        $this->assertSame(200, $answer['status']);
+        $this->assertArrayNotHasKey('expiresAt', (array) $answer['body'], 'The fake must answer like the real API.');
         $this->assertSame(
             gmdate('c', 1790000000 + self::SESSION_LIFETIME_SECONDS),
             $session->expiresAt(),

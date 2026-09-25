@@ -17,26 +17,16 @@ use UnexpectedValueException;
 
 /**
  * The single reader of the Mollie API key and the single place a mutating Mollie call is made
- * (blueprint chokepoint 2, ADR-012 and ADR-013).
  *
- * The key is resolved here and never handed on. Every mutating call sets its idempotency key on
- * the client first, and is sent raw because the typed sessions endpoint of SDK v2.79 drops
- * clientAccessToken. A failed session create surfaces as MollieCallFailed, classified, without the
- * SDK's text, which contains Mollie's response body.
+ * The key is resolved here and never handed on.
  */
 final class SdkMollieApi implements MollieApi
 {
-    private Api $api;
-
-    private Settings $settings;
-
-    private int $sessionLifetimeSeconds;
-
-    public function __construct(Api $api, Settings $settings, int $sessionLifetimeSeconds)
-    {
-        $this->api = $api;
-        $this->settings = $settings;
-        $this->sessionLifetimeSeconds = $sessionLifetimeSeconds;
+    public function __construct(
+        private Api $api,
+        private Settings $settings,
+        private int $sessionLifetimeSeconds
+    ) {
     }
 
     public function createSession(array $payload, string $idempotencyKey): ExpressSession
@@ -84,7 +74,6 @@ final class SdkMollieApi implements MollieApi
             (string) $payment->status,
             $method !== '' ? $method : null,
             Money::fromDecimal((string) $payment->amount->value, (string) $payment->amount->currency),
-            $payment,
             mode: (string) ($payment->mode ?? 'live'),
             expressRef: $this->expressRef($payment->metadata ?? null),
             billingAddress: $this->address($payment->billingAddress ?? null),
@@ -134,8 +123,7 @@ final class SdkMollieApi implements MollieApi
             (string) $response->id,
             (string) $response->status,
             (string) ($response->clientAccessToken ?? ''),
-            $this->expiresAt($response),
-            $response
+            $this->expiresAt($response)
         );
     }
 

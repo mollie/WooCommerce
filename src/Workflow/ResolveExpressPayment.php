@@ -29,27 +29,6 @@ use WC_Order;
 final class ResolveExpressPayment
 {
     /**
-     * An express payment Mollie captured that no order represents.
-     */
-    private function reportOrphan(PaymentSnapshot $payment, ?WC_Order $order, string $reason): void
-    {
-        $ref = (string) $payment->expressRef();
-        if ($order instanceof WC_Order || $ref === '' || !in_array($payment->status(), ['paid', 'authorized'], true)) {
-            return;
-        }
-
-        $amount = $payment->amount();
-        $this->log->error('express.payment.orphaned', [
-            'mollie_id' => $payment->id(),
-            'reason' => $reason,
-            'status' => $payment->status(),
-            'amount' => $amount->toDecimal(),
-            'currency' => $amount->currency(),
-        ]);
-        $this->orphaned->remember($payment->id(), $reason, $amount->toDecimal(), $amount->currency());
-    }
-
-    /**
      * @param array<string, array{gatewayId: string, mollieMethod: string}> $wallets The wallets table of config/express.php.
      * @param callable(): array<int, string> $registeredGatewayIds
      */
@@ -86,7 +65,7 @@ final class ResolveExpressPayment
         }
 
         $order = $this->orderFacts->orderByRef((string) $payment->expressRef());
-        $facts = $order instanceof WC_Order ? $this->orderFacts->forResolution($order) : null;
+        $facts = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
 
         $decision = ExpressOrderMatch::decide($payment, $facts);
         if ($decision instanceof Refuse || $order === null || $facts === null) {
@@ -111,5 +90,26 @@ final class ResolveExpressPayment
         ]);
 
         return $order;
+    }
+
+    /**
+     * An express payment Mollie captured that no order represents.
+     */
+    private function reportOrphan(PaymentSnapshot $payment, ?WC_Order $order, string $reason): void
+    {
+        $ref = (string) $payment->expressRef();
+        if ($order instanceof WC_Order || $ref === '' || !in_array($payment->status(), ['paid', 'authorized'], true)) {
+            return;
+        }
+
+        $amount = $payment->amount();
+        $this->log->error('express.payment.orphaned', [
+            'mollie_id' => $payment->id(),
+            'reason' => $reason,
+            'status' => $payment->status(),
+            'amount' => $amount->toDecimal(),
+            'currency' => $amount->currency(),
+        ]);
+        $this->orphaned->remember($payment->id(), $reason, $amount->toDecimal(), $amount->currency());
     }
 }

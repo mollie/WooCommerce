@@ -8,21 +8,21 @@ use wpdb;
 
 /**
  * A short lock per order (or per express reference), so two requests cannot decide on the same
- * stale facts (blueprint ADR-007).
- *
- * MySQL GET_LOCK() is used provisionally (open question 1): it needs no schema, behaves the same on
- * HPOS and posts, and is released when the connection dies. It is server-wide, so the name carries
- * the database and table prefix. Everything about the mechanism lives in this class.
+ * stale facts.
  */
 final class OrderLock
 {
     private const TIMEOUT_SECONDS = 3;
 
-    private wpdb $db;
+    /**
+     * How many withLock() calls of this instance are running, the outermost included.
+     */
+    private int $depth = 0;
 
-    public function __construct(wpdb $db)
+    private ?bool $holdsSeveralLocks = null;
+
+    public function __construct(private wpdb $db)
     {
-        $this->db = $db;
     }
 
     /**
@@ -47,6 +47,10 @@ final class OrderLock
      */
     public function withLock(string $orderKey, callable $work)
     {
+        if ($this->depth > 0 && !$this->canHoldSeveralLocks()) {
+            return $this->run($work);
+        }
+
         $name = self::lockName($orderKey);
         $taken = $this->db->get_var($this->db->prepare('SELECT GET_LOCK(%s, %d)', $name, self::TIMEOUT_SECONDS));
 
@@ -55,9 +59,41 @@ final class OrderLock
         }
 
         try {
-            return $work();
+            return $this->run($work);
         } finally {
             $this->db->get_var($this->db->prepare('SELECT RELEASE_LOCK(%s)', $name));
         }
+    }
+
+    /**
+     * @return mixed What the work returns.
+     */
+    private function run(callable $work)
+    {
+        $this->depth++;
+        try {
+            return $work();
+        } finally {
+            $this->depth--;
+        }
+    }
+
+    /**
+     * MySQL 5.7.5 or MariaDB 10.0.2 and later, asked once. MariaDB may report itself behind the
+     * "5.5.5-" replication prefix.
+     */
+    private function canHoldSeveralLocks(): bool
+    {
+        if ($this->holdsSeveralLocks === null) {
+            $version = (string) $this->db->get_var('SELECT VERSION()');
+            if (preg_match('/(\d+\.\d+\.\d+)-MariaDB/i', $version, $mariaDb) === 1) {
+                $this->holdsSeveralLocks = version_compare($mariaDb[1], '10.0.2', '>=');
+            } else {
+                preg_match('/^\d+\.\d+\.\d+/', $version, $mysql);
+                $this->holdsSeveralLocks = version_compare($mysql[0] ?? '0', '5.7.5', '>=');
+            }
+        }
+
+        return $this->holdsSeveralLocks;
     }
 }

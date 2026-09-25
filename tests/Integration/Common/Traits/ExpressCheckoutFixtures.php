@@ -205,23 +205,6 @@ trait ExpressCheckoutFixtures
     }
 
     /**
-     * A shopper with a cart holds WooCommerce's session cookie, which is what binds a guest nonce to
-     * that shopper and makes WooCommerce store the session. WooCommerce sets it only while headers
-     * can still be sent, never under PHPUnit, so it is set here the way WooCommerce itself does.
-     *
-     * @param array<int, string> $presets
-     */
-    protected function cartWith(array $presets, int $quantity = 1): \WC_Cart
-    {
-        $cart = parent::cartWith($presets, $quantity);
-        $this->withoutCookieNotices(static function (): void {
-            WC()->session->set_customer_session_cookie(true);
-        });
-
-        return $cart;
-    }
-
-    /**
      * Every scenario is a different shopper. The fake Mollie starts empty for each test, but
      * WooCommerce keeps one session and one customer for the whole PHP process; without this a
      * scenario would be handed the session a previous one remembered, and the next test class would
@@ -232,26 +215,11 @@ trait ExpressCheckoutFixtures
         if (!function_exists('WC') || !WC()->session instanceof \WC_Session_Handler) {
             return;
         }
-        $this->withoutCookieNotices(static function (): void {
+        $this->withoutCookieWarnings(static function (): void {
             WC()->session->forget_session();
         });
         // A customer read from the now empty session: the store's default location, no form data.
         WC()->customer = new \WC_Customer(0, true);
-    }
-
-    /**
-     * wc_setcookie() raises a notice once headers are sent, which under the CLI they always are.
-     */
-    private function withoutCookieNotices(callable $callback): void
-    {
-        set_error_handler(static function (int $severity, string $message): bool {
-            return strpos($message, 'headers already sent') !== false || strpos($message, 'cannot be set') !== false;
-        }, E_USER_NOTICE | E_USER_WARNING | E_WARNING | E_NOTICE);
-        try {
-            $callback();
-        } finally {
-            restore_error_handler();
-        }
     }
 
     private function useHttps(): void

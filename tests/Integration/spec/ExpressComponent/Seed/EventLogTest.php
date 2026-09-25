@@ -6,7 +6,10 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent\Seed;
 
 use Mollie\WooCommerce\Adapter\WordPress\EventLog;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
+use Mollie\WooCommerceTests\Integration\Common\Doubles\RecordingLogger;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * The only way new code may log (blueprint chokepoint 4, ADR-014).
@@ -155,6 +158,39 @@ class EventLogTest extends ExpressFlowTestCase
     }
 
     // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Scenario: with the debug switch off, only problems are written
+     *   Given the merchant's debug switch is off, so the plugin logger writes nothing
+     *   When an info, a warning and an error event are logged
+     *   Then the warning and the error reach WooCommerce's log anyway (REQ-D7: an unmatched
+     *        notification is recorded for investigation)
+     *   And the info event is not written, as before
+     *
+     * @test
+     */
+    public function it_writes_warnings_and_errors_while_the_debug_switch_is_off(): void
+    {
+        $this->setOptionForTest('mollie-payments-for-woocommerce_debug', 'no');
+        $problems = new RecordingLogger();
+        $log = $this->bootExpress([
+            LoggerInterface::class => static function (): LoggerInterface {
+                return new NullLogger();
+            },
+            'express.event_log.always_on' => static function () use ($problems): LoggerInterface {
+                return $problems;
+            },
+        ])->get(EventLog::class);
+
+        $log->info('effects.applied', ['order' => 4711]);
+        $log->warning('express.webhook.unmatched', ['mollie_id' => 'tr_unmatched1', 'reason' => 'unknown_ref']);
+        $log->error('express.payment.orphaned', ['mollie_id' => 'tr_orphaned1', 'reason' => 'unknown_ref']);
+
+        $this->assertSame(
+            [['warning', 'express.webhook.unmatched'], ['error', 'express.payment.orphaned']],
+            array_map(static fn (array $record): array => [$record['level'], $record['message']], $problems->records())
+        );
+    }
 
     private function eventLog(): EventLog
     {

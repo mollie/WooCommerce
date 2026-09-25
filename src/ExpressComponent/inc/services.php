@@ -57,17 +57,26 @@ return static function (): array {
 
             return new OrderLock($wpdb);
         },
+        // WooCommerce's log, whatever the merchant's debug switch says.
+        'express.event_log.always_on' => static function (ContainerInterface $container): LoggerInterface {
+            return new WcPsrLoggerAdapter(wc_get_logger(), $container->get('shared.plugin_id') . '-');
+        },
         EventLog::class => static function (ContainerInterface $container): EventLog {
             $logger = $container->get(LoggerInterface::class);
             assert($logger instanceof LoggerInterface);
-
-            // With the merchant's debug switch off the plugin logger is a NullLogger, so the events
-            // are written only if a site opts in. Merchant-visible behaviour is unchanged by default.
-            if (!$container->get('settings.IsDebugEnabled') && apply_filters('mollie_wc_event_log_always_on', false)) {
-                $logger = new WcPsrLoggerAdapter(wc_get_logger(), $container->get('shared.plugin_id') . '-');
+            if ($container->get('settings.IsDebugEnabled')) {
+                return new EventLog($logger);
             }
 
-            return new EventLog($logger);
+            $alwaysOn = $container->get('express.event_log.always_on');
+            assert($alwaysOn instanceof LoggerInterface);
+            // With the debug switch off the plugin logger is a NullLogger: info events are written only
+            // if a site opts in, warnings and errors always, because they are what gets investigated.
+            if (apply_filters('mollie_wc_event_log_always_on', false)) {
+                return new EventLog($alwaysOn);
+            }
+
+            return new EventLog($logger, $alwaysOn);
         },
         EffectInterpreter::class => static function (ContainerInterface $container): EffectInterpreter {
             $lock = $container->get(OrderLock::class);

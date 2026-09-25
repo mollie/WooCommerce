@@ -18,8 +18,8 @@ use Mollie\WooCommerceTests\TestCase;
  * Express checkout is not a gateway and has no switch of its own: it offers the wallets the plugin
  * already has as payment methods, and the merchant controls each one where they already do. A wallet
  * is shown only if its payment method exists in the plugin, the merchant enabled it, it is active at
- * Mollie, and that method's own "show the express button on the checkout" setting is on; Apple Pay
- * also needs HTTPS. A wallet the plugin has no payment method for — Google Pay today — is never
+ * Mollie, and that method's own "show the express button on the checkout" setting is on. HTTPS is
+ * ExpressAvailability's check, made for the whole feature before any wallet. A wallet the plugin has no payment method for — Google Pay today — is never
  * offered, and appears with no code change on the day such a method is added.
  *
  * Given a cart, a wallet whose address comes from the checkout form is hidden while the form is
@@ -41,7 +41,6 @@ class WalletVisibilityTest extends TestCase
      *         reports active, and the merchant turned the express button on for at the checkout
      *   When the buttons map is built
      *   Then exactly the wallets passing every check are shown
-     *   And Apple Pay is hidden when the site is not HTTPS
      *   And Google Pay is hidden while the plugin has no Google Pay payment method
      *
      * @dataProvider visibilityCases
@@ -82,7 +81,8 @@ class WalletVisibilityTest extends TestCase
             'the merchant switched PayPal off' => [true, $both, ['applepay'], $both, $both, ['applepay']],
             'PayPal is not active at Mollie' => [true, $both, $both, ['applepay'], $both, ['applepay']],
             'Apple Pay is not active at Mollie' => [true, $both, $both, ['paypal'], $both, ['paypal']],
-            'plain HTTP hides Apple Pay only' => [false, $both, $both, $both, $both, ['paypal']],
+            // HTTPS is ExpressAvailability's question, asked before any wallet: it hides no wallet here.
+            'plain HTTP is not decided per wallet' => [false, $both, $both, $both, $both, $both],
             // Enabled, active and even express-on are not enough: the plugin must have the payment method.
             'Google Pay has no payment method in the plugin' => [
                 true,
@@ -285,7 +285,7 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
-     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, needsHttps: bool, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
      */
     private static function config(): array
     {

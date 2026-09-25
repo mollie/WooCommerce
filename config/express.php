@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 /**
  * @var array{
- *     wallets: array<string, array{gatewayId: string, mollieMethod: string, needsHttps: bool, checkoutSetting: string, addressFrom: string}>,
+ *     wallets: array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>,
  *     surfaces: array<int, string>,
  *     allowedModes: array<int, string>,
  *     sessionLifetimeSeconds: int,
@@ -36,21 +36,18 @@ $express = [
         'applepay' => [
             'gatewayId' => 'mollie_wc_gateway_applepay',
             'mollieMethod' => 'applepay',
-            'needsHttps' => true,
             'checkoutSetting' => 'mollie_apple_pay_button_enabled_express_checkout',
             'addressFrom' => 'form',
         ],
         'paypal' => [
             'gatewayId' => 'mollie_wc_gateway_paypal',
             'mollieMethod' => 'paypal',
-            'needsHttps' => false,
             'checkoutSetting' => 'mollie_paypal_button_enabled_checkout',
             'addressFrom' => 'form',
         ],
         'googlepay' => [
             'gatewayId' => 'mollie_wc_gateway_googlepay',
             'mollieMethod' => 'googlepay',
-            'needsHttps' => true,
             'checkoutSetting' => 'mollie_googlepay_button_enabled_express_checkout',
             'addressFrom' => 'form',
         ],

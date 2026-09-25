@@ -10,6 +10,7 @@ use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout;
 use Mollie\WooCommerce\Core\Express\AddressMapping;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookOrderLookup;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
@@ -101,7 +102,7 @@ class MollieOrderService
         $transactionID = sanitize_text_field(wp_unslash($paymentId));
         $this->logger->debug(__METHOD__ . ': Received WC-API webhook with transaction ID: ' . $transactionID);
 
-        $orders = $this->findOrders($transactionID);
+        $orders = WebhookOrderLookup::find($transactionID);
 
         if (! $orders) {
             try {
@@ -144,30 +145,6 @@ class MollieOrderService
             $this->httpResponse->setHttpResponseCode(400);
         };
         // Status 200
-    }
-
-    /**
-     * The indexed lookups, in order: transaction_id, then the Mollie order or payment meta. At most
-     * two orders, so an ambiguous id can be told apart from a unique one.
-     *
-     * @return array<int, WC_Order>
-     */
-    private function findOrders(string $transactionId): array
-    {
-        $orders = wc_get_orders([
-            'transaction_id' => $transactionId,
-            'limit' => 2,
-        ]);
-        if ($orders) {
-            return $orders;
-        }
-
-        return wc_get_orders([
-            'limit' => 2,
-            'meta_key' => substr($transactionId, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
-            'meta_compare' => '=',
-            'meta_value' => $transactionId,
-        ]);
     }
 
     /**

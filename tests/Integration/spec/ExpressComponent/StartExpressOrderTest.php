@@ -227,6 +227,33 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a repeat submit after the order was paid gets no second payment
+     *   Given a started express order that the webhook has since paid
+     *   When the same shopper submits again with the same session and the same cart
+     *   Then the store refuses with order_not_payable and creates no order
+     *   And the session is forgotten, so the next start creates a new one (REQ-B5, REQ-D4)
+     *
+     * @test
+     */
+    public function it_refuses_a_repeat_submit_once_the_order_no_longer_needs_payment(): void
+    {
+        $this->readyGuestCheckout();
+        $session = $this->startedSession();
+        $this->assertAnsweredOk($this->startOrder());
+        $paid = $this->onlyOrderFor($session['ref']);
+        $paid->set_status('processing');
+        $paid->save();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrder();
+
+        $this->assertRefused($response, 'order_not_payable');
+        $this->assertSame($before, $this->allOrderIds());
+        $this->assertSame(200, $this->startSession()->get_status());
+        $this->assertCount(2, $this->fakeMollie()->sessions(), 'The session of a paid order must never be handed out again.');
+    }
+
+    /**
      * Scenario: a submit that arrives while another request holds the lock waits for it and gets its order
      *   Given a guest whose order was created for the started session
      *   And another connection holds the lock of this express_ref for about a second

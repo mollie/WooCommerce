@@ -12,11 +12,8 @@ use Mollie\WooCommerce\Core\Types\ShopFacts;
  * Which wallets the Express Component offers.
  *
  * Express checkout is not a gateway and has no switch of its own: it offers the wallets the plugin
- * already has as payment methods, and the merchant controls each one where they already do. A wallet
- * is shown only if its payment method exists in the plugin, the merchant enabled it, it is active at
- * Mollie, and the method's own "show the express button on the checkout" setting is on; a wallet that
- * needs HTTPS is hidden on plain HTTP. A wallet with no payment method in the plugin is hidden, and
- * appears by itself the day one is added.
+ * already has as payment methods, and the merchant controls each one where they already do. HTTPS is not a
+ * per-wallet question: ExpressAvailability refuses a plain HTTP site before any wallet is looked at.
  *
  * Given a cart, a wallet whose shipping address comes from the checkout form is hidden while that
  * form is incomplete; a wallet with its own address sheet is not.
@@ -35,7 +32,6 @@ final class WalletVisibility
                 && in_array($gatewayId, $shop->enabledGatewayIds(), true)
                 && in_array($row['mollieMethod'], $shop->activeMollieMethods(), true)
                 && in_array($gatewayId, $shop->expressCheckoutGatewayIds(), true)
-                && (!$row['needsHttps'] || $shop->isHttps())
                 && !self::waitsForTheCheckoutForm($row['addressFrom'], $cart);
         }
 

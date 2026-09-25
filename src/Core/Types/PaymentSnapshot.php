@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Types;
 
 /**
@@ -10,16 +9,11 @@ namespace Mollie\WooCommerce\Core\Types;
 final class PaymentSnapshot
 {
     private string $id;
-
     private string $status;
-
     private ?string $method;
-
-    private Money $amount;
-
+    private \Mollie\WooCommerce\Core\Types\Money $amount;
     private ?object $raw;
-
-    public function __construct(string $id, string $status, ?string $method, Money $amount, ?object $raw = null)
+    public function __construct(string $id, string $status, ?string $method, \Mollie\WooCommerce\Core\Types\Money $amount, ?object $raw = null)
     {
         $this->id = $id;
         $this->status = $status;
@@ -27,27 +21,22 @@ final class PaymentSnapshot
         $this->amount = $amount;
         $this->raw = $raw;
     }
-
     public function id(): string
     {
         return $this->id;
     }
-
     public function status(): string
     {
         return $this->status;
     }
-
     public function method(): ?string
     {
         return $this->method;
     }
-
-    public function amount(): Money
+    public function amount(): \Mollie\WooCommerce\Core\Types\Money
     {
         return $this->amount;
     }
-
     public function raw(): ?object
     {
         return $this->raw;

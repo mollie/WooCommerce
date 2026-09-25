@@ -100,6 +100,10 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
 
     public function isExpressCheckoutEnabled(): bool
     {
+        if (is_checkout() && mollieWooCommerceExpressOwnsSurface('checkout')) {
+            return false;
+        }
+
         return $this->getProperty('mollie_apple_pay_button_enabled_express_checkout') === 'yes';
     }
 

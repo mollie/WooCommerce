@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Types;
 
 /**
@@ -13,62 +12,41 @@ namespace Mollie\WooCommerce\Core\Types;
  */
 final class ExpressOrderFacts
 {
-    public function __construct(
-        private ?string $sessionId = null,
-        private ?string $expressRef = null,
-        private ?string $fingerprint = null,
-        private ?int $expiresAt = null,
-        private ?int $existingOrderId = null,
-        private ?string $createdVia = null,
-        private ?Money $total = null,
-        private ?string $trackedPaymentId = null,
-        private bool $needsPayment = false,
-        private bool $holdsBilling = false,
-        private bool $holdsShipping = false,
-        private bool $needsShipping = false
-    ) {
+    public function __construct(private ?string $sessionId = null, private ?string $expressRef = null, private ?string $fingerprint = null, private ?int $expiresAt = null, private ?int $existingOrderId = null, private ?string $createdVia = null, private ?\Mollie\WooCommerce\Core\Types\Money $total = null, private ?string $trackedPaymentId = null, private bool $needsPayment = \false, private bool $holdsBilling = \false, private bool $holdsShipping = \false, private bool $needsShipping = \false)
+    {
     }
-
     public function hasSession(): bool
     {
         return $this->sessionId !== null && $this->expressRef !== null;
     }
-
     public function sessionId(): ?string
     {
         return $this->sessionId;
     }
-
     public function expressRef(): ?string
     {
         return $this->expressRef;
     }
-
     public function fingerprint(): ?string
     {
         return $this->fingerprint;
     }
-
     public function expiresAt(): ?int
     {
         return $this->expiresAt;
     }
-
     public function existingOrderId(): ?int
     {
         return $this->existingOrderId;
     }
-
     public function createdVia(): ?string
     {
         return $this->createdVia;
     }
-
-    public function total(): ?Money
+    public function total(): ?\Mollie\WooCommerce\Core\Types\Money
     {
         return $this->total;
     }
-
     /**
      * The Mollie payment id the order is already linked to, or null.
      */
@@ -76,22 +54,18 @@ final class ExpressOrderFacts
     {
         return $this->trackedPaymentId;
     }
-
     public function needsPayment(): bool
     {
         return $this->needsPayment;
     }
-
     public function holdsBilling(): bool
     {
         return $this->holdsBilling;
     }
-
     public function holdsShipping(): bool
     {
         return $this->holdsShipping;
     }
-
     public function needsShipping(): bool
     {
         return $this->needsShipping;

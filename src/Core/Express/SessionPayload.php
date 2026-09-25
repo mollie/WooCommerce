@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Express;
 
 use Mollie\WooCommerce\Core\Types\CartFacts;
-
 /**
  * The body of POST /v2/sessions.
  *
@@ -17,37 +15,18 @@ use Mollie\WooCommerce\Core\Types\CartFacts;
 final class SessionPayload
 {
     private const DESCRIPTION = 'Express checkout';
-
     private const NEVER_ASKED = ['shipping-address'];
-
     /**
      * @param list<array<string, mixed>> $lines From SessionLines::fromCart().
      * @param array<string, scalar> $metadata
      * @param list<string> $requiredCustomerDetails
      * @return array<string, mixed>
      */
-    public static function build(
-        CartFacts $cart,
-        array $lines,
-        string $redirectUrl,
-        string $webhookUrl,
-        array $metadata,
-        array $requiredCustomerDetails
-    ): array {
-
+    public static function build(CartFacts $cart, array $lines, string $redirectUrl, string $webhookUrl, array $metadata, array $requiredCustomerDetails): array
+    {
         $total = $cart->total();
-
-        return [
-            'amount' => $total === null ? null : ['currency' => $total->currency(), 'value' => $total->toDecimal()],
-            'description' => self::DESCRIPTION,
-            'lines' => $lines,
-            'redirectUrl' => $redirectUrl,
-            'payment' => ['webhookUrl' => $webhookUrl],
-            'metadata' => $metadata,
-            'requiredCustomerDetails' => array_values(array_diff($requiredCustomerDetails, self::NEVER_ASKED)),
-        ];
+        return ['amount' => $total === null ? null : ['currency' => $total->currency(), 'value' => $total->toDecimal()], 'description' => self::DESCRIPTION, 'lines' => $lines, 'redirectUrl' => $redirectUrl, 'payment' => ['webhookUrl' => $webhookUrl], 'metadata' => $metadata, 'requiredCustomerDetails' => array_values(array_diff($requiredCustomerDetails, self::NEVER_ASKED))];
     }
-
     /**
      * Ask the wallet only for what the store does not already hold for this shopper.
      *
@@ -62,7 +41,6 @@ final class SessionPayload
         if (!$hasBillingAddress) {
             $details[] = 'billing-address';
         }
-
         return $details;
     }
 }

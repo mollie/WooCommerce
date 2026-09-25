@@ -32,6 +32,10 @@
         <exclude name="Generic.Metrics.NestingLevel.TooHigh"/>
     </rule>
 
-
+    <!-- src/Core may not call WordPress (CorePurityTest), so it cannot use esc_html(). Its exceptions
+    report invalid arguments to the calling code; escaping is the job of whatever adapter outputs them. -->
+    <rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
+        <exclude-pattern>./src/Core/*</exclude-pattern>
+    </rule>
 
 </ruleset>

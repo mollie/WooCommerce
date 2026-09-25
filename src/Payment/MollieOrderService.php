@@ -737,6 +737,10 @@ class MollieOrderService
             $this->logger->debug(__METHOD__ . ": payment {$transactionID} not found.", [\true]);
             return '';
         }
+        if (!is_string($payment->redirectUrl) || $payment->redirectUrl === '') {
+            $this->logger->debug(__METHOD__ . ": payment {$transactionID} has no redirect URL.", [\true]);
+            return '';
+        }
         return $payment->redirectUrl;
     }
 }

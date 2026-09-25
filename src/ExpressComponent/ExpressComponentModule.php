@@ -8,8 +8,11 @@ use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
+use Mollie\WooCommerce\Adapter\WordPress\ExpressReturnHandler;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
+use Mollie\WooCommerce\Adapter\WordPress\ExpressUrls;
 use Mollie\WooCommerce\Core\Express\SurfaceOwnership;
+use Mollie\WooCommerce\Workflow\ExpireAbandonedExpressOrders;
 use Psr\Container\ContainerInterface;
 
 class ExpressComponentModule implements ServiceModule, ExecutableModule
@@ -46,6 +49,20 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             assert($routes instanceof ExpressRoutes);
             $routes->register();
         });
+
+        add_action('woocommerce_api_' . ExpressUrls::RETURN_API, static function () use ($container): void {
+            $handler = $container->get(ExpressReturnHandler::class);
+            assert($handler instanceof ExpressReturnHandler);
+            $handler->handle();
+        });
+
+        // Runs on the plugin's existing cleanup action, which PaymentModule keeps scheduled while
+        // Express is enabled (see 'express.enabled').
+        add_action('mollie_woocommerce_cancel_unpaid_orders', static function () use ($container): void {
+            $cleanup = $container->get(ExpireAbandonedExpressOrders::class);
+            assert($cleanup instanceof ExpireAbandonedExpressOrders);
+            $cleanup->run();
+        }, 12, 0);
 
         return true;
     }

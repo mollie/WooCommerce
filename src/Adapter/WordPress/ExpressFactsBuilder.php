@@ -77,6 +77,30 @@ class ExpressFactsBuilder
     }
 
     /**
+     * Whether the merchant turned Express on for any wallet: its payment method exists and is enabled,
+     * and its "show the express button on the checkout" setting is on. Options only, no Mollie call,
+     * so it is cheap enough for every request (the unpaid-orders schedule asks it on init).
+     */
+    public function anyWalletTurnedOn(): bool
+    {
+        foreach ($this->config['wallets'] as $row) {
+            $methodId = substr($row['gatewayId'], strlen(self::GATEWAY_PREFIX));
+            if (!array_key_exists($methodId, $this->paymentMethods)) {
+                continue;
+            }
+            $settingsOption = $row['gatewayId'] . '_settings';
+            if (
+                mollieWooCommerceIsGatewayEnabled($settingsOption, 'enabled')
+                && mollieWooCommerceIsGatewayEnabled($settingsOption, $row['checkoutSetting'])
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return list<string>
      */
     private function activeMollieMethods(): array

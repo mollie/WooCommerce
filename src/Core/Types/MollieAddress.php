@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Types;
 
 /**
@@ -16,7 +15,6 @@ final class MollieAddress
     private function __construct(private array $fields)
     {
     }
-
     /**
      * Keeps the scalar, non-empty fields only.
      *
@@ -30,10 +28,8 @@ final class MollieAddress
                 $kept[(string) $name] = (string) $value;
             }
         }
-
         return new self($kept);
     }
-
     /**
      * @return array<string, string>
      */

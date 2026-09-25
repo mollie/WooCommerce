@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Express;
 
 use Mollie\WooCommerce\Core\Types\CartFacts;
-
 /**
  * What makes two session requests the same checkout: the cart contents, the total and currency,
  * the chosen shipping rates and, for a cart that ships, the destination they were priced for. A session's amount is fixed
@@ -18,7 +16,6 @@ final class PricingFingerprint
     {
         $total = $cart->total();
         $shipping = $cart->shipping();
-
         $parts = [
             'cart' => $cart->cartHash(),
             'total' => $total === null ? null : $total->minorUnits(),

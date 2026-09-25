@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Adapter\WooCommerce;
 
 use WC_Geolocation;
 use WC_Rate_Limiter;
-
 /**
  * The anonymous work budget of the session route: at most maxNewSessions new Mollie sessions per
  * windowSeconds for one caller.
@@ -19,13 +17,9 @@ use WC_Rate_Limiter;
 class ExpressSessionBudget
 {
     private const KEY_PREFIX = 'mollie_express_session_';
-
-    public function __construct(
-        private int $maxNewSessions,
-        private int $windowSeconds
-    ) {
+    public function __construct(private int $maxNewSessions, private int $windowSeconds)
+    {
     }
-
     /**
      * Takes one new session from the budget. False when the budget of the window is spent.
      */
@@ -36,19 +30,15 @@ class ExpressSessionBudget
             $actionId = self::KEY_PREFIX . $client . '_' . $slot;
             if (!WC_Rate_Limiter::retried_too_soon($actionId)) {
                 WC_Rate_Limiter::set_rate_limit($actionId, $this->windowSeconds);
-
-                return true;
+                return \true;
             }
         }
-
-        return false;
+        return \false;
     }
-
     private function clientKey(): string
     {
         $userId = get_current_user_id();
         $caller = $userId > 0 ? 'user:' . $userId : 'ip:' . WC_Geolocation::get_ip_address();
-
         return substr(hash_hmac('sha256', $caller, wp_salt('nonce')), 0, 24);
     }
 }

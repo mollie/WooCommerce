@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Types;
 
 /**
@@ -9,23 +8,17 @@ namespace Mollie\WooCommerce\Core\Types;
  */
 final class CartFee
 {
-    public function __construct(
-        private string $name,
-        private Money $amount,
-        private string $vatRate
-    ) {
+    public function __construct(private string $name, private \Mollie\WooCommerce\Core\Types\Money $amount, private string $vatRate)
+    {
     }
-
     public function name(): string
     {
         return $this->name;
     }
-
-    public function amount(): Money
+    public function amount(): \Mollie\WooCommerce\Core\Types\Money
     {
         return $this->amount;
     }
-
     /**
      * Two decimals, as Mollie writes it: '21.00'.
      */

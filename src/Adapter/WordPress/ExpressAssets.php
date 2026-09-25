@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Adapter\WordPress;
 
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressBlocksData;
 use Mollie\WooCommerce\Core\Express\SurfaceOwnership;
-
 /**
  * Puts Mollie.js v2 and mollieExpressData on a block checkout that Express owns, and nowhere else.
  *
@@ -23,21 +21,13 @@ use Mollie\WooCommerce\Core\Express\SurfaceOwnership;
 class ExpressAssets
 {
     public const HANDLE = 'mollie-v2';
-
     public const SRC = 'https://js.mollie.com/v2/mollie.js?compatible';
-
     public const DATA = 'mollieExpressData';
-
     private const BLOCK_SCRIPT = 'mollie_block_index';
-
     private const SURFACE = 'checkout';
-
-    public function __construct(
-        private ExpressFactsBuilder $facts,
-        private ExpressBlocksData $blocksData
-    ) {
+    public function __construct(private \Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder $facts, private ExpressBlocksData $blocksData)
+    {
     }
-
     public function enqueue(): void
     {
         if (!$this->isBlockCheckout()) {
@@ -48,30 +38,24 @@ class ExpressAssets
         if (!SurfaceOwnership::owns($settings, $shop, self::SURFACE)) {
             return;
         }
-
         // A null version: WordPress would otherwise append ?ver=… to the one URL that must stay exact.
-        wp_register_script(self::HANDLE, self::SRC, [], null, true);
+        wp_register_script(self::HANDLE, self::SRC, [], null, \true);
         wp_localize_script(self::HANDLE, self::DATA, $this->blocksData->build($settings, $shop));
-
         $blockScript = wp_scripts()->query(self::BLOCK_SCRIPT, 'registered');
         if ($blockScript instanceof \_WP_Dependency) {
-            if (!in_array(self::HANDLE, $blockScript->deps, true)) {
+            if (!in_array(self::HANDLE, $blockScript->deps, \true)) {
                 $blockScript->deps[] = self::HANDLE;
             }
-
             return;
         }
         wp_enqueue_script(self::HANDLE);
     }
-
     /**
      * The checkout page being viewed holds the checkout block: not the classic shortcode checkout,
      * and not its order-pay or order-received endpoints.
      */
     private function isBlockCheckout(): bool
     {
-        return is_checkout()
-            && !is_wc_endpoint_url()
-            && has_block('woocommerce/checkout');
+        return is_checkout() && !is_wc_endpoint_url() && has_block('woocommerce/checkout');
     }
 }

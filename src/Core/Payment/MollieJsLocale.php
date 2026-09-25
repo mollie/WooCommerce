@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Payment;
 
 /**
@@ -19,7 +18,6 @@ final class MollieJsLocale
     public static function from(string $locale, array $allowed, string $default): string
     {
         $locale = str_replace('_formal', '', $locale);
-
-        return in_array($locale, $allowed, true) ? $locale : $default;
+        return in_array($locale, $allowed, \true) ? $locale : $default;
     }
 }

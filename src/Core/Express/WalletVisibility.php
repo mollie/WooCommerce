@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Express;
 
 use Mollie\WooCommerce\Core\Types\CartFacts;
 use Mollie\WooCommerce\Core\Types\ExpressSettings;
 use Mollie\WooCommerce\Core\Types\ShopFacts;
-
 /**
  * Which wallets the Express Component offers.
  *
@@ -28,21 +26,12 @@ final class WalletVisibility
         $buttons = [];
         foreach ($settings->wallets() as $wallet => $row) {
             $gatewayId = $row['gatewayId'];
-            $buttons[$wallet] = in_array($gatewayId, $shop->registeredGatewayIds(), true)
-                && in_array($gatewayId, $shop->enabledGatewayIds(), true)
-                && in_array($row['mollieMethod'], $shop->activeMollieMethods(), true)
-                && in_array($gatewayId, $shop->expressCheckoutGatewayIds(), true)
-                && !self::waitsForTheCheckoutForm($row['addressFrom'], $cart);
+            $buttons[$wallet] = in_array($gatewayId, $shop->registeredGatewayIds(), \true) && in_array($gatewayId, $shop->enabledGatewayIds(), \true) && in_array($row['mollieMethod'], $shop->activeMollieMethods(), \true) && in_array($gatewayId, $shop->expressCheckoutGatewayIds(), \true) && !self::waitsForTheCheckoutForm($row['addressFrom'], $cart);
         }
-
         return $buttons;
     }
-
     private static function waitsForTheCheckoutForm(string $addressFrom, ?CartFacts $cart): bool
     {
-        return $cart !== null
-            && $addressFrom === 'form'
-            && $cart->needsShipping()
-            && !($cart->shippingDestinationComplete() && $cart->shippingRateChosen());
+        return $cart !== null && $addressFrom === 'form' && $cart->needsShipping() && !($cart->shippingDestinationComplete() && $cart->shippingRateChosen());
     }
 }

@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Express;
 
 use Mollie\WooCommerce\Core\Types\CartFacts;
 use Mollie\WooCommerce\Core\Types\ExpressAvailabilityResult;
 use Mollie\WooCommerce\Core\Types\ExpressSettings;
 use Mollie\WooCommerce\Core\Types\ShopFacts;
-
 /**
  * May the Express Component run here, for this cart, in this mode.
  *
@@ -20,32 +18,25 @@ use Mollie\WooCommerce\Core\Types\ShopFacts;
  */
 final class ExpressAvailability
 {
-    public static function resolve(
-        ExpressSettings $settings,
-        ShopFacts $shop,
-        ?CartFacts $cart,
-        string $surface
-    ): ExpressAvailabilityResult {
-
-        if (!in_array($surface, $settings->supportedSurfaces(), true)) {
+    public static function resolve(ExpressSettings $settings, ShopFacts $shop, ?CartFacts $cart, string $surface): ExpressAvailabilityResult
+    {
+        if (!in_array($surface, $settings->supportedSurfaces(), \true)) {
             return ExpressAvailabilityResult::unavailable('surface_not_supported');
         }
-        if (!in_array($shop->mode(), $settings->allowedModes(), true)) {
+        if (!in_array($shop->mode(), $settings->allowedModes(), \true)) {
             return ExpressAvailabilityResult::unavailable('mode_not_allowed');
         }
         if (!$shop->isHttps()) {
             return ExpressAvailabilityResult::unavailable('not_https');
         }
-        if (!in_array(true, WalletVisibility::buttons($settings, $shop), true)) {
+        if (!in_array(\true, \Mollie\WooCommerce\Core\Express\WalletVisibility::buttons($settings, $shop), \true)) {
             return ExpressAvailabilityResult::unavailable('no_wallet_visible');
         }
         if ($cart === null) {
             return ExpressAvailabilityResult::available();
         }
-
         return self::resolveCart($settings, $shop, $cart);
     }
-
     private static function resolveCart(ExpressSettings $settings, ShopFacts $shop, CartFacts $cart): ExpressAvailabilityResult
     {
         if ($cart->lines() === []) {
@@ -56,10 +47,9 @@ final class ExpressAvailability
                 return ExpressAvailabilityResult::unavailable('subscription_in_cart');
             }
         }
-        if (!in_array(true, WalletVisibility::buttons($settings, $shop, $cart), true)) {
+        if (!in_array(\true, \Mollie\WooCommerce\Core\Express\WalletVisibility::buttons($settings, $shop, $cart), \true)) {
             return ExpressAvailabilityResult::blocked('shipping_incomplete');
         }
-
         return ExpressAvailabilityResult::available();
     }
 }

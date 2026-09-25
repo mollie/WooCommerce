@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Express;
 
 /**
@@ -9,20 +8,7 @@ namespace Mollie\WooCommerce\Core\Express;
  */
 final class AddressMapping
 {
-    private const FIELDS = [
-        'first_name' => 'givenName',
-        'last_name' => 'familyName',
-        'company' => 'organizationName',
-        'email' => 'email',
-        'phone' => 'phone',
-        'address_1' => 'streetAndNumber',
-        'address_2' => 'streetAdditional',
-        'postcode' => 'postalCode',
-        'city' => 'city',
-        'state' => 'region',
-        'country' => 'country',
-    ];
-
+    private const FIELDS = ['first_name' => 'givenName', 'last_name' => 'familyName', 'company' => 'organizationName', 'email' => 'email', 'phone' => 'phone', 'address_1' => 'streetAndNumber', 'address_2' => 'streetAdditional', 'postcode' => 'postalCode', 'city' => 'city', 'state' => 'region', 'country' => 'country'];
     /**
      * Mollie's region is WooCommerce's state, as given.
      *
@@ -42,7 +28,6 @@ final class AddressMapping
                 $wooCommerce[$wooField] = $value;
             }
         }
-
         return $wooCommerce;
     }
 }

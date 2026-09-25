@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Adapter\WordPress;
 
 use wpdb;
-
 /**
  * A short lock per order (or per express reference), so two requests cannot decide on the same
  * stale facts.
@@ -13,30 +11,24 @@ use wpdb;
 final class OrderLock
 {
     private const TIMEOUT_SECONDS = 3;
-
     /**
      * How many withLock() calls of this instance are running, the outermost included.
      */
     private int $depth = 0;
-
     private ?bool $holdsSeveralLocks = null;
-
     public function __construct(private wpdb $db)
     {
     }
-
     /**
      * The MySQL lock name for an order id or express reference. Public so a test can contend for it.
      */
     public static function lockName(string $orderKey): string
     {
-        $scope = defined('DB_NAME') ? (string) DB_NAME : '';
+        $scope = defined('DB_NAME') ? (string) \DB_NAME : '';
         $prefix = isset($GLOBALS['wpdb']) && is_object($GLOBALS['wpdb']) ? (string) $GLOBALS['wpdb']->prefix : '';
-
         // MySQL allows 64 characters.
         return 'mwc_order_' . substr(hash('sha256', $scope . '|' . $prefix . '|' . $orderKey), 0, 40);
     }
-
     /**
      * Runs the work while holding the lock, and releases it however the work ends.
      *
@@ -50,21 +42,17 @@ final class OrderLock
         if ($this->depth > 0 && !$this->canHoldSeveralLocks()) {
             return $this->run($work);
         }
-
         $name = self::lockName($orderKey);
         $taken = $this->db->get_var($this->db->prepare('SELECT GET_LOCK(%s, %d)', $name, self::TIMEOUT_SECONDS));
-
         if ((string) $taken !== '1') {
-            throw new OrderLockTimeout('The order is being processed by another request.');
+            throw new \Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout('The order is being processed by another request.');
         }
-
         try {
             return $this->run($work);
         } finally {
             $this->db->get_var($this->db->prepare('SELECT RELEASE_LOCK(%s)', $name));
         }
     }
-
     /**
      * @return mixed What the work returns.
      */
@@ -77,7 +65,6 @@ final class OrderLock
             $this->depth--;
         }
     }
-
     /**
      * MySQL 5.7.5 or MariaDB 10.0.2 and later, asked once. MariaDB may report itself behind the
      * "5.5.5-" replication prefix.
@@ -93,7 +80,6 @@ final class OrderLock
                 $this->holdsSeveralLocks = version_compare($mysql[0] ?? '0', '5.7.5', '>=');
             }
         }
-
         return $this->holdsSeveralLocks;
     }
 }

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Adapter\WordPress;
 
 /**
@@ -17,10 +16,8 @@ namespace Mollie\WooCommerce\Adapter\WordPress;
 class OrphanedExpressPayments
 {
     public const OPTION = 'mollie_express_orphaned_payments';
-
     /** Enough to notice a pattern, few enough never to grow an option unbounded. */
     private const KEEP = 20;
-
     /**
      * @param string $paymentId The Mollie payment that was taken.
      * @param string $reason Why no order matched, as the event catalogue names it.
@@ -31,35 +28,24 @@ class OrphanedExpressPayments
         if (isset($known[$paymentId])) {
             return;
         }
-
-        $known[$paymentId] = [
-            'reason' => $reason,
-            'amount' => $amount,
-            'currency' => $currency,
-            'seenAt' => gmdate('c'),
-        ];
+        $known[$paymentId] = ['reason' => $reason, 'amount' => $amount, 'currency' => $currency, 'seenAt' => gmdate('c')];
         if (count($known) > self::KEEP) {
-            $known = array_slice($known, -self::KEEP, null, true);
+            $known = array_slice($known, -self::KEEP, null, \true);
         }
-
-        update_option(self::OPTION, $known, false);
+        update_option(self::OPTION, $known, \false);
     }
-
     /**
      * @return array<string, array{reason: string, amount: string, currency: string, seenAt: string}>
      */
     public function all(): array
     {
         $stored = get_option(self::OPTION, []);
-
         return is_array($stored) ? $stored : [];
     }
-
     public function forget(): void
     {
         delete_option(self::OPTION);
     }
-
     /**
      * The notice, for an administrator who can act on it. Dismissing it clears the list, because the
      * payments themselves live at Mollie: this is a pointer, not a record.
@@ -73,36 +59,17 @@ class OrphanedExpressPayments
         if ($orphaned === []) {
             return;
         }
-
-        if (isset($_GET['mollie_express_dismiss_orphaned'])) { // phpcs:ignore WordPress.Security.NonceVerification
-            if (wp_verify_nonce((string) ($_GET['_wpnonce'] ?? ''), self::OPTION) !== false) {
+        if (isset($_GET['mollie_express_dismiss_orphaned'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification
+            if (wp_verify_nonce((string) ($_GET['_wpnonce'] ?? ''), self::OPTION) !== \false) {
                 $this->forget();
-
                 return;
             }
         }
-
         $lines = [];
         foreach ($orphaned as $paymentId => $details) {
-            $lines[] = sprintf(
-                '%s — %s %s (%s)',
-                esc_html($paymentId),
-                esc_html($details['amount']),
-                esc_html($details['currency']),
-                esc_html($details['reason'])
-            );
+            $lines[] = sprintf('%s — %s %s (%s)', esc_html($paymentId), esc_html($details['amount']), esc_html($details['currency']), esc_html($details['reason']));
         }
-
-        printf(
-            '<div class="notice notice-error"><p><strong>%s</strong></p><p>%s</p><ul><li>%s</li></ul><p><a href="%s">%s</a></p></div>',
-            esc_html__('Mollie express checkout: a payment was taken without an order', 'mollie-payments-for-woocommerce'),
-            esc_html__(
-                'Mollie holds these express payments, and no order in this store represents them. Check each one in your Mollie dashboard and either refund it or create the order by hand.',
-                'mollie-payments-for-woocommerce'
-            ),
-            implode('</li><li>', $lines),
-            esc_url(wp_nonce_url(add_query_arg('mollie_express_dismiss_orphaned', '1'), self::OPTION)),
-            esc_html__('I have dealt with these', 'mollie-payments-for-woocommerce')
-        );
+        printf('<div class="notice notice-error"><p><strong>%s</strong></p><p>%s</p><ul><li>%s</li></ul><p><a href="%s">%s</a></p></div>', esc_html__('Mollie express checkout: a payment was taken without an order', 'mollie-payments-for-woocommerce'), esc_html__('Mollie holds these express payments, and no order in this store represents them. Check each one in your Mollie dashboard and either refund it or create the order by hand.', 'mollie-payments-for-woocommerce'), implode('</li><li>', $lines), esc_url(wp_nonce_url(add_query_arg('mollie_express_dismiss_orphaned', '1'), self::OPTION)), esc_html__('I have dealt with these', 'mollie-payments-for-woocommerce'));
     }
 }

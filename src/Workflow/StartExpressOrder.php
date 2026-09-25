@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Workflow;
 
 use Mollie\WooCommerce\Adapter\WooCommerce\CartFactsBuilder;
@@ -21,7 +20,6 @@ use Mollie\WooCommerce\Core\Types\RememberedSession;
 use Mollie\WooCommerce\Core\Types\Refuse;
 use Throwable;
 use WC_Order;
-
 /**
  * Creates the pending order of an express checkout at Mollie's submit event, after the shopper
  * authorised in the wallet and before Mollie creates the payment.
@@ -33,72 +31,52 @@ use WC_Order;
 final class StartExpressOrder
 {
     private const REFUSED = 409;
-
     /**
      * Refusals after which the remembered session is dropped.
      */
     private const SESSION_SPENT = ['cart_changed', 'order_not_payable'];
-
-    public function __construct(
-        private CartFactsBuilder $cartFacts,
-        private ExpressFactsBuilder $expressFacts,
-        private ExpressOrderFactsBuilder $orderFacts,
-        private ExpressSessionStore $store,
-        private ExpressOrderFactory $factory,
-        private EffectInterpreter $effects,
-        private OrderLock $lock,
-        private Clock $clock,
-        private EventLog $log
-    ) {
+    public function __construct(private CartFactsBuilder $cartFacts, private ExpressFactsBuilder $expressFacts, private ExpressOrderFactsBuilder $orderFacts, private ExpressSessionStore $store, private ExpressOrderFactory $factory, private EffectInterpreter $effects, private OrderLock $lock, private Clock $clock, private EventLog $log)
+    {
     }
-
-    public function start(): ExpressOrderResult
+    public function start(): \Mollie\WooCommerce\Workflow\ExpressOrderResult
     {
         $session = $this->orderFacts->rememberedSession();
         if ($session === null) {
             return $this->refuse(null, 'session_missing', self::REFUSED);
         }
-
         try {
-            return $this->lock->withLock($session->expressRef(), function () use ($session): ExpressOrderResult {
+            return $this->lock->withLock($session->expressRef(), function () use ($session): \Mollie\WooCommerce\Workflow\ExpressOrderResult {
                 return $this->startLocked($session);
             });
         } catch (OrderLockTimeout $timeout) {
             return $this->refuse($session, 'try_again', 503);
         }
     }
-
-    private function startLocked(RememberedSession $session): ExpressOrderResult
+    private function startLocked(RememberedSession $session): \Mollie\WooCommerce\Workflow\ExpressOrderResult
     {
         $order = $this->orderFacts->orderByRef($session->expressRef());
         $existing = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
-        $cart = $this->cartFacts->fromCart() ?? new CartFacts([], false, false, false);
+        $cart = $this->cartFacts->fromCart() ?? new CartFacts([], \false, \false, \false);
         $decision = StartOrderDecision::decide($session, $existing, $cart, $this->clock->now());
-
         if ($decision instanceof Refuse) {
-            if (in_array($decision->code(), self::SESSION_SPENT, true)) {
+            if (in_array($decision->code(), self::SESSION_SPENT, \true)) {
                 // Priced for another checkout, or already paid: this session must never be used again.
                 $this->store->forget();
             }
-
             return $this->refuse($session, $decision->code(), $decision->httpStatus());
         }
         if ($existing !== null) {
             $this->log->info('express.order.reused', ['order' => $existing->orderId(), 'session' => $session->sessionId()]);
-
-            return ExpressOrderResult::ok();
+            return \Mollie\WooCommerce\Workflow\ExpressOrderResult::ok();
         }
-
         return $this->create($session, $cart);
     }
-
-    private function create(RememberedSession $session, CartFacts $cart): ExpressOrderResult
+    private function create(RememberedSession $session, CartFacts $cart): \Mollie\WooCommerce\Workflow\ExpressOrderResult
     {
         $reason = $this->factory->invalidCartReason();
         if ($reason !== null) {
             return $this->refuse($session, 'cart_invalid', self::REFUSED, $reason);
         }
-
         $total = $cart->total();
         $order = null;
         try {
@@ -112,7 +90,6 @@ final class StartExpressOrder
             $orderTotal = $this->orderFacts->total($order);
             if ($orderTotal === null || !$orderTotal->isSameAs($total)) {
                 $this->factory->delete($order);
-
                 return $this->refuse($session, 'amount_mismatch', self::REFUSED);
             }
             $order = $this->effects->apply($order, StartOrderDecision::stamps($session, $mode, $gatewayId, $wallet));
@@ -125,21 +102,11 @@ final class StartExpressOrder
             if ($order instanceof WC_Order && $order->get_id() > 0) {
                 $this->factory->delete($order);
             }
-
             return $this->refuse($session, 'creation_failed', 500);
         }
-
-        $this->log->info('express.order.created', [
-            'order' => $order->get_id(),
-            'session' => $session->sessionId(),
-            'wallet' => $wallet,
-            'amount' => $total->toDecimal(),
-            'currency' => $total->currency(),
-        ]);
-
-        return ExpressOrderResult::ok();
+        $this->log->info('express.order.created', ['order' => $order->get_id(), 'session' => $session->sessionId(), 'wallet' => $wallet, 'amount' => $total->toDecimal(), 'currency' => $total->currency()]);
+        return \Mollie\WooCommerce\Workflow\ExpressOrderResult::ok();
     }
-
     /**
      * The first wallet the checkout shows. The first webhook corrects it to the wallet that paid.
      *
@@ -156,8 +123,7 @@ final class StartExpressOrder
         }
         throw new \RuntimeException('No express wallet is visible.');
     }
-
-    private function refuse(?RememberedSession $session, string $code, int $httpStatus, ?string $reason = null): ExpressOrderResult
+    private function refuse(?RememberedSession $session, string $code, int $httpStatus, ?string $reason = null): \Mollie\WooCommerce\Workflow\ExpressOrderResult
     {
         $fields = ['session' => $session === null ? '' : $session->sessionId(), 'reason' => $code];
         // A refused submit is the shopper's normal flow and anyone may cause one, so it is written
@@ -167,7 +133,6 @@ final class StartExpressOrder
         } else {
             $this->log->info('express.order.refused', $fields);
         }
-
-        return ExpressOrderResult::refused($code, $httpStatus, $reason);
+        return \Mollie\WooCommerce\Workflow\ExpressOrderResult::refused($code, $httpStatus, $reason);
     }
 }

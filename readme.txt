@@ -4,7 +4,7 @@ Tags: mollie, woocommerce, payments, ecommerce, credit card
 Requires at least: 5.0
 Tested up to: 7.1
 Stable tag: 8.1.10
-Requires PHP: 7.4
+Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -200,7 +200,7 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 
 = Minimum Requirements =
 
-* PHP version 7.4 or greater
+* PHP version 8.0 or greater
 * PHP extensions enabled: cURL, JSON
 * WordPress 5.0 or greater
 * WooCommerce 3.9 or greater

@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "php": "^7.4 | ^8.0",
+    "php": "^8.0",
     "ext-intl": "*",
     "ext-json": "*",
     "mollie/mollie-api-php": "^v2.40",
@@ -32,7 +32,7 @@
     "brain/monkey": "^2.3",
     "ptrofimov/xpmock": "^1",
     "johnpbloch/wordpress-core": "^5.0",
-    "fzaninotto/faker": "^1.9@dev",
+    "fakerphp/faker": "^1.23",
     "inpsyde/php-coding-standards": "^2.0.2",
     "inpsyde/composer-assets-compiler": "^2.5",
     "php-stubs/wordpress-stubs": "^5.0@stable",
@@ -98,7 +98,7 @@
   },
   "config": {
     "platform": {
-      "php": "7.4"
+      "php": "8.0"
     },
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,

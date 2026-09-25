@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
-use Psr\Container\ContainerInterface;
+use Mollie\Psr\Container\ContainerInterface;
 use WC_Order;
-
 /**
  * Class AddCustomRequestFieldsMiddleware
  *
@@ -14,11 +12,10 @@ use WC_Order;
  *
  * @package Mollie\WooCommerce\Payment\Request\Middleware
  */
-class AddCustomRequestFieldsMiddleware implements RequestMiddlewareInterface
+class AddCustomRequestFieldsMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     private array $paymentMethods;
     private ContainerInterface $container;
-
     /**
      * AddCustomRequestFieldsMiddleware constructor.
      *
@@ -30,7 +27,6 @@ class AddCustomRequestFieldsMiddleware implements RequestMiddlewareInterface
         $this->paymentMethods = $paymentMethods;
         $this->container = $container;
     }
-
     /**
      * Invoke the middleware.
      *
@@ -48,10 +44,10 @@ class AddCustomRequestFieldsMiddleware implements RequestMiddlewareInterface
         if (property_exists($paymentMethod, 'paymentAPIfields')) {
             $paymentAPIfields = $paymentMethod->paymentAPIfields;
             foreach ($paymentAPIfields as $field) {
-                $middlewareClass = 'Mollie\\WooCommerce\\Payment\\Request\\Middleware' . $field;
+                $middlewareClass = 'Mollie\WooCommerce\Payment\Request\Middleware' . $field;
                 if (class_exists($middlewareClass)) {
                     $middleware = $this->container->get($middlewareClass);
-                    if ($middleware instanceof RequestMiddlewareInterface) {
+                    if ($middleware instanceof \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface) {
                         $requestData = $middleware->__invoke($requestData, $order, $context, $next);
                     }
                 }

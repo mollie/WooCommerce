@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Core\Security;
 
 use InvalidArgumentException;
-
 /**
  * The deterministic key every mutating Mollie call carries (blueprint ADR-012).
  *
@@ -17,7 +15,6 @@ use InvalidArgumentException;
 final class IdempotencyKey
 {
     private const PREFIX = 'mwc';
-
     /**
      * @param string $intent Versioned intent name, for example 'express.session.v1'.
      * @param array<string, scalar|null> $parts Ids, attempt numbers and amounts, by name.
@@ -30,13 +27,10 @@ final class IdempotencyKey
         foreach ($parts as $name => $value) {
             $pairs[] = [(string) $name, self::normalise((string) $name, $value)];
         }
-        usort($pairs, static fn (array $a, array $b): int => strcmp($a[0], $b[0]));
-
-        $canonical = json_encode([$intent, $pairs], JSON_THROW_ON_ERROR);
-
+        usort($pairs, static fn(array $a, array $b): int => strcmp($a[0], $b[0]));
+        $canonical = json_encode([$intent, $pairs], \JSON_THROW_ON_ERROR);
         return self::PREFIX . '-' . hash('sha256', $canonical);
     }
-
     /**
      * Integers and their string forms are the same part; booleans and null are kept distinct.
      *
@@ -53,9 +47,6 @@ final class IdempotencyKey
         if (is_int($value) || is_string($value)) {
             return 'v:' . $value;
         }
-
-        throw new InvalidArgumentException(
-            sprintf('Idempotency key part "%s" must be an int, string, bool or null.', $name)
-        );
+        throw new InvalidArgumentException(sprintf('Idempotency key part "%s" must be an int, string, bool or null.', $name));
     }
 }

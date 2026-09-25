@@ -287,7 +287,7 @@ class PaymentLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProv
      *
      * @param null|false|\WC_Product $product Product object.
      *
-     * @return false|string $item_reference Cart item reference.
+     * @return string $item_reference Cart item reference.
      */
     private function get_item_reference($product)
     {

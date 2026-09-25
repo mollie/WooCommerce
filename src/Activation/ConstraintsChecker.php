@@ -31,7 +31,7 @@ class ConstraintsChecker
     {
         $wpConstraint = new WordPressConstraint('5.0');
         $wcConstraint = new PluginConstraint('3.9', 'woocommerce', 'WooCommerce');
-        $phpConstraint = new PhpConstraint('7.4');
+        $phpConstraint = new PhpConstraint('8.0');
         $jsonConstraint = new ExtensionConstraint('json');
         $collectionFactory = new ConstraintsCollectionFactory();
         $constraintsCollection = $collectionFactory->create($wpConstraint, $wcConstraint, $phpConstraint, $jsonConstraint);

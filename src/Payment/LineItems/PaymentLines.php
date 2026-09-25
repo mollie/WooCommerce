@@ -119,11 +119,9 @@ class PaymentLines implements \Mollie\WooCommerce\Payment\LineItems\LineItemProv
                 $totalValue = $unitValue * $quantity - $discountValue;
                 $mollieTotal = $this->getMolliePrice($totalValue, $vatRate);
                 $mollie_order_item = ['sku' => $this->get_item_reference($product), 'type' => $product instanceof \WC_Product && $product->is_virtual() ? 'digital' : 'physical', 'description' => $this->get_item_name($cart_item), 'quantity' => $this->get_item_quantity($cart_item), 'vatRate' => $vatRate, 'unitPrice' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue($mollieUnit['grossPrice'], $this->currency)], 'totalAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue($mollieTotal['grossPrice'], $this->currency)], 'vatAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue($mollieTotal['vatAmount'], $this->currency)], 'discountAmount' => ['currency' => $this->currency, 'value' => $this->dataHelper->formatCurrencyValue($this->get_item_discount_amount($cart_item), $this->currency)], 'productUrl' => $product instanceof \WC_Product ? $product->get_permalink() : null];
-                if ($this->get_item_total_amount($cart_item) < 0) {
-                    $mollie_order_item['type'] = 'discount';
-                    unset($mollie_order_item['discountAmount']);
-                    $mollie_order_item['vatAmount']['value'] = $this->dataHelper->formatCurrencyValue(0, $this->currency);
-                }
+                // A line pushed below zero (over-discount) must be sent as a discount line whose unitPrice
+                // follows the discounted value, or Mollie rejects it; the shared trait owns that shape.
+                $mollie_order_item = $this->toDiscountLine($mollie_order_item, (float) $this->get_item_total_amount($cart_item), $quantity, $this->currency);
                 if ($product instanceof \WC_Product && $product->get_image_id()) {
                     $productImage = wp_get_attachment_image_src((int) $product->get_image_id(), 'full');
                     if (isset($productImage[0]) && wc_is_valid_url($productImage[0])) {

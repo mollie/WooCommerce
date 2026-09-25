@@ -121,21 +121,24 @@ class FirstSightEffectsTest extends TestCase
     }
 
     /**
-     * Scenario: the wallet's billing details fill only a billing address the order holds nothing for
+     * Scenario: the wallet's billing details replace whatever the order holds
      *   Given a matched payment carrying a billing address
-     *   When the order holds no billing details, the effects set the billing address from the payment
-     *   And when the order holds billing details, they set no billing address at all
+     *   When the effects are built
+     *   Then the billing address is set from the payment, whatever the order held before
      *
-     * @dataProvider billingHeld
+     * The sheet is where the shopper chose that address, so it takes precedence over the form and
+     * over the account (owner, 2026-09-24, revising REQ-C2). Until then the order's own won and
+     * this test pinned that.
+     *
      * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
      */
-    public function testFillsOnlyABillingAddressTheOrderHoldsNothingFor(bool $orderHoldsBilling): void
+    public function testTheWalletsBillingAddressReplacesTheOrdersOwn(): void
     {
         $billing = $this->mollieAddress();
 
         $effects = FirstSightEffects::for(
             $this->payment(['billingAddress' => MollieAddress::fromArray($billing)]),
-            $this->order(['holdsBilling' => $orderHoldsBilling]),
+            $this->order(),
             $this->wallets(),
             self::REGISTERED
         );
@@ -144,11 +147,6 @@ class FirstSightEffectsTest extends TestCase
             $this->ofType($this->described($effects), Effect::SET_ADDRESS),
             static fn (array $effect): bool => $effect[1]['addressType'] === 'billing'
         ));
-        if ($orderHoldsBilling) {
-            self::assertSame([], $billingEffects);
-
-            return;
-        }
         self::assertSame(
             [[Effect::SET_ADDRESS, ['addressType' => 'billing', 'fields' => AddressMapping::toWooCommerce($billing)]]],
             $billingEffects
@@ -156,27 +154,17 @@ class FirstSightEffectsTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0: bool}>
-     */
-    public function billingHeld(): array
-    {
-        return [
-            'a guest who paid without filling the form' => [false],
-            'billing held from the checkout form or the account' => [true],
-        ];
-    }
-
-    /**
-     * Scenario: the shipping address of an order that needs shipping is never changed
+     * Scenario: only an order that ships keeps its shipping address from the wallet's
      *   Given a matched payment carrying a shipping address
-     *   When the order needs shipping, the effects set no shipping address, even if the order holds none
-     *   And when the order holds a shipping address, they set none either
-     *   And only an order with nothing to ship and no shipping address takes the wallet's
+     *   When the order needs shipping, the effects set no shipping address, even if it holds none:
+     *        that order was quoted a shipping cost for the address it already has
+     *   And only an order with nothing to ship and no address of its own takes the wallet's, which
+     *        in practice never arrives: the wallet is not asked where to ship
      *
      * @dataProvider shippingCases
      * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
      */
-    public function testNeverChangesTheShippingAddressOfAnOrderThatNeedsShipping(
+    public function testOnlyAnOrderThatShipsKeepsItsShippingAddress(
         bool $needsShipping,
         bool $holdsShipping,
         bool $expectShippingEffect
@@ -236,7 +224,6 @@ class FirstSightEffectsTest extends TestCase
             'paid',
             $values['method'],
             Money::fromDecimal('26.05', 'EUR'),
-            null,
             mode: $values['mode'],
             expressRef: 'exr_0123456789abcdef0123456789abcdef',
             billingAddress: $values['billingAddress'],
@@ -250,19 +237,17 @@ class FirstSightEffectsTest extends TestCase
     private function order(array $overrides = []): ExpressOrderFacts
     {
         $values = array_merge([
-            'holdsBilling' => true,
             'holdsShipping' => true,
             'needsShipping' => true,
         ], $overrides);
 
         return new ExpressOrderFacts(
+            orderId: 42,
             expressRef: 'exr_0123456789abcdef0123456789abcdef',
-            existingOrderId: 42,
             createdVia: 'mollie_express',
             total: Money::fromDecimal('26.05', 'EUR'),
             trackedPaymentId: null,
             needsPayment: true,
-            holdsBilling: $values['holdsBilling'],
             holdsShipping: $values['holdsShipping'],
             needsShipping: $values['needsShipping']
         );

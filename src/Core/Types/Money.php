@@ -21,14 +21,10 @@ final class Money
         'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW', 'PYG', 'RWF', 'UGX', 'UYI', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
     ];
 
-    private int $minorUnits;
-
-    private string $currency;
-
-    private function __construct(int $minorUnits, string $currency)
-    {
-        $this->minorUnits = $minorUnits;
-        $this->currency = $currency;
+    private function __construct(
+        private int $minorUnits,
+        private string $currency
+    ) {
     }
 
     public static function fromMinorUnits(int $units, string $currency): self
@@ -105,6 +101,14 @@ final class Money
     public function equals(self $other): bool
     {
         return $this->compareTo($other) === 0;
+    }
+
+    /**
+     * The same currency and the same amount. Unlike equals(), a different currency answers false.
+     */
+    public function isSameAs(self $other): bool
+    {
+        return $this->currency === $other->currency && $this->minorUnits === $other->minorUnits;
     }
 
     private function assertSameCurrency(self $other): void

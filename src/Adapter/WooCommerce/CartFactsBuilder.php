@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Adapter\WooCommerce;
 
-use InvalidArgumentException;
 use Mollie\WooCommerce\Core\Types\CartCoupon;
 use Mollie\WooCommerce\Core\Types\CartFacts;
 use Mollie\WooCommerce\Core\Types\CartFee;
@@ -60,32 +59,6 @@ class CartFactsBuilder
     }
 
     /**
-     * The checkout form or the account holds a valid email for this shopper.
-     */
-    public function holdsEmail(): bool
-    {
-        $customer = $this->customer();
-
-        return $customer !== null && is_email($customer->get_billing_email()) !== false;
-    }
-
-    /**
-     * The checkout form or the account holds a billing address for this shopper.
-     */
-    public function holdsBillingAddress(): bool
-    {
-        $customer = $this->customer();
-        if ($customer === null) {
-            return false;
-        }
-
-        return $customer->get_billing_country() !== ''
-            && $customer->get_billing_address_1() !== ''
-            && $customer->get_billing_postcode() !== ''
-            && $customer->get_billing_city() !== '';
-    }
-
-    /**
      * @return list<CartLine>
      */
     private function lines(WC_Cart $cart, WC_Customer $customer, string $currency): array
@@ -118,8 +91,8 @@ class CartFactsBuilder
         foreach ($cart->get_fees() as $fee) {
             $fees[] = new CartFee(
                 (string) $fee->name,
-                $this->money((float) $fee->total + (float) $fee->tax, $currency),
-                !empty($fee->taxable) && (float) $fee->tax !== 0.0
+                $this->money((float) $fee->total + (float) ($fee->tax ?? 0), $currency),
+                !empty($fee->taxable) && (float) ($fee->tax ?? 0) !== 0.0
                     ? $this->vatRate((string) ($fee->tax_class ?? ''), $customer)
                     : '0.00'
             );
@@ -168,7 +141,9 @@ class CartFactsBuilder
     private function chosenRates(): ?array
     {
         $packages = WC()->shipping()->get_packages();
-        $chosen = WC()->session ? (array) WC()->session->get('chosen_shipping_methods', []) : [];
+        /** @var \WC_Session|null $session WooCommerce leaves it null until the session is loaded. */
+        $session = WC()->session;
+        $chosen = $session instanceof \WC_Session ? (array) $session->get('chosen_shipping_methods', []) : [];
         if ($packages === []) {
             return null;
         }
@@ -214,17 +189,11 @@ class CartFactsBuilder
     }
 
     /**
-     * @param float|string $amount
+     * @param float|int|string $amount
      */
     private function money($amount, string $currency): Money
     {
-        $amount = (float) $amount;
-        try {
-            return Money::fromDecimal(number_format($amount, 2, '.', ''), $currency);
-        } catch (InvalidArgumentException $exception) {
-            // A currency without decimals.
-            return Money::fromDecimal(number_format($amount, 0, '.', ''), $currency);
-        }
+        return WooCommerceAmount::toMoney($amount, $currency);
     }
 
     private function cart(): ?WC_Cart
@@ -232,11 +201,14 @@ class CartFactsBuilder
         if (!function_exists('WC')) {
             return null;
         }
-        if (!WC()->cart instanceof WC_Cart && did_action('woocommerce_init')) {
+        /** @var WC_Cart|null $cart WooCommerce leaves it null until the cart is loaded. */
+        $cart = WC()->cart;
+        if (!$cart instanceof WC_Cart && did_action('woocommerce_init')) {
             wc_load_cart();
+            $cart = WC()->cart;
         }
 
-        return WC()->cart instanceof WC_Cart ? WC()->cart : null;
+        return $cart instanceof WC_Cart ? $cart : null;
     }
 
     private function customer(): ?WC_Customer

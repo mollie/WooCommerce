@@ -66,6 +66,16 @@ class PaypalTest extends TestCase
         );
     }
 
+    /** @scenario The checkout setting tells the merchant that express checkout shows the button where it can run, and the classic button otherwise (REQ-A5, AC-6). */
+    public function test_checkout_setting_says_express_checkout_shows_the_button_where_it_can_run(): void
+    {
+        $fields = $this->makeSut([])->getFormFields([]);
+
+        $description = $fields['mollie_paypal_button_enabled_checkout']['description'];
+        self::assertStringContainsString('Mollie express checkout shows the button where it can run', $description);
+        self::assertStringContainsString('otherwise the classic PayPal button is shown', $description);
+    }
+
     /** @scenario On the Cart page, isExpressCheckoutEnabled() reflects only mollie_paypal_button_enabled_cart. */
     public function test_is_express_checkout_enabled_on_cart_page_reads_cart_setting(): void
     {

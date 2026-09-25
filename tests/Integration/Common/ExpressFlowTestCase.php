@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\Common;
 
+use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
@@ -13,6 +14,8 @@ use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieTransport;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\InMemoryStore;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\SessionRules;
 use Mollie\WooCommerceTests\Integration\Common\Fixtures\ProductPresets;
+use Mollie\WooCommerceTests\Integration\Common\Traits\IsolatesSiteState;
+use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use WP_REST_Request;
@@ -40,8 +43,10 @@ use WP_REST_Response;
  *     $status = $this->deliverWebhook($payment['id']);
  *     $this->assertNothingLeakedToLog();
  */
-abstract class ExpressFlowTestCase extends PaymentFlowTestCase
+abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
 {
+    use IsolatesSiteState;
+
     protected const PLUGIN_ID = 'mollie-payments-for-woocommerce';
 
     private FakeMollieApi $fakeMollie;
@@ -62,6 +67,13 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
     private int $userBackup = 0;
 
     /**
+     * Every hook of the site as setUp() found it, restored in tearDown().
+     *
+     * @var array<string, \WP_Hook>
+     */
+    private array $hookBackup = [];
+
+    /**
      * Every order that existed when the test started; any other is the test's own and is deleted.
      *
      * @var array<int, true>
@@ -71,6 +83,12 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
     public function setUp(): void
     {
         parent::setUp();
+        $this->pinEnglishOrderNotes();
+
+        $this->hookBackup = [];
+        foreach ($GLOBALS['wp_filter'] as $name => $hook) {
+            $this->hookBackup[$name] = clone $hook;
+        }
 
         $this->fakeMollie = new FakeMollieApi(new InMemoryStore());
         $this->transport = new FakeMollieTransport($this->fakeMollie);
@@ -79,6 +97,17 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
         $this->userBackup = get_current_user_id();
         $this->ordersBefore = array_fill_keys($this->everyOrderId(), true);
 
+        foreach ([
+            'mollie_webhook_secret' => CanaryData::WEBHOOK_SECRET,
+            self::PLUGIN_ID . '_live_api_key' => CanaryData::LIVE_API_KEY,
+            self::PLUGIN_ID . '_test_api_key' => CanaryData::TEST_API_KEY,
+        ] as $option => $canary) {
+            if (get_option($option) === $canary) {
+                delete_option($option);
+            }
+        }
+
+        $this->setOptionForTest(OrphanedExpressPayments::OPTION, []);
         $this->setOptionForTest(self::PLUGIN_ID . '_live_api_key', CanaryData::LIVE_API_KEY);
         $this->setOptionForTest(self::PLUGIN_ID . '_test_api_key', CanaryData::TEST_API_KEY);
         $this->setOptionForTest('mollie_webhook_secret', CanaryData::WEBHOOK_SECRET);
@@ -107,6 +136,13 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
             $this->restApiInitCleared = false;
         }
 
+        if ($this->hookBackup !== []) {
+            $GLOBALS['wp_filter'] = $this->hookBackup;
+            $this->hookBackup = [];
+            $GLOBALS['wp_rest_server'] = null;
+        }
+
+        $this->restoreSiteState();
         parent::tearDown();
     }
 
@@ -245,6 +281,12 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
             });
         }
         WC()->cart->calculate_totals();
+        // A shopper with a cart holds WooCommerce's session cookie, which binds a guest nonce to that
+        // shopper and makes WooCommerce store the session. WooCommerce sets it only while headers can
+        // still be sent, never under PHPUnit, so it is set here the way WooCommerce itself does.
+        $this->withoutCookieWarnings(static function (): void {
+            WC()->session->set_customer_session_cookie(true);
+        });
 
         return WC()->cart;
     }
@@ -269,7 +311,10 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
      * wc_setcookie() raises a notice when headers are already sent, which PHPUnit turns into a
      * failure. Under CLI they always are; there is no browser to receive the cookie anyway.
      */
-    private function withoutCookieWarnings(callable $callback): void
+    /**
+     * wc_setcookie() raises a notice once headers are sent, which under the CLI they always are.
+     */
+    protected function withoutCookieWarnings(callable $callback): void
     {
         set_error_handler(static function (int $severity, string $message): bool {
             return strpos($message, 'headers already sent') !== false

@@ -122,4 +122,20 @@ class MoneyTest extends TestCase
         self::assertTrue($twenty->equals(Money::fromDecimal('20.00', 'EUR')));
         self::assertFalse($twenty->equals($shipping));
     }
+
+    /**
+     * Scenario: the same amount is the same amount only in the same currency
+     *   Given two amounts
+     *   When they are compared with isSameAs()
+     *   Then equal minor units in the same currency are the same
+     *   And a different amount or a different currency is not, without throwing
+     */
+    public function testIsTheSameAmountOnlyInTheSameCurrency(): void
+    {
+        $twenty = Money::fromDecimal('20.00', 'EUR');
+
+        self::assertTrue($twenty->isSameAs(Money::fromMinorUnits(2000, 'EUR')));
+        self::assertFalse($twenty->isSameAs(Money::fromDecimal('20.01', 'EUR')));
+        self::assertFalse($twenty->isSameAs(Money::fromDecimal('20.00', 'USD')));
+    }
 }

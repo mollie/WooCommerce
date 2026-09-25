@@ -18,12 +18,13 @@ use Mollie\WooCommerceTests\TestCase;
  * Express checkout is not a gateway and has no switch of its own: it offers the wallets the plugin
  * already has as payment methods, and the merchant controls each one where they already do. A wallet
  * is shown only if its payment method exists in the plugin, the merchant enabled it, it is active at
- * Mollie, and that method's own "show the express button on the checkout" setting is on; Apple Pay
- * also needs HTTPS. A wallet the plugin has no payment method for — Google Pay today — is never
+ * Mollie, and that method's own "show the express button on the checkout" setting is on. HTTPS is
+ * ExpressAvailability's check, made for the whole feature before any wallet. A wallet the plugin has no payment method for — Google Pay today — is never
  * offered, and appears with no code change on the day such a method is added.
  *
- * Given a cart, a wallet whose address comes from the checkout form (PayPal) is hidden while the form
- * is incomplete; a wallet with its own address sheet (Apple Pay) is not.
+ * Given a cart, a wallet whose address comes from the checkout form is hidden while the form is
+ * incomplete. In the Express Component every wallet takes it from the form, Apple Pay included (owner,
+ * 2026-09-22); a wallet with its own address sheet would not wait, which is pinned with a row of its own.
  *
  * The wallet rows are the real ones in config/express.php. Whether a hidden wallet is reported as
  * false or left out of the map is the implementation's choice; only "shown" is pinned.
@@ -40,7 +41,6 @@ class WalletVisibilityTest extends TestCase
      *         reports active, and the merchant turned the express button on for at the checkout
      *   When the buttons map is built
      *   Then exactly the wallets passing every check are shown
-     *   And Apple Pay is hidden when the site is not HTTPS
      *   And Google Pay is hidden while the plugin has no Google Pay payment method
      *
      * @dataProvider visibilityCases
@@ -81,7 +81,8 @@ class WalletVisibilityTest extends TestCase
             'the merchant switched PayPal off' => [true, $both, ['applepay'], $both, $both, ['applepay']],
             'PayPal is not active at Mollie' => [true, $both, $both, ['applepay'], $both, ['applepay']],
             'Apple Pay is not active at Mollie' => [true, $both, $both, ['paypal'], $both, ['paypal']],
-            'plain HTTP hides Apple Pay only' => [false, $both, $both, $both, $both, ['paypal']],
+            // HTTPS is ExpressAvailability's question, asked before any wallet: it hides no wallet here.
+            'plain HTTP is not decided per wallet' => [false, $both, $both, $both, $both, $both],
             // Enabled, active and even express-on are not enough: the plugin must have the payment method.
             'Google Pay has no payment method in the plugin' => [
                 true,
@@ -118,10 +119,10 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
-     * Scenario: a wallet that takes its address from the checkout form waits for the form
-     *   Given every wallet visible and a cart that ships
+     * Scenario: every wallet waits for the checkout form, Apple Pay included
+     *   Given Apple Pay and PayPal visible and a cart that ships
      *   When the buttons map is built while the shipping destination or rate is missing
-     *   Then PayPal (address from the form) is hidden and Apple Pay (its own sheet) is shown
+     *   Then neither is shown: both take the shipping address from the checkout form
      *   And with the form complete, or nothing to ship, both are shown
      *
      * @dataProvider carts
@@ -160,11 +161,61 @@ class WalletVisibilityTest extends TestCase
         $both = ['applepay', 'paypal'];
 
         return [
-            'ships, destination incomplete' => [true, false, true, ['applepay']],
-            'ships, no rate chosen' => [true, true, false, ['applepay']],
+            'ships, destination incomplete' => [true, false, true, []],
+            'ships, no rate chosen' => [true, true, false, []],
+            'ships, neither' => [true, false, false, []],
             'ships, form complete' => [true, true, true, $both],
             'nothing to ship, form empty' => [false, false, false, $both],
         ];
+    }
+
+    /**
+     * Scenario: a wallet with its own address sheet does not wait for the checkout form
+     *   Given a wallets table where Apple Pay takes its address from its own sheet ('wallet')
+     *   And PayPal takes it from the form
+     *   When the buttons map is built for a cart that ships while the form is incomplete
+     *   Then Apple Pay is shown and PayPal is not
+     *
+     * No real row uses 'wallet' since every wallet waits for the form (owner, 2026-09-22); this keeps
+     * the rule working for the day a wallet is switched back by a data change.
+     *
+     * @covers \Mollie\WooCommerce\Core\Express\WalletVisibility::buttons
+     */
+    public function testKeepsAWalletWithItsOwnSheetWhileTheFormIsIncomplete(): void
+    {
+        $config = self::config();
+        $wallets = $config['wallets'];
+        $wallets['applepay']['addressFrom'] = 'wallet';
+        $settings = new ExpressSettings(
+            supportedSurfaces: $config['surfaces'],
+            allowedModes: $config['allowedModes'],
+            wallets: $wallets
+        );
+        $both = ['applepay', 'paypal'];
+        $cart = new CartFacts(
+            lines: [new CartLine(productId: 1, quantity: 1, isSubscription: false)],
+            needsShipping: true,
+            shippingDestinationComplete: false,
+            shippingRateChosen: false
+        );
+
+        $buttons = WalletVisibility::buttons($settings, $this->shop(true, $both, $both, $both, $both), $cart);
+
+        $this->assertShownExactly(['applepay'], $buttons);
+    }
+
+    /**
+     * Scenario: the real wallets table takes every shipping address from the checkout form
+     *   Given config/express.php
+     *   Then every wallet row has addressFrom 'form'
+     *
+     * @covers \Mollie\WooCommerce\Core\Express\WalletVisibility::buttons
+     */
+    public function testEveryWalletTakesItsAddressFromTheCheckoutForm(): void
+    {
+        foreach (self::config()['wallets'] as $wallet => $row) {
+            self::assertSame('form', $row['addressFrom'], "Wallet '{$wallet}' must wait for the checkout form.");
+        }
     }
 
     /**
@@ -234,7 +285,7 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
-     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, needsHttps: bool, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
      */
     private static function config(): array
     {

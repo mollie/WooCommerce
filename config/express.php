@@ -9,9 +9,10 @@ declare(strict_types=1);
 
 /**
  * @var array{
- *     wallets: array<string, array{gatewayId: string, mollieMethod: string, needsHttps: bool, checkoutSetting: string, addressFrom: string}>,
+ *     wallets: array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>,
  *     surfaces: array<int, string>,
  *     allowedModes: array<int, string>,
+ *     sessionLifetimeSeconds: int,
  *     sessionReuseMarginSeconds: int,
  *     maxNewSessions: int,
  *     windowSeconds: int,
@@ -25,9 +26,9 @@ $express = [
     // Express has no switch of its own: it takes over what the merchant already turned on per method.
     //
     // addressFrom says where the shipping address comes from: 'form' is the WooCommerce checkout form, so
-    // a cart that ships must wait for it; 'wallet' is the wallet's own sheet, as today's Apple Pay button
-    // does. Apple Pay is 'wallet' by the owner's decision of 2026-09-21; whether the component can do it
-    // is unconfirmed and is on the real-key checklist, so flipping it here is a data change only.
+    // a cart that ships must wait for it; 'wallet' would be the wallet's own sheet, as today's Apple Pay
+    // button does. In the Express Component every wallet waits for the form, Apple Pay included (owner,
+    // 2026-09-22), so no row uses 'wallet'; switching one back is a data change only.
     //
     // googlepay has no payment method yet, so it stays hidden until one with this gateway id exists; its
     // checkoutSetting is the name the future method should expose, to be aligned then.
@@ -35,28 +36,28 @@ $express = [
         'applepay' => [
             'gatewayId' => 'mollie_wc_gateway_applepay',
             'mollieMethod' => 'applepay',
-            'needsHttps' => true,
             'checkoutSetting' => 'mollie_apple_pay_button_enabled_express_checkout',
-            'addressFrom' => 'wallet',
+            'addressFrom' => 'form',
         ],
         'paypal' => [
             'gatewayId' => 'mollie_wc_gateway_paypal',
             'mollieMethod' => 'paypal',
-            'needsHttps' => false,
             'checkoutSetting' => 'mollie_paypal_button_enabled_checkout',
             'addressFrom' => 'form',
         ],
         'googlepay' => [
             'gatewayId' => 'mollie_wc_gateway_googlepay',
             'mollieMethod' => 'googlepay',
-            'needsHttps' => true,
             'checkoutSetting' => 'mollie_googlepay_button_enabled_express_checkout',
             'addressFrom' => 'form',
         ],
     ],
     'surfaces' => ['checkout'],
-    // Sessions may have no test mode (REQ-H4 is unanswered), so live only until it is answered.
+    // Sessions may have no test mode, so live only until it is answered.
     'allowedModes' => ['live'],
+    // How long the plugin treats a Checkout Session as usable after Mollie created it.
+    // This is deliberately a floor, not Mollie's number. Raise it only against a measured expiry.
+    'sessionLifetimeSeconds' => 900,
     // An open session is handed out again only while it has more than this left before it expires,
     // so the shopper is not given a token that dies while they are in the wallet.
     'sessionReuseMarginSeconds' => 60,
@@ -65,9 +66,8 @@ $express = [
     // price change needs a new session), not for one request per keystroke.
     'maxNewSessions' => 10,
     'windowSeconds' => 600,
-    // Cleanup looks at a pending express order only this long after its session expired (15 minutes
-    // after it was created), so an order is never cancelled while its payment could still arrive
-    // (AC-31). Even then it is cancelled only when Mollie says it can no longer be paid.
+    // Cleanup looks at a pending express order only this long after its session expired,
+    // so an order is never cancelled while its payment could still arrive
     'abandonGraceSeconds' => 3600,
 ];
 

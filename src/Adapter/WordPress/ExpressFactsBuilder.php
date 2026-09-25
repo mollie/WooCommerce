@@ -21,7 +21,7 @@ class ExpressFactsBuilder
     private const GATEWAY_PREFIX = 'mollie_wc_gateway_';
 
     /**
-     * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, needsHttps: bool, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
+     * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
      * @param array<string, mixed> $paymentMethods The plugin's payment methods, keyed by Mollie method id.
      * @param callable(): array<int, string> $activeMollieMethods Mollie method ids active on the merchant's
      *        profile, from the list the plugin already fetches and caches (this class never sees the API key).
@@ -45,6 +45,38 @@ class ExpressFactsBuilder
 
     public function shopFacts(): ShopFacts
     {
+        [$registered, $enabled, $expressOnCheckout] = $this->merchantSettings();
+
+        return new ShopFacts(
+            mode: $this->settings->isTestModeEnabled() ? 'test' : 'live',
+            isHttps: wc_site_is_https(),
+            registeredGatewayIds: $registered,
+            enabledGatewayIds: $enabled,
+            activeMollieMethods: $this->activeMollieMethods(),
+            expressCheckoutGatewayIds: $expressOnCheckout
+        );
+    }
+
+    /**
+     * Whether the merchant turned Express on for any wallet: its payment method exists and is enabled,
+     * and its "show the express button on the checkout" setting is on. Options only, no Mollie call,
+     * so it is cheap enough for every request (the unpaid-orders schedule asks it on init).
+     */
+    public function anyWalletTurnedOn(): bool
+    {
+        [, $enabled, $expressOnCheckout] = $this->merchantSettings();
+
+        return array_intersect($enabled, $expressOnCheckout) !== [];
+    }
+
+    /**
+     * The gateway ids the plugin registers, and of the wallets among them those the merchant enabled
+     * and those whose express button is on for the checkout. Options only.
+     *
+     * @return array{0: list<string>, 1: list<string>, 2: list<string>}
+     */
+    private function merchantSettings(): array
+    {
         $registered = [];
         foreach (array_keys($this->paymentMethods) as $methodId) {
             $registered[] = self::GATEWAY_PREFIX . $methodId;
@@ -66,38 +98,7 @@ class ExpressFactsBuilder
             }
         }
 
-        return new ShopFacts(
-            mode: $this->settings->isTestModeEnabled() ? 'test' : 'live',
-            isHttps: wc_site_is_https(),
-            registeredGatewayIds: $registered,
-            enabledGatewayIds: $enabled,
-            activeMollieMethods: $this->activeMollieMethods(),
-            expressCheckoutGatewayIds: $expressOnCheckout
-        );
-    }
-
-    /**
-     * Whether the merchant turned Express on for any wallet: its payment method exists and is enabled,
-     * and its "show the express button on the checkout" setting is on. Options only, no Mollie call,
-     * so it is cheap enough for every request (the unpaid-orders schedule asks it on init).
-     */
-    public function anyWalletTurnedOn(): bool
-    {
-        foreach ($this->config['wallets'] as $row) {
-            $methodId = substr($row['gatewayId'], strlen(self::GATEWAY_PREFIX));
-            if (!array_key_exists($methodId, $this->paymentMethods)) {
-                continue;
-            }
-            $settingsOption = $row['gatewayId'] . '_settings';
-            if (
-                mollieWooCommerceIsGatewayEnabled($settingsOption, 'enabled')
-                && mollieWooCommerceIsGatewayEnabled($settingsOption, $row['checkoutSetting'])
-            ) {
-                return true;
-            }
-        }
-
-        return false;
+        return [$registered, $enabled, $expressOnCheckout];
     }
 
     /**

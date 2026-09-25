@@ -92,7 +92,7 @@ final class StartExpressSession
             $this->urls->returnUrl($ref),
             $this->urls->webhookUrl(),
             ['express_ref' => $ref],
-            SessionPayload::requiredCustomerDetails($this->cartFacts->holdsEmail(), $this->cartFacts->holdsBillingAddress())
+            SessionPayload::requiredCustomerDetails()
         );
         $key = IdempotencyKey::for(self::INTENT, [
             'customer' => $customer,
@@ -135,7 +135,8 @@ final class StartExpressSession
 
     private function refuse(string $surface, string $reason, int $httpStatus): ExpressSessionResult
     {
-        $this->log->warning('express.session.refused', ['surface' => $surface, 'reason' => $reason]);
+        // Anyone may cause a refusal, so it is written only with the debug log on.
+        $this->log->info('express.session.refused', ['surface' => $surface, 'reason' => $reason]);
 
         return ExpressSessionResult::refused($reason, $httpStatus);
     }

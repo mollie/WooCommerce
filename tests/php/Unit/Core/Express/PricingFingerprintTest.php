@@ -85,6 +85,33 @@ class PricingFingerprintTest extends TestCase
     }
 
     /**
+     * Scenario: a cart with nothing to ship is not repriced by its address
+     *   Given two carts with nothing to ship that differ only in their destination
+     *   When their fingerprints are taken
+     *   Then the two are the same
+     *   And a cart that ships is still repriced by the same change
+     *
+     * WooCommerce fills the shipping fields of such a cart from the billing address itself — the
+     * Store API mirrors one onto the other, verified against a real store on 2026-09-24 — so the
+     * page cannot see the change coming and the shopper was refused at submit with cart_changed.
+     * No shipping cost depends on that address, and any tax it changes is in the total already.
+     *
+     * @covers \Mollie\WooCommerce\Core\Express\PricingFingerprint::of
+     */
+    public function testACartWithNothingToShipIgnoresItsDestination(): void
+    {
+        $here = PricingFingerprint::of($this->cart(['needsShipping' => false, 'destination' => 'LU|L-1234|Luxembourg']));
+        $there = PricingFingerprint::of($this->cart(['needsShipping' => false, 'destination' => 'ES|48001|Bilbao']));
+
+        self::assertSame($here, $there, 'An address nothing is shipped to cannot reprice a session.');
+        self::assertNotSame(
+            PricingFingerprint::of($this->cart(['destination' => 'LU|L-1234|Luxembourg'])),
+            PricingFingerprint::of($this->cart(['destination' => 'ES|48001|Bilbao'])),
+            'A cart that ships is still repriced by its destination.'
+        );
+    }
+
+    /**
      * @param array<string, mixed> $change
      */
     private function cart(array $change = []): CartFacts
@@ -101,7 +128,7 @@ class PricingFingerprintTest extends TestCase
                 subtotal: $money('20.00'),
                 vatRate: '21.00'
             )],
-            needsShipping: true,
+            needsShipping: (bool) ($change['needsShipping'] ?? true),
             shippingDestinationComplete: true,
             shippingRateChosen: true,
             total: $money((string) ($change['total'] ?? '26.05')),

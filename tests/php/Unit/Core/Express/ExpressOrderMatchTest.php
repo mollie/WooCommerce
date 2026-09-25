@@ -103,7 +103,7 @@ class ExpressOrderMatchTest extends TestCase
             'no order carries the ref' => [[], null, 'unknown_ref'],
             'the candidate carries a different ref' => [[], ['expressRef' => 'exr_ffffffffffffffffffffffffffffffff'], 'unknown_ref'],
             'the order was created by the ordinary checkout' => [[], ['createdVia' => 'checkout'], 'not_express'],
-            'the order has no created_via' => [[], ['createdVia' => null], 'not_express'],
+            'the order has no created_via' => [[], ['createdVia' => ''], 'not_express'],
             'the amount differs by a cent' => [['amount' => Money::fromDecimal('26.04', 'EUR')], [], 'amount_mismatch'],
             'the currency differs' => [['amount' => Money::fromDecimal('26.05', 'USD')], [], 'amount_mismatch'],
             'the order tracks a different payment' => [[], ['trackedPaymentId' => 'tr_other'], 'other_payment'],
@@ -130,7 +130,6 @@ class ExpressOrderMatchTest extends TestCase
             $values['status'],
             $values['method'],
             $values['amount'],
-            null,
             mode: 'live',
             expressRef: $values['expressRef']
         );
@@ -150,12 +149,14 @@ class ExpressOrderMatchTest extends TestCase
         ], $overrides);
 
         return new ExpressOrderFacts(
+            orderId: 42,
             expressRef: $values['expressRef'],
-            existingOrderId: 42,
             createdVia: $values['createdVia'],
             total: $values['total'],
             trackedPaymentId: $values['trackedPaymentId'],
-            needsPayment: $values['needsPayment']
+            needsPayment: $values['needsPayment'],
+            holdsShipping: false,
+            needsShipping: false
         );
     }
 }

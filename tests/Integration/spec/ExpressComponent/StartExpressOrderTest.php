@@ -49,13 +49,6 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      */
     private array $changedProducts = [];
 
-    /**
-     * The fixture customer's billing address before a scenario changed it, restored in tearDown().
-     *
-     * @var array<string, string>|null
-     */
-    private ?array $accountBackup = null;
-
     public function setUp(): void
     {
         parent::setUp();
@@ -75,17 +68,6 @@ class StartExpressOrderTest extends ExpressFlowTestCase
             $product->save();
         }
         $this->changedProducts = [];
-        if ($this->accountBackup !== null) {
-            $account = new \WC_Customer($this->customer_id);
-            foreach ($this->accountBackup as $field => $value) {
-                $setter = [$account, "set_billing_{$field}"];
-                if (is_callable($setter)) {
-                    $setter($value);
-                }
-            }
-            $account->save();
-            $this->accountBackup = null;
-        }
         $this->tearDownExpressCheckout();
 
         parent::tearDown();
@@ -242,6 +224,33 @@ class StartExpressOrderTest extends ExpressFlowTestCase
         $this->assertCount(1, array_diff($this->allOrderIds(), $before));
         $this->assertCount(1, $this->ordersFor($session['ref']));
         $this->assertCount(1, $this->loggedEvents('express.order.reused'));
+    }
+
+    /**
+     * Scenario: a repeat submit after the order was paid gets no second payment
+     *   Given a started express order that the webhook has since paid
+     *   When the same shopper submits again with the same session and the same cart
+     *   Then the store refuses with order_not_payable and creates no order
+     *   And the session is forgotten, so the next start creates a new one (REQ-B5, REQ-D4)
+     *
+     * @test
+     */
+    public function it_refuses_a_repeat_submit_once_the_order_no_longer_needs_payment(): void
+    {
+        $this->readyGuestCheckout();
+        $session = $this->startedSession();
+        $this->assertAnsweredOk($this->startOrder());
+        $paid = $this->onlyOrderFor($session['ref']);
+        $paid->set_status('processing');
+        $paid->save();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrder();
+
+        $this->assertRefused($response, 'order_not_payable');
+        $this->assertSame($before, $this->allOrderIds());
+        $this->assertSame(200, $this->startSession()->get_status());
+        $this->assertCount(2, $this->fakeMollie()->sessions(), 'The session of a paid order must never be handed out again.');
     }
 
     /**
@@ -468,107 +477,48 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
-     * Scenario: a guest's details come back from the checkout form, in Mollie's shape
-     *   Given a guest whose checkout form holds an email, a billing address with a state and a shipping address
+     * Scenario: the store answers no shopper details, so the wallet's own are the ones that count
+     *   Given a guest whose checkout form holds an email, a billing address and a shipping address
      *   When the order is requested
-     *   Then the answer carries that email, and billingAddress and shippingAddress in Mollie's shape
-     *   And the billing state is the billingAddress region
-     *   And the shipping address, which has no state, carries no region
+     *   Then the answer says only that the order was started
+     *   And it carries no email, billing address or shipping address
+     *
+     * Anything handed to event.resolve() overrides what the wallet collected, and the sheet is
+     * where the shopper picks their contact and billing address (owner, 2026-09-24, revising
+     * REQ-C2). Until then this route answered the store's own details and this test pinned them.
+     * The shipping address still comes from the form, and stays on the server: the order ships to
+     * the address its shipping was priced for.
      *
      * @test
      */
-    public function it_answers_a_guests_details_from_the_checkout_form(): void
+    public function it_answers_no_shopper_details_so_the_wallet_takes_precedence(): void
     {
         $this->readyGuestCheckout();
-        $billing = array_merge($this->billing(), ['state' => 'Capellen']);
-        $this->fillCheckoutForm($billing, $this->shipping('LU'));
+        $this->fillCheckoutForm(array_merge($this->billing(), ['state' => 'Capellen']), $this->shipping('LU'));
         $this->chooseRate('standard');
         $this->startedSession();
 
-        $data = (array) $this->startOrder()->get_data();
-
-        $this->assertTrue($data['ok'] ?? null);
-        $this->assertSame(CanaryData::EMAIL, $data['email'] ?? null);
-        $this->assertAddressHolds([
-            'givenName' => $billing['first_name'],
-            'familyName' => $billing['last_name'],
-            'streetAndNumber' => $billing['address_1'],
-            'streetAdditional' => $billing['address_2'],
-            'postalCode' => $billing['postcode'],
-            'city' => $billing['city'],
-            'region' => 'Capellen',
-            'country' => 'LU',
-        ], (array) ($data['billingAddress'] ?? []));
-        $shipping = $this->shipping('LU');
-        $this->assertAddressHolds([
-            'givenName' => $shipping['first_name'],
-            'familyName' => $shipping['last_name'],
-            'streetAndNumber' => $shipping['address_1'],
-            'postalCode' => $shipping['postcode'],
-            'city' => $shipping['city'],
-            'country' => 'LU',
-        ], (array) ($data['shippingAddress'] ?? []));
-        $this->assertArrayNotHasKey('region', (array) $data['shippingAddress']);
-        $this->assertArrayNotHasKey('streetAdditional', (array) $data['shippingAddress']);
-    }
-
-    /**
-     * Scenario: a logged-in shopper's billing details come back from the account
-     *   Given a logged-in customer whose account holds an email and a billing address
-     *   And who only chose where to ship on the checkout
-     *   When the order is requested
-     *   Then the answer carries the account's email and billing address
-     *
-     * @test
-     */
-    public function it_answers_a_logged_in_shoppers_details_from_the_account(): void
-    {
-        $account = new \WC_Customer($this->customer_id);
-        $this->accountBackup = $account->get_billing();
-        $account->set_billing_first_name('Account');
-        $account->set_billing_last_name('Holder');
-        $account->set_billing_address_1('Accountstraat 1');
-        $account->set_billing_postcode('L-9999');
-        $account->set_billing_city('Accountville');
-        $account->set_billing_country('LU');
-        $account->save();
-        $accountEmail = $account->get_billing_email() !== '' ? $account->get_billing_email() : $account->get_email();
-
-        $this->bootExpress();
-        $this->actAsCustomer();
-        WC()->customer = new \WC_Customer(get_current_user_id(), true);
-        $this->cartWith(['simple'], 2);
-        foreach ($this->shipping('LU') as $field => $value) {
-            WC()->customer->{"set_shipping_{$field}"}($value);
-        }
-        WC()->customer->save();
-        $this->chooseRate('standard');
-        $this->startedSession();
-
-        $data = (array) $this->startOrder()->get_data();
+        $response = $this->startOrder();
+        $data = (array) $response->get_data();
 
         $this->assertTrue($data['ok'] ?? null, 'Expected ok: ' . wp_json_encode($data));
-        $this->assertSame($accountEmail, $data['email'] ?? null);
-        $this->assertAddressHolds([
-            'givenName' => 'Account',
-            'familyName' => 'Holder',
-            'streetAndNumber' => 'Accountstraat 1',
-            'postalCode' => 'L-9999',
-            'city' => 'Accountville',
-            'country' => 'LU',
-        ], (array) ($data['billingAddress'] ?? []));
+        $this->assertSame(['ok'], array_keys($data), 'The submit answer is the fact, and nothing about the shopper.');
+        $this->assertNothingLeakedToBrowser($data);
     }
 
     /**
-     * Scenario: what the store does not hold is left for the wallet to collect
+     * Scenario: a cart with nothing to ship asks the wallet for the contact and the billing address
      *   Given a guest with an empty checkout form and a cart with nothing to ship
-     *   When the order is requested
-     *   Then it is answered ok=true without an email
-     *   And without a name, street, postcode or city in any address
+     *   When a session is started and the order requested
+     *   Then the session asked the wallet for the email and the billing address, and not where to ship
+     *   And the order is answered with the fact only, so nothing overrides what the sheet collected
+     *
+     * Nothing is shipped, so a shipping address from the wallet would add nothing *(owner,
+     * 2026-09-24)*.
      *
      * @test
      */
-    public function it_omits_the_details_the_store_does_not_hold(): void
+    public function it_asks_the_wallet_for_contact_and_billing_when_nothing_ships(): void
     {
         $this->changeProduct($this->simpleProduct()->get_id(), static function (\WC_Product $product): void {
             $product->set_virtual(true);
@@ -580,15 +530,14 @@ class StartExpressOrderTest extends ExpressFlowTestCase
         $this->recalculate();
         $this->startedSession();
 
+        $details = $this->sessionPayloads()[0]['requiredCustomerDetails'] ?? [];
+        sort($details);
+        $this->assertSame(['billing-address', 'email'], $details);
+
         $data = (array) $this->startOrder()->get_data();
 
         $this->assertTrue($data['ok'] ?? null, 'Expected ok: ' . wp_json_encode($data));
-        $this->assertArrayNotHasKey('email', $data);
-        foreach (['billingAddress', 'shippingAddress'] as $type) {
-            foreach (['givenName', 'familyName', 'streetAndNumber', 'postalCode', 'city', 'email'] as $field) {
-                $this->assertArrayNotHasKey($field, (array) ($data[$type] ?? []), "{$type}.{$field} is not held and must be left out.");
-            }
-        }
+        $this->assertSame(['ok'], array_keys($data), 'Nothing may override what the wallet collected.');
     }
 
     // ──────────────────────────────────────────────────────────────────────────

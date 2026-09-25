@@ -293,7 +293,7 @@ class Settings
         $status = $this->statusHelper;
         if (!$status->isCompatible()) {
             // Just stop here!
-            return '' . '<div class="notice notice-error">' . '<p><strong>' . __('Error', 'mollie-payments-for-woocommerce') . ':</strong> ' . implode('<br/>', $status->getErrors()) . '</p></div>';
+            return (new AdminNotice())->renderNotice('notice-error', '<p><strong>' . __('Error', 'mollie-payments-for-woocommerce') . ':</strong> ' . implode('<br/>', $status->getErrors()) . '</p>');
         }
         try {
             // Check compatibility

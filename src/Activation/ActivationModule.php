@@ -109,7 +109,7 @@ class ActivationModule implements ExecutableModule, ServiceModule
             '<a href="' . esc_url(admin_url('admin.php?page=wc-settings&tab=mollie_settings')) . '">',
             '</a>'
         );
-        $notice->addNotice('notice-error is-dismissible', $message);
+        $notice->addNotice('notice-warning is-dismissible', $message);
     }
     protected function markUpdatedOrNew()
     {

@@ -229,7 +229,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
             '<a href="' . esc_url(admin_url('admin.php?page=wc-settings&tab=mollie_settings')) . '">',
             '</a>'
         );
-        $notice->addNotice('notice-error', $message);
+        $notice->addNotice('notice-warning', $message);
         return \true;
     }
     /**

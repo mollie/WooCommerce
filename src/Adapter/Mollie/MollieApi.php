@@ -18,6 +18,8 @@ interface MollieApi
      *
      * @param array<string, mixed> $payload The body of POST /v2/sessions.
      * @param string $idempotencyKey Built with Core\Security\IdempotencyKey::for().
+     *
+     * @throws MollieCallFailed When Mollie refuses the payload or cannot be reached.
      */
     public function createSession(array $payload, string $idempotencyKey): ExpressSession;
 

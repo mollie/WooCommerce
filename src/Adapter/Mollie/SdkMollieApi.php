@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Adapter\Mollie;
 
 use InvalidArgumentException;
+use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\MollieApiClient;
 use Mollie\WooCommerce\Core\Types\ExpressSession;
 use Mollie\WooCommerce\Core\Types\Money;
@@ -19,8 +20,8 @@ use UnexpectedValueException;
  *
  * The key is resolved here and never handed on. Every mutating call sets its idempotency key on
  * the client first, and is sent raw because the typed sessions endpoint of SDK v2.79 drops
- * clientAccessToken. Failures surface as the SDK's ApiException; callers classify them and must not
- * log or display its text, which contains Mollie's response body.
+ * clientAccessToken. A failed session create surfaces as MollieCallFailed, classified, without the
+ * SDK's text, which contains Mollie's response body.
  */
 final class SdkMollieApi implements MollieApi
 {
@@ -41,12 +42,20 @@ final class SdkMollieApi implements MollieApi
 
         try {
             $response = $client->performHttpCall('POST', 'sessions', json_encode($payload, JSON_THROW_ON_ERROR));
+        } catch (ApiException $exception) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- only the code is read; the message is fixed
+            throw MollieCallFailed::fromThrowable($exception);
         } finally {
             // The SDK only resets the key after a completed request; do not let it leak into the next call.
             $client->resetIdempotencyKey();
         }
 
-        return $this->toSession($response);
+        try {
+            return $this->toSession($response);
+        } catch (UnexpectedValueException $exception) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- only the code is read; the message is fixed
+            throw MollieCallFailed::fromThrowable($exception);
+        }
     }
 
     public function session(string $sessionId): ExpressSession

@@ -37,6 +37,7 @@ final class SdkMollieApi implements MollieApi
         try {
             $response = $client->performHttpCall('POST', 'sessions', json_encode($payload, JSON_THROW_ON_ERROR));
         } catch (ApiException $exception) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- only the code is read; the message is fixed
             throw MollieCallFailed::fromThrowable($exception);
         } finally {
             // The SDK only resets the key after a completed request; do not let it leak into the next call.
@@ -46,6 +47,7 @@ final class SdkMollieApi implements MollieApi
         try {
             return $this->toSession($response);
         } catch (UnexpectedValueException $exception) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- only the code is read; the message is fixed
             throw MollieCallFailed::fromThrowable($exception);
         }
     }

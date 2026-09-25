@@ -56,7 +56,10 @@
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
       "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional",
       "Mollie\\WooCommerceTests\\Integration\\": "tests/Integration"
-    }
+    },
+    "exclude-from-classmap": [
+      "tests/php/Unit/Architecture/fixtures/"
+    ]
   },
   "scripts": {
     "check-coding-standards": "vendor/bin/phpcs --parallel=8 -s",

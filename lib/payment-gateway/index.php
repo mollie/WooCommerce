@@ -7,8 +7,8 @@ namespace Mollie;
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version:     {VERSION}
- * SHA:         ${GIT_SHA}
+ * Version: 8.1.10+piwoo-938-clarify-connection-failures-during-setup.d5bce02
+ * SHA: d5bce029d1b1c84b53825dfcdad8fa77fa44f408
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3

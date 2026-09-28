@@ -14,12 +14,6 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\Shared\Status;
 class Settings
 {
-    /**
-     * Stage that produced a connection failure, reported as 'error_kind'.
-     */
-    public const ERROR_KIND_INCOMPATIBLE = 'incompatible';
-    public const ERROR_KIND_API_KEY = 'api_key';
-    public const ERROR_KIND_API = 'api';
     protected $pluginId;
     protected $pluginVersion;
     protected $pluginUrl;
@@ -254,35 +248,29 @@ class Settings
     }
     public function getConnectionStatus(): bool
     {
-        return $this->getConnectionStatusWithError()['connected'];
+        return $this->getConnectionStatusWithError()->isConnected();
     }
     /**
-     * Attempt connection and return error details on failure.
-     *
-     * 'error_kind' says which stage failed, because 'error_code' alone cannot: the API key
-     * checks and the compatibility checks never produce an HTTP status, so they would be
-     * indistinguishable from a request that never reached Mollie.
-     *
-     * @return array{connected: bool, error_kind?: string, error_code?: int, error_message?: string}
+     * Attempt connection and say which stage failed, if any.
      */
-    public function getConnectionStatusWithError(): array
+    public function getConnectionStatusWithError(): \Mollie\WooCommerce\Settings\ConnectionResult
     {
         $status = $this->statusHelper;
         if (!$status->isCompatible()) {
-            return ['connected' => \false, 'error_kind' => self::ERROR_KIND_INCOMPATIBLE, 'error_code' => 0, 'error_message' => implode('<br/>', $status->getErrors())];
+            return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_INCOMPATIBLE, 0, implode('<br/>', $status->getErrors()));
         }
         try {
             $apiKey = $this->getApiKey();
             $apiClient = $this->apiHelper->getApiClient($apiKey);
         } catch (ApiException $e) {
             // No key saved, or a key that fails the format check: never a connectivity problem.
-            return ['connected' => \false, 'error_kind' => self::ERROR_KIND_API_KEY, 'error_code' => (int) $e->getCode(), 'error_message' => Status::plainApiErrorMessage($e)];
+            return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_API_KEY, (int) $e->getCode(), Status::plainApiErrorMessage($e));
         }
         try {
             $status->getMollieApiStatus($apiClient);
-            return ['connected' => \true];
+            return \Mollie\WooCommerce\Settings\ConnectionResult::connected();
         } catch (ApiException $e) {
-            return ['connected' => \false, 'error_kind' => self::ERROR_KIND_API, 'error_code' => (int) $e->getCode(), 'error_message' => Status::plainApiErrorMessage($e)];
+            return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_API, (int) $e->getCode(), Status::plainApiErrorMessage($e));
         }
     }
     /**

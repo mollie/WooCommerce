@@ -216,15 +216,32 @@ class ConnectionStatusTraitTest extends TestCase
         self::assertStringContainsString($underlyingError, $result);
     }
 
-    // Criterion 6b: with nothing to show, the legacy message keeps the field non-empty
-    public function testUnrecognizedErrorCodeWithEmptyMessageFallsBackToLegacyString(): void
+    /**
+     * Criterion 6b: a request that failed without any detail keeps the field non-empty, but with a
+     * generic message: nothing at this point says the credentials are the cause (review of PIWOO-938).
+     *
+     * @dataProvider failuresWithoutDetail
+     */
+    public function testFailureWithoutDetailShowsAGenericMessage(int $errorCode): void
     {
         $result = (string) $this->makeSut()->callConnectionStatus(
             $this->makeSettings(),
-            $this->apiFailure(418, '')
+            $this->apiFailure($errorCode, '')
         );
 
-        self::assertStringContainsString(self::LEGACY_MESSAGE, $result);
+        self::assertSame('Failed to connect to Mollie API &#x2716;', $result);
+        self::assertStringNotContainsStringIgnoringCase('api key', $result);
+    }
+
+    /**
+     * @return array<string, array{0: int}>
+     */
+    public function failuresWithoutDetail(): array
+    {
+        return [
+            'an unrecognized status' => [418],
+            'no status at all' => [0],
+        ];
     }
 
     // A section built before the detail was threaded through still renders the legacy message

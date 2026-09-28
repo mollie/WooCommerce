@@ -116,8 +116,9 @@ trait ConnectionStatusTrait
             );
         }
 
+        // The request failed without any detail: nothing says the credentials are the cause.
         return __(
-            'Failed to connect to Mollie API - check your API keys &#x2716;',
+            'Failed to connect to Mollie API &#x2716;',
             'mollie-payments-for-woocommerce'
         );
     }

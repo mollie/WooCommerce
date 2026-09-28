@@ -161,6 +161,11 @@ class ConnectionStatusRenderingTest extends IntegrationMockedTestCase
                 ],
                 ['API key', 'status.mollie.com'],
             ],
+            'no answer and no detail: a generic message, not a key problem' => [
+                new WP_Error('http_request_failed', ''),
+                ['Failed to connect to Mollie API &#x2716;'],
+                ['API key', 'outbound connectivity', 'status.mollie.com'],
+            ],
             '400: Mollie refuses the request, its text escaped once and undecorated' => [
                 [400, $this->problem(400, 'Bad Request', "The 'amount' & 'currency' don't match.")],
                 ['Communicating with Mollie failed: ', 'The &#039;amount&#039; &amp; &#039;currency&#039; don&#039;t match.'],

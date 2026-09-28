@@ -118,28 +118,38 @@ class ConnectionStatusTraitTest extends TestCase
         self::assertStringNotContainsStringIgnoringCase('api key', $result);
     }
 
-    // Criterion 5: code 0 on the API stage means the request never reached Mollie
-    public function testNetworkErrorMessageEmbedsUnderlyingErrorVerbatim(): void
+    /**
+     * Criterion 7: code 0 on the API stage only means no HTTP status is known. The transport
+     * failed, or the response had no body, could not be decoded or carried an error object
+     * (WordPressHttpAdapter), so the detail is shown in the generic wrapper and nothing blames
+     * the server's connectivity or the API keys (review of PIWOO-938).
+     *
+     * @dataProvider failuresWithoutStatus
+     */
+    public function testFailureWithoutStatusShowsItsDetailGenerically(string $underlyingError): void
     {
-        $underlyingError = 'cURL error 28: Operation timed out after 10000 milliseconds';
-
         $result = (string) $this->makeSut()->callConnectionStatus(
             $this->makeSettings(),
             $this->apiFailure(0, $underlyingError)
         );
 
-        self::assertStringContainsString(
-            $underlyingError,
-            $result,
-            'The server-connectivity message must embed the non-empty underlying error detail'
-        );
-        // Not just the raw error echoed back — it must be framed as a server-side problem.
-        self::assertRegExp('/your server/i', $result);
-        self::assertStringNotContainsStringIgnoringCase('api key', $result);
+        self::assertSame('Communicating with Mollie failed: ' . $underlyingError . ' &#x2716;', $result);
     }
 
-    // A missing or malformed API key is never a connectivity problem, even though it has no HTTP status
-    public function testApiKeyProblemIsNotPresentedAsAConnectivityProblem(): void
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public function failuresWithoutStatus(): array
+    {
+        return [
+            'transport failure' => ['cURL error 28: Operation timed out after 10000 milliseconds'],
+            'empty response body' => ['No response body found.'],
+            'error object in the body' => ['The profile is blocked.'],
+        ];
+    }
+
+    // A missing or malformed API key is a key problem, even though it has no HTTP status like a failed request
+    public function testApiKeyProblemIsNotPresentedAsAFailedRequest(): void
     {
         foreach (
             [
@@ -152,9 +162,7 @@ class ConnectionStatusTraitTest extends TestCase
                 ConnectionResult::failed(ConnectionResult::KIND_API_KEY, 0, $keyMessage)
             );
 
-            self::assertStringNotContainsStringIgnoringCase('ssl', $result);
-            self::assertStringNotContainsStringIgnoringCase('outbound connectivity', $result);
-            self::assertStringContainsString($keyMessage, $result);
+            self::assertSame($keyMessage . ' &#x2716;', $result);
         }
     }
 
@@ -200,7 +208,6 @@ class ConnectionStatusTraitTest extends TestCase
 
         self::assertStringContainsString($compatibilityError, $result);
         self::assertStringNotContainsString('Incompatible environment', $result);
-        self::assertStringNotContainsStringIgnoringCase('ssl', $result);
     }
 
     // Criterion 6a: an unrecognized code falls back to showing the real error message

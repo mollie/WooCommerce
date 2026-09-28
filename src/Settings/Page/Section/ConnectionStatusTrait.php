@@ -94,17 +94,6 @@ trait ConnectionStatusTrait
             );
         }
 
-        if ($errorCode === 0 && $errorMessage !== '') {
-            return sprintf(
-                /* translators: Placeholder 1: the underlying connection error reported by the server. */
-                __(
-                    'Could not reach the Mollie API from your server - check your outbound connectivity and SSL configuration: %1$s &#x2716;',
-                    'mollie-payments-for-woocommerce'
-                ),
-                esc_html($errorMessage)
-            );
-        }
-
         if ($errorMessage !== '') {
             return sprintf(
                 /* translators: Placeholder 1: the error reported by the Mollie API. */

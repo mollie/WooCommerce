@@ -572,8 +572,8 @@ class SettingsTest extends TestCase
         $message = (string) $renderer->render($settingsForRender, $sut->getConnectionStatusWithError());
 
         self::assertStringContainsStringIgnoringCase('api key', $message);
-        self::assertStringNotContainsStringIgnoringCase('ssl', $message);
-        self::assertStringNotContainsStringIgnoringCase('outbound connectivity', $message);
+        // A 401 is named as a key problem, not passed on as Mollie's text in the generic wrapper.
+        self::assertStringNotContainsString('Communicating with Mollie failed', $message);
     }
 
     // Gateway logo setting is not written when sanitizer rejects the file (notice-enabled path)

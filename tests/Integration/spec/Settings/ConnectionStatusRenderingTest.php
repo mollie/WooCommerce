@@ -32,7 +32,7 @@ class ConnectionStatusRenderingTest extends IntegrationMockedTestCase
     private array $optionBackups = [];
 
     /**
-     * @var array{0: int, 1: array<string, mixed>}|WP_Error|null The next answer of api.mollie.com.
+     * @var array{0: int, 1: array<string, mixed>|null}|WP_Error|null The next answer of api.mollie.com (a null body is empty).
      */
     private $mollieAnswer = null;
 
@@ -72,8 +72,8 @@ class ConnectionStatusRenderingTest extends IntegrationMockedTestCase
 
             return [
                 'headers' => ['content-type' => 'application/hal+json'],
-                'body' => (string) wp_json_encode($body),
-                'response' => ['code' => $status, 'message' => (string) ($body['title'] ?? 'OK')],
+                'body' => $body === null ? '' : (string) wp_json_encode($body),
+                'response' => ['code' => $status, 'message' => (string) ($body['title'] ?? '')],
                 'cookies' => [],
                 'filename' => null,
             ];
@@ -153,13 +153,20 @@ class ConnectionStatusRenderingTest extends IntegrationMockedTestCase
                 ['<a href="https://status.mollie.com/" target="_blank">Mollie status page</a>'],
                 ['API key', 'Something broke'],
             ],
-            'no answer: the server cannot reach Mollie' => [
+            'no answer: the transport failed, its detail shown generically' => [
                 new WP_Error('http_request_failed', 'cURL error 28: Operation timed out after 10000 milliseconds with 0 bytes received'),
-                [
-                    'Could not reach the Mollie API from your server',
-                    'cURL error 28: Operation timed out after 10000 milliseconds with 0 bytes received',
-                ],
-                ['API key', 'status.mollie.com'],
+                ['Communicating with Mollie failed: cURL error 28: Operation timed out after 10000 milliseconds with 0 bytes received &#x2716;'],
+                ['API key', 'status.mollie.com', 'outbound connectivity', 'SSL'],
+            ],
+            'empty body: no status survives, so not a connectivity problem' => [
+                [503, null],
+                ['Communicating with Mollie failed: No response body found. &#x2716;'],
+                ['API key', 'outbound connectivity', 'SSL'],
+            ],
+            'error object in the body: not a connectivity problem' => [
+                [200, ['error' => ['message' => 'The profile is blocked.']]],
+                ['Communicating with Mollie failed: The profile is blocked. &#x2716;'],
+                ['API key', 'outbound connectivity', 'SSL', 'status.mollie.com'],
             ],
             'no answer and no detail: a generic message, not a key problem' => [
                 new WP_Error('http_request_failed', ''),

@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
+use Mollie\WooCommerce\Settings\ConnectionResult;
 use Mollie\WooCommerce\Settings\Settings;
 
 trait ConnectionStatusTrait
 {
-    /**
-     * @param array{connected?: bool, error_kind?: string, error_code?: int, error_message?: string} $connectionStatus
-     */
-    protected function connectionStatusField(Settings $settings, array $connectionStatus): array
+    protected function connectionStatusField(Settings $settings, ConnectionResult $connectionStatus): array
     {
 
         return [
@@ -22,13 +20,10 @@ trait ConnectionStatusTrait
         ];
     }
 
-    /**
-     * @param array{connected?: bool, error_kind?: string, error_code?: int, error_message?: string} $connectionStatus
-     */
-    protected function connectionStatus(Settings $settings, array $connectionStatus): ?string
+    protected function connectionStatus(Settings $settings, ConnectionResult $connectionStatus): ?string
     {
         $testMode = $settings->isTestModeEnabled();
-        if (!($connectionStatus['connected'] ?? false)) {
+        if (!$connectionStatus->isConnected()) {
             return $this->connectionErrorMessage($connectionStatus);
         }
         if ($testMode) {
@@ -40,16 +35,14 @@ trait ConnectionStatusTrait
     /**
      * Describe why the connection failed, so the merchant does not troubleshoot the
      * API keys when the cause is an outage, rate limiting or their own server.
-     *
-     * @param array{connected?: bool, error_kind?: string, error_code?: int, error_message?: string} $connectionStatus
      */
-    protected function connectionErrorMessage(array $connectionStatus): string
+    protected function connectionErrorMessage(ConnectionResult $connectionStatus): string
     {
-        $errorKind = (string) ($connectionStatus['error_kind'] ?? Settings::ERROR_KIND_API_KEY);
-        $errorCode = (int) ($connectionStatus['error_code'] ?? 0);
-        $errorMessage = (string) ($connectionStatus['error_message'] ?? '');
+        $errorKind = $connectionStatus->errorKind();
+        $errorCode = $connectionStatus->errorCode();
+        $errorMessage = $connectionStatus->errorMessage();
 
-        if ($errorKind === Settings::ERROR_KIND_INCOMPATIBLE) {
+        if ($errorKind === ConnectionResult::KIND_INCOMPATIBLE) {
             return $errorMessage !== ''
                 ? sprintf(
                     /* translators: Placeholder 1: the compatibility problems found on this installation. */
@@ -65,7 +58,7 @@ trait ConnectionStatusTrait
                 );
         }
 
-        if ($errorKind === Settings::ERROR_KIND_API_KEY) {
+        if ($errorKind === ConnectionResult::KIND_API_KEY) {
             return $errorMessage !== ''
                 ? $errorMessage . ' &#x2716;'
                 : __(

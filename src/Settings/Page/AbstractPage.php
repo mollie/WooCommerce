@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Settings\Page;
 
 use Mollie\WooCommerce\Settings\Page\Section\AbstractSection;
+use Mollie\WooCommerce\Settings\ConnectionResult;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
@@ -19,10 +20,7 @@ abstract class AbstractPage
     protected array $pages;
     protected Data $dataHelper;
     protected ContainerInterface $container;
-    /**
-     * @var array{connected?: bool, error_code?: int, error_message?: string}
-     */
-    protected array $connectionResult;
+    protected ConnectionResult $connectionResult;
 
     public function __construct(
         Settings $settings,
@@ -33,7 +31,7 @@ abstract class AbstractPage
         bool $testModeEnabled,
         Data $dataHelper,
         ContainerInterface $container,
-        array $connectionResult = []
+        ?ConnectionResult $connectionResult = null
     ) {
 
         $this->settings = $settings;
@@ -44,7 +42,7 @@ abstract class AbstractPage
         $this->pages = $pages;
         $this->dataHelper = $dataHelper;
         $this->container = $container;
-        $this->connectionResult = $connectionResult ?: ['connected' => $connectionStatus];
+        $this->connectionResult = $connectionResult ?? ConnectionResult::fromStatus($connectionStatus);
     }
 
     abstract public static function isTab(): bool;

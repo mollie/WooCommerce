@@ -101,7 +101,7 @@ class MollieSettingsPage extends WC_Settings_Page
     {
         $defaultSection = $currentSection;
         $connectionResult = $this->settings->getConnectionStatusWithError();
-        $connectionStatus = (bool) ($connectionResult['connected'] ?? false);
+        $connectionStatus = $connectionResult->isConnected();
 
         if (!$connectionStatus) {
             $defaultSection = PageNoApiKey::slug();

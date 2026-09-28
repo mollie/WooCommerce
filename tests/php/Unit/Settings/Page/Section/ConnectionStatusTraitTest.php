@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Settings\Page\Section;
 
 use Mollie\WooCommerce\Settings\Page\Section\ConnectionStatusTrait;
+use Mollie\WooCommerce\Settings\ConnectionResult;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerceTests\TestCase;
 
@@ -36,7 +37,7 @@ class ConnectionStatusTraitTest extends TestCase
         return new class {
             use ConnectionStatusTrait;
 
-            public function callConnectionStatus(Settings $settings, array $connectionStatus): ?string
+            public function callConnectionStatus(Settings $settings, ConnectionResult $connectionStatus): ?string
             {
                 return $this->connectionStatus($settings, $connectionStatus);
             }
@@ -54,14 +55,9 @@ class ConnectionStatusTraitTest extends TestCase
     /**
      * A failure that reached Mollie and came back with an HTTP status.
      */
-    private function apiFailure(int $errorCode, string $errorMessage): array
+    private function apiFailure(int $errorCode, string $errorMessage): ConnectionResult
     {
-        return [
-            'connected' => false,
-            'error_kind' => Settings::ERROR_KIND_API,
-            'error_code' => $errorCode,
-            'error_message' => $errorMessage,
-        ];
+        return ConnectionResult::failed(ConnectionResult::KIND_API, $errorCode, $errorMessage);
     }
 
     // Criterion 2: a 401 authentication failure keeps pointing the merchant at the API keys
@@ -153,12 +149,7 @@ class ConnectionStatusTraitTest extends TestCase
         ) {
             $result = (string) $this->makeSut()->callConnectionStatus(
                 $this->makeSettings(),
-                [
-                    'connected' => false,
-                    'error_kind' => Settings::ERROR_KIND_API_KEY,
-                    'error_code' => 0,
-                    'error_message' => $keyMessage,
-                ]
+                ConnectionResult::failed(ConnectionResult::KIND_API_KEY, 0, $keyMessage)
             );
 
             self::assertStringNotContainsStringIgnoringCase('ssl', $result);
@@ -175,12 +166,7 @@ class ConnectionStatusTraitTest extends TestCase
 
         $result = (string) $this->makeSut()->callConnectionStatus(
             $this->makeSettings(),
-            [
-                'connected' => false,
-                'error_kind' => Settings::ERROR_KIND_API_KEY,
-                'error_code' => 0,
-                'error_message' => $messageWithLink,
-            ]
+            ConnectionResult::failed(ConnectionResult::KIND_API_KEY, 0, $messageWithLink)
         );
 
         self::assertStringContainsString('<a href="https://my.mollie.com/', $result);
@@ -209,12 +195,7 @@ class ConnectionStatusTraitTest extends TestCase
 
         $result = (string) $this->makeSut()->callConnectionStatus(
             $this->makeSettings(),
-            [
-                'connected' => false,
-                'error_kind' => Settings::ERROR_KIND_INCOMPATIBLE,
-                'error_code' => 0,
-                'error_message' => $compatibilityError,
-            ]
+            ConnectionResult::failed(ConnectionResult::KIND_INCOMPATIBLE, 0, $compatibilityError)
         );
 
         self::assertStringContainsString($compatibilityError, $result);
@@ -251,7 +232,7 @@ class ConnectionStatusTraitTest extends TestCase
     {
         $result = (string) $this->makeSut()->callConnectionStatus(
             $this->makeSettings(),
-            ['connected' => false]
+            ConnectionResult::fromStatus(false)
         );
 
         self::assertStringContainsString(self::LEGACY_MESSAGE, $result);
@@ -264,11 +245,11 @@ class ConnectionStatusTraitTest extends TestCase
 
         $testModeResult = (string) $sut->callConnectionStatus(
             $this->makeSettings(true),
-            ['connected' => true]
+            ConnectionResult::connected()
         );
         $liveModeResult = (string) $sut->callConnectionStatus(
             $this->makeSettings(false),
-            ['connected' => true]
+            ConnectionResult::connected()
         );
 
         self::assertStringContainsString('Test API', $testModeResult);

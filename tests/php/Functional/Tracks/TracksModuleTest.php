@@ -4,6 +4,7 @@ namespace Mollie\WooCommerceTests\Functional\Tracks;
 
 use Mollie\WooCommerce\Tracks\TracksModule;
 use Mollie\WooCommerce\Tracks\TracksEventRecorder;
+use Mollie\WooCommerce\Settings\ConnectionResult;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerceTests\TestCase;
 use Mockery;
@@ -280,9 +281,7 @@ class TracksModuleTest extends TestCase
         $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldReceive('isTestModeEnabled')->andReturn(true);
         $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(true);
-        $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn([
-            'connected' => true,
-        ]);
+        $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn(ConnectionResult::connected());
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
@@ -334,12 +333,11 @@ class TracksModuleTest extends TestCase
         $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldReceive('isTestModeEnabled')->andReturn(true);
         $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(false);
-        $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn([
-            'connected' => false,
-            'error_kind' => Settings::ERROR_KIND_API,
-            'error_code' => 401,
-            'error_message' => '[2026-05-15T12:00:00+0000] Invalid <a href="https://example.com">API key</a>',
-        ]);
+        $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn(ConnectionResult::failed(
+            ConnectionResult::KIND_API,
+            401,
+            '[2026-05-15T12:00:00+0000] Invalid <a href="https://example.com">API key</a>'
+        ));
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
@@ -349,7 +347,7 @@ class TracksModuleTest extends TestCase
             ->once()
             ->with('mollie_connection_failed', Mockery::on(function ($props) {
                 return $props['payment_mode'] === 'test'
-                    && $props['error_kind'] === Settings::ERROR_KIND_API
+                    && $props['error_kind'] === ConnectionResult::KIND_API
                     && $props['error_code'] === 401
                     // Timestamp prefix stripped, markup stripped: telemetry stays plain text.
                     && $props['error_message'] === 'Invalid API key';

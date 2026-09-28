@@ -6,6 +6,7 @@ namespace Mollie\WooCommerceTests\Unit\Settings;
 
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\Settings\ConnectionResult;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Status;
 use Mollie\WooCommerceTests\TestCase;
@@ -368,7 +369,7 @@ class SettingsTest extends TestCase
             ['mollie_wc', $statusHelper, '8.1.4', 'https://example.com', $apiHelper, false]
         );
         $sut->shouldAllowMockingProtectedMethods();
-        $sut->shouldReceive('getConnectionStatusWithError')->andReturn(['connected' => true]);
+        $sut->shouldReceive('getConnectionStatusWithError')->andReturn(ConnectionResult::connected());
 
         self::assertTrue($sut->getConnectionStatus());
     }
@@ -463,9 +464,9 @@ class SettingsTest extends TestCase
 
         $result = $sut->getConnectionStatusWithError();
 
-        self::assertFalse($result['connected']);
-        self::assertSame($httpStatus, $result['error_code']);
-        self::assertSame(Settings::ERROR_KIND_API, $result['error_kind']);
+        self::assertFalse($result->isConnected());
+        self::assertSame($httpStatus, $result->errorCode());
+        self::assertSame(ConnectionResult::KIND_API, $result->errorKind());
     }
 
     public function provideApiHttpStatuses(): array
@@ -488,9 +489,9 @@ class SettingsTest extends TestCase
 
         $result = $sut->getConnectionStatusWithError();
 
-        self::assertSame(0, $result['error_code']);
-        self::assertSame(Settings::ERROR_KIND_API, $result['error_kind']);
-        self::assertStringContainsString('cURL error 28', $result['error_message']);
+        self::assertSame(0, $result->errorCode());
+        self::assertSame(ConnectionResult::KIND_API, $result->errorKind());
+        self::assertStringContainsString('cURL error 28', $result->errorMessage());
     }
 
     // A missing or malformed key fails before any request, and must be reported as a key problem
@@ -507,9 +508,9 @@ class SettingsTest extends TestCase
 
         $result = $sut->getConnectionStatusWithError();
 
-        self::assertFalse($result['connected']);
-        self::assertSame(Settings::ERROR_KIND_API_KEY, $result['error_kind']);
-        self::assertStringContainsString('No API key provided', $result['error_message']);
+        self::assertFalse($result->isConnected());
+        self::assertSame(ConnectionResult::KIND_API_KEY, $result->errorKind());
+        self::assertStringContainsString('No API key provided', $result->errorMessage());
     }
 
     // An incompatible environment reports the real compatibility errors, not a placeholder
@@ -523,9 +524,9 @@ class SettingsTest extends TestCase
 
         $result = $sut->getConnectionStatusWithError();
 
-        self::assertSame(Settings::ERROR_KIND_INCOMPATIBLE, $result['error_kind']);
-        self::assertStringContainsString('PHP 7.4 or higher', $result['error_message']);
-        self::assertNotSame('Incompatible environment', $result['error_message']);
+        self::assertSame(ConnectionResult::KIND_INCOMPATIBLE, $result->errorKind());
+        self::assertStringContainsString('PHP 7.4 or higher', $result->errorMessage());
+        self::assertNotSame('Incompatible environment', $result->errorMessage());
     }
 
     // The message handed to the settings page carries no ISO-8601 prefix from ApiException
@@ -537,8 +538,8 @@ class SettingsTest extends TestCase
 
         $result = $sut->getConnectionStatusWithError();
 
-        self::assertRegExp('/^Error executing API call/', $result['error_message']);
-        self::assertStringNotContainsString('[', $result['error_message']);
+        self::assertRegExp('/^Error executing API call/', $result->errorMessage());
+        self::assertStringNotContainsString('[', $result->errorMessage());
     }
 
     // End to end: a wrong API key must not be presented as a server connectivity problem
@@ -559,7 +560,7 @@ class SettingsTest extends TestCase
         $renderer = new class {
             use \Mollie\WooCommerce\Settings\Page\Section\ConnectionStatusTrait;
 
-            public function render(Settings $settings, array $connectionStatus): ?string
+            public function render(Settings $settings, ConnectionResult $connectionStatus): ?string
             {
                 return $this->connectionStatus($settings, $connectionStatus);
             }

@@ -179,7 +179,7 @@ class TracksModule implements ServiceModule, ExecutableModule
 
             $result = $settingsHelper->getConnectionStatusWithError();
 
-            if ($result['connected']) {
+            if ($result->isConnected()) {
                 $recorder->recordEvent('mollie_connection_success', [
                     'payment_mode' => $paymentMode,
                 ]);
@@ -188,11 +188,11 @@ class TracksModule implements ServiceModule, ExecutableModule
 
             $recorder->recordEvent('mollie_connection_failed', [
                 'payment_mode' => $paymentMode,
-                'error_kind' => $result['error_kind'] ?? '',
-                'error_code' => $result['error_code'] ?? 0,
+                'error_kind' => (string) $result->errorKind(),
+                'error_code' => $result->errorCode(),
                 // Some failures are reported with markup the merchant is meant to see; telemetry is text only.
                 'error_message' => wp_strip_all_tags(
-                    (string) preg_replace('/^(\[[\d\-T:+]+\]\s*)+/', '', $result['error_message'] ?? '')
+                    (string) preg_replace('/^(\[[\d\-T:+]+\]\s*)+/', '', $result->errorMessage())
                 ),
             ]);
         });

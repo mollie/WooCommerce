@@ -287,7 +287,6 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      */
     public function it_keeps_the_provisional_method_when_the_wallet_has_no_payment_method(string $mollieMethod): void
     {
-        // Only this boot's gateways: an earlier boot in this process may still register Google Pay.
         $this->container = $this->bootExpressOwning(['woocommerce_payment_gateways']);
         [$order, , $sessionId] = $this->expressOrder();
         $provisional = $order->get_payment_method();
@@ -316,9 +315,9 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
 
     /**
      * Scenario: a payment Mollie reports as a card payment gets the Google Pay method once it exists
-     *   Given Google Pay activated at Mollie and switched on, so its payment method is registered
+     *   Given Google Pay activated at Mollie and switched on
      *   And a pending express order whose provisional payment method is PayPal
-     *   And a paid payment from its session that Mollie reports as creditcard, as it reports Google Pay
+     *   And a paid payment from its session that Mollie reports as creditcard
      *   When Mollie calls the webhook
      *   Then the order's payment method is Google Pay, with that method's title
      *   And it has no note about an unknown wallet

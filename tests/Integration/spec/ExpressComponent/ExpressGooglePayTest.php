@@ -10,12 +10,7 @@ use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use Psr\Container\ContainerInterface;
 
 /**
- * The Google Pay payment method, which exists only so the Express Component can offer Google Pay.
- *
- * Mollie lists Google Pay as googlepay in /methods/all, with an activation status, so the gateway
- * registers exactly like any other method once its class exists. It has one setting, its enabled
- * switch, off by default; that switch is also its express setting in config/express.php. It is
- * never a payment method of its own at checkout: Mollie cannot take a standalone Google Pay payment.
+ * The Google Pay payment method, which exists only for the Express Component.
  *
  * @group integration
  * @group ExpressComponent
@@ -47,8 +42,7 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
      * Scenario: Google Pay registers only for a profile where Mollie reports it activated
      *   Given Mollie's methods list with or without googlepay
      *   When the plugin boots
-     *   Then mollie_wc_gateway_googlepay is a WooCommerce gateway, and one of the plugin's payment
-     *        methods listed on its admin tab, exactly when googlepay is in that list
+     *   Then mollie_wc_gateway_googlepay is registered, and listed on the admin tab, exactly when googlepay is in that list
      *
      * @test
      * @dataProvider activationAtMollie
@@ -57,7 +51,6 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
     {
         $this->googlePayAtMollie($activated);
 
-        // Only this boot's gateways: an earlier boot in this process keeps the list it saw then.
         $container = $this->bootExpressOwning(['woocommerce_payment_gateways']);
 
         $this->assertSame($activated, array_key_exists(self::GATEWAY, WC()->payment_gateways()->payment_gateways()));
@@ -85,12 +78,8 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
      *   Given Google Pay is activated at Mollie
      *   And the shop has never saved Google Pay settings
      *   When the plugin boots
-     *   Then the gateway's settings form has exactly one field, the enabled checkbox
-     *   And it is labelled for the express checkout on the checkout page
-     *   And it defaults to, and reads as, off
-     *
-     * The general enabled default is yes; nothing may turn on in the shop that the merchant did not
-     * turn on.
+     *   Then the settings form has one field, the enabled checkbox, labelled for express checkout
+     *   And it is off, although the general enabled default is on
      *
      * @test
      */
@@ -118,7 +107,7 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
      *   And a guest with a cart ready on the checkout
      *   When WooCommerce lists the payment methods the shopper can choose
      *   Then Google Pay is not among them, while PayPal is
-     *   And Google Pay is not registered for the block checkout, while Apple Pay is
+     *   And it is not registered for the block checkout, while Apple Pay is
      *
      * @test
      */
@@ -140,7 +129,7 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
     }
 
     /**
-     * Boots through readyGuestCheckout() and keeps the container it built.
+     * Keeps the container, which readyGuestCheckout() does not return.
      *
      * @param array<string, callable> $serviceOverrides
      */

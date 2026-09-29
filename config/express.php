@@ -30,12 +30,8 @@ $express = [
     // button does. In the Express Component every wallet waits for the form, Apple Pay included (owner,
     // 2026-09-22), so no row uses 'wallet'; switching one back is a data change only.
     //
-    // mollieMethod is the id in Mollie's methods API, which says whether the wallet is active; paidAs is the
-    // method Mollie reports on a payment made with it, which the webhook matches. They differ for Google Pay:
-    // Mollie reports its payments as creditcard. Inside the component a card payment can only be Google Pay.
-    //
-    // Google Pay's payment method exists only for the component, so its one setting, `enabled`, is also its
-    // express setting.
+    // mollieMethod is the id in Mollie's methods API (is it active?); paidAs is the method Mollie reports on
+    // the payment, which the webhook matches. Mollie reports Google Pay payments as creditcard.
     'wallets' => [
         'applepay' => [
             'gatewayId' => 'mollie_wc_gateway_applepay',
@@ -55,7 +51,7 @@ $express = [
             'gatewayId' => 'mollie_wc_gateway_googlepay',
             'mollieMethod' => 'googlepay',
             'paidAs' => 'creditcard',
-            'checkoutSetting' => 'enabled',
+            'checkoutSetting' => 'enabled', // its only setting: the method exists only for express
             'addressFrom' => 'form',
         ],
     ],

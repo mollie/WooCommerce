@@ -7,12 +7,8 @@ namespace Mollie\WooCommerce\PaymentMethods;
 use Psr\Container\ContainerInterface;
 
 /**
- * Google Pay exists only so the Express Component can offer it: Mollie cannot take a standalone
- * Google Pay payment, so this method is never offered at checkout and not registered for Blocks.
- * Its one setting, `enabled`, is also its express setting in config/express.php.
- *
- * Extends AbstractPaymentMethod as a recorded exception (docs/architecture/express-component.md, section 7):
- * a gateway is built from its class name until method rows (ADR-003) exist.
+ * Only for the Express Component: Mollie takes no standalone Google Pay payment, so it is never
+ * offered at checkout. Extending AbstractPaymentMethod is a recorded exception (express-component.md §7).
  */
 class Googlepay extends AbstractPaymentMethod implements PaymentMethodI
 {

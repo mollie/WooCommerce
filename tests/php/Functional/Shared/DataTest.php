@@ -161,4 +161,38 @@ class DataTest extends TestCase
 
         $this->assertSame('cst_existing123', $result);
     }
+
+    /**
+     * @test
+     * @scenario With HPOS on and compatibility sync off, a subscription's meta is only in the
+     *           orders tables, so get_post_meta() finds nothing for it. The Mollie customer ID
+     *           is read through the subscription object and reused; no new customer is created.
+     */
+    public function readsCustomerIdThroughSubscriptionObjectWhenPostMetaIsEmpty(): void
+    {
+        $subscriptionOrder = Mockery::mock('WC_Order');
+        $subscriptionOrder->shouldReceive('get_id')->andReturn(555);
+        $subscriptionOrder->shouldReceive('get_meta')
+            ->with('_mollie_customer_id')
+            ->andReturn('cst_hpos123');
+
+        when('wc_get_orders')->justReturn([$subscriptionOrder]);
+        when('get_post_meta')->justReturn(''); // HPOS without sync: nothing in wp_postmeta
+
+        $customerEndpointMock = Mockery::mock(CustomerEndpoint::class);
+        $customerEndpointMock->shouldReceive('get')
+            ->with('cst_hpos123')
+            ->once()
+            ->andReturn((object) ['id' => 'cst_hpos123']);
+        $customerEndpointMock->shouldReceive('create')->never();
+
+        $apiClientMock = $this->helperMocks->apiClient();
+        $apiClientMock->customers = $customerEndpointMock;
+
+        $dataHelper = $this->dataHelperWithShouldStoreCustomer(false, $apiClientMock);
+
+        $result = $dataHelper->getUserMollieCustomerId(42, 'test_key', 999);
+
+        $this->assertSame('cst_hpos123', $result);
+    }
 }

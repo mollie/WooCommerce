@@ -287,6 +287,8 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      */
     public function it_keeps_the_provisional_method_when_the_wallet_has_no_payment_method(string $mollieMethod): void
     {
+        // Only this boot's gateways: an earlier boot in this process may still register Google Pay.
+        $this->container = $this->bootExpressOwning(['woocommerce_payment_gateways']);
         [$order, , $sessionId] = $this->expressOrder();
         $provisional = $order->get_payment_method();
         $this->assertSame(self::PAYPAL_GATEWAY, $provisional);
@@ -306,9 +308,43 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     public function methodsWithoutAWalletPaymentMethod(): array
     {
         return [
-            'no row in the wallets table' => ['creditcard'],
-            'a row, but no registered payment method' => ['googlepay'],
+            'no row in the wallets table' => ['ideal'],
+            'googlepay, which Mollie never reports on a payment' => ['googlepay'],
+            'a card payment, while no Google Pay method is registered' => ['creditcard'],
         ];
+    }
+
+    /**
+     * Scenario: a payment Mollie reports as a card payment gets the Google Pay method once it exists
+     *   Given Google Pay activated at Mollie and switched on, so its payment method is registered
+     *   And a pending express order whose provisional payment method is PayPal
+     *   And a paid payment from its session that Mollie reports as creditcard, as it reports Google Pay
+     *   When Mollie calls the webhook
+     *   Then the order's payment method is Google Pay, with that method's title
+     *   And it has no note about an unknown wallet
+     *   And it is paid
+     *
+     * @test
+     */
+    public function it_gives_a_card_payment_the_google_pay_method_once_google_pay_exists(): void
+    {
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        $this->setGatewaySettingsForTest('googlepay', ['enabled' => 'yes']);
+        [$order, , $sessionId] = $this->expressOrder();
+        $this->assertSame(self::PAYPAL_GATEWAY, $order->get_payment_method());
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'creditcard']);
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        $paid = $this->fresh($order);
+        $this->assertSame('mollie_wc_gateway_googlepay', $paid->get_payment_method());
+        $this->assertSame(
+            WC()->payment_gateways()->payment_gateways()['mollie_wc_gateway_googlepay']->get_title(),
+            $paid->get_payment_method_title()
+        );
+        $this->assertSame([], $this->notesContaining($paid, 'creditcard'), 'A Google Pay payment is not an unknown wallet.');
+        $this->assertTrue($paid->is_paid());
     }
 
     /**

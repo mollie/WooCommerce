@@ -285,7 +285,7 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
-     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
      */
     private static function config(): array
     {

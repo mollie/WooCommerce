@@ -123,6 +123,9 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
         $this->deleteOrdersCreatedByTheTest();
         $this->transport->uninstall();
         $this->forgetApiClient();
+        // The fake's methods list is cached in a transient of the shared database: left behind, it
+        // registers the gateways of this test (Google Pay, say) for the plugin booted by the next run.
+        $this->flushMollieMethodsCache();
         $this->emptyCart();
         wp_set_current_user($this->userBackup);
 
@@ -208,7 +211,11 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
             },
         ], $serviceOverrides));
 
-        \WC_Payment_Gateways::instance()->init();
+        // init() only ever adds to the list, so without this every gateway an earlier test
+        // registered would still be registered here.
+        $gateways = \WC_Payment_Gateways::instance();
+        $gateways->payment_gateways = [];
+        $gateways->init();
 
         $GLOBALS['wp_rest_server'] = null;
         rest_get_server();

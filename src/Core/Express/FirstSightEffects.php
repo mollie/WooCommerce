@@ -21,7 +21,7 @@ final class FirstSightEffects
     public const NOTE_UNKNOWN_WALLET = 'express.payment.unknown_wallet';
 
     /**
-     * @param array<string, array{gatewayId: string, mollieMethod: string}> $wallets The wallets table of config/express.php.
+     * @param array<string, array{gatewayId: string, paidAs: string}> $wallets The wallets table of config/express.php.
      * @param array<int, string> $registeredGatewayIds
      * @return list<Effect>
      */
@@ -54,13 +54,13 @@ final class FirstSightEffects
     }
 
     /**
-     * @param array<string, array{gatewayId: string, mollieMethod: string}> $wallets
+     * @param array<string, array{gatewayId: string, paidAs: string}> $wallets
      * @param array<int, string> $registeredGatewayIds
      */
     private static function gatewayFor(string $method, array $wallets, array $registeredGatewayIds): ?string
     {
         foreach ($wallets as $wallet) {
-            if ($wallet['mollieMethod'] === $method && in_array($wallet['gatewayId'], $registeredGatewayIds, true)) {
+            if ($wallet['paidAs'] === $method && in_array($wallet['gatewayId'], $registeredGatewayIds, true)) {
                 return $wallet['gatewayId'];
             }
         }

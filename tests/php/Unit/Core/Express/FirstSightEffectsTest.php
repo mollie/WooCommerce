@@ -34,7 +34,12 @@ use Mollie\WooCommerceTests\TestCase;
  */
 class FirstSightEffectsTest extends TestCase
 {
-    private const REGISTERED = ['mollie_wc_gateway_applepay', 'mollie_wc_gateway_paypal', 'mollie_wc_gateway_ideal'];
+    private const REGISTERED = [
+        'mollie_wc_gateway_applepay',
+        'mollie_wc_gateway_paypal',
+        'mollie_wc_gateway_googlepay',
+        'mollie_wc_gateway_ideal',
+    ];
 
     /**
      * Scenario: the order records the payment and gets the payment method of the wallet that paid
@@ -76,6 +81,8 @@ class FirstSightEffectsTest extends TestCase
         return [
             'Apple Pay' => ['applepay', 'mollie_wc_gateway_applepay'],
             'PayPal' => ['paypal', 'mollie_wc_gateway_paypal'],
+            // Mollie lists Google Pay as googlepay in its methods API but reports its payments as creditcard.
+            'Google Pay, reported as a card payment' => ['creditcard', 'mollie_wc_gateway_googlepay'],
         ];
     }
 
@@ -115,9 +122,56 @@ class FirstSightEffectsTest extends TestCase
     public function methodsWithoutAWalletPaymentMethod(): array
     {
         return [
-            'no row in the wallets table' => ['creditcard'],
-            'a row, but no registered payment method (Google Pay today)' => ['googlepay'],
+            'no row in the wallets table' => ['ideal'],
+            'googlepay is never what Mollie reports on a payment' => ['googlepay'],
         ];
+    }
+
+    /**
+     * Scenario: a card payment keeps the provisional method while the plugin has no Google Pay method
+     *   Given a matched payment that Mollie reports as creditcard
+     *   And no registered Google Pay payment method, because Google Pay is not active at Mollie
+     *   When the first-sight effects are built
+     *   Then they do not change the payment method
+     *   And they add one note naming the Mollie method
+     *
+     * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
+     */
+    public function testACardPaymentKeepsTheProvisionalMethodWhileGooglePayIsNotRegistered(): void
+    {
+        $registered = array_values(array_diff(self::REGISTERED, ['mollie_wc_gateway_googlepay']));
+
+        $effects = FirstSightEffects::for(
+            $this->payment(['method' => 'creditcard']),
+            $this->order(),
+            $this->wallets(),
+            $registered
+        );
+
+        $described = $this->described($effects);
+        self::assertSame([], $this->ofType($described, Effect::SET_PAYMENT_METHOD));
+        self::assertSame(
+            [[Effect::ADD_NOTE, ['messageKey' => FirstSightEffects::NOTE_UNKNOWN_WALLET, 'params' => ['method' => 'creditcard']]]],
+            $this->ofType($described, Effect::ADD_NOTE)
+        );
+    }
+
+    /**
+     * Scenario: every wallet row names the method Mollie reports on a payment made with it
+     *   Given the wallets table in config/express.php
+     *   When its rows are read
+     *   Then Apple Pay is paid as applepay, PayPal as paypal, and Google Pay as creditcard
+     *
+     * paidAs is what the webhook matches; mollieMethod stays the id in the methods API, which is
+     * what activation is checked against. For Google Pay the two differ.
+     *
+     * @coversNothing
+     */
+    public function testEveryWalletRowNamesTheMethodMollieReportsForIt(): void
+    {
+        $paidAs = array_map(static fn (array $row): ?string => $row['paidAs'] ?? null, $this->wallets());
+
+        self::assertSame(['applepay' => 'applepay', 'paypal' => 'paypal', 'googlepay' => 'creditcard'], $paidAs);
     }
 
     /**

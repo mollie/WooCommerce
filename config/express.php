@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 /**
  * @var array{
- *     wallets: array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>,
+ *     wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}>,
  *     surfaces: array<int, string>,
  *     allowedModes: array<int, string>,
  *     sessionLifetimeSeconds: int,
@@ -30,25 +30,32 @@ $express = [
     // button does. In the Express Component every wallet waits for the form, Apple Pay included (owner,
     // 2026-09-22), so no row uses 'wallet'; switching one back is a data change only.
     //
-    // googlepay has no payment method yet, so it stays hidden until one with this gateway id exists; its
-    // checkoutSetting is the name the future method should expose, to be aligned then.
+    // mollieMethod is the id in Mollie's methods API, which says whether the wallet is active; paidAs is the
+    // method Mollie reports on a payment made with it, which the webhook matches. They differ for Google Pay:
+    // Mollie reports its payments as creditcard. Inside the component a card payment can only be Google Pay.
+    //
+    // Google Pay's payment method exists only for the component, so its one setting, `enabled`, is also its
+    // express setting.
     'wallets' => [
         'applepay' => [
             'gatewayId' => 'mollie_wc_gateway_applepay',
             'mollieMethod' => 'applepay',
+            'paidAs' => 'applepay',
             'checkoutSetting' => 'mollie_apple_pay_button_enabled_express_checkout',
             'addressFrom' => 'form',
         ],
         'paypal' => [
             'gatewayId' => 'mollie_wc_gateway_paypal',
             'mollieMethod' => 'paypal',
+            'paidAs' => 'paypal',
             'checkoutSetting' => 'mollie_paypal_button_enabled_checkout',
             'addressFrom' => 'form',
         ],
         'googlepay' => [
             'gatewayId' => 'mollie_wc_gateway_googlepay',
             'mollieMethod' => 'googlepay',
-            'checkoutSetting' => 'mollie_googlepay_button_enabled_express_checkout',
+            'paidAs' => 'creditcard',
+            'checkoutSetting' => 'enabled',
             'addressFrom' => 'form',
         ],
     ],

@@ -331,6 +331,47 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         );
     }
 
+    /**
+     * Scenario: Google Pay is offered once its payment method is turned on
+     *   Given Google Pay activated at Mollie
+     *   And PayPal enabled with its express button on the checkout, Apple Pay's express button off
+     *   And the Google Pay payment method's one setting on or off
+     *   When the owned block checkout enqueues its scripts
+     *   Then the buttons map offers Google Pay exactly when that setting is on
+     *   And offers PayPal and hides Apple Pay either way
+     *
+     * @test
+     * @dataProvider googlePaySetting
+     */
+    public function it_offers_google_pay_once_its_payment_method_is_turned_on(string $enabled, bool $offered): void
+    {
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        $this->setGatewaySettingsForTest('googlepay', ['enabled' => $enabled]);
+
+        $this->openPage('block checkout');
+        $data = $this->localizedExpressData();
+
+        $this->assertIsArray($data);
+        $this->assertIsArray($data['buttons']);
+        $this->assertSame(
+            ['applepay' => false, 'googlepay' => $offered, 'paypal' => true],
+            $this->offered($data['buttons']),
+            'Offered wallets are wrong in ' . wp_json_encode($data['buttons'])
+        );
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    public function googlePaySetting(): array
+    {
+        return [
+            'switched on' => ['yes', true],
+            'switched off' => ['no', false],
+        ];
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────

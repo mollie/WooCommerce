@@ -71,12 +71,13 @@ class WordPressHttpAdapter implements MollieHttpAdapterInterface
             if (!empty($body->field)) {
                 $field = $body->field;
             }
+            $details = '';
             if (isset($body->_links, $body->_links->documentation)) {
-                $message .= ". Documentation: {$body->_links->documentation->href}";
+                $details .= ". Documentation: {$body->_links->documentation->href}";
             }
-            $message .= ". Request body: {$httpBody}";
+            $details .= ". Request body: {$httpBody}";
             // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
-            throw new ApiException(esc_html($message), $statusCode, esc_html($field));
+            throw new \Mollie\WooCommerce\SDK\MollieErrorResponse($message, esc_html($details), (int) $statusCode, esc_html($field));
             // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
         return $body;

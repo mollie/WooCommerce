@@ -90,7 +90,8 @@ class MollieSettingsPage extends WC_Settings_Page
     public function get_settings($currentSection = '')
     {
         $defaultSection = $currentSection;
-        $connectionStatus = $this->settings->getConnectionStatus();
+        $connectionResult = $this->settings->getConnectionStatusWithError();
+        $connectionStatus = $connectionResult->isConnected();
         if (!$connectionStatus) {
             $defaultSection = PageNoApiKey::slug();
         }
@@ -103,7 +104,7 @@ class MollieSettingsPage extends WC_Settings_Page
         $mollieSettings = null;
         foreach ($this->pages() as $pageClass) {
             /** @var AbstractPage $page */
-            $page = new $pageClass($this->settings, $this->pluginUrl, $this->pages(), $defaultSection, $connectionStatus, $this->isTestModeEnabled, $this->dataHelper, $this->container);
+            $page = new $pageClass($this->settings, $this->pluginUrl, $this->pages(), $defaultSection, $connectionStatus, $this->isTestModeEnabled, $this->dataHelper, $this->container, $connectionResult);
             if ($page::slug() === $defaultSection) {
                 $mollieSettings = $this->hideKeysIntoStars($page->settings());
                 break;

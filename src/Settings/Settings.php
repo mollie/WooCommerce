@@ -11,6 +11,7 @@ use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
 use Mollie\WooCommerce\Settings\General\MollieGeneralSettings;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Mollie\WooCommerce\Shared\Status;
 class Settings
 {
     protected $pluginId;
@@ -247,37 +248,29 @@ class Settings
     }
     public function getConnectionStatus(): bool
     {
-        $status = $this->statusHelper;
-        if (!$status->isCompatible()) {
-            return \false;
-        }
-        try {
-            $apiKey = $this->getApiKey();
-            $apiClient = $this->apiHelper->getApiClient($apiKey);
-            $status->getMollieApiStatus($apiClient);
-            return \true;
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            return \false;
-        }
+        return $this->getConnectionStatusWithError()->isConnected();
     }
     /**
-     * Attempt connection and return error details on failure.
-     *
-     * @return array{connected: bool, error_code?: int, error_message?: string}
+     * Attempt connection and say which stage failed, if any.
      */
-    public function getConnectionStatusWithError(): array
+    public function getConnectionStatusWithError(): \Mollie\WooCommerce\Settings\ConnectionResult
     {
         $status = $this->statusHelper;
         if (!$status->isCompatible()) {
-            return ['connected' => \false, 'error_code' => 0, 'error_message' => 'Incompatible environment'];
+            return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_INCOMPATIBLE, 0, implode('<br/>', $status->getErrors()));
         }
         try {
             $apiKey = $this->getApiKey();
             $apiClient = $this->apiHelper->getApiClient($apiKey);
+        } catch (ApiException $e) {
+            // No key saved, or a key that fails the format check: never a connectivity problem.
+            return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_API_KEY, (int) $e->getCode(), Status::plainApiErrorMessage($e));
+        }
+        try {
             $status->getMollieApiStatus($apiClient);
-            return ['connected' => \true];
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            return ['connected' => \false, 'error_code' => $e->getCode(), 'error_message' => $e->getMessage()];
+            return \Mollie\WooCommerce\Settings\ConnectionResult::connected();
+        } catch (ApiException $e) {
+            return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_API, (int) $e->getCode(), Status::plainApiErrorMessage($e));
         }
     }
     /**
@@ -296,14 +289,18 @@ class Settings
             return (new AdminNotice())->renderNotice('notice-error', '<p><strong>' . __('Error', 'mollie-payments-for-woocommerce') . ':</strong> ' . implode('<br/>', $status->getErrors()) . '</p>');
         }
         try {
-            // Check compatibility
             $apiKey = $this->getApiKey();
             $apiClient = $this->apiHelper->getApiClient($apiKey);
+        } catch (ApiException $e) {
+            // Plugin-authored message; it carries an intentional link to the Mollie dashboard.
+            return '' . '<div id="message" class="error fade notice">' . '<p style="font-weight:bold;"><span style="color:red;">' . esc_html__('Error', 'mollie-payments-for-woocommerce') . ':</span> ' . Status::plainApiErrorMessage($e) . '</p>' . '</div>';
+        }
+        try {
             $status->getMollieApiStatus($apiClient);
             $api_status = '' . '<p>' . __('Mollie status:', 'mollie-payments-for-woocommerce') . ' <span style="color:green; font-weight:bold;">' . __('Connected', 'mollie-payments-for-woocommerce') . '</span>' . '</p>';
             $api_status_type = 'updated';
-        } catch (\Mollie\Api\Exceptions\ApiException $e) {
-            $api_status = '' . '<p style="font-weight:bold;"><span style="color:red;">Communicating with Mollie failed:</span> ' . $e->getMessage() . '</p>' . '<p>Please view the FAQ item <a href="https://github.com/mollie/WooCommerce/wiki/Common-issues#communicating-with-mollie-failed" target="_blank">Communicating with Mollie failed</a> if this does not fix your problem.';
+        } catch (ApiException $e) {
+            $api_status = '' . '<p style="font-weight:bold;"><span style="color:red;">Communicating with Mollie failed:</span> ' . esc_html(Status::plainApiErrorMessage($e)) . '</p>' . '<p>Please view the FAQ item <a href="https://github.com/mollie/WooCommerce/wiki/Common-issues#communicating-with-mollie-failed" target="_blank">Communicating with Mollie failed</a> if this does not fix your problem.';
             $api_status_type = 'error';
         }
         return '' . '<div id="message" class="' . $api_status_type . ' fade notice">' . $api_status . '</div>';

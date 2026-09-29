@@ -4,6 +4,7 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\Settings\Page;
 
 use Mollie\WooCommerce\Settings\Page\Section\AbstractSection;
+use Mollie\WooCommerce\Settings\ConnectionResult;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\Psr\Container\ContainerInterface;
@@ -17,7 +18,8 @@ abstract class AbstractPage
     protected array $pages;
     protected Data $dataHelper;
     protected ContainerInterface $container;
-    public function __construct(Settings $settings, string $pluginUrl, array $pages, string $currentSection, bool $connectionStatus, bool $testModeEnabled, Data $dataHelper, ContainerInterface $container)
+    protected ConnectionResult $connectionResult;
+    public function __construct(Settings $settings, string $pluginUrl, array $pages, string $currentSection, bool $connectionStatus, bool $testModeEnabled, Data $dataHelper, ContainerInterface $container, ?ConnectionResult $connectionResult = null)
     {
         $this->settings = $settings;
         $this->pluginUrl = $pluginUrl;
@@ -27,6 +29,7 @@ abstract class AbstractPage
         $this->pages = $pages;
         $this->dataHelper = $dataHelper;
         $this->container = $container;
+        $this->connectionResult = $connectionResult ?? ConnectionResult::fromStatus($connectionStatus);
     }
     abstract public static function isTab(): bool;
     abstract public static function slug(): string;
@@ -44,7 +47,7 @@ abstract class AbstractPage
         $styles = [];
         foreach ($this->sections() as $sectionClass) {
             /** @var AbstractSection $section */
-            $section = new $sectionClass($this->settings, $this->pluginUrl, $this->pages, $this->currentSection, $this->connectionStatus, $this->testModeEnabled, $this->dataHelper, $this->container);
+            $section = new $sectionClass($this->settings, $this->pluginUrl, $this->pages, $this->currentSection, $this->connectionStatus, $this->testModeEnabled, $this->dataHelper, $this->container, $this->connectionResult);
             foreach ($section->config() as $field) {
                 $settings[] = $field;
             }

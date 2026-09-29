@@ -141,9 +141,11 @@ class DataTest extends TestCase
     {
         $subscriptionOrder = Mockery::mock('WC_Order');
         $subscriptionOrder->shouldReceive('get_id')->andReturn(555);
+        $subscriptionOrder->shouldReceive('get_meta')
+            ->with('_mollie_customer_id')
+            ->andReturn('cst_existing123');
 
         when('wc_get_orders')->justReturn([$subscriptionOrder]);
-        when('get_post_meta')->justReturn('cst_existing123');
 
         $customerEndpointMock = Mockery::mock(CustomerEndpoint::class);
         $customerEndpointMock->shouldReceive('get')

@@ -4,21 +4,61 @@ on:
   workflow_dispatch:
     inputs:
       TEST_SUITE:
-        description: 'Test suite'
+        description: 'Test suite (e2e:test:<api>-api runs all its shards in parallel; e2e:test:<api>-api:<shard> runs a single shard)'
         required: true
         default: 'e2e:test:payment-api:smoke'
         type: choice
         options:
           - e2e:test:payment-api
           - e2e:test:payment-api:smoke
-          - e2e:test:payment-api:refund
           - e2e:test:payment-api:multistep
           - e2e:test:payment-api:multistep:smoke
           - e2e:test:order-api
           - e2e:test:order-api:smoke
-          - e2e:test:order-api:refund
           - e2e:test:order-api:multistep
           - e2e:test:order-api:multistep:smoke
+          - e2e:test:payment-api:plugin-foundation
+          - e2e:test:payment-api:merchant-setup
+          - e2e:test:payment-api:plugin-settings
+          - e2e:test:payment-api:surcharge:no-fee
+          - e2e:test:payment-api:surcharge:fixed
+          - e2e:test:payment-api:surcharge:percentage
+          - e2e:test:payment-api:surcharge:fixed-and-percentage
+          - e2e:test:payment-api:frontend-ui
+          - e2e:test:payment-api:phone-validation
+          - e2e:test:payment-api:transaction:eur-block
+          - e2e:test:payment-api:transaction:eur-classic
+          - e2e:test:payment-api:transaction:non-eur-block
+          - e2e:test:payment-api:transaction:non-eur-classic
+          - e2e:test:payment-api:transaction:card-disabled
+          - e2e:test:payment-api:transaction:paypal-express
+          - e2e:test:payment-api:transaction:nl
+          - e2e:test:payment-api:refund
+          - e2e:test:payment-api:subscription
+          - e2e:test:payment-api:bug-verification
+          - e2e:test:payment-api:multistep:eur-block
+          - e2e:test:payment-api:multistep:eur-classic
+          - e2e:test:payment-api:multistep:non-eur-block
+          - e2e:test:payment-api:multistep:non-eur-classic
+          - e2e:test:payment-api:multistep:card-disabled
+          - e2e:test:payment-api:multistep:paypal-express
+          - e2e:test:order-api:frontend-ui
+          - e2e:test:order-api:phone-validation
+          - e2e:test:order-api:transaction:eur-block
+          - e2e:test:order-api:transaction:eur-classic
+          - e2e:test:order-api:transaction:non-eur-block
+          - e2e:test:order-api:transaction:non-eur-classic
+          - e2e:test:order-api:transaction:card-disabled
+          - e2e:test:order-api:transaction:paypal-express
+          - e2e:test:order-api:refund
+          - e2e:test:order-api:subscription
+          - e2e:test:order-api:bug-verification
+          - e2e:test:order-api:multistep:eur-block
+          - e2e:test:order-api:multistep:eur-classic
+          - e2e:test:order-api:multistep:non-eur-block
+          - e2e:test:order-api:multistep:non-eur-classic
+          - e2e:test:order-api:multistep:card-disabled
+          - e2e:test:order-api:multistep:paypal-express
       TESTRAIL_PLAN_ID:
         description: TestRail plan ID for reporting.
         required: false
@@ -56,12 +96,94 @@ jobs:
       PACKAGE_NAME: mollie-payments-for-woocommerce
       NODE_VERSION: 22
 
+  resolve-playwright-matrix:
+    name: Resolve Playwright matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.resolve.outputs.matrix }}
+    steps:
+      - name: Checkout package.json
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          sparse-checkout: package.json
+          sparse-checkout-cone-mode: false
+
+      - name: Resolve test scripts
+        id: resolve
+        shell: bash
+        env:
+          TEST_SUITE: ${{ inputs.TEST_SUITE }}
+        run: |
+          # Shards are the e2e:test:<api>-api:<shard> scripts in package.json
+          # (one per project shard in tests/qa/project-shards.ts).
+          mapfile -t SCRIPTS < <(jq -r '.scripts | keys[] | select(test("^e2e:test:(payment|order)-api:"))' package.json)
+
+          # Admin-only shards: no payments, so no webhooks and no tunnel needed.
+          NO_NGROK='^(plugin-foundation|merchant-setup|plugin-settings|surcharge(:.*)?|frontend-ui)$'
+
+          SMOKE=false
+          [[ "$TEST_SUITE" == *:smoke ]] && SMOKE=true
+          SUITE="${TEST_SUITE%:smoke}"
+
+          SELECTED=()
+          case "$SUITE" in
+            e2e:test:payment-api|e2e:test:order-api)
+              for s in "${SCRIPTS[@]}"; do
+                [[ "$s" == "$SUITE:"* && "$s" != "$SUITE:multistep:"* ]] && SELECTED+=("$s")
+              done
+              ;;
+            e2e:test:payment-api:multistep|e2e:test:order-api:multistep)
+              for s in "${SCRIPTS[@]}"; do
+                [[ "$s" == "$SUITE:"* ]] && SELECTED+=("$s")
+              done
+              ;;
+            *)
+              SELECTED=("$SUITE")
+              ;;
+          esac
+
+          ITEMS=()
+          for s in "${SELECTED[@]}"; do
+            if ! printf '%s\n' "${SCRIPTS[@]}" | grep -qxF -- "$s"; then
+              echo "::error::Unknown test script: $s"
+              exit 1
+            fi
+            NAME="${s#e2e:test:}"        # <api>-api:<shard>
+            API="${NAME%%-api:*}"
+            SHARD="${NAME#*-api:}"
+            SLUG="${API}-${SHARD//:/-}"   # single DNS label, e.g. payment-transaction-eur-block
+            NGROK=true
+            [[ "$SHARD" =~ $NO_NGROK ]] && NGROK=false
+            SCRIPT="$s"
+            # CLI --grep narrows the shard's own project grep; shards without
+            # @Critical tests pass instead of failing with "No tests found".
+            $SMOKE && SCRIPT="$s -- --grep @Critical --pass-with-no-tests"
+            ITEMS+=("$(jq -cn \
+              --arg script "$SCRIPT" \
+              --arg name_suffix " / ${API}-api / ${SHARD}" \
+              --arg artifact_name "playwright-artifact-${SLUG}" \
+              --arg slug "$SLUG" \
+              --argjson ngrok "$NGROK" \
+              '{script: $script, name_suffix: $name_suffix, artifact_name: $artifact_name, slug: $slug, ngrok: $ngrok}')")
+          done
+
+          MATRIX=$(printf '%s\n' "${ITEMS[@]}" | jq -cs '{include: .}')
+          echo "$MATRIX" | jq .
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
   e2e-playwright:
-    name: Run Playwright E2E Tests
-    needs: build
+    name: Run Playwright E2E Tests${{ matrix.name_suffix }}
+    needs:
+      - build
+      - resolve-playwright-matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.resolve-playwright-matrix.outputs.matrix) }}
     uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@236c6b5a7fea73b5058b6f11bd17ff4b80994e54 # pinning PR #292
     with:
-      PLAYWRIGHT_SCRIPT: ${{ inputs.TEST_SUITE }}
+      PLAYWRIGHT_SCRIPT: ${{ matrix.script }}
+      PLAYWRIGHT_ARTIFACT_NAME: ${{ matrix.artifact_name }}
       PLAYWRIGHT_ARTIFACT_PATH: |
         artifacts/*
         playwright-report/
@@ -69,10 +191,16 @@ jobs:
       PLAYWRIGHT_ARTIFACT_INCLUDE_HIDDEN_FILES: true
       NODE_VERSION: 22
       PLAYWRIGHT_BROWSER_ARGS: 'chromium --with-deps'
-      NGROK_DOMAIN: ngrok-dev.mollie.syde.wpinfra.cloud
+      # Admin-only shards run without a tunnel (see NO_NGROK above)
+      NGROK_ENABLED: ${{ matrix.ngrok }}
+      # One endpoint per shard under the wildcard reservation, stable across
+      # runs. An endpoint can only be online once, so two runs of the same
+      # shard (e.g. from different branches) cannot overlap; runs of the same
+      # branch replace each other via the concurrency group above.
+      NGROK_DOMAIN: ${{ matrix.slug }}.e2e.mollie.syde.wpinfra.cloud
       TESTRAIL_PLAN_ID: ${{ inputs.TESTRAIL_PLAN_ID }}
       TESTRAIL_RUN_ID: ${{ inputs.TESTRAIL_RUN_ID }}
-      
+
       PRE_SCRIPT: |
         # 1. Download and unzip the built plugin
         gh run download ${{ github.run_id }} -p "mollie-payments-for-woocommerce-*" -D tests/qa/resources/files

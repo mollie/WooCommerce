@@ -64,7 +64,6 @@ import {
 	gateways,
 	orders,
 	products,
-	shopConfigDefault,
 	piwoo890OrderReceivedProbePlugin,
 	MollieTestData,
 } from '../../resources';
@@ -85,11 +84,7 @@ type OrderReceivedResponse = {
 	hit: string | null;
 };
 
-test.beforeAll( async ( { utils, requestUtils, plugins } ) => {
-	await utils.configureStore( shopConfigDefault );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-
+test.beforeAll( async ( { requestUtils, plugins } ) => {
 	if (
 		! ( await requestUtils.isPluginInstalled(
 			piwoo890OrderReceivedProbePlugin.slug

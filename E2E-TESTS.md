@@ -87,7 +87,7 @@ Mollie Playwright tests. Depends on [`@inpsyde/playwright-utils`](https://github
 
 	* Germanized Pro package named as `germanized-for-woocommerce-pro.zip`
 
-> Note 1: Further configuration of the environment is done automatically via scripts in `./tests/qa/tests/_setup/woocommerce.setup.ts`.
+> Note 1: Further configuration of the environment is done automatically via scripts in `./tests/qa/tests/_setup/02-woocommerce.setup.ts`.
 
 > Note 2: To avoid conflicts make sure any other payment plugin is deleted.
 
@@ -113,28 +113,26 @@ Configure reporting to the __TestRail__ following [these steps](https://github.c
 
 ## Run tests
 
-To execute all tests sequentially, run the following command in the terminal:
+Tests are split into shards (Playwright projects `shard:<api>-api:<shard>`, defined in `./tests/qa/project-shards.ts`). Each shard depends on a setup project that brings the env into the state its tests need (checkout layout, Mollie connection, API method, etc.), so shards don't rely on execution order. Run one shard at a time, since each shard's setup reconfigures the env:
 
 ```bash
-# Run tests from playwright project "payment-api"
-npm run e2e:test:payment-api
+# Run a shard (see package.json for all e2e:test:<api>-api:<shard> scripts)
+npm run e2e:test:payment-api:transaction:eur-block
+npm run e2e:test:order-api:refund
 
-# Run only smoke tests from playwright project "payment-api"
-npm run e2e:test:payment-api:smoke
-
-# Run tests from playwright project "order-api"
-npm run e2e:test:order-api
+# Run only smoke tests of a shard
+npm run e2e:test:payment-api:transaction:eur-block -- --grep @Critical
 ```
 
-## Run Refund tests
+Shards whose tests don't change shared store or Mollie settings (EUR transactions, refunds, phone validation) run with 4 workers. The rest run with 1 worker.
 
-Refunds require long wait for the webhook arrival and therefore are executed in a separate project:
+> Note: API-agnostic shards (plugin foundation, merchant setup, plugin settings, surcharge, NL/Billink) exist only for the Payment API.
 
-```bash
-npm run e2e:test:payment-api:refund
-# OR
-npx playwright test --project=refund-payment-api --workers=4
-```
+## Run tests in CI
+
+The [E2E Tests](./.github/workflows/playwright.yml) workflow runs every shard of the selected suite as a separate parallel job on its own wp-env. `e2e:test:<api>-api` and `e2e:test:<api>-api:multistep` (plus their `:smoke` variants) run all shards of a suite; `e2e:test:<api>-api:<shard>` runs a single shard.
+
+Each shard that processes payments gets its own ngrok tunnel on `<api>-<shard>.e2e.mollie.syde.wpinfra.cloud` for webhook delivery. An endpoint can only be online once, so two runs of the same shard (e.g. from different branches) can't overlap.
 
 ## Run Multistep Checkout tests
 
@@ -153,15 +151,13 @@ Additional actions for local execution:
 	# Setup multistep checkout:
 	npm run e2e:env:setup:multistep
 
-	# Run smoke tests for multistep checkout:
-	npm run e2e:test:payment-api:multistep:smoke
+	# Run a multistep checkout shard (its setup enables multistep checkout):
+	npm run e2e:test:payment-api:multistep:eur-block
 	# OR
-	npm run e2e:test:order-api:multistep:smoke
+	npm run e2e:test:order-api:multistep:eur-block
 
-	# Run all available tests for multistep checkout:
-	npm run e2e:test:payment-api:multistep
-	# OR
-	npm run e2e:test:order-api:multistep
+	# Run only smoke tests of a multistep checkout shard:
+	npm run e2e:test:payment-api:multistep:eur-block -- --grep @Critical
 	```
 
 
@@ -170,7 +166,7 @@ Additional actions for local execution:
 - Run several tests by test ID
 
 	```bash
-	npx playwright test --project=payment-api --grep "C123|C124|C125"
+	npx playwright test --project "shard:payment-api:transaction:eur-block" --grep "C123|C124|C125"
 	```
 
 
@@ -203,7 +199,7 @@ Additional actions for local execution:
 8. Analyze failed tests (if any). Restart execution for failed tests, possibly in debug mode (see section _Additional options to run tests from command line_):
 
 	```bash
-	npx playwright test --project=payment-api --grep "C123|C124|C125" --debug
+	npx playwright test --project "shard:payment-api:transaction:eur-block" --grep "C123|C124|C125" --debug
 	```
 
 	> Note: command for restarting failed/skipped tests is posted to the terminal after the execution.

@@ -15,6 +15,7 @@ declare(strict_types=1);
  *     sessionReuseMarginSeconds: int,
  *     maxNewSessions: int,
  *     windowSeconds: int,
+ *     abandonGraceSeconds: int,
  * } $express
  */
 $express = [
@@ -64,6 +65,10 @@ $express = [
     // price change needs a new session), not for one request per keystroke.
     'maxNewSessions' => 10,
     'windowSeconds' => 600,
+    // Cleanup looks at a pending express order only this long after its session expired (15 minutes
+    // after it was created), so an order is never cancelled while its payment could still arrive
+    // (AC-31). Even then it is cancelled only when Mollie says it can no longer be paid.
+    'abandonGraceSeconds' => 3600,
 ];
 
 return $express;

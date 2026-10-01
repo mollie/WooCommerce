@@ -59,6 +59,9 @@ class AdmissionTest extends TestCase
             'a verified nonce' => [Admission::EXPRESS_SESSION, true, true, null],
             'no nonce' => [Admission::EXPRESS_SESSION, false, false, 'nonce_missing'],
             'a nonce that does not verify' => [Admission::EXPRESS_SESSION, true, false, 'nonce_invalid'],
+            'the order route, a verified nonce' => [Admission::EXPRESS_ORDER, true, true, null],
+            'the order route, no nonce' => [Admission::EXPRESS_ORDER, false, false, 'nonce_missing'],
+            'the order route, a nonce that does not verify' => [Admission::EXPRESS_ORDER, true, false, 'nonce_invalid'],
             'an unknown entry point, even with a verified nonce' => ['express.unknown', true, true, 'unknown_entry_point'],
         ];
     }

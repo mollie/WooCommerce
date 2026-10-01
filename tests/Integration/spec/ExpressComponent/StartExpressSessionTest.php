@@ -10,6 +10,7 @@ use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
+use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use WP_REST_Response;
 
 /**
@@ -36,64 +37,22 @@ use WP_REST_Response;
  */
 class StartExpressSessionTest extends ExpressFlowTestCase
 {
+    use ExpressCheckoutFixtures;
+
     private const ROUTE = '/mollie/v1/express/session';
 
-    private const PAYPAL_CHECKOUT = 'mollie_paypal_button_enabled_checkout';
-
-    private const APPLE_PAY_EXPRESS = 'mollie_apple_pay_button_enabled_express_checkout';
-
     private const MOLLIE_TEXT = 'MOLLIETEXT4e1d the unit price is not what we expected';
-
-    /**
-     * @var array<int, array{0: string, 1: callable, 2: int}>
-     */
-    private array $filters = [];
-
-    /**
-     * @var array<int, int>
-     */
-    private array $zoneIds = [];
-
-    /**
-     * @var array<int, int>
-     */
-    private array $taxRateIds = [];
-
-    /**
-     * Rate ids by name: 'standard' and 'express' ship to LU, 'austria' to AT.
-     *
-     * @var array<string, string>
-     */
-    private array $rates = [];
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->clearExpressRateLimits();
-        $this->newShopper();
-        $this->useHttps();
-        $this->payPalIsTheOnlyExpressWallet();
-        $this->taxedShippingZones();
+        $this->setUpExpressCheckout();
     }
 
     public function tearDown(): void
     {
-        foreach ($this->filters as [$hook, $callback, $priority]) {
-            remove_filter($hook, $callback, $priority);
-        }
-        $this->filters = [];
-
-        // Leave no shopper behind: later test classes read the customer's location for their taxes.
-        $this->newShopper();
-        foreach ($this->zoneIds as $zoneId) {
-            (new \WC_Shipping_Zone($zoneId))->delete();
-        }
-        foreach ($this->taxRateIds as $taxRateId) {
-            \WC_Tax::_delete_tax_rate($taxRateId);
-        }
-        \WC_Cache_Helper::get_transient_version('shipping', true);
-        $this->clearExpressRateLimits();
+        $this->tearDownExpressCheckout();
 
         parent::tearDown();
     }
@@ -700,30 +659,6 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
 
-    private function readyGuestCheckout(): void
-    {
-        $this->bootExpress();
-        $this->actAsGuest();
-        $this->cartWith(['simple'], 2);
-        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
-        $this->chooseRate('standard');
-    }
-
-    /**
-     * @param array<string, mixed> $extra
-     */
-    private function startSession(array $extra = []): WP_REST_Response
-    {
-        return $this->restRequest('POST', self::ROUTE, array_merge(['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)], $extra));
-    }
-
-    private function token(WP_REST_Response $response): string
-    {
-        $this->assertSame(200, $response->get_status(), 'Expected a started session: ' . wp_json_encode($response->get_data()));
-
-        return (string) ((array) $response->get_data())['clientAccessToken'];
-    }
-
     /**
      * @return array<string, mixed>
      */
@@ -761,26 +696,6 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         return (string) wp_json_encode($session->get_session_data());
     }
 
-    private function cartTotal(): string
-    {
-        return $this->decimal((float) WC()->cart->get_total('edit'));
-    }
-
-    private function decimal(float $amount): string
-    {
-        return number_format($amount, 2, '.', '');
-    }
-
-    /**
-     * @return array<int, array{level: string, message: string, context: array<mixed>}>
-     */
-    private function loggedEvents(string $event): array
-    {
-        return array_values(array_filter($this->logger()->records(), static function (array $record) use ($event): bool {
-            return $record['message'] === $event;
-        }));
-    }
-
     private function optionsContaining(string $needle): int
     {
         global $wpdb;
@@ -789,70 +704,6 @@ class StartExpressSessionTest extends ExpressFlowTestCase
             "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_value LIKE %s",
             '%' . $wpdb->esc_like($needle) . '%'
         ));
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function billing(): array
-    {
-        return [
-            'first_name' => CanaryData::GIVEN_NAME,
-            'last_name' => CanaryData::FAMILY_NAME,
-            'email' => CanaryData::EMAIL,
-            'phone' => CanaryData::PHONE,
-            'address_1' => CanaryData::STREET,
-            'address_2' => CanaryData::STREET_ADDITIONAL,
-            'postcode' => 'L-1234',
-            'city' => 'Luxembourg',
-            'country' => 'LU',
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function shipping(string $country): array
-    {
-        return [
-            'first_name' => CanaryData::GIVEN_NAME,
-            'last_name' => CanaryData::FAMILY_NAME,
-            'address_1' => CanaryData::STREET,
-            'postcode' => $country === 'AT' ? '1010' : '1234',
-            'city' => $country === 'AT' ? 'Wien' : 'Town',
-            'country' => $country,
-        ];
-    }
-
-    /**
-     * What the shopper typed into the checkout form. Every field not given is emptied, so a
-     * scenario never inherits the previous one's form.
-     *
-     * @param array<string, string> $billing
-     * @param array<string, string> $shipping
-     */
-    private function fillCheckoutForm(array $billing, array $shipping): void
-    {
-        $customer = WC()->customer;
-        foreach (['first_name', 'last_name', 'email', 'phone', 'address_1', 'address_2', 'postcode', 'city', 'state', 'country'] as $field) {
-            $customer->{"set_billing_{$field}"}($billing[$field] ?? '');
-        }
-        foreach (['first_name', 'last_name', 'address_1', 'address_2', 'postcode', 'city', 'state', 'country'] as $field) {
-            $customer->{"set_shipping_{$field}"}($shipping[$field] ?? '');
-        }
-        $customer->save();
-    }
-
-    private function chooseRate(string $name): void
-    {
-        WC()->session->set('chosen_shipping_methods', [$this->rates[$name]]);
-        $this->recalculate();
-    }
-
-    private function recalculate(): void
-    {
-        WC()->cart->calculate_shipping();
-        WC()->cart->calculate_totals();
     }
 
     /**
@@ -880,165 +731,4 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         $this->filters[] = ['pre_http_request', $filter, 2];
     }
 
-    /**
-     * A shopper with a cart holds WooCommerce's session cookie, which is what binds a guest nonce to
-     * that shopper and makes WooCommerce store the session. WooCommerce sets it only while headers
-     * can still be sent, never under PHPUnit, so it is set here the way WooCommerce itself does.
-     *
-     * @param array<int, string> $presets
-     */
-    protected function cartWith(array $presets, int $quantity = 1): \WC_Cart
-    {
-        $cart = parent::cartWith($presets, $quantity);
-        $this->withoutCookieNotices(static function (): void {
-            WC()->session->set_customer_session_cookie(true);
-        });
-
-        return $cart;
-    }
-
-    /**
-     * Every scenario is a different shopper. The fake Mollie starts empty for each test, but
-     * WooCommerce keeps one session and one customer for the whole PHP process; without this a
-     * scenario would be handed the session a previous one remembered, and the next test class would
-     * inherit this one's checkout form.
-     */
-    private function newShopper(): void
-    {
-        if (!function_exists('WC') || !WC()->session instanceof \WC_Session_Handler) {
-            return;
-        }
-        $this->withoutCookieNotices(static function (): void {
-            WC()->session->forget_session();
-        });
-        // A customer read from the now empty session: the store's default location, no form data.
-        WC()->customer = new \WC_Customer(0, true);
-    }
-
-    /**
-     * wc_setcookie() raises a notice once headers are sent, which under the CLI they always are.
-     */
-    private function withoutCookieNotices(callable $callback): void
-    {
-        set_error_handler(static function (int $severity, string $message): bool {
-            return strpos($message, 'headers already sent') !== false || strpos($message, 'cannot be set') !== false;
-        }, E_USER_NOTICE | E_USER_WARNING | E_WARNING | E_NOTICE);
-        try {
-            $callback();
-        } finally {
-            restore_error_handler();
-        }
-    }
-
-    private function useHttps(): void
-    {
-        $url = static function (): string {
-            return 'https://shop.example';
-        };
-        add_filter('pre_option_home', $url, PHP_INT_MAX);
-        add_filter('pre_option_siteurl', $url, PHP_INT_MAX);
-        $this->filters[] = ['pre_option_home', $url, PHP_INT_MAX];
-        $this->filters[] = ['pre_option_siteurl', $url, PHP_INT_MAX];
-    }
-
-    /**
-     * PayPal takes its address from the checkout form. With Apple Pay (its own sheet) off, a cart
-     * that ships is blocked until the form is complete, which is what the shipping scenarios need.
-     */
-    private function payPalIsTheOnlyExpressWallet(): void
-    {
-        $this->setGatewaySettingsForTest('paypal', ['enabled' => 'yes', self::PAYPAL_CHECKOUT => 'yes']);
-        $this->setGatewaySettingsForTest('applepay', [self::APPLE_PAY_EXPRESS => 'no']);
-    }
-
-    private function taxedShippingZones(): void
-    {
-        $this->setOptionForTest('woocommerce_calc_taxes', 'yes');
-        $this->setOptionForTest('woocommerce_prices_include_tax', 'yes');
-        $this->setOptionForTest('woocommerce_tax_display_cart', 'incl');
-        $this->setOptionForTest('woocommerce_shipping_tax_class', '');
-        $this->setOptionForTest('woocommerce_ship_to_countries', '');
-        $this->setOptionForTest('woocommerce_allowed_countries', 'all');
-        $this->setOptionForTest('woocommerce_currency', 'EUR');
-
-        foreach (['LU', 'AT', 'MT'] as $country) {
-            $this->taxRateIds[] = \WC_Tax::_insert_tax_rate([
-                'tax_rate_country' => $country,
-                'tax_rate' => '21.0000',
-                'tax_rate_name' => 'VAT',
-                'tax_rate_priority' => 1,
-                'tax_rate_compound' => 0,
-                'tax_rate_shipping' => 1,
-                'tax_rate_order' => 0,
-                'tax_rate_class' => '',
-            ]);
-        }
-
-        $this->rates = array_merge(
-            $this->zone('Express test LU', 'LU', ['standard' => '5.00', 'express' => '7.50']),
-            $this->zone('Express test AT', 'AT', ['austria' => '9.00']),
-            $this->zone('Express test MT (no rates)', 'MT', [])
-        );
-        \WC_Cache_Helper::get_transient_version('shipping', true);
-
-        // The site may have zones without locations, which match every address and would win over
-        // these (zone_order cannot go below 0). Only this test's zones may match while it runs.
-        $zoneIds = implode(',', array_map('intval', $this->zoneIds));
-        $onlyTheseZones = static function (array $criteria) use ($zoneIds): array {
-            $criteria[] = "AND zones.zone_id IN ({$zoneIds})";
-
-            return $criteria;
-        };
-        add_filter('woocommerce_get_zone_criteria', $onlyTheseZones, PHP_INT_MAX);
-        $this->filters[] = ['woocommerce_get_zone_criteria', $onlyTheseZones, PHP_INT_MAX];
-    }
-
-    /**
-     * @param array<string, string> $costs Rate name => cost excluding tax.
-     * @return array<string, string> Rate name => rate id.
-     */
-    private function zone(string $name, string $country, array $costs): array
-    {
-        $zone = new \WC_Shipping_Zone();
-        $zone->set_zone_name($name);
-        $zone->set_zone_order(0);
-        $zone->add_location($country, 'country');
-        $zone->save();
-        $this->zoneIds[] = $zone->get_id();
-
-        $rates = [];
-        foreach ($costs as $rate => $cost) {
-            $instanceId = $zone->add_shipping_method('flat_rate');
-            update_option("woocommerce_flat_rate_{$instanceId}_settings", [
-                'enabled' => 'yes',
-                'title' => ucfirst($rate),
-                'tax_status' => 'taxable',
-                'cost' => $cost,
-            ]);
-            $rates[$rate] = 'flat_rate:' . $instanceId;
-        }
-
-        return $rates;
-    }
-
-    /**
-     * The express budget is kept by WC_Rate_Limiter, in a table shared by every test, keyed on
-     * something the caller cannot choose. Each scenario starts with a full budget.
-     */
-    private function clearExpressRateLimits(): void
-    {
-        global $wpdb;
-
-        $wpdb->query($wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}wc_rate_limits WHERE rate_limit_key LIKE %s",
-            $wpdb->esc_like('mollie_express') . '%'
-        ));
-        // WC_Rate_Limiter also keeps each expiry in the object cache, under a per-key prefix that
-        // WC_Rate_Limiter::cleanup() does not reach.
-        if (wp_cache_supports('flush_group')) {
-            wp_cache_flush_group(\WC_Rate_Limiter::CACHE_GROUP);
-        } else {
-            wp_cache_flush();
-        }
-    }
 }

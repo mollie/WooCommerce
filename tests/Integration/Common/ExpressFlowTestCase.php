@@ -61,6 +61,13 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
 
     private int $userBackup = 0;
 
+    /**
+     * Every order that existed when the test started; any other is the test's own and is deleted.
+     *
+     * @var array<int, true>
+     */
+    private array $ordersBefore = [];
+
     public function setUp(): void
     {
         parent::setUp();
@@ -70,6 +77,7 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
         $this->transport->install();
         $this->recordingLogger = new RecordingLogger();
         $this->userBackup = get_current_user_id();
+        $this->ordersBefore = array_fill_keys($this->everyOrderId(), true);
 
         $this->setOptionForTest(self::PLUGIN_ID . '_live_api_key', CanaryData::LIVE_API_KEY);
         $this->setOptionForTest(self::PLUGIN_ID . '_test_api_key', CanaryData::TEST_API_KEY);
@@ -83,6 +91,7 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
 
     public function tearDown(): void
     {
+        $this->deleteOrdersCreatedByTheTest();
         $this->transport->uninstall();
         $this->forgetApiClient();
         $this->emptyCart();
@@ -99,6 +108,39 @@ abstract class ExpressFlowTestCase extends PaymentFlowTestCase
         }
 
         parent::tearDown();
+    }
+
+    /**
+     * The shared test site keeps no fixture cleanup of its own (IntegrationMockedTestCase leaves
+     * orders behind), so an express test removes every order it created, in any status, notes and
+     * refunds with it. A later scenario — cleanup above all, which selects orders by age — must never
+     * find another test's order.
+     */
+    private function deleteOrdersCreatedByTheTest(): void
+    {
+        foreach ($this->everyOrderId() as $orderId) {
+            if (isset($this->ordersBefore[$orderId])) {
+                continue;
+            }
+            $order = wc_get_order($orderId);
+            if ($order instanceof \WC_Order) {
+                $order->delete(true);
+            }
+        }
+        $this->ordersBefore = [];
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function everyOrderId(): array
+    {
+        return array_map('intval', wc_get_orders([
+            'limit' => -1,
+            'return' => 'ids',
+            'type' => 'shop_order',
+            'status' => array_merge(array_keys(wc_get_order_statuses()), ['trash', 'wc-checkout-draft', 'draft', 'auto-draft']),
+        ]));
     }
 
     // ──────────────────────────────────────────────────────────────────────────

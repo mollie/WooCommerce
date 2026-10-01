@@ -19,6 +19,7 @@ final class Effect
     public const SET_STATUS = 'set_status';
     public const ADD_NOTE = 'add_note';
     public const SET_ADDRESS = 'set_address';
+    public const SET_CREATED_VIA = 'set_created_via';
 
     private const ADDRESS_TYPES = ['billing', 'shipping'];
 
@@ -56,6 +57,14 @@ final class Effect
     public static function setPaymentMethod(string $gatewayId): self
     {
         return new self(self::SET_PAYMENT_METHOD, ['gatewayId' => $gatewayId]);
+    }
+
+    /**
+     * Which flow created the order, as WooCommerce's created_via.
+     */
+    public static function setCreatedVia(string $createdVia): self
+    {
+        return new self(self::SET_CREATED_VIA, ['createdVia' => $createdVia]);
     }
 
     public static function setStatus(string $status): self

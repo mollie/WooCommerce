@@ -6,10 +6,13 @@ use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
 use Mollie\WooCommerce\Adapter\Mollie\SdkMollieApi;
 use Mollie\WooCommerce\Adapter\WooCommerce\CartFactsBuilder;
 use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
+use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactory;
+use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressSessionBudget;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressSessionStore;
 use Mollie\WooCommerce\Adapter\WordPress\EventLog;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
+use Mollie\WooCommerce\Adapter\WordPress\ExpressReturnHandler;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressUrls;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
@@ -19,6 +22,8 @@ use Mollie\WooCommerce\Log\WcPsrLoggerAdapter;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
+use Mollie\WooCommerce\Workflow\ExpireAbandonedExpressOrders;
+use Mollie\WooCommerce\Workflow\StartExpressOrder;
 use Mollie\WooCommerce\Workflow\StartExpressSession;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -107,9 +112,54 @@ return static function (): array {
                 (int) $container->get('express.config')['sessionReuseMarginSeconds']
             );
         },
+        // Whether any wallet has Express turned on, from options only: the unpaid-orders schedule asks on every init.
+        'express.enabled' => static function (ContainerInterface $container): callable {
+            return static function () use ($container): bool {
+                $facts = $container->get(ExpressFactsBuilder::class);
+                assert($facts instanceof ExpressFactsBuilder);
+
+                return $facts->anyWalletTurnedOn();
+            };
+        },
+        ExpressOrderFactsBuilder::class => static function (ContainerInterface $container): ExpressOrderFactsBuilder {
+            return new ExpressOrderFactsBuilder($container->get(ExpressSessionStore::class));
+        },
+        ExpressOrderFactory::class => static function (): ExpressOrderFactory {
+            return new ExpressOrderFactory();
+        },
+        StartExpressOrder::class => static function (ContainerInterface $container): StartExpressOrder {
+            return new StartExpressOrder(
+                $container->get(CartFactsBuilder::class),
+                $container->get(ExpressFactsBuilder::class),
+                $container->get(ExpressOrderFactsBuilder::class),
+                $container->get(ExpressSessionStore::class),
+                $container->get(ExpressOrderFactory::class),
+                $container->get(EffectInterpreter::class),
+                $container->get(OrderLock::class),
+                $container->get(Clock::class),
+                $container->get(EventLog::class)
+            );
+        },
+        ExpressReturnHandler::class => static function (ContainerInterface $container): ExpressReturnHandler {
+            return new ExpressReturnHandler(
+                $container->get(ExpressOrderFactsBuilder::class),
+                $container->get(EventLog::class)
+            );
+        },
+        ExpireAbandonedExpressOrders::class => static function (ContainerInterface $container): ExpireAbandonedExpressOrders {
+            return new ExpireAbandonedExpressOrders(
+                $container->get(ExpressOrderFactsBuilder::class),
+                $container->get(MollieApi::class),
+                $container->get(EffectInterpreter::class),
+                $container->get(Clock::class),
+                $container->get(EventLog::class),
+                (int) $container->get('express.config')['abandonGraceSeconds']
+            );
+        },
         ExpressRoutes::class => static function (ContainerInterface $container): ExpressRoutes {
             return new ExpressRoutes(
                 $container->get(StartExpressSession::class),
+                $container->get(StartExpressOrder::class),
                 $container->get(EventLog::class)
             );
         },

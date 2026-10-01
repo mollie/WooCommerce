@@ -16,12 +16,15 @@ final class Admission
 {
     public const EXPRESS_SESSION = 'express.session';
 
+    public const EXPRESS_ORDER = 'express.order';
+
     /**
      * Per entry point, what must hold. The express routes are anonymous by design, so a nonce the
      * shop issued to this shopper is the whole of their admission.
      */
     private const RULES = [
         self::EXPRESS_SESSION => ['nonce' => true],
+        self::EXPRESS_ORDER => ['nonce' => true],
     ];
 
     /**

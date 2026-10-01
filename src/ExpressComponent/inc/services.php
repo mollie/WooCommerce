@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
 use Mollie\WooCommerce\Adapter\Mollie\SdkMollieApi;
 use Mollie\WooCommerce\Adapter\WooCommerce\CartFactsBuilder;
-use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressBlocksData;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactory;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
@@ -20,6 +19,7 @@ use Mollie\WooCommerce\Adapter\WordPress\ExpressUrls;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
 use Mollie\WooCommerce\Adapter\WordPress\SystemClock;
 use Mollie\WooCommerce\Core\Clock;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
 use Mollie\WooCommerce\Log\WcPsrLoggerAdapter;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
@@ -52,10 +52,12 @@ return static function (): array {
         Clock::class => static function (): Clock {
             return new SystemClock();
         },
-        OrderLock::class => static function (): OrderLock {
+        OrderLock::class => static function (ContainerInterface $container): OrderLock {
             global $wpdb;
+            $log = $container->get(EventLog::class);
+            assert($log instanceof EventLog);
 
-            return new OrderLock($wpdb);
+            return new OrderLock($wpdb, $log);
         },
         // WooCommerce's log, whatever the merchant's debug switch says.
         'express.event_log.always_on' => static function (ContainerInterface $container): LoggerInterface {
@@ -78,13 +80,11 @@ return static function (): array {
 
             return new EventLog($logger, $alwaysOn);
         },
-        EffectInterpreter::class => static function (ContainerInterface $container): EffectInterpreter {
-            $lock = $container->get(OrderLock::class);
-            assert($lock instanceof OrderLock);
+        ExpressOrderWriter::class => static function (ContainerInterface $container): ExpressOrderWriter {
             $log = $container->get(EventLog::class);
             assert($log instanceof EventLog);
 
-            return new EffectInterpreter($lock, $log);
+            return new ExpressOrderWriter($log);
         },
         ExpressFactsBuilder::class => static function (ContainerInterface $container): ExpressFactsBuilder {
             $settings = $container->get('settings.settings_helper');
@@ -151,7 +151,7 @@ return static function (): array {
                 $container->get(ExpressOrderFactsBuilder::class),
                 $container->get(ExpressSessionStore::class),
                 $container->get(ExpressOrderFactory::class),
-                $container->get(EffectInterpreter::class),
+                $container->get(ExpressOrderWriter::class),
                 $container->get(OrderLock::class),
                 $container->get(Clock::class),
                 $container->get(EventLog::class)
@@ -167,7 +167,8 @@ return static function (): array {
             return new ExpireAbandonedExpressOrders(
                 $container->get(ExpressOrderFactsBuilder::class),
                 $container->get(MollieApi::class),
-                $container->get(EffectInterpreter::class),
+                $container->get(OrderLock::class),
+                $container->get(ExpressOrderWriter::class),
                 $container->get(Clock::class),
                 $container->get(EventLog::class),
                 (int) $container->get('express.config')['abandonGraceSeconds']
@@ -181,7 +182,8 @@ return static function (): array {
             return new ResolveExpressPayment(
                 $container->get(MollieApi::class),
                 $container->get(ExpressOrderFactsBuilder::class),
-                $container->get(EffectInterpreter::class),
+                $container->get(OrderLock::class),
+                $container->get(ExpressOrderWriter::class),
                 $container->get(EventLog::class),
                 $container->get(OrphanedExpressPayments::class),
                 $container->get('express.config')['wallets'],

@@ -6,7 +6,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Core\Express;
 
 use Mollie\WooCommerce\Core\Express\AbandonDecision;
-use Mollie\WooCommerce\Core\Types\Effect;
 use Mollie\WooCommerce\Core\Types\ExpressSession;
 use Mollie\WooCommerce\Core\Types\Money;
 use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
@@ -31,8 +30,8 @@ class AbandonDecisionTest extends TestCase
      * Scenario: every Mollie status has a row, and only a final "cannot be paid" cancels
      *   Given what Mollie reported for the order's session or payment, or that it could not be reached
      *   When the decision is asked
-     *   Then a status that can no longer be paid gives the cancelled status and the abandon note
-     *   And every other status, and no answer at all, gives no effect
+     *   Then a status that can no longer be paid gives true: the order can no longer be paid
+     *   And every other status, and no answer at all, gives false: the order is kept
      *
      * @dataProvider mollieAnswers
      * @covers \Mollie\WooCommerce\Core\Express\AbandonDecision::decide
@@ -46,19 +45,9 @@ class AbandonDecisionTest extends TestCase
         $session = $sessionStatus === null ? null : new ExpressSession('sess_abc', $sessionStatus, '', '2026-09-21T10:15:00+00:00');
         $payment = $paymentStatus === null ? null : new PaymentSnapshot('tr_abc', $paymentStatus, 'paypal', Money::fromDecimal('26.05', 'EUR'));
 
-        $effects = AbandonDecision::decide($session, $payment);
+        $canNoLongerBePaid = AbandonDecision::decide($session, $payment);
 
-        if (!$expectCancel) {
-            self::assertSame([], $effects);
-
-            return;
-        }
-        self::assertSame([
-            [Effect::SET_STATUS, ['status' => 'cancelled']],
-            [Effect::ADD_NOTE, ['messageKey' => AbandonDecision::NOTE, 'params' => []]],
-        ], array_map(static function (Effect $effect): array {
-            return [$effect->type(), $effect->data()];
-        }, $effects));
+        self::assertSame($expectCancel, $canNoLongerBePaid);
     }
 
     /**

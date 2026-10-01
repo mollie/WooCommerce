@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Core\Express;
 
-use Mollie\WooCommerce\Core\Types\Effect;
 use Mollie\WooCommerce\Core\Types\ExpressSession;
 use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
 
@@ -17,25 +16,19 @@ use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
  */
 final class AbandonDecision
 {
-    public const NOTE = 'express.order.abandoned';
-
     private const FINAL_PAYMENT = ['failed', 'canceled', 'expired'];
 
     private const FINAL_SESSION = ['expired'];
 
     /**
-     * @return list<Effect> Empty to keep the order.
+     * @return bool Whether the order can no longer be paid; false keeps it.
      */
-    public static function decide(?ExpressSession $session, ?PaymentSnapshot $payment): array
+    public static function decide(?ExpressSession $session, ?PaymentSnapshot $payment): bool
     {
-        $cannotBePaid = match (true) {
+        return match (true) {
             $payment !== null => in_array($payment->status(), self::FINAL_PAYMENT, true),
             $session !== null => in_array($session->status(), self::FINAL_SESSION, true),
             default => false,
         };
-
-        return $cannotBePaid
-            ? [Effect::setStatus('cancelled'), Effect::addNote(self::NOTE)]
-            : [];
     }
 }

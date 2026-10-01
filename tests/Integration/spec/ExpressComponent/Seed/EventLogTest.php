@@ -41,7 +41,7 @@ class EventLogTest extends ExpressFlowTestCase
 
     /**
      * Scenario: an event is written with its name and its allowlisted fields
-     *   Given the effects.applied event of the catalogue
+     *   Given the order.written event of the catalogue
      *   When it is logged with cid, order, status and ms
      *   Then the record names the event and carries exactly those fields
      *
@@ -51,11 +51,11 @@ class EventLogTest extends ExpressFlowTestCase
     {
         $log = $this->eventLog();
 
-        $log->info('effects.applied', ['order' => 4711, 'status' => 'processing', 'ms' => 12]);
+        $log->info('order.written', ['order' => 4711, 'status' => 'processing', 'ms' => 12]);
 
         $record = $this->lastRecord();
         $this->assertSame('info', $record['level']);
-        $this->assertStringContainsString('effects.applied', $record['message'], 'Event names are the API people search for.');
+        $this->assertStringContainsString('order.written', $record['message'], 'Event names are the API people search for.');
 
         $context = $record['context'];
         $this->assertSame(4711, $context['order']);
@@ -82,7 +82,7 @@ class EventLogTest extends ExpressFlowTestCase
     {
         $log = $this->eventLog();
 
-        $log->info('effects.applied', [
+        $log->info('order.written', [
             'order' => 4711,
             'status' => 'processing',
             'ms' => 12,
@@ -114,7 +114,7 @@ class EventLogTest extends ExpressFlowTestCase
         $first = $this->eventLog();
         $first->info('express.session.created', ['session' => 'sess_one', 'surface' => 'checkout']);
         $first->warning('express.order.refused', ['session' => 'sess_one', 'reason' => 'cart_changed']);
-        $first->info('effects.applied', ['order' => 4711, 'status' => 'processing', 'ms' => 3]);
+        $first->info('order.written', ['order' => 4711, 'status' => 'processing', 'ms' => 3]);
 
         $firstCids = $this->correlationIds();
         $this->assertCount(1, $firstCids, 'Every event of one request must carry one cid.');
@@ -182,7 +182,7 @@ class EventLogTest extends ExpressFlowTestCase
             },
         ])->get(EventLog::class);
 
-        $log->info('effects.applied', ['order' => 4711]);
+        $log->info('order.written', ['order' => 4711]);
         $log->warning('express.webhook.unmatched', ['mollie_id' => 'tr_unmatched1', 'reason' => 'unknown_ref']);
         $log->error('express.payment.orphaned', ['mollie_id' => 'tr_orphaned1', 'reason' => 'unknown_ref']);
 

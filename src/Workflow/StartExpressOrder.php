@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Workflow;
 
 use Mollie\WooCommerce\Adapter\WooCommerce\CartFactsBuilder;
-use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactory;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressSessionStore;
@@ -19,6 +18,7 @@ use Mollie\WooCommerce\Core\Express\WalletVisibility;
 use Mollie\WooCommerce\Core\Types\CartFacts;
 use Mollie\WooCommerce\Core\Types\RememberedSession;
 use Mollie\WooCommerce\Core\Types\Refuse;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
 use Throwable;
 use WC_Order;
 
@@ -45,7 +45,7 @@ final class StartExpressOrder
         private ExpressOrderFactsBuilder $orderFacts,
         private ExpressSessionStore $store,
         private ExpressOrderFactory $factory,
-        private EffectInterpreter $effects,
+        private ExpressOrderWriter $writer,
         private OrderLock $lock,
         private Clock $clock,
         private EventLog $log
@@ -73,7 +73,7 @@ final class StartExpressOrder
         $order = $this->orderFacts->orderByRef($session->expressRef());
         $existing = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
         $cart = $this->cartFacts->fromCart() ?? new CartFacts([], false, false, false);
-        $decision = StartOrderDecision::decide($session, $existing, $cart, $this->clock->now());
+        $decision = StartOrderDecision::admit($session, $existing, $cart, $this->clock->now());
 
         if ($decision instanceof Refuse) {
             if (in_array($decision->code(), self::SESSION_SPENT, true)) {
@@ -115,7 +115,14 @@ final class StartExpressOrder
 
                 return $this->refuse($session, 'amount_mismatch', self::REFUSED);
             }
-            $order = $this->effects->apply($order, StartOrderDecision::stamps($session, $mode, $gatewayId, $wallet));
+            $order = $this->lock->withFreshOrder(
+                $order->get_id(),
+                function (WC_Order $fresh) use ($session, $mode, $gatewayId, $wallet): WC_Order {
+                    $this->writer->stampNewOrder($fresh, $session, $mode, $gatewayId, $wallet);
+
+                    return $fresh;
+                }
+            );
             // WooCommerce's order save logs a failure instead of throwing. An order a repeat submit
             // cannot find by its ref would be orphaned and followed by a second one.
             if ($this->orderFacts->orderByRef($session->expressRef())?->get_id() !== $order->get_id()) {

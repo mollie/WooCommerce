@@ -4,53 +4,49 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Core\Express;
 
-use Mollie\WooCommerce\Core\Types\Effect;
 use Mollie\WooCommerce\Core\Types\ExpressOrderFacts;
 use Mollie\WooCommerce\Core\Types\MollieAddress;
 use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 
 /**
  * What a matched express order is given the first time its payment is seen.
  *
  * Addresses, per type: the wallet's billing address and contact details win over whatever the order
  * holds, because the sheet is where the shopper chose them.
- * Applying the result twice changes nothing.
+ * Writing the result twice changes nothing.
  */
-final class FirstSightEffects
+final class FirstSight
 {
-    public const NOTE_UNKNOWN_WALLET = 'express.payment.unknown_wallet';
-
     /**
      * @param array<string, array{gatewayId: string, paidAs: string}> $wallets The wallets table of config/express.php.
      * @param array<int, string> $registeredGatewayIds
-     * @return list<Effect>
      */
-    public static function for(
+    public static function decide(
         PaymentSnapshot $payment,
         ExpressOrderFacts $order,
         array $wallets,
         array $registeredGatewayIds
-    ): array {
-
-        $effects = [
-            Effect::setMeta('_mollie_payment_id', $payment->id()),
-            Effect::setTransactionId($payment->id()),
-            Effect::setMeta('_mollie_payment_mode', $payment->mode()),
-        ];
+    ): FirstSightData {
 
         $method = (string) $payment->method();
         $gatewayId = self::gatewayFor($method, $wallets, $registeredGatewayIds);
-        $effects[] = $gatewayId !== null
-            ? Effect::setPaymentMethod($gatewayId)
-            : Effect::addNote(self::NOTE_UNKNOWN_WALLET, ['method' => $method]);
 
         // Upstream wins: the wallet's billing address and email replace what the order was given.
-        array_push($effects, ...self::address('billing', $payment->billingAddress()));
+        $shipping = null;
         if (!$order->needsShipping() && !$order->holdsShipping()) {
-            array_push($effects, ...self::address('shipping', $payment->shippingAddress()));
+            $shipping = self::address($payment->shippingAddress());
+            $shipping = $shipping === [] ? null : $shipping;
         }
 
-        return $effects;
+        return new FirstSightData(
+            $payment->id(),
+            $payment->mode(),
+            $gatewayId,
+            $gatewayId === null ? $method : null,
+            self::address($payment->billingAddress()),
+            $shipping
+        );
     }
 
     /**
@@ -69,12 +65,10 @@ final class FirstSightEffects
     }
 
     /**
-     * @return list<Effect>
+     * @return array<string, string> In WooCommerce field names; empty when the wallet gave none.
      */
-    private static function address(string $type, ?MollieAddress $address): array
+    private static function address(?MollieAddress $address): array
     {
-        $fields = $address === null ? [] : AddressMapping::toWooCommerce($address->fields());
-
-        return $fields === [] ? [] : [Effect::setAddress($type, $fields)];
+        return $address === null ? [] : AddressMapping::toWooCommerce($address->fields());
     }
 }

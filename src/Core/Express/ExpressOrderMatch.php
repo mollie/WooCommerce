@@ -20,7 +20,7 @@ final class ExpressOrderMatch
 {
     private const UNMATCHED = 200;
 
-    public static function decide(PaymentSnapshot $payment, ?ExpressOrderFacts $order): Admit|Refuse
+    public static function admit(PaymentSnapshot $payment, ?ExpressOrderFacts $order): Admit|Refuse
     {
         $ref = (string) $payment->expressRef();
         if ($ref === '') {

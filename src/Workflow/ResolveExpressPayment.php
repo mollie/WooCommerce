@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Workflow;
 
 use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
-use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\Adapter\WordPress\EventLog;
+use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout;
 use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
 use Mollie\WooCommerce\Core\Express\ExpressOrderMatch;
-use Mollie\WooCommerce\Core\Express\FirstSightEffects;
+use Mollie\WooCommerce\Core\Express\FirstSight;
 use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
 use Mollie\WooCommerce\Core\Types\Refuse;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
 use Throwable;
 use WC_Order;
 
@@ -22,7 +23,7 @@ use WC_Order;
  *
  * Runs only when neither indexed lookup found an order. The payment is fetched from Mollie — the
  * request gave nothing but its id — and the order is the one carrying the ref in its metadata. On a
- * match the first-sight effects are applied under the per-order lock, so a webhook and a second
+ * match the first sight is written under the per-order lock, so a webhook and a second
  * resolution racing on the same first sight converge on one write. What happens to the order's
  * status is then decided by the existing doPaymentForOrder(), exactly as today.
  */
@@ -35,7 +36,8 @@ final class ResolveExpressPayment
     public function __construct(
         private MollieApi $mollie,
         private ExpressOrderFactsBuilder $orderFacts,
-        private EffectInterpreter $effects,
+        private OrderLock $lock,
+        private ExpressOrderWriter $writer,
         private EventLog $log,
         private OrphanedExpressPayments $orphaned,
         private array $wallets,
@@ -44,7 +46,7 @@ final class ResolveExpressPayment
     }
 
     /**
-     * @return WC_Order|null The matched order, its first-sight effects applied; null when no order matches.
+     * @return WC_Order|null The matched order, its first sight written; null when no order matches.
      *
      * @throws OrderLockTimeout Retryable; nothing was written.
      */
@@ -67,7 +69,7 @@ final class ResolveExpressPayment
         $order = $this->orderFacts->orderByRef((string) $payment->expressRef());
         $facts = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
 
-        $decision = ExpressOrderMatch::decide($payment, $facts);
+        $decision = ExpressOrderMatch::admit($payment, $facts);
         if ($decision instanceof Refuse || $order === null || $facts === null) {
             $reason = $decision instanceof Refuse ? $decision->code() : 'unknown_ref';
             $this->log->warning('express.webhook.unmatched', [
@@ -79,8 +81,12 @@ final class ResolveExpressPayment
             return null;
         }
 
-        $effects = FirstSightEffects::for($payment, $facts, $this->wallets, ($this->registeredGatewayIds)());
-        $order = $this->effects->apply($order, $effects);
+        $firstSight = FirstSight::decide($payment, $facts, $this->wallets, ($this->registeredGatewayIds)());
+        $order = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($firstSight): WC_Order {
+            $this->writer->recordFirstSight($fresh, $firstSight);
+
+            return $fresh;
+        });
 
         $this->log->info('express.payment.matched', [
             'order' => $order->get_id(),

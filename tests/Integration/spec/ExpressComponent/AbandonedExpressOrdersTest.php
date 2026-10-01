@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use Mollie\WooCommerce\Core\Clock;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\SettableClock;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
@@ -320,6 +321,81 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Scenario: an order another process paid while Mollie was being asked is not cancelled
+     *   Given a pending express order past its expiry and grace, whose session Mollie reports expired
+     *   And this process has the order loaded, as cleanup's own query leaves it
+     *   And while cleanup asks Mollie about the session, another process marks the order processing
+     *     directly in the order tables, as a webhook in another PHP process would
+     *   When the cleanup action runs
+     *   Then the order as stored is still processing
+     *   And it carries no abandon note
+     *   And express.abandoned.kept is logged with the reason no_longer_pending
+     *
+     * The "still pending?" check is made on the order read inside OrderLock::withFreshOrder(). Before,
+     * it was made on a read WooCommerce served from its OrderCache, so cleanup cancelled an order a
+     * webhook had just paid.
+     *
+     * @test
+     */
+    public function it_keeps_an_order_another_process_paid_while_mollie_was_asked(): void
+    {
+        $order = $this->expressOrder();
+        $this->fakeMollie()->expireSession($order['session']);
+        $this->clock->set($order['expiresAt'] + $this->graceSeconds + 1);
+        $paidElsewhere = false;
+        // Priority 0: runs before the fake Mollie answers, while cleanup is waiting for it.
+        $this->addTestFilter('pre_http_request', function ($preempt, $args, $url) use ($order, &$paidElsewhere) {
+            if (!$paidElsewhere && strpos((string) $url, 'sessions/' . $order['session']) !== false) {
+                $this->writeStatusAsAnotherProcess($order['id'], 'wc-processing');
+                $paidElsewhere = true;
+            }
+
+            return $preempt;
+        }, 0, 3);
+
+        $this->runCleanup();
+
+        $this->assertTrue($paidElsewhere, 'Cleanup never asked Mollie about the session, so nothing raced.');
+        $this->assertSame('wc-processing', $this->storedStatus($order['id']), 'Cleanup cancelled an order another process had paid.');
+        $this->assertNoAbandonNote(wc_get_order($order['id']));
+        $kept = $this->eventsFor('express.abandoned.kept', $order['id']);
+        $this->assertCount(1, $kept);
+        $this->assertSame('no_longer_pending', $kept[0]['context']['reason'] ?? null);
+        $this->assertSame([], $this->eventsFor('express.abandoned.cancelled', $order['id']));
+    }
+
+    /**
+     * A status written the way another PHP process writes it, seen from here: the order row changed,
+     * no WooCommerce hook run, no cache of this process touched.
+     */
+    private function writeStatusAsAnotherProcess(int $orderId, string $status): void
+    {
+        global $wpdb;
+        $hpos = OrderUtil::custom_orders_table_usage_is_enabled();
+        $updated = $wpdb->update(
+            OrderUtil::get_table_for_orders(),
+            [$hpos ? 'status' : 'post_status' => $status],
+            [$hpos ? 'id' : 'ID' => $orderId]
+        );
+        $this->assertSame(1, $updated, 'The outside write did not change the order row.');
+    }
+
+    /**
+     * The status as stored, read past every cache.
+     */
+    private function storedStatus(int $orderId): string
+    {
+        global $wpdb;
+        $hpos = OrderUtil::custom_orders_table_usage_is_enabled();
+        $table = OrderUtil::get_table_for_orders();
+        $column = $hpos ? 'status' : 'post_status';
+        $idColumn = $hpos ? 'id' : 'ID';
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table and column names from WooCommerce.
+        return (string) $wpdb->get_var($wpdb->prepare("SELECT {$column} FROM {$table} WHERE {$idColumn} = %d", $orderId));
+    }
 
     /**
      * A pending express order created the way the browser creates it, at the real time. A negative

@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Workflow;
 
 use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
-use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
+use InvalidArgumentException;
 use Mollie\WooCommerce\Adapter\WordPress\EventLog;
+use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
 use Mollie\WooCommerce\Core\Clock;
 use Mollie\WooCommerce\Core\Express\AbandonDecision;
 use Mollie\WooCommerce\Core\Types\ExpressSession;
 use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
 use Throwable;
 use WC_Order;
 
@@ -31,7 +33,8 @@ final class ExpireAbandonedExpressOrders
     public function __construct(
         private ExpressOrderFactsBuilder $orderFacts,
         private MollieApi $mollie,
-        private EffectInterpreter $effects,
+        private OrderLock $lock,
+        private ExpressOrderWriter $writer,
         private Clock $clock,
         private EventLog $log,
         private int $graceSeconds
@@ -59,23 +62,33 @@ final class ExpireAbandonedExpressOrders
             return;
         }
 
-        $effects = AbandonDecision::decide($session, $payment);
+        $canNoLongerBePaid = AbandonDecision::decide($session, $payment);
         $status = $payment !== null ? $payment->status() : ($session !== null ? $session->status() : 'unknown');
-        if ($effects === []) {
+        if (!$canNoLongerBePaid) {
             $this->log->info('express.abandoned.kept', $fields + ['reason' => $status]);
 
             return;
         }
 
-        // The webhook may have paid the order while Mollie was being asked.
-        $current = wc_get_order($order->get_id());
-        if (!$current instanceof WC_Order || !$current->has_status('pending')) {
+        try {
+            $cancelled = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh): bool {
+                // The webhook may have paid the order while Mollie was being asked.
+                if (!$fresh->has_status('pending')) {
+                    return false;
+                }
+                $this->writer->cancelAbandoned($fresh);
+
+                return true;
+            });
+        } catch (InvalidArgumentException $deleted) {
+            $cancelled = false;
+        }
+        if (!$cancelled) {
             $this->log->info('express.abandoned.kept', $fields + ['reason' => 'no_longer_pending']);
 
             return;
         }
 
-        $this->effects->apply($current, $effects);
         $this->log->info('express.abandoned.cancelled', $fields + ['reason' => $status]);
     }
 

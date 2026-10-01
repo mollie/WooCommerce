@@ -30,7 +30,7 @@ final class Admission
     /**
      * @return Admit|Refuse
      */
-    public static function decide(string $entryPoint, bool $noncePresent, bool $nonceValid)
+    public static function admit(string $entryPoint, bool $noncePresent, bool $nonceValid)
     {
         $rule = self::RULES[$entryPoint] ?? null;
         if ($rule === null) {

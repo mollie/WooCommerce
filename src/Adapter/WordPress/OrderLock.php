@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Adapter\WordPress;
 
+use Automattic\WooCommerce\Caches\OrderCache;
+use InvalidArgumentException;
+use Throwable;
+use WC_Order;
 use wpdb;
 
 /**
@@ -21,7 +25,10 @@ final class OrderLock
 
     private ?bool $holdsSeveralLocks = null;
 
-    public function __construct(private wpdb $db)
+    /**
+     * @param EventLog|null $log Where a lock timeout of withFreshOrder() is reported.
+     */
+    public function __construct(private wpdb $db, private ?EventLog $log = null)
     {
     }
 
@@ -62,6 +69,72 @@ final class OrderLock
             return $this->run($work);
         } finally {
             $this->db->get_var($this->db->prepare('SELECT RELEASE_LOCK(%s)', $name));
+        }
+    }
+
+    /**
+     * Runs the work on the order as stored, while holding the order's lock: another request may have
+     * written it while this one waited, so a decision is made on this order and on nothing read before.
+     *
+     * @template T
+     * @param callable(WC_Order): T $work
+     * @return T
+     * @throws OrderLockTimeout When the lock was not free within the timeout; the work did not run.
+     * @throws InvalidArgumentException When the order no longer exists; the work did not run.
+     */
+    public function withFreshOrder(int $orderId, callable $work)
+    {
+        $started = microtime(true);
+
+        try {
+            return $this->withLock((string) $orderId, function () use ($orderId, $work) {
+                return $work($this->freshOrder($orderId));
+            });
+        } catch (OrderLockTimeout $timeout) {
+            $this->log?->warning('order.lock_timeout', [
+                'order' => $orderId,
+                'ms' => (int) round((microtime(true) - $started) * 1000),
+            ]);
+            throw $timeout;
+        }
+    }
+
+    /**
+     * The order as stored, not as this process last loaded it. WooCommerce keeps loaded orders in its
+     * OrderCache, which another process's write does not reach, so the order is removed from it first.
+     */
+    private function freshOrder(int $orderId): WC_Order
+    {
+        $this->forgetCachedOrder($orderId);
+        clean_post_cache($orderId);
+        wp_cache_delete(WC_Order::generate_meta_cache_key($orderId, 'orders'), 'orders');
+
+        $order = wc_get_order($orderId);
+        $dataStore = $order instanceof WC_Order ? $order->get_data_store() : null;
+        if ($dataStore !== null && is_callable([$dataStore, 'clear_cached_data'])) {
+            $dataStore->clear_cached_data([$orderId]);
+            $this->forgetCachedOrder($orderId);
+            $order = wc_get_order($orderId);
+        }
+        if (!$order instanceof WC_Order) {
+            throw new InvalidArgumentException('The order no longer exists.');
+        }
+
+        return $order;
+    }
+
+    /**
+     * WooCommerce's own API for its order object cache; a WooCommerce without it has nothing to forget.
+     */
+    private function forgetCachedOrder(int $orderId): void
+    {
+        if (!function_exists('wc_get_container') || !method_exists(OrderCache::class, 'remove')) {
+            return;
+        }
+        try {
+            wc_get_container()->get(OrderCache::class)->remove($orderId);
+        } catch (Throwable $unavailable) {
+            return;
         }
     }
 

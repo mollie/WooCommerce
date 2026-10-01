@@ -28,7 +28,7 @@ use wpdb;
  * neither a transaction id nor _mollie_payment_id, and the session's redirectUrl carries an
  * express_ref instead of an order id. One new stage — ResolveExpressPayment, between the two indexed
  * lookups and the redirectUrl fallback, on both webhook paths — fetches the payment, finds the order
- * carrying the ref in its metadata, checks the match, and writes the first-sight effects under the
+ * carrying the ref in its metadata, checks the match, and writes the first sight under the
  * per-order lock. The existing doPaymentForOrder() then decides the status exactly as today.
  *
  * Observed end to end: the real REST route with the shop secret, the real WooCommerce order storage,
@@ -451,6 +451,54 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a second payment carrying the ref of an order that tracks a first one is refused as other_payment
+     *   Given a pending express order whose first payment, still open, Mollie already called the webhook for
+     *   And so the order tracks that first payment
+     *   And a second payment, paid, from the same session, carrying the same express_ref
+     *   When Mollie calls the webhook for the second payment
+     *   Then it is answered 200
+     *   And express.webhook.unmatched is logged once with the reason other_payment and the second payment's id
+     *   And the order's status, meta and notes are exactly as before, it is not paid, and no payment was completed
+     *   And no orphaned payment is reported, because an order carries the ref
+     *
+     * Pins what happens today (blueprint section 9, answer 5), whether or not Mollie ever sends such a
+     * webhook: bug:944-refactor-07:express-paid-payment-refused changes exactly this behaviour, and
+     * feat:944-refactor-04:step-trace shows its steps.
+     *
+     * @test
+     */
+    public function it_refuses_a_second_payment_carrying_the_ref_of_an_order_that_tracks_a_first_one(): void
+    {
+        [$order, $ref, $sessionId] = $this->expressOrder();
+        $first = $this->fakeMollie()->completeSession($sessionId, ['status' => 'open', 'method' => 'paypal']);
+        $this->assertSame(200, $this->deliverWebhook($first['id']));
+        $this->assertSame($first['id'], (string) $this->fresh($order)->get_meta('_mollie_payment_id'), 'The order must track the first payment.');
+        $this->assertSame('pending', $this->fresh($order)->get_status());
+
+        $second = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $this->assertNotSame($first['id'], $second['id']);
+        $this->assertSame($ref, $second['metadata']['express_ref'] ?? null, 'The second payment must carry the same express_ref.');
+        $state = $this->state($order);
+        $notes = $this->notes($order);
+        $completions = $this->paymentCompletions;
+        $this->logger()->reset();
+
+        $status = $this->deliverWebhook($second['id']);
+
+        $this->assertSame(200, $status);
+        $unmatched = $this->loggedEvents('express.webhook.unmatched');
+        $this->assertCount(1, $unmatched);
+        $this->assertSame('other_payment', $unmatched[0]['context']['reason'] ?? null);
+        $this->assertSame($second['id'], $unmatched[0]['context']['mollie_id'] ?? null);
+        $this->assertSame($state, $this->state($order));
+        $this->assertSame($notes, $this->notes($order));
+        $this->assertFalse($this->fresh($order)->is_paid());
+        $this->assertSame($completions, $this->paymentCompletions);
+        $this->assertSame([], $this->loggedEvents('express.payment.orphaned'));
+        $this->assertSame([], $this->loggedEvents('order.written'), 'Nothing may be written for a refused payment.');
+    }
+
+    /**
      * Scenario: payment metadata naming an ordinary pending order does not pay it
      *   Given an ordinary pending order placed through the classic checkout
      *   And a paid payment whose metadata names that order by id, or carries a ref that order was given
@@ -807,7 +855,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   When Mollie calls the webhook, which waits for the lock and then resolves the payment
      *   And a second resolution of the same payment runs the same rails afterwards, as a return would
      *   Then the webhook waited and was answered 200
-     *   And the order has one _mollie_payment_id, the effects were applied once, the payment was completed once
+     *   And the order has one _mollie_payment_id, the order was written once, the payment was completed once
      *   And the second resolution added no note
      *
      * @test
@@ -832,7 +880,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $this->assertSame(200, $status);
         $after = $this->fresh($order);
         $this->assertCount(1, $after->get_meta('_mollie_payment_id', false));
-        $this->assertCount(1, $this->effectsAppliedTo($order));
+        $this->assertCount(1, $this->orderWrittenFor($order));
         $this->assertSame(1, $this->paymentCompletions);
         $this->assertSame($notesAfterWebhook, $this->notes($order));
         $this->assertTrue($after->is_paid());
@@ -1160,9 +1208,9 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     /**
      * @return array<int, array{level: string, message: string, context: array<mixed>}>
      */
-    private function effectsAppliedTo(WC_Order $order): array
+    private function orderWrittenFor(WC_Order $order): array
     {
-        return array_values(array_filter($this->loggedEvents('effects.applied'), static function (array $record) use ($order): bool {
+        return array_values(array_filter($this->loggedEvents('order.written'), static function (array $record) use ($order): bool {
             return (int) ($record['context']['order'] ?? 0) === $order->get_id();
         }));
     }

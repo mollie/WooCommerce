@@ -7,7 +7,7 @@ namespace Mollie\WooCommerce\Core\Express;
 use Psr\Log\LoggerInterface;
 
 /**
- * Breaks one rule: the core cannot log at all (ADR-014). Return an Effect instead.
+ * Breaks one rule: a rule cannot log at all (ADR-014). Return a verdict instead.
  */
 final class LogsFromTheCore
 {

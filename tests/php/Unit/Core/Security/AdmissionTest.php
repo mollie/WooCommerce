@@ -30,7 +30,7 @@ class AdmissionTest extends TestCase
      *   And a missing or unverified nonce, or an unknown entry point, is refused with 403 and its reason
      *
      * @dataProvider requests
-     * @covers \Mollie\WooCommerce\Core\Security\Admission::decide
+     * @covers \Mollie\WooCommerce\Core\Security\Admission::admit
      */
     public function testAdmitsTheSessionRouteOnlyWithAValidNonce(
         string $entryPoint,
@@ -39,7 +39,7 @@ class AdmissionTest extends TestCase
         ?string $expectedRefusal
     ): void {
 
-        $decision = Admission::decide($entryPoint, $noncePresent, $nonceValid);
+        $decision = Admission::admit($entryPoint, $noncePresent, $nonceValid);
 
         if ($expectedRefusal === null) {
             self::assertInstanceOf(Admit::class, $decision);

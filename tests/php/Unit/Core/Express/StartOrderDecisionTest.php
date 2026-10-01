@@ -45,7 +45,7 @@ class StartOrderDecisionTest extends TestCase
      *   And otherwise it admits the request
      *
      * @dataProvider requests
-     * @covers \Mollie\WooCommerce\Core\Express\StartOrderDecision::decide
+     * @covers \Mollie\WooCommerce\Core\Express\StartOrderDecision::admit
      */
     public function testDecidesWhatAnOrderRequestGets(
         bool $hasSession,
@@ -66,7 +66,7 @@ class StartOrderDecisionTest extends TestCase
             : null;
         $existing = $existingNeedsPayment === null ? null : $this->existingOrder($existingNeedsPayment);
 
-        $decision = StartOrderDecision::decide($session, $existing, $cart, self::NOW);
+        $decision = StartOrderDecision::admit($session, $existing, $cart, self::NOW);
 
         self::assertSame($expected, $decision instanceof Refuse ? 'refuse:' . $decision->code() : 'admit');
         if (!$decision instanceof Refuse) {

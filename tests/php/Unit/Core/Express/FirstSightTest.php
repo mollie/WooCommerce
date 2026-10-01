@@ -6,33 +6,34 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Core\Express;
 
 use Mollie\WooCommerce\Core\Express\AddressMapping;
-use Mollie\WooCommerce\Core\Express\FirstSightEffects;
-use Mollie\WooCommerce\Core\Types\Effect;
+use Mollie\WooCommerce\Core\Express\FirstSight;
 use Mollie\WooCommerce\Core\Types\ExpressOrderFacts;
 use Mollie\WooCommerce\Core\Types\MollieAddress;
 use Mollie\WooCommerce\Core\Types\Money;
 use Mollie\WooCommerce\Core\Types\PaymentSnapshot;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 use Mollie\WooCommerceTests\TestCase;
 
 /**
  * What the order is given the first time a matched express payment is seen (REQ-D1, D5, F1, F2;
  * AC-20, AC-24, AC-32, AC-33).
  *
- * As data, for the EffectInterpreter to apply under the per-order lock: the payment id as
- * _mollie_payment_id and as the transaction id, the payment mode, and the plugin's payment method
- * for the wallet that paid, looked up by payment.method in the wallets table. When the wallet has
- * no row, or its payment method is not registered, the provisional method set at submit is kept and
- * a note names the Mollie method: a paid order is never left unfulfilled over a label.
+ * A verdict, FirstSightData, that ExpressOrderWriter carries out under the per-order lock: the
+ * payment id (as _mollie_payment_id and as the transaction id), the payment mode, and the plugin's
+ * payment method for the wallet that paid, looked up by payment.method in the wallets table. When
+ * the wallet has no row, or its payment method is not registered, there is no gateway and the
+ * verdict names the Mollie method instead, so the writer keeps the provisional method and notes it:
+ * a paid order is never left unfulfilled over a label.
  *
- * Addresses, per address type: what the store held when the order was created wins; the wallet's
- * details fill only a type the order holds nothing for; and the shipping address of an order that
- * needs shipping is never changed, because its cost was calculated from it.
+ * Addresses, per address type: the wallet's billing address replaces the order's; the shipping
+ * address of an order that needs shipping, or already holds one, is never changed, because its cost
+ * was calculated from it.
  *
  * The wallet rows are the real ones in config/express.php.
  *
- * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects
+ * @covers \Mollie\WooCommerce\Core\Express\FirstSight
  */
-class FirstSightEffectsTest extends TestCase
+class FirstSightTest extends TestCase
 {
     private const REGISTERED = [
         'mollie_wc_gateway_applepay',
@@ -44,33 +45,31 @@ class FirstSightEffectsTest extends TestCase
     /**
      * Scenario: the order records the payment and gets the payment method of the wallet that paid
      *   Given a matched payment made with a wallet that has a row and a registered payment method
-     *   When the first-sight effects are built
-     *   Then they set _mollie_payment_id and the transaction id to the payment id
-     *   And they set _mollie_payment_mode to the payment's mode
-     *   And they set the order's payment method to that wallet's gateway
-     *   And they add no note
+     *   When the first sight is decided
+     *   Then the verdict names the payment id and the payment's mode
+     *   And the wallet's gateway
+     *   And no Mollie method to note
+     *   And, the payment carrying no address and the order shipping, no billing and no shipping fields
      *
      * @dataProvider walletsWithAPaymentMethod
-     * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
+     * @covers \Mollie\WooCommerce\Core\Express\FirstSight::decide
      */
     public function testRecordsThePaymentAndSetsTheWalletsPaymentMethod(string $mollieMethod, string $expectedGateway): void
     {
-        $effects = FirstSightEffects::for(
+        $verdict = FirstSight::decide(
             $this->payment(['method' => $mollieMethod, 'mode' => 'live']),
             $this->order(),
             $this->wallets(),
             self::REGISTERED
         );
 
-        $described = $this->described($effects);
-        self::assertContains([Effect::SET_META, ['key' => '_mollie_payment_id', 'value' => 'tr_express1']], $described);
-        self::assertContains([Effect::SET_TRANSACTION_ID, ['transactionId' => 'tr_express1']], $described);
-        self::assertContains([Effect::SET_META, ['key' => '_mollie_payment_mode', 'value' => 'live']], $described);
-        self::assertSame(
-            [[Effect::SET_PAYMENT_METHOD, ['gatewayId' => $expectedGateway]]],
-            $this->ofType($described, Effect::SET_PAYMENT_METHOD)
-        );
-        self::assertSame([], $this->ofType($described, Effect::ADD_NOTE));
+        self::assertInstanceOf(FirstSightData::class, $verdict);
+        self::assertSame('tr_express1', $verdict->paymentId());
+        self::assertSame('live', $verdict->mode());
+        self::assertSame($expectedGateway, $verdict->gatewayId());
+        self::assertNull($verdict->unmatchedMethod());
+        self::assertSame([], $verdict->billing(), 'A payment without a billing address gives no billing fields.');
+        self::assertNull($verdict->shipping(), 'An order that ships gets no shipping fields.');
     }
 
     /**
@@ -88,31 +87,27 @@ class FirstSightEffectsTest extends TestCase
     /**
      * Scenario: a method without a wallet payment method keeps the provisional one and is noted
      *   Given a matched payment whose method has no wallet row, or a row whose payment method is not registered
-     *   When the first-sight effects are built
-     *   Then they still record the payment id, the transaction id and the mode
-     *   And they do not change the payment method
-     *   And they add one note naming the Mollie method
+     *   When the first sight is decided
+     *   Then the verdict still names the payment id and the mode
+     *   And no gateway, so the payment method is not changed
+     *   And the Mollie method, for the note
      *
      * @dataProvider methodsWithoutAWalletPaymentMethod
-     * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
+     * @covers \Mollie\WooCommerce\Core\Express\FirstSight::decide
      */
     public function testKeepsTheProvisionalMethodAndNotesTheMollieMethod(string $mollieMethod): void
     {
-        $effects = FirstSightEffects::for(
+        $verdict = FirstSight::decide(
             $this->payment(['method' => $mollieMethod]),
             $this->order(),
             $this->wallets(),
             self::REGISTERED
         );
 
-        $described = $this->described($effects);
-        self::assertContains([Effect::SET_META, ['key' => '_mollie_payment_id', 'value' => 'tr_express1']], $described);
-        self::assertContains([Effect::SET_TRANSACTION_ID, ['transactionId' => 'tr_express1']], $described);
-        self::assertSame([], $this->ofType($described, Effect::SET_PAYMENT_METHOD));
-        self::assertSame(
-            [[Effect::ADD_NOTE, ['messageKey' => FirstSightEffects::NOTE_UNKNOWN_WALLET, 'params' => ['method' => $mollieMethod]]]],
-            $this->ofType($described, Effect::ADD_NOTE)
-        );
+        self::assertSame('tr_express1', $verdict->paymentId());
+        self::assertSame('live', $verdict->mode());
+        self::assertNull($verdict->gatewayId());
+        self::assertSame($mollieMethod, $verdict->unmatchedMethod());
     }
 
     /**
@@ -130,29 +125,25 @@ class FirstSightEffectsTest extends TestCase
      * Scenario: a card payment keeps the provisional method while the plugin has no Google Pay method
      *   Given a matched payment that Mollie reports as creditcard
      *   And no registered Google Pay payment method
-     *   When the first-sight effects are built
-     *   Then they do not change the payment method
-     *   And they add one note naming the Mollie method
+     *   When the first sight is decided
+     *   Then the verdict names no gateway
+     *   And names creditcard as the Mollie method, for the note
      *
-     * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
+     * @covers \Mollie\WooCommerce\Core\Express\FirstSight::decide
      */
     public function testACardPaymentKeepsTheProvisionalMethodWhileGooglePayIsNotRegistered(): void
     {
         $registered = array_values(array_diff(self::REGISTERED, ['mollie_wc_gateway_googlepay']));
 
-        $effects = FirstSightEffects::for(
+        $verdict = FirstSight::decide(
             $this->payment(['method' => 'creditcard']),
             $this->order(),
             $this->wallets(),
             $registered
         );
 
-        $described = $this->described($effects);
-        self::assertSame([], $this->ofType($described, Effect::SET_PAYMENT_METHOD));
-        self::assertSame(
-            [[Effect::ADD_NOTE, ['messageKey' => FirstSightEffects::NOTE_UNKNOWN_WALLET, 'params' => ['method' => 'creditcard']]]],
-            $this->ofType($described, Effect::ADD_NOTE)
-        );
+        self::assertNull($verdict->gatewayId());
+        self::assertSame('creditcard', $verdict->unmatchedMethod());
     }
 
     /**
@@ -173,74 +164,58 @@ class FirstSightEffectsTest extends TestCase
     /**
      * Scenario: the wallet's billing details replace whatever the order holds
      *   Given a matched payment carrying a billing address
-     *   When the effects are built
-     *   Then the billing address is set from the payment, whatever the order held before
+     *   When the first sight is decided
+     *   Then the verdict's billing fields are the payment's, in WooCommerce field names, whatever the order held before
      *
      * The sheet is where the shopper chose that address, so it takes precedence over the form and
      * over the account (owner, 2026-09-24, revising REQ-C2). Until then the order's own won and
      * this test pinned that.
      *
-     * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
+     * @covers \Mollie\WooCommerce\Core\Express\FirstSight::decide
      */
     public function testTheWalletsBillingAddressReplacesTheOrdersOwn(): void
     {
         $billing = $this->mollieAddress();
 
-        $effects = FirstSightEffects::for(
+        $verdict = FirstSight::decide(
             $this->payment(['billingAddress' => MollieAddress::fromArray($billing)]),
             $this->order(),
             $this->wallets(),
             self::REGISTERED
         );
 
-        $billingEffects = array_values(array_filter(
-            $this->ofType($this->described($effects), Effect::SET_ADDRESS),
-            static fn (array $effect): bool => $effect[1]['addressType'] === 'billing'
-        ));
-        self::assertSame(
-            [[Effect::SET_ADDRESS, ['addressType' => 'billing', 'fields' => AddressMapping::toWooCommerce($billing)]]],
-            $billingEffects
-        );
+        self::assertSame(AddressMapping::toWooCommerce($billing), $verdict->billing());
     }
 
     /**
      * Scenario: only an order that ships keeps its shipping address from the wallet's
      *   Given a matched payment carrying a shipping address
-     *   When the order needs shipping, the effects set no shipping address, even if it holds none:
+     *   When the order needs shipping, the verdict carries no shipping fields, even if it holds none:
      *        that order was quoted a shipping cost for the address it already has
      *   And only an order with nothing to ship and no address of its own takes the wallet's, which
      *        in practice never arrives: the wallet is not asked where to ship
      *
      * @dataProvider shippingCases
-     * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
+     * @covers \Mollie\WooCommerce\Core\Express\FirstSight::decide
      */
     public function testOnlyAnOrderThatShipsKeepsItsShippingAddress(
         bool $needsShipping,
         bool $holdsShipping,
-        bool $expectShippingEffect
+        bool $expectShippingFields
     ): void {
 
         $shipping = $this->mollieAddress(['city' => 'Rotterdam']);
 
-        $effects = FirstSightEffects::for(
+        $verdict = FirstSight::decide(
             $this->payment(['shippingAddress' => MollieAddress::fromArray($shipping)]),
             $this->order(['needsShipping' => $needsShipping, 'holdsShipping' => $holdsShipping]),
             $this->wallets(),
             self::REGISTERED
         );
 
-        $shippingEffects = array_values(array_filter(
-            $this->ofType($this->described($effects), Effect::SET_ADDRESS),
-            static fn (array $effect): bool => $effect[1]['addressType'] === 'shipping'
-        ));
-        if (!$expectShippingEffect) {
-            self::assertSame([], $shippingEffects);
-
-            return;
-        }
         self::assertSame(
-            [[Effect::SET_ADDRESS, ['addressType' => 'shipping', 'fields' => AddressMapping::toWooCommerce($shipping)]]],
-            $shippingEffects
+            $expectShippingFields ? AddressMapping::toWooCommerce($shipping) : null,
+            $verdict->shipping()
         );
     }
 
@@ -321,26 +296,6 @@ class FirstSightEffectsTest extends TestCase
             'region' => 'Noord-Holland',
             'country' => 'NL',
         ], $overrides);
-    }
-
-    /**
-     * @param array<int, Effect> $effects
-     * @return array<int, array{0: string, 1: array<string, mixed>}>
-     */
-    private function described(array $effects): array
-    {
-        return array_map(static function (Effect $effect): array {
-            return [$effect->type(), $effect->data()];
-        }, $effects);
-    }
-
-    /**
-     * @param array<int, array{0: string, 1: array<string, mixed>}> $described
-     * @return array<int, array{0: string, 1: array<string, mixed>}>
-     */
-    private function ofType(array $described, string $type): array
-    {
-        return array_values(array_filter($described, static fn (array $effect): bool => $effect[0] === $type));
     }
 
     /**

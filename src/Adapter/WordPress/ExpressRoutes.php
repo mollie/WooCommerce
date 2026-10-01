@@ -164,7 +164,7 @@ class ExpressRoutes
 
         $nonce = (string) $request->get_param('nonce');
 
-        return Admission::decide(
+        return Admission::admit(
             $entryPoint,
             $nonce !== '',
             $nonce !== '' && wp_verify_nonce($nonce, self::NONCE_ACTION) !== false

@@ -38,11 +38,11 @@ class ExpressOrderMatchTest extends TestCase
      *   When the match is decided
      *   Then it is admitted
      *
-     * @covers \Mollie\WooCommerce\Core\Express\ExpressOrderMatch::decide
+     * @covers \Mollie\WooCommerce\Core\Express\ExpressOrderMatch::admit
      */
     public function testMatchesAPendingExpressOrderCarryingTheSameRef(): void
     {
-        $decision = ExpressOrderMatch::decide($this->payment(), $this->order());
+        $decision = ExpressOrderMatch::admit($this->payment(), $this->order());
 
         self::assertInstanceOf(Admit::class, $decision);
     }
@@ -53,11 +53,11 @@ class ExpressOrderMatchTest extends TestCase
      *   When the match is decided for the same payment
      *   Then it is admitted, and the rails downstream find the order already settled
      *
-     * @covers \Mollie\WooCommerce\Core\Express\ExpressOrderMatch::decide
+     * @covers \Mollie\WooCommerce\Core\Express\ExpressOrderMatch::admit
      */
     public function testMatchesAnOrderThatAlreadyTracksThisPayment(): void
     {
-        $decision = ExpressOrderMatch::decide(
+        $decision = ExpressOrderMatch::admit(
             $this->payment(),
             $this->order(['trackedPaymentId' => 'tr_express1', 'needsPayment' => false])
         );
@@ -73,7 +73,7 @@ class ExpressOrderMatchTest extends TestCase
      *   And it is answered 200, so Mollie does not retry a notification that will never match
      *
      * @dataProvider mismatches
-     * @covers \Mollie\WooCommerce\Core\Express\ExpressOrderMatch::decide
+     * @covers \Mollie\WooCommerce\Core\Express\ExpressOrderMatch::admit
      * @param array<string, mixed> $paymentOverrides
      * @param array<string, mixed>|null $orderOverrides Null when no order carries the ref.
      */
@@ -85,7 +85,7 @@ class ExpressOrderMatchTest extends TestCase
 
         $order = $orderOverrides === null ? null : $this->order($orderOverrides);
 
-        $decision = ExpressOrderMatch::decide($this->payment($paymentOverrides), $order);
+        $decision = ExpressOrderMatch::admit($this->payment($paymentOverrides), $order);
 
         self::assertInstanceOf(Refuse::class, $decision);
         self::assertSame($expectedReason, $decision->code());

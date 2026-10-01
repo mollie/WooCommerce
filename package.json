@@ -41,6 +41,7 @@
     "start": "wp-scripts start",
     "lint:md": "wp-scripts lint-md-docs *.md",
     "lint:js": "wp-scripts lint-js resources/js/src/*",
+    "test:unit:js": "wp-scripts test-unit-js resources/js/src",
     "lint:style": "wp-scripts lint-style resources/scss/*.scss",
     "lint:js:fix": "wp-scripts lint-js resources/js/src/* --fix",
     "lint:style:fix": "wp-scripts lint-style resources/scss/*.scss --fix",

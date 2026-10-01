@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Components;
 
 use Mollie\Api\Exceptions\ApiException;
+use Mollie\WooCommerce\Core\Payment\MollieJsLocale;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\Settings\Settings;
 
@@ -96,15 +97,11 @@ class ComponentDataService
 
     private function getValidatedLocale(): string
     {
-        $locale = get_locale();
-        $locale = str_replace('_formal', '', $locale);
-        $allowedLocaleValues = AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP;
-
-        if (!in_array($locale, $allowedLocaleValues, true)) {
-            return AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE;
-        }
-
-        return $locale;
+        return MollieJsLocale::from(
+            get_locale(),
+            AcceptedLocaleValuesDictionary::ALLOWED_LOCALES_KEYS_MAP,
+            AcceptedLocaleValuesDictionary::DEFAULT_LOCALE_VALUE
+        );
     }
 
     private function getComponentAttributes(): array

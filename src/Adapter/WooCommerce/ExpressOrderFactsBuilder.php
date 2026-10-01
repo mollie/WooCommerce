@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Mollie\WooCommerce\Core\Express\StartOrderDecision;
 use Mollie\WooCommerce\Core\Types\ExpressOrderFacts;
 use Mollie\WooCommerce\Core\Types\Money;
+use Mollie\WooCommerce\Core\Types\RememberedSession;
 use Mollie\WooCommerce\Payment\MolliePaymentAttempt;
 use WC_Customer;
 use WC_Order;
@@ -33,34 +34,20 @@ class ExpressOrderFactsBuilder
     }
 
     /**
-     * The remembered session only; the order carrying its ref is looked up by withExistingOrder(),
-     * under the lock.
+     * The session remembered for this shopper, or null when there is none.
      */
-    public function fromStore(): ExpressOrderFacts
+    public function rememberedSession(): ?RememberedSession
     {
         $remembered = $this->store->remembered();
         if ($remembered === null) {
-            return new ExpressOrderFacts();
+            return null;
         }
 
-        return new ExpressOrderFacts(
-            sessionId: $remembered['id'],
-            expressRef: $remembered['ref'],
-            fingerprint: $remembered['fingerprint'],
-            expiresAt: $remembered['expiresAt']
-        );
-    }
-
-    public function withExistingOrder(ExpressOrderFacts $facts): ExpressOrderFacts
-    {
-        $order = $facts->expressRef() === null ? null : $this->orderByRef($facts->expressRef());
-
-        return new ExpressOrderFacts(
-            sessionId: $facts->sessionId(),
-            expressRef: $facts->expressRef(),
-            fingerprint: $facts->fingerprint(),
-            expiresAt: $facts->expiresAt(),
-            existingOrderId: $order?->get_id()
+        return new RememberedSession(
+            $remembered['id'],
+            $remembered['ref'],
+            $remembered['fingerprint'],
+            $remembered['expiresAt']
         );
     }
 
@@ -88,11 +75,11 @@ class ExpressOrderFactsBuilder
     }
 
     /**
-     * The order that carries a payment's express_ref, as the webhook's match needs it. An address
-     * type is held when any of its fields but the country is filled; WooCommerce may default the
+     * An order carrying an express_ref, as the submit and webhook decisions need it. The shipping
+     * address is held when any of its fields but the country is filled; WooCommerce may default the
      * country on its own.
      */
-    public function forResolution(WC_Order $order): ExpressOrderFacts
+    public function fromOrder(WC_Order $order): ExpressOrderFacts
     {
         $tracked = MolliePaymentAttempt::paymentId($order);
         if ($tracked === '') {
@@ -100,16 +87,28 @@ class ExpressOrderFactsBuilder
         }
 
         return new ExpressOrderFacts(
+            orderId: $order->get_id(),
             expressRef: (string) $order->get_meta('_mollie_express_ref'),
-            existingOrderId: $order->get_id(),
             createdVia: $order->get_created_via(),
             total: $this->total($order),
             trackedPaymentId: $tracked !== '' ? $tracked : null,
             needsPayment: $order->needs_payment(),
-            holdsBilling: $this->holds($order, 'billing', self::BILLING_FIELDS),
-            holdsShipping: $this->holds($order, 'shipping', self::SHIPPING_FIELDS),
+            holdsShipping: $this->holdsShipping($order),
             needsShipping: $order->needs_shipping_address()
         );
+    }
+
+    /**
+     * The order total with the precision of its currency, as Mollie was asked for it; null when the
+     * order's currency is unusable.
+     */
+    public function total(WC_Order $order): ?Money
+    {
+        try {
+            return WooCommerceAmount::toMoney($order->get_total('edit'), $order->get_currency());
+        } catch (InvalidArgumentException $unusable) {
+            return null;
+        }
     }
 
     /**
@@ -159,32 +158,10 @@ class ExpressOrderFactsBuilder
         }));
     }
 
-    /**
-     * The order total with the precision of its currency, as Mollie was asked for it.
-     */
-    private function total(WC_Order $order): ?Money
+    private function holdsShipping(WC_Order $order): bool
     {
-        $currency = $order->get_currency();
-        $amount = (float) $order->get_total('edit');
-        try {
-            return Money::fromDecimal(number_format($amount, 2, '.', ''), $currency);
-        } catch (InvalidArgumentException $exception) {
-            try {
-                // A currency without decimals.
-                return Money::fromDecimal(number_format($amount, 0, '.', ''), $currency);
-            } catch (InvalidArgumentException $unusable) {
-                return null;
-            }
-        }
-    }
-
-    /**
-     * @param list<string> $names
-     */
-    private function holds(WC_Order $order, string $type, array $names): bool
-    {
-        foreach ($names as $name) {
-            $getter = [$order, "get_{$type}_{$name}"];
+        foreach (self::SHIPPING_FIELDS as $name) {
+            $getter = [$order, "get_shipping_{$name}"];
             if ($name !== 'country' && is_callable($getter) && trim((string) $getter()) !== '') {
                 return true;
             }

@@ -14,8 +14,8 @@ use WP_REST_Response;
 /**
  * The block checkout an express scenario starts from, for ExpressFlowTestCase subclasses.
  *
- * The shop: live, HTTPS, PayPal the only wallet with its checkout express button on. PayPal takes
- * its address from the checkout form, so the shipping rules apply. Prices include 21% VAT; zone LU
+ * The shop: live, HTTPS, PayPal the only wallet with its checkout express button on. It takes its
+ * address from the checkout form, like every wallet, so the shipping rules apply. Prices include 21% VAT; zone LU
  * has two flat rates ('standard' 5.00, 'express' 7.50), zone AT one ('austria' 9.00), zone MT none.
  * Every scenario is a new shopper with a full session budget.
  *
@@ -205,23 +205,6 @@ trait ExpressCheckoutFixtures
     }
 
     /**
-     * A shopper with a cart holds WooCommerce's session cookie, which is what binds a guest nonce to
-     * that shopper and makes WooCommerce store the session. WooCommerce sets it only while headers
-     * can still be sent, never under PHPUnit, so it is set here the way WooCommerce itself does.
-     *
-     * @param array<int, string> $presets
-     */
-    protected function cartWith(array $presets, int $quantity = 1): \WC_Cart
-    {
-        $cart = parent::cartWith($presets, $quantity);
-        $this->withoutCookieNotices(static function (): void {
-            WC()->session->set_customer_session_cookie(true);
-        });
-
-        return $cart;
-    }
-
-    /**
      * Every scenario is a different shopper. The fake Mollie starts empty for each test, but
      * WooCommerce keeps one session and one customer for the whole PHP process; without this a
      * scenario would be handed the session a previous one remembered, and the next test class would
@@ -232,26 +215,11 @@ trait ExpressCheckoutFixtures
         if (!function_exists('WC') || !WC()->session instanceof \WC_Session_Handler) {
             return;
         }
-        $this->withoutCookieNotices(static function (): void {
+        $this->withoutCookieWarnings(static function (): void {
             WC()->session->forget_session();
         });
         // A customer read from the now empty session: the store's default location, no form data.
         WC()->customer = new \WC_Customer(0, true);
-    }
-
-    /**
-     * wc_setcookie() raises a notice once headers are sent, which under the CLI they always are.
-     */
-    private function withoutCookieNotices(callable $callback): void
-    {
-        set_error_handler(static function (int $severity, string $message): bool {
-            return strpos($message, 'headers already sent') !== false || strpos($message, 'cannot be set') !== false;
-        }, E_USER_NOTICE | E_USER_WARNING | E_WARNING | E_NOTICE);
-        try {
-            $callback();
-        } finally {
-            restore_error_handler();
-        }
     }
 
     private function useHttps(): void
@@ -266,8 +234,8 @@ trait ExpressCheckoutFixtures
     }
 
     /**
-     * PayPal takes its address from the checkout form. With Apple Pay (its own sheet) off, a cart
-     * that ships is blocked until the form is complete, which is what the shipping scenarios need.
+     * PayPal alone, so the scenarios name one wallet. Every wallet takes its address from the checkout
+     * form, so a cart that ships is blocked until the form is complete.
      */
     private function payPalIsTheOnlyExpressWallet(): void
     {

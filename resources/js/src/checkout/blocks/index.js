@@ -14,6 +14,7 @@ import PayPalButtonComponent from './components/expressPayments/PayPalButtonComp
 import PayPalButtonEditorComponent from './components/expressPayments/PayPalButtonEditorComponent';
 import {PayPalUtils} from '../../shared/utils/paypalUtils';
 import {buildRegistrationContext} from './registration/contextBuilder';
+import {registerExpressComponent} from './express/registerExpressComponent';
 
 /**
  * Initialization with mollieComponentsManager
@@ -38,6 +39,7 @@ if (!isOrderPayPage) {
         registerGatewayRegistrationHooks(mollieGateways);
         registerExpressPaymentMethodHooks(mollieGateways);
         registerIconHooks(mollieGateways);
+        registerExpressComponent();
 
         initializeMollieStoreListeners();
 

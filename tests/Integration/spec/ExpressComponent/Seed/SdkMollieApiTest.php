@@ -6,6 +6,7 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent\Seed;
 
 use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
 use Mollie\WooCommerce\Core\Security\IdempotencyKey;
+use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
 
@@ -29,6 +30,10 @@ use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
  */
 class SdkMollieApiTest extends ExpressFlowTestCase
 {
+    /** The lifetime config/express.php gives the adapter, and the one the fake uses. */
+    private const SESSION_LIFETIME_SECONDS = FakeMollieApi::SESSION_LIFETIME_SECONDS;
+
+
     /**
      * Scenario: the session is sent as a raw call, carrying the key it was given
      *   Given a Checkout Session payload and a deterministic idempotency key
@@ -95,6 +100,61 @@ class SdkMollieApiTest extends ExpressFlowTestCase
         $this->assertTrue($requests[1]['replayed'], 'The second call must have been replayed by Mollie.');
 
         $this->assertNothingLeakedToLog();
+    }
+
+    /**
+     * Scenario: an open session's expiry is derived from createdAt
+     *   Given Mollie answers an open session without any expiry field, as the real API does
+     *   When the adapter creates the session
+     *   Then its expiry is createdAt plus the configured session lifetime
+     *   And a session the store remembers can therefore be handed out again until then
+     *
+     * The real API omits every expiry field while a session is open and sends expiredAt only once
+     * it has expired (seen live, 2026-09-23). Without this the workflow read an empty expiry as a
+     * failed call and answered every shopper with mollie_unavailable.
+     *
+     * @test
+     */
+    public function it_derives_the_expiry_from_created_at_when_mollie_names_none(): void
+    {
+        $this->fakeMollie()->setNow(1790000000);
+        $api = $this->expressApi();
+
+        $session = $api->createSession($this->sessionPayload(), IdempotencyKey::for('express.session.v1', ['attempt' => 1]));
+
+        $answer = $this->fakeMollie()->handle('GET', 'sessions/' . $session->id(), ['Authorization' => 'Bearer ' . CanaryData::LIVE_API_KEY], null);
+        $this->assertSame(200, $answer['status']);
+        $this->assertArrayNotHasKey('expiresAt', (array) $answer['body'], 'The fake must answer like the real API.');
+        $this->assertSame(
+            gmdate('c', 1790000000 + self::SESSION_LIFETIME_SECONDS),
+            $session->expiresAt(),
+            'An open session with no expiry of its own expires a lifetime after it was created.'
+        );
+    }
+
+    /**
+     * Scenario: an expiry Mollie does name is the one that counts
+     *   Given Mollie answers a session that carries expiredAt
+     *   When the adapter reads it
+     *   Then that value is used instead of one derived from createdAt
+     *
+     * @test
+     */
+    public function it_prefers_the_expiry_mollie_names(): void
+    {
+        $this->fakeMollie()->setNow(1790000000);
+        $api = $this->expressApi();
+        $created = $api->createSession($this->sessionPayload(), IdempotencyKey::for('express.session.v1', ['attempt' => 1]));
+
+        $this->fakeMollie()->expireSession($created->id());
+        $session = $api->session($created->id());
+
+        $this->assertSame('expired', $session->status());
+        $this->assertSame(
+            gmdate('c', 1790000000 + FakeMollieApi::SESSION_LIFETIME_SECONDS),
+            $session->expiresAt(),
+            'The expiredAt of an expired session is not replaced by a derived value.'
+        );
     }
 
     private function expressApi(): MollieApi

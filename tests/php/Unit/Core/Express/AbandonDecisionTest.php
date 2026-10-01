@@ -87,4 +87,18 @@ class AbandonDecisionTest extends TestCase
             'a status Mollie may add later' => ['unknown_new_status', null, false],
         ];
     }
+
+    /**
+     * Scenario: cleanup waits longer than a checkout session can live (AC-31, REQ-E2)
+     *   Given config/express.php
+     *   When its abandon grace is compared with the session lifetime
+     *   Then cleanup looks at an order only a full session lifetime or more after its session expired,
+     *        so a payment started at the last moment has had as long again to arrive
+     */
+    public function testTheCleanupGraceIsLongerThanASessionLives(): void
+    {
+        $config = require PROJECT_DIR . '/config/express.php';
+
+        self::assertGreaterThan($config['sessionLifetimeSeconds'], $config['abandonGraceSeconds']);
+    }
 }

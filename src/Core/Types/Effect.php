@@ -23,20 +23,13 @@ final class Effect
 
     private const ADDRESS_TYPES = ['billing', 'shipping'];
 
-    private string $type;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $data;
-
     /**
      * @param array<string, mixed> $data
      */
-    private function __construct(string $type, array $data)
-    {
-        $this->type = $type;
-        $this->data = $data;
+    private function __construct(
+        private string $type,
+        private array $data
+    ) {
     }
 
     public static function setMeta(string $key, string $value): self

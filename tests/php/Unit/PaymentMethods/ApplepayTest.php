@@ -48,6 +48,22 @@ class ApplepayTest extends TestCase
     }
 
     /**
+     * The checkout setting tells the merchant that express checkout shows the button where it can
+     * run, and the classic button otherwise (REQ-A5, AC-6).
+     */
+    public function test_checkout_setting_says_express_checkout_shows_the_button_where_it_can_run(): void
+    {
+        when('wc_get_page_id')->justReturn(0);
+        when('get_edit_post_link')->justReturn(null);
+
+        $fields = $this->makeSut([])->getFormFields([]);
+
+        $description = $fields[self::EXPRESS_FLAG]['desc'];
+        self::assertStringContainsString('Mollie express checkout shows the button where it can run', $description);
+        self::assertStringContainsString('otherwise the classic Apple Pay button is shown', $description);
+    }
+
+    /**
      * Scenario: today the express checkout flag alone decides, on every page
      *   Given the Apple Pay express checkout flag stored as yes or no
      *   And Express does not own the checkout

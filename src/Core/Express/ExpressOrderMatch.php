@@ -26,7 +26,7 @@ final class ExpressOrderMatch
         if ($ref === '') {
             return self::refuse('missing_ref');
         }
-        if ($order === null || !hash_equals((string) $order->expressRef(), $ref)) {
+        if ($order === null || !hash_equals($order->expressRef(), $ref)) {
             return self::refuse('unknown_ref');
         }
         if ($order->createdVia() !== StartOrderDecision::CREATED_VIA) {
@@ -54,9 +54,7 @@ final class ExpressOrderMatch
     {
         $total = $order->total();
 
-        return $total !== null
-            && $total->currency() === $payment->amount()->currency()
-            && $total->equals($payment->amount());
+        return $total !== null && $total->isSameAs($payment->amount());
     }
 
     private static function refuse(string $reason): Refuse

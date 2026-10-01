@@ -92,6 +92,54 @@ class ExpressRefundTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a paid Google Pay express order is refunded at Mollie through its own payment method
+     *   Given Google Pay activated at Mollie and switched on
+     *   And an express order paid with Google Pay, which Mollie reports as creditcard
+     *   When support refunds part of it from WooCommerce with "refund via Mollie"
+     *   Then the fake Mollie holds one refund on that payment for that amount
+     *
+     * @test
+     */
+    public function it_refunds_a_google_pay_express_order_at_mollie(): void
+    {
+        $order = $this->paidGooglePayExpressOrder();
+        $this->assertSame('mollie_wc_gateway_googlepay', $order->get_payment_method(), 'The refund must go through the Google Pay method.');
+        $paymentId = (string) $order->get_meta('_mollie_payment_id');
+
+        $refund = wc_create_refund([
+            'order_id' => $order->get_id(),
+            'amount' => '5.00',
+            'reason' => 'Returned',
+            'refund_payment' => true,
+        ]);
+
+        $this->assertInstanceOf(\WC_Order_Refund::class, $refund, is_wp_error($refund) ? $refund->get_error_message() : '');
+        $refunds = array_values($this->fakeMollie()->refunds());
+        $this->assertCount(1, $refunds);
+        $this->assertSame($paymentId, $refunds[0]['paymentId']);
+        $this->assertSame('5.00', $refunds[0]['amount']['value']);
+        $this->assertSame(5.0, (float) $this->fresh($order)->get_total_refunded());
+    }
+
+    private function paidGooglePayExpressOrder(): WC_Order
+    {
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        $this->setGatewaySettingsForTest('googlepay', ['enabled' => 'yes']);
+        $this->readyGuestCheckout();
+        $session = $this->startedSession();
+        $this->assertAnsweredOk($this->startOrder());
+        $order = $this->onlyOrderFor($session['ref']);
+        $payment = $this->fakeMollie()->completeSession($session['id'], ['status' => 'paid', 'method' => 'creditcard']);
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+        $paid = $this->fresh($order);
+        $this->assertTrue($paid->is_paid(), 'The express order must be paid before it can be refunded.');
+
+        return $paid;
+    }
+
+    /**
      * An express order created at submit and paid by the webhook of its Apple Pay payment.
      */
     private function paidExpressOrder(): WC_Order

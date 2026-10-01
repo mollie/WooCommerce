@@ -8,6 +8,7 @@ use Mockery;
 use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
 use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
 use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
 use Mollie\WooCommerce\Adapter\WordPress\EventLog;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
 use Mollie\WooCommerce\Payment\MollieOrderService;
@@ -80,6 +81,7 @@ class MollieOrderServiceWebhookAuthTest extends TestCase
             Mockery::mock(ExpressOrderFactsBuilder::class),
             new EffectInterpreter(new OrderLock(Mockery::mock(\wpdb::class)), $log),
             $log,
+            Mockery::mock(OrphanedExpressPayments::class)->shouldIgnoreMissing(),
             [],
             static function (): array {
                 return [];

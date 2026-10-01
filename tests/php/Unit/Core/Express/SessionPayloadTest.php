@@ -38,7 +38,7 @@ class SessionPayloadTest extends TestCase
      *   And it has no profileId and no testmode key
      *   And its metadata is exactly the express_ref
      *   And its amount is the cart total, its webhook URL and redirect URL are the ones given
-     *   And its requiredCustomerDetails never contains shipping-address, even when asked for
+     *   And its requiredCustomerDetails are exactly the ones it was given, the caller having decided
      *
      * @dataProvider requestedDetails
      * @covers \Mollie\WooCommerce\Core\Express\SessionPayload::build
@@ -76,40 +76,46 @@ class SessionPayloadTest extends TestCase
         return [
             'email and billing address' => [['email', 'billing-address'], ['email', 'billing-address']],
             'nothing' => [[], []],
-            'a shipping address is dropped' => [['email', 'shipping-address'], ['email']],
+            // Which details are asked for is requiredCustomerDetails' decision, not build's.
+            'a shipping address is passed through' => [
+                ['email', 'shipping-address'],
+                ['email', 'shipping-address'],
+            ],
         ];
     }
 
     /**
-     * Scenario: the wallet is asked only for what the store does not hold
-     *   Given whether the store holds the shopper's email and billing address
+     * Scenario: the wallet is always asked for the contact details and the billing address
+     *   Given the store may or may not already hold the shopper's email and billing address
      *   When the required customer details are decided
-     *   Then email is asked for only without an email, billing-address only without a billing address
+     *   Then email and billing-address are asked for either way
      *   And shipping-address is never asked for
      *
-     * @dataProvider heldDetails
+     * The sheet governs which contact and billing address the shopper picks, so what comes back
+     * takes precedence over anything stored (owner, 2026-09-24, revising REQ-C2). The shipping
+     * address is never asked for: the session's amount is fixed when it is created and Mollie has
+     * no event for an address changed in the sheet, so it could not be priced.
+     *
      * @covers \Mollie\WooCommerce\Core\Express\SessionPayload::requiredCustomerDetails
-     * @param list<string> $expected
      */
-    public function testAsksTheWalletOnlyForWhatTheStoreLacks(bool $hasEmail, bool $hasBillingAddress, array $expected): void
+    public function testAlwaysAsksTheWalletForContactAndBilling(): void
     {
-        $details = SessionPayload::requiredCustomerDetails($hasEmail, $hasBillingAddress);
-
-        self::assertSame($expected, $details);
-        self::assertNotContains('shipping-address', $details);
+        self::assertSame(['email', 'billing-address'], SessionPayload::requiredCustomerDetails());
     }
 
     /**
-     * @return array<string, array{0: bool, 1: bool, 2: list<string>}>
+     * Scenario: the wallet is never asked where to ship
+     *   When the required customer details are decided
+     *   Then shipping-address is not among them
+     *
+     * A cart that ships was quoted for the checkout form's address and a session's amount cannot be
+     * repriced; a cart with nothing to ship has nowhere to ship to *(owner, 2026-09-24)*.
+     *
+     * @covers \Mollie\WooCommerce\Core\Express\SessionPayload::requiredCustomerDetails
      */
-    public function heldDetails(): array
+    public function testNeverAsksTheWalletWhereToShip(): void
     {
-        return [
-            'a guest with an empty checkout form' => [false, false, ['email', 'billing-address']],
-            'a shopper the store knows' => [true, true, []],
-            'an email only' => [true, false, ['billing-address']],
-            'a billing address only' => [false, true, ['email']],
-        ];
+        self::assertNotContains('shipping-address', SessionPayload::requiredCustomerDetails());
     }
 
     private function cart(): CartFacts

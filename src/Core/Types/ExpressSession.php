@@ -5,33 +5,16 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Core\Types;
 
 /**
- * A Mollie Checkout Session as the core sees it. The raw response is kept opaque, for public hooks only.
+ * A Mollie Checkout Session as the core sees it: plain values, no SDK object.
  */
 final class ExpressSession
 {
-    private string $id;
-
-    private string $status;
-
-    private string $clientAccessToken;
-
-    private string $expiresAt;
-
-    private ?object $raw;
-
     public function __construct(
-        string $id,
-        string $status,
-        string $clientAccessToken,
-        string $expiresAt,
-        ?object $raw = null
+        private string $id,
+        private string $status,
+        private string $clientAccessToken,
+        private string $expiresAt
     ) {
-
-        $this->id = $id;
-        $this->status = $status;
-        $this->clientAccessToken = $clientAccessToken;
-        $this->expiresAt = $expiresAt;
-        $this->raw = $raw;
     }
 
     public function id(): string
@@ -52,10 +35,5 @@ final class ExpressSession
     public function expiresAt(): string
     {
         return $this->expiresAt;
-    }
-
-    public function raw(): ?object
-    {
-        return $this->raw;
     }
 }

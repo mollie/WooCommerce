@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Adapter\WordPress;
 
 use Mollie\WooCommerce\Core\Security\Admission;
+use Mollie\WooCommerce\Core\Types\Admit;
 use Mollie\WooCommerce\Core\Types\Refuse;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\Workflow\StartExpressOrder;
@@ -15,18 +16,13 @@ use WP_REST_Response;
 
 /**
  * The Express Component's REST entry points, in the plugin's existing mollie/v1 namespace.
- *
- * REST rather than admin-ajax so the admission status codes are part of the contract. A route takes
- * a nonce and nothing else: no amount, currency, line, address or country is read from the caller
- * (REQ-B4). The permission callback parses the request once and asks Admission; it never admits
- * unconditionally. Failures answer a translatable message and a stable code, never Mollie's text.
  */
 class ExpressRoutes
 {
     /**
      * WooCommerce ties a logged-out shopper's nonce to their WooCommerce session only for actions
      * that start with 'woocommerce' (WC_Session_Handler::maybe_update_nonce_user_logged_out). Without
-     * that prefix every guest would share one nonce (REQ-G3).
+     * that prefix every guest would share one nonce.
      */
     public const NONCE_ACTION = 'woocommerce-mollie-express-session';
 
@@ -82,18 +78,7 @@ class ExpressRoutes
      */
     public function admitSession(WP_REST_Request $request)
     {
-        $decision = $this->admission(Admission::EXPRESS_SESSION, $request);
-        if (!$decision instanceof Refuse) {
-            return true;
-        }
-
-        $this->log->warning('express.session.refused', ['surface' => self::SURFACE, 'reason' => $decision->code()]);
-
-        return new WP_Error(
-            'mollie_express_forbidden',
-            __('Express checkout could not be started. Please reload the page and try again.', 'mollie-payments-for-woocommerce'),
-            ['status' => $decision->httpStatus()]
-        );
+        return $this->admit(Admission::EXPRESS_SESSION, $request, 'express.session.refused', ['surface' => self::SURFACE]);
     }
 
     /**
@@ -103,7 +88,7 @@ class ExpressRoutes
     {
         $result = $this->startSession->start(self::SURFACE);
         if (!$result->isStarted()) {
-            return new WP_Error($result->code(), $this->messageFor($result->code()), ['status' => $result->httpStatus()]);
+            return new WP_Error($result->code(), self::messageFor($result->code()), ['status' => $result->httpStatus()]);
         }
 
         $response = new WP_REST_Response([
@@ -121,44 +106,23 @@ class ExpressRoutes
      */
     public function admitOrder(WP_REST_Request $request)
     {
-        $decision = $this->admission(Admission::EXPRESS_ORDER, $request);
-        if (!$decision instanceof Refuse) {
-            return true;
-        }
-
-        $this->log->warning('express.order.refused', ['reason' => $decision->code()]);
-
-        return new WP_Error(
-            'mollie_express_forbidden',
-            __('Express checkout could not be started. Please reload the page and try again.', 'mollie-payments-for-woocommerce'),
-            ['status' => $decision->httpStatus()]
-        );
+        return $this->admit(Admission::EXPRESS_ORDER, $request, 'express.order.refused');
     }
 
     /**
-     * Answers Mollie's submit handler: the details to pass to event.resolve(), or the message to pass
-     * to event.reject(). The order id and key never leave the server.
+     * Answers Mollie's submit handler: whether the order was started, or the message to pass to
+     * event.reject(). The order id and key never leave the server.
      */
     public function startOrder(WP_REST_Request $request): WP_REST_Response
     {
         $result = $this->startOrder->start();
         if ($result->isOk()) {
             $data = ['ok' => true];
-            $billing = $result->billing();
-            if (isset($billing['email'])) {
-                $data['email'] = $billing['email'];
-            }
-            if ($billing !== []) {
-                $data['billingAddress'] = $billing;
-            }
-            if ($result->shipping() !== []) {
-                $data['shippingAddress'] = $result->shipping();
-            }
         } else {
             $data = [
                 'ok' => false,
                 'code' => $result->code(),
-                'message' => $result->reason() ?? $this->messageFor($result->code()),
+                'message' => $result->reason() ?? self::messageFor($result->code()),
             ];
         }
 
@@ -170,9 +134,29 @@ class ExpressRoutes
     }
 
     /**
-     * @return \Mollie\WooCommerce\Core\Types\Admit|Refuse
+     * The route's permission answer: true, or the refusal the event log records under $event.
+     *
+     * @param array<string, string> $fields Extra fields of the refusal event.
+     * @return true|WP_Error
      */
-    private function admission(string $entryPoint, WP_REST_Request $request)
+    private function admit(string $entryPoint, WP_REST_Request $request, string $event, array $fields = [])
+    {
+        $decision = $this->admission($entryPoint, $request);
+        if (!$decision instanceof Refuse) {
+            return true;
+        }
+
+        // An anonymous caller causes this at will, so it is written only with the debug log on.
+        $this->log->info($event, $fields + ['reason' => $decision->code()]);
+
+        return new WP_Error(
+            'mollie_express_forbidden',
+            __('Express checkout could not be started. Please reload the page and try again.', 'mollie-payments-for-woocommerce'),
+            ['status' => $decision->httpStatus()]
+        );
+    }
+
+    private function admission(string $entryPoint, WP_REST_Request $request): Admit|Refuse
     {
         // The nonce of a logged-out shopper is bound to the WooCommerce session, which a REST request
         // does not load by itself.
@@ -187,7 +171,11 @@ class ExpressRoutes
         );
     }
 
-    private function messageFor(string $code): string
+    /**
+     * The shopper-facing message for a refusal code. Also the one source of the messages the block
+     * checkout shows before it asks the store anything (ExpressBlocksData).
+     */
+    public static function messageFor(string $code): string
     {
         return match ($code) {
             'shipping_incomplete' => __(
@@ -210,6 +198,10 @@ class ExpressRoutes
                 'Express checkout was started too often. Please wait a few minutes, or use the regular checkout.',
                 'mollie-payments-for-woocommerce'
             ),
+            'order_not_payable' => __(
+                'This express checkout was already completed. Please check your email for the order confirmation.',
+                'mollie-payments-for-woocommerce'
+            ),
             'session_refused', 'mollie_unavailable' => __(
                 'Express checkout is not available right now. Please use the regular checkout.',
                 'mollie-payments-for-woocommerce'
@@ -223,7 +215,12 @@ class ExpressRoutes
 
     private function loadWooCommerceSession(): void
     {
-        if (function_exists('WC') && !WC()->session instanceof \WC_Session && did_action('woocommerce_init')) {
+        if (!function_exists('WC') || !did_action('woocommerce_init')) {
+            return;
+        }
+        /** @var \WC_Session|null $session WooCommerce leaves it null until the session is loaded. */
+        $session = WC()->session;
+        if (!$session instanceof \WC_Session) {
             wc_load_cart();
         }
     }

@@ -47,7 +47,11 @@ class ExpressHarnessTest extends ExpressFlowTestCase
         $this->assertSame('live', $session->mode);
         $this->assertNotEmpty($session->clientAccessToken, 'The raw call must keep clientAccessToken.');
         $this->assertSame($session->id, FakeMollieApi::sessionIdFromClientAccessToken($session->clientAccessToken));
-        $this->assertNotEmpty($session->expiresAt);
+        $this->assertObjectNotHasAttribute(
+            'expiresAt',
+            $session,
+            'Like the real API, an open session carries no expiry; the plugin derives it from createdAt.'
+        );
 
         $requests = $this->fakeMollie()->requests('POST', 'sessions');
         $this->assertCount(1, $requests);
@@ -67,7 +71,12 @@ class ExpressHarnessTest extends ExpressFlowTestCase
         $session = $this->apiClient()->performHttpCall('POST', 'sessions', (string) wp_json_encode($this->validSessionPayload()));
 
         $this->assertSame(gmdate('c', 1790000000), $session->createdAt);
-        $this->assertSame(gmdate('c', 1790000000 + FakeMollieApi::SESSION_LIFETIME_SECONDS), $session->expiresAt);
+
+        $this->fakeMollie()->expireSession($session->id);
+        $expired = $this->apiClient()->performHttpCall('GET', 'sessions/' . $session->id);
+
+        $this->assertSame('expired', $expired->status);
+        $this->assertSame(gmdate('c', 1790000000 + FakeMollieApi::SESSION_LIFETIME_SECONDS), $expired->expiredAt);
     }
 
     /**
@@ -167,6 +176,9 @@ class ExpressHarnessTest extends ExpressFlowTestCase
 
     /**
      * Scenario: the same idempotency key with a different body is refused
+     *   Given a session already created with a key
+     *   When the same key is sent with a different body
+     *   Then Mollie answers 400, which the plugin classifies as an outage and not as a refusal
      *
      * @test
      */
@@ -180,7 +192,8 @@ class ExpressHarnessTest extends ExpressFlowTestCase
         $client->performHttpCall('POST', 'sessions', (string) wp_json_encode($this->validSessionPayload()));
 
         $this->expectException(ApiException::class);
-        $this->expectExceptionCode(422);
+        // 400, as the real API answers it; a payload Mollie refuses is 422 instead.
+        $this->expectExceptionCode(400);
         $client->setIdempotencyKey('same-key');
         $client->performHttpCall('POST', 'sessions', (string) wp_json_encode($changed));
     }

@@ -287,6 +287,36 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         $this->assertNothingLeakedToLog();
     }
 
+    /**
+     * Scenario: the expiry setting of the wallet's own payment method does not cancel an express order
+     *   Given the merchant turned on "expiry time" (10 minutes) for PayPal, the express order's provisional method
+     *   And a pending express order last modified an hour ago, whose session has not expired
+     *   And an ordinary pending PayPal order last modified an hour ago
+     *   When the plugin's cleanup action runs
+     *   Then the express order is still pending: only the express cleanup, which asks Mollie first, may cancel it
+     *   And the ordinary order is cancelled exactly as before (REQ-E2, REQ-E4)
+     *
+     * @test
+     */
+    public function it_is_not_cancelled_by_the_expiry_setting_of_its_payment_method(): void
+    {
+        $order = $this->expressOrder();
+        $ordinary = $this->pendingOrder('mollie_wc_gateway_paypal');
+        $this->setGatewaySettingsForTest('paypal', ['activate_expiry_days_setting' => 'yes', 'order_dueDate' => '10']);
+        foreach ([$order['id'], $ordinary->get_id()] as $orderId) {
+            $stale = wc_get_order($orderId);
+            $stale->set_date_modified(time() - 3600);
+            $stale->save();
+        }
+        $this->bootExpressOwning(['init', self::CLEANUP_ACTION]);
+        do_action('init');
+
+        $this->runCleanup();
+
+        $this->assertSame('pending', wc_get_order($order['id'])->get_status(), 'The expiry setting cancelled an express order Mollie may still pay.');
+        $this->assertSame('cancelled', wc_get_order($ordinary->get_id())->get_status(), 'An ordinary unpaid order must still expire as before.');
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────

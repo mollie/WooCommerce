@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Mollie\WooCommerce\Core\Express\StartOrderDecision;
 use Mollie\WooCommerce\Core\Payment\CancelUnpaidSchedule;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
@@ -199,6 +200,10 @@ class PaymentModule implements ServiceModule, ExecutableModule
     private function cancelOrderIfStillUnpaid($unpaid_order)
     {
         $order = wc_get_order($unpaid_order);
+        if (!$order instanceof \WC_Order || $order->get_created_via() === StartOrderDecision::CREATED_VIA) {
+            // An express order is cancelled only by ExpireAbandonedExpressOrders, which asks Mollie first.
+            return;
+        }
         $mollieOrderService = $this->container->get(MollieOrderService::class);
         if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
             $order = wc_get_order($unpaid_order);

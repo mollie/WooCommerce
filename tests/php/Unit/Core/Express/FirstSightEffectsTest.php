@@ -34,7 +34,12 @@ use Mollie\WooCommerceTests\TestCase;
  */
 class FirstSightEffectsTest extends TestCase
 {
-    private const REGISTERED = ['mollie_wc_gateway_applepay', 'mollie_wc_gateway_paypal', 'mollie_wc_gateway_ideal'];
+    private const REGISTERED = [
+        'mollie_wc_gateway_applepay',
+        'mollie_wc_gateway_paypal',
+        'mollie_wc_gateway_googlepay',
+        'mollie_wc_gateway_ideal',
+    ];
 
     /**
      * Scenario: the order records the payment and gets the payment method of the wallet that paid
@@ -76,6 +81,7 @@ class FirstSightEffectsTest extends TestCase
         return [
             'Apple Pay' => ['applepay', 'mollie_wc_gateway_applepay'],
             'PayPal' => ['paypal', 'mollie_wc_gateway_paypal'],
+            'Google Pay, reported as a card payment' => ['creditcard', 'mollie_wc_gateway_googlepay'],
         ];
     }
 
@@ -115,27 +121,74 @@ class FirstSightEffectsTest extends TestCase
     public function methodsWithoutAWalletPaymentMethod(): array
     {
         return [
-            'no row in the wallets table' => ['creditcard'],
-            'a row, but no registered payment method (Google Pay today)' => ['googlepay'],
+            'no row in the wallets table' => ['ideal'],
+            'googlepay is never what Mollie reports on a payment' => ['googlepay'],
         ];
     }
 
     /**
-     * Scenario: the wallet's billing details fill only a billing address the order holds nothing for
-     *   Given a matched payment carrying a billing address
-     *   When the order holds no billing details, the effects set the billing address from the payment
-     *   And when the order holds billing details, they set no billing address at all
+     * Scenario: a card payment keeps the provisional method while the plugin has no Google Pay method
+     *   Given a matched payment that Mollie reports as creditcard
+     *   And no registered Google Pay payment method
+     *   When the first-sight effects are built
+     *   Then they do not change the payment method
+     *   And they add one note naming the Mollie method
      *
-     * @dataProvider billingHeld
      * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
      */
-    public function testFillsOnlyABillingAddressTheOrderHoldsNothingFor(bool $orderHoldsBilling): void
+    public function testACardPaymentKeepsTheProvisionalMethodWhileGooglePayIsNotRegistered(): void
+    {
+        $registered = array_values(array_diff(self::REGISTERED, ['mollie_wc_gateway_googlepay']));
+
+        $effects = FirstSightEffects::for(
+            $this->payment(['method' => 'creditcard']),
+            $this->order(),
+            $this->wallets(),
+            $registered
+        );
+
+        $described = $this->described($effects);
+        self::assertSame([], $this->ofType($described, Effect::SET_PAYMENT_METHOD));
+        self::assertSame(
+            [[Effect::ADD_NOTE, ['messageKey' => FirstSightEffects::NOTE_UNKNOWN_WALLET, 'params' => ['method' => 'creditcard']]]],
+            $this->ofType($described, Effect::ADD_NOTE)
+        );
+    }
+
+    /**
+     * Scenario: every wallet row names the method Mollie reports on a payment made with it
+     *   Given the wallets table in config/express.php
+     *   When its rows are read
+     *   Then Apple Pay is paid as applepay, PayPal as paypal, and Google Pay as creditcard
+     *
+     * @coversNothing
+     */
+    public function testEveryWalletRowNamesTheMethodMollieReportsForIt(): void
+    {
+        $paidAs = array_map(static fn (array $row): ?string => $row['paidAs'] ?? null, $this->wallets());
+
+        self::assertSame(['applepay' => 'applepay', 'paypal' => 'paypal', 'googlepay' => 'creditcard'], $paidAs);
+    }
+
+    /**
+     * Scenario: the wallet's billing details replace whatever the order holds
+     *   Given a matched payment carrying a billing address
+     *   When the effects are built
+     *   Then the billing address is set from the payment, whatever the order held before
+     *
+     * The sheet is where the shopper chose that address, so it takes precedence over the form and
+     * over the account (owner, 2026-09-24, revising REQ-C2). Until then the order's own won and
+     * this test pinned that.
+     *
+     * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
+     */
+    public function testTheWalletsBillingAddressReplacesTheOrdersOwn(): void
     {
         $billing = $this->mollieAddress();
 
         $effects = FirstSightEffects::for(
             $this->payment(['billingAddress' => MollieAddress::fromArray($billing)]),
-            $this->order(['holdsBilling' => $orderHoldsBilling]),
+            $this->order(),
             $this->wallets(),
             self::REGISTERED
         );
@@ -144,11 +197,6 @@ class FirstSightEffectsTest extends TestCase
             $this->ofType($this->described($effects), Effect::SET_ADDRESS),
             static fn (array $effect): bool => $effect[1]['addressType'] === 'billing'
         ));
-        if ($orderHoldsBilling) {
-            self::assertSame([], $billingEffects);
-
-            return;
-        }
         self::assertSame(
             [[Effect::SET_ADDRESS, ['addressType' => 'billing', 'fields' => AddressMapping::toWooCommerce($billing)]]],
             $billingEffects
@@ -156,27 +204,17 @@ class FirstSightEffectsTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0: bool}>
-     */
-    public function billingHeld(): array
-    {
-        return [
-            'a guest who paid without filling the form' => [false],
-            'billing held from the checkout form or the account' => [true],
-        ];
-    }
-
-    /**
-     * Scenario: the shipping address of an order that needs shipping is never changed
+     * Scenario: only an order that ships keeps its shipping address from the wallet's
      *   Given a matched payment carrying a shipping address
-     *   When the order needs shipping, the effects set no shipping address, even if the order holds none
-     *   And when the order holds a shipping address, they set none either
-     *   And only an order with nothing to ship and no shipping address takes the wallet's
+     *   When the order needs shipping, the effects set no shipping address, even if it holds none:
+     *        that order was quoted a shipping cost for the address it already has
+     *   And only an order with nothing to ship and no address of its own takes the wallet's, which
+     *        in practice never arrives: the wallet is not asked where to ship
      *
      * @dataProvider shippingCases
      * @covers \Mollie\WooCommerce\Core\Express\FirstSightEffects::for
      */
-    public function testNeverChangesTheShippingAddressOfAnOrderThatNeedsShipping(
+    public function testOnlyAnOrderThatShipsKeepsItsShippingAddress(
         bool $needsShipping,
         bool $holdsShipping,
         bool $expectShippingEffect
@@ -236,7 +274,6 @@ class FirstSightEffectsTest extends TestCase
             'paid',
             $values['method'],
             Money::fromDecimal('26.05', 'EUR'),
-            null,
             mode: $values['mode'],
             expressRef: 'exr_0123456789abcdef0123456789abcdef',
             billingAddress: $values['billingAddress'],
@@ -250,19 +287,17 @@ class FirstSightEffectsTest extends TestCase
     private function order(array $overrides = []): ExpressOrderFacts
     {
         $values = array_merge([
-            'holdsBilling' => true,
             'holdsShipping' => true,
             'needsShipping' => true,
         ], $overrides);
 
         return new ExpressOrderFacts(
+            orderId: 42,
             expressRef: 'exr_0123456789abcdef0123456789abcdef',
-            existingOrderId: 42,
             createdVia: 'mollie_express',
             total: Money::fromDecimal('26.05', 'EUR'),
             trackedPaymentId: null,
             needsPayment: true,
-            holdsBilling: $values['holdsBilling'],
             holdsShipping: $values['holdsShipping'],
             needsShipping: $values['needsShipping']
         );

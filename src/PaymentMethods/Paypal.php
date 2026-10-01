@@ -73,7 +73,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                     'mollie-payments-for-woocommerce'
                 ),
                 'description' => __(
-                    'Enable the PayPal button to be used in the Express Buttons section of the checkout page.',
+                    'Enable the PayPal button to be used in the Express Buttons section of the checkout page. On the block checkout, Mollie express checkout shows the button where it can run; otherwise the classic PayPal button is shown.',
                     'mollie-payments-for-woocommerce'
                 ),
                 'default' => 'no',

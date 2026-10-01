@@ -163,7 +163,7 @@ class RestApi
         }
         $this->log->info('webhook.received', ['mollie_id' => (string) $transactionID]);
 
-        $orders = $this->findOrders((string) $transactionID);
+        $orders = WebhookOrderLookup::find((string) $transactionID);
 
         if (! $orders) {
             try {
@@ -199,30 +199,6 @@ class RestApi
         $this->mollieOrderService->doPaymentForOrder($orders[0]);
 
         return new \WP_REST_Response(null, 200);
-    }
-
-    /**
-     * The indexed lookups, in order: transaction_id, then the Mollie order or payment meta. At most
-     * two orders, so an ambiguous id can be told apart from a unique one.
-     *
-     * @return array<int, \WC_Order>
-     */
-    private function findOrders(string $transactionId): array
-    {
-        $orders = wc_get_orders([
-            'transaction_id' => $transactionId,
-            'limit' => 2,
-        ]);
-        if ($orders) {
-            return $orders;
-        }
-
-        return wc_get_orders([
-            'limit' => 2,
-            'meta_key' => substr($transactionId, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
-            'meta_compare' => '=',
-            'meta_value' => $transactionId,
-        ]);
     }
 
     /**

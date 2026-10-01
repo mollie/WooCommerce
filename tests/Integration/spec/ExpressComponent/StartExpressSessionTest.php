@@ -144,16 +144,20 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the wallet is asked only for what the store does not hold for this shopper
+     * Scenario: the wallet is always asked for the contact details and the billing address
      *   Given a shopper whose checkout form holds an email and a billing address, or does not
      *   When a session is started
-     *   Then requiredCustomerDetails asks for email and billing-address only when the store lacks them
+     *   Then requiredCustomerDetails asks for email and billing-address either way
+     *   And never for the shipping address, which the session's fixed amount was priced for
+     *
+     * The wallet sheet is where the shopper picks their contact and billing address, so what comes
+     * back from it takes precedence over anything the store already had (owner, 2026-09-24,
+     * revising REQ-C2). Asking only for what the store lacked is what this test used to pin.
      *
      * @test
      * @dataProvider shoppers
-     * @param list<string> $expected
      */
-    public function it_asks_the_wallet_for_details_only_the_store_lacks(bool $loggedIn, bool $formFilled, array $expected): void
+    public function it_always_asks_the_wallet_for_contact_and_billing(bool $loggedIn, bool $formFilled): void
     {
         $this->bootExpress();
         $loggedIn ? $this->actAsCustomer() : $this->actAsGuest();
@@ -166,18 +170,19 @@ class StartExpressSessionTest extends ExpressFlowTestCase
 
         $details = $this->onlySessionPayload()['requiredCustomerDetails'] ?? [];
         sort($details);
-        $this->assertSame($expected, $details);
+        $this->assertSame(['billing-address', 'email'], $details);
+        $this->assertNotContains('shipping-address', $details);
     }
 
     /**
-     * @return array<string, array{0: bool, 1: bool, 2: list<string>}>
+     * @return array<string, array{0: bool, 1: bool}>
      */
     public function shoppers(): array
     {
         return [
-            'a guest with an empty checkout form' => [false, false, ['billing-address', 'email']],
-            'a guest who filled in the checkout form' => [false, true, []],
-            'a logged-in customer whose details the store holds' => [true, true, []],
+            'a guest with an empty checkout form' => [false, false],
+            'a guest who filled in the checkout form' => [false, true],
+            'a logged-in customer whose details the store holds' => [true, true],
         ];
     }
 

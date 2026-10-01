@@ -7,6 +7,7 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
 use Mockery;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
+use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
@@ -286,6 +287,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      */
     public function it_keeps_the_provisional_method_when_the_wallet_has_no_payment_method(string $mollieMethod): void
     {
+        $this->container = $this->bootExpressOwning(['woocommerce_payment_gateways']);
         [$order, , $sessionId] = $this->expressOrder();
         $provisional = $order->get_payment_method();
         $this->assertSame(self::PAYPAL_GATEWAY, $provisional);
@@ -305,9 +307,43 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     public function methodsWithoutAWalletPaymentMethod(): array
     {
         return [
-            'no row in the wallets table' => ['creditcard'],
-            'a row, but no registered payment method' => ['googlepay'],
+            'no row in the wallets table' => ['ideal'],
+            'googlepay, which Mollie never reports on a payment' => ['googlepay'],
+            'a card payment, while no Google Pay method is registered' => ['creditcard'],
         ];
+    }
+
+    /**
+     * Scenario: a payment Mollie reports as a card payment gets the Google Pay method once it exists
+     *   Given Google Pay activated at Mollie and switched on
+     *   And a pending express order whose provisional payment method is PayPal
+     *   And a paid payment from its session that Mollie reports as creditcard
+     *   When Mollie calls the webhook
+     *   Then the order's payment method is Google Pay, with that method's title
+     *   And it has no note about an unknown wallet
+     *   And it is paid
+     *
+     * @test
+     */
+    public function it_gives_a_card_payment_the_google_pay_method_once_google_pay_exists(): void
+    {
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        $this->setGatewaySettingsForTest('googlepay', ['enabled' => 'yes']);
+        [$order, , $sessionId] = $this->expressOrder();
+        $this->assertSame(self::PAYPAL_GATEWAY, $order->get_payment_method());
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'creditcard']);
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        $paid = $this->fresh($order);
+        $this->assertSame('mollie_wc_gateway_googlepay', $paid->get_payment_method());
+        $this->assertSame(
+            WC()->payment_gateways()->payment_gateways()['mollie_wc_gateway_googlepay']->get_title(),
+            $paid->get_payment_method_title()
+        );
+        $this->assertSame([], $this->notesContaining($paid, 'creditcard'), 'A Google Pay payment is not an unknown wallet.');
+        $this->assertTrue($paid->is_paid());
     }
 
     /**
@@ -493,6 +529,114 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a captured payment that belongs to no order is put in front of a human
+     *   Given a paid express payment whose ref no order carries
+     *   When Mollie calls the webhook
+     *   Then express.payment.orphaned is logged as an error with the payment, its amount and the reason
+     *   And the payment is remembered for the admin notice, with its amount and nothing personal
+     *   And the notice names the payment and is shown only to someone who can act on it
+     *
+     * The shopper paid and the store has nothing to fulfil. This was silent until 2026-09-24, when a
+     * real payment was captured against a refused submit and only a warning line recorded it.
+     *
+     * @test
+     */
+    public function it_reports_a_captured_payment_that_belongs_to_no_order(): void
+    {
+        [, , $sessionId] = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $this->fakeMollie()->setPaymentStatus($payment['id'], 'paid', ['metadata' => ['express_ref' => self::UNKNOWN_REF]]);
+
+        $status = $this->deliverWebhook($payment['id']);
+
+        $this->assertSame(200, $status);
+        $orphaned = $this->loggedEvents('express.payment.orphaned');
+        $this->assertCount(1, $orphaned, 'A captured payment with no order must be logged as an error.');
+        $this->assertSame('error', $orphaned[0]['level']);
+        $context = $orphaned[0]['context'];
+        $this->assertSame($payment['id'], $context['mollie_id'] ?? null);
+        $this->assertSame('unknown_ref', $context['reason'] ?? null);
+        $this->assertSame('paid', $context['status'] ?? null);
+        $this->assertSame(
+            [],
+            array_diff(array_keys($context), ['cid', 'mollie_id', 'reason', 'status', 'amount', 'currency']),
+            'Only ids, the reason and the money may be logged.'
+        );
+
+        $remembered = (new OrphanedExpressPayments())->all();
+        $this->assertArrayHasKey($payment['id'], $remembered);
+        $this->assertSame('unknown_ref', $remembered[$payment['id']]['reason']);
+        $this->assertSame($payment['amount']['currency'], $remembered[$payment['id']]['currency']);
+
+        wp_set_current_user($this->someoneWhoCanManageWooCommerce());
+        ob_start();
+        (new OrphanedExpressPayments())->renderNotice();
+        $notice = (string) ob_get_clean();
+        $this->assertStringContainsString($payment['id'], $notice);
+        $this->assertStringContainsString('notice-error', $notice);
+
+        wp_set_current_user(0);
+        ob_start();
+        (new OrphanedExpressPayments())->renderNotice();
+        $this->assertSame('', (string) ob_get_clean(), 'A visitor is shown nothing.');
+    }
+
+    /**
+     * Scenario: a payment that owes nobody anything is not put in front of a human
+     *   Given an express payment whose ref no order carries, which was never captured
+     *   When Mollie calls the webhook
+     *   Then it is logged as unmatched, as before
+     *   And nothing is remembered for the admin notice
+     *
+     * @test
+     * @dataProvider uncapturedStatuses
+     */
+    public function it_reports_no_orphan_for_a_payment_that_took_no_money(string $status): void
+    {
+        [, , $sessionId] = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $this->fakeMollie()->setPaymentStatus($payment['id'], $status, ['metadata' => ['express_ref' => self::UNKNOWN_REF]]);
+
+        $this->deliverWebhook($payment['id']);
+
+        $this->assertSame([], $this->loggedEvents('express.payment.orphaned'));
+        $this->assertSame([], (new OrphanedExpressPayments())->all());
+    }
+
+    /**
+     * A shop manager: the notice is for whoever can refund a payment or create an order.
+     */
+    private function someoneWhoCanManageWooCommerce(): int
+    {
+        $existing = get_users(['role' => 'administrator', 'number' => 1, 'fields' => 'ID']);
+        if ($existing !== []) {
+            return (int) $existing[0];
+        }
+
+        $id = wp_insert_user([
+            'user_login' => 'express-orphan-admin',
+            'user_pass' => wp_generate_password(20),
+            'role' => 'administrator',
+        ]);
+        $this->assertIsInt($id);
+
+        return $id;
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public function uncapturedStatuses(): array
+    {
+        return [
+            'open' => ['open'],
+            'failed' => ['failed'],
+            'canceled' => ['canceled'],
+            'expired' => ['expired'],
+        ];
+    }
+
+    /**
      * Scenario: a failed, cancelled or expired express payment leaves the order unpaid, knowing the payment
      *   Given a pending express order
      *   And the payment from its session failed, was canceled or expired
@@ -571,35 +715,43 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the addresses the store held are kept, and a shipping order's shipping address never changes
+     * Scenario: the wallet's billing address replaces the store's, and the shipping address does not move
      *   Given an express order whose billing and shipping came from the guest's checkout form, or from the account
      *   And the paid payment carries a different billing and a different shipping address
      *   When Mollie calls the webhook
-     *   Then the order's billing and shipping addresses are exactly as they were
+     *   Then the order's billing address and email are the wallet's
+     *   And its shipping address is exactly as it was, because that is what priced the shipping
      *   And the order is paid
+     *
+     * The sheet is where the shopper picks their contact and billing address, so those take
+     * precedence over the form and over the account (owner, 2026-09-24, revising REQ-C2). Until then
+     * the store's own won, and this test pinned that.
      *
      * @test
      * @dataProvider heldAddresses
      */
-    public function it_keeps_the_stores_addresses_and_a_shipping_orders_shipping_address(string $source): void
+    public function it_takes_the_wallets_billing_address_and_leaves_the_shipping_one(string $source): void
     {
         [$order, , $sessionId] = $source === 'account' ? $this->expressOrderForTheAccount() : $this->expressOrder();
         $this->assertTrue($order->needs_shipping_address(), 'The scenario needs an order with something to ship.');
-        $billing = $order->get_address('billing');
+        $billingBefore = $order->get_address('billing');
         $shipping = $order->get_address('shipping');
-        $this->assertNotSame('', $billing['address_1']);
+        $this->assertNotSame('', $billingBefore['address_1']);
+        $walletEmail = 'other.CANARY7f3a@example.org';
         $payment = $this->fakeMollie()->completeSession($sessionId, [
             'status' => 'paid',
             'method' => 'paypal',
-            'billingAddress' => CanaryData::mollieAddress(['city' => 'Rotterdam', 'email' => 'other.CANARY7f3a@example.org']),
+            'billingAddress' => CanaryData::mollieAddress(['city' => 'Rotterdam', 'email' => $walletEmail]),
             'shippingAddress' => CanaryData::mollieAddress(['city' => 'Utrecht']),
         ]);
 
         $this->assertSame(200, $this->deliverWebhook($payment['id']));
 
         $after = $this->fresh($order);
-        $this->assertSame($billing, $after->get_address('billing'));
-        $this->assertSame($shipping, $after->get_address('shipping'));
+        $this->assertSame('Rotterdam', $after->get_billing_city(), 'The wallet chose this billing address.');
+        $this->assertSame($walletEmail, $after->get_billing_email(), 'The wallet chose this contact.');
+        $this->assertNotSame($billingBefore['city'], $after->get_billing_city());
+        $this->assertSame($shipping, $after->get_address('shipping'), 'The shipping address priced the order.');
         $this->assertTrue($after->is_paid());
     }
 

@@ -18,12 +18,9 @@ final class MollieCallFailed extends RuntimeException
     public const RATE_LIMIT = 'rate_limit';
     public const OUTAGE = 'outage';
 
-    private string $kind;
-
-    private function __construct(string $kind)
+    private function __construct(private string $kind)
     {
         parent::__construct('The Mollie call failed: ' . $kind . '.');
-        $this->kind = $kind;
     }
 
     /**

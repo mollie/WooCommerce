@@ -12,6 +12,9 @@ use Psr\Log\LoggerInterface;
  * Events have stable names. Fields are an allowlist: anything else is dropped, never masked, and
  * only its name is reported to developers. Every line carries the correlation id of its request,
  * generated when the log is built, which is once per request.
+ *
+ * Warnings and errors go to $problems when one is given: they are what someone investigates, so they
+ * are written even while the merchant's debug switch keeps info events out of the log.
  */
 final class EventLog
 {
@@ -23,13 +26,12 @@ final class EventLog
         'amount', 'currency', 'ms',
     ];
 
-    private LoggerInterface $logger;
-
     private string $correlationId;
 
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
+    public function __construct(
+        private LoggerInterface $logger,
+        private ?LoggerInterface $problems = null
+    ) {
         $this->correlationId = bin2hex(random_bytes(8));
     }
 
@@ -46,7 +48,7 @@ final class EventLog
      */
     public function warning(string $event, array $fields = []): void
     {
-        $this->logger->warning($event, $this->context($event, $fields));
+        ($this->problems ?? $this->logger)->warning($event, $this->context($event, $fields));
     }
 
     /**
@@ -54,7 +56,7 @@ final class EventLog
      */
     public function error(string $event, array $fields = []): void
     {
-        $this->logger->error($event, $this->context($event, $fields));
+        ($this->problems ?? $this->logger)->error($event, $this->context($event, $fields));
     }
 
     /**

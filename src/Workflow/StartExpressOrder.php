@@ -14,12 +14,10 @@ use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout;
 use Mollie\WooCommerce\Core\Clock;
-use Mollie\WooCommerce\Core\Express\AddressMapping;
 use Mollie\WooCommerce\Core\Express\StartOrderDecision;
 use Mollie\WooCommerce\Core\Express\WalletVisibility;
 use Mollie\WooCommerce\Core\Types\CartFacts;
-use Mollie\WooCommerce\Core\Types\ExpressOrderFacts;
-use Mollie\WooCommerce\Core\Types\Money;
+use Mollie\WooCommerce\Core\Types\RememberedSession;
 use Mollie\WooCommerce\Core\Types\Refuse;
 use Throwable;
 use WC_Order;
@@ -36,6 +34,11 @@ final class StartExpressOrder
 {
     private const REFUSED = 409;
 
+    /**
+     * Refusals after which the remembered session is dropped.
+     */
+    private const SESSION_SPENT = ['cart_changed', 'order_not_payable'];
+
     public function __construct(
         private CartFactsBuilder $cartFacts,
         private ExpressFactsBuilder $expressFacts,
@@ -51,48 +54,49 @@ final class StartExpressOrder
 
     public function start(): ExpressOrderResult
     {
-        $facts = $this->orderFacts->fromStore();
-        $ref = $facts->expressRef();
-        if (!$facts->hasSession() || $ref === null) {
-            return $this->refuse($facts, 'session_missing', self::REFUSED);
+        $session = $this->orderFacts->rememberedSession();
+        if ($session === null) {
+            return $this->refuse(null, 'session_missing', self::REFUSED);
         }
 
         try {
-            return $this->lock->withLock($ref, function () use ($facts): ExpressOrderResult {
-                return $this->startLocked($this->orderFacts->withExistingOrder($facts));
+            return $this->lock->withLock($session->expressRef(), function () use ($session): ExpressOrderResult {
+                return $this->startLocked($session);
             });
         } catch (OrderLockTimeout $timeout) {
-            return $this->refuse($facts, 'try_again', 503);
+            return $this->refuse($session, 'try_again', 503);
         }
     }
 
-    private function startLocked(ExpressOrderFacts $facts): ExpressOrderResult
+    private function startLocked(RememberedSession $session): ExpressOrderResult
     {
+        $order = $this->orderFacts->orderByRef($session->expressRef());
+        $existing = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
         $cart = $this->cartFacts->fromCart() ?? new CartFacts([], false, false, false);
-        $decision = StartOrderDecision::decide($facts, $cart, $this->clock->now());
+        $decision = StartOrderDecision::decide($session, $existing, $cart, $this->clock->now());
 
         if ($decision instanceof Refuse) {
-            if ($decision->code() === 'cart_changed') {
-                // Priced for another checkout: this session must never be used again.
+            if (in_array($decision->code(), self::SESSION_SPENT, true)) {
+                // Priced for another checkout, or already paid: this session must never be used again.
                 $this->store->forget();
             }
 
-            return $this->refuse($facts, $decision->code(), $decision->httpStatus());
+            return $this->refuse($session, $decision->code(), $decision->httpStatus());
         }
-        if ($decision === StartOrderDecision::REUSE) {
-            $this->log->info('express.order.reused', ['order' => $facts->existingOrderId(), 'session' => $facts->sessionId()]);
+        if ($existing !== null) {
+            $this->log->info('express.order.reused', ['order' => $existing->orderId(), 'session' => $session->sessionId()]);
 
-            return $this->answer();
+            return ExpressOrderResult::ok();
         }
 
-        return $this->create($facts, $cart);
+        return $this->create($session, $cart);
     }
 
-    private function create(ExpressOrderFacts $facts, CartFacts $cart): ExpressOrderResult
+    private function create(RememberedSession $session, CartFacts $cart): ExpressOrderResult
     {
         $reason = $this->factory->invalidCartReason();
         if ($reason !== null) {
-            return $this->refuse($facts, 'cart_invalid', self::REFUSED, $reason);
+            return $this->refuse($session, 'cart_invalid', self::REFUSED, $reason);
         }
 
         $total = $cart->total();
@@ -105,15 +109,16 @@ final class StartExpressOrder
             [$wallet, $gatewayId] = $this->provisionalWallet();
             $order = $this->factory->create($this->orderFacts->shopperDetails());
             // The fingerprint matched, so the cart total is the amount the session was priced for.
-            if (!$this->sameAmount($order, $total)) {
+            $orderTotal = $this->orderFacts->total($order);
+            if ($orderTotal === null || !$orderTotal->isSameAs($total)) {
                 $this->factory->delete($order);
 
-                return $this->refuse($facts, 'amount_mismatch', self::REFUSED);
+                return $this->refuse($session, 'amount_mismatch', self::REFUSED);
             }
-            $order = $this->effects->apply($order, StartOrderDecision::stamps($facts, $mode, $gatewayId, $wallet));
+            $order = $this->effects->apply($order, StartOrderDecision::stamps($session, $mode, $gatewayId, $wallet));
             // WooCommerce's order save logs a failure instead of throwing. An order a repeat submit
             // cannot find by its ref would be orphaned and followed by a second one.
-            if ($this->orderFacts->orderByRef((string) $facts->expressRef())?->get_id() !== $order->get_id()) {
+            if ($this->orderFacts->orderByRef($session->expressRef())?->get_id() !== $order->get_id()) {
                 throw new \RuntimeException('The express order was not stamped.');
             }
         } catch (Throwable $error) {
@@ -121,32 +126,18 @@ final class StartExpressOrder
                 $this->factory->delete($order);
             }
 
-            return $this->refuse($facts, 'creation_failed', 500);
+            return $this->refuse($session, 'creation_failed', 500);
         }
 
         $this->log->info('express.order.created', [
             'order' => $order->get_id(),
-            'session' => $facts->sessionId(),
+            'session' => $session->sessionId(),
             'wallet' => $wallet,
             'amount' => $total->toDecimal(),
             'currency' => $total->currency(),
         ]);
 
-        return $this->answer();
-    }
-
-    /**
-     * The details the store holds for this shopper, in Mollie's shape: they win over what the wallet
-     * collected, and the shipping address at Mollie is the one the cost was calculated from.
-     */
-    private function answer(): ExpressOrderResult
-    {
-        $details = $this->orderFacts->shopperDetails();
-
-        return ExpressOrderResult::ok(
-            AddressMapping::toMollie($details['billing']),
-            AddressMapping::toMollie($details['shipping'])
-        );
+        return ExpressOrderResult::ok();
     }
 
     /**
@@ -166,21 +157,16 @@ final class StartExpressOrder
         throw new \RuntimeException('No express wallet is visible.');
     }
 
-    /**
-     * The order total, written with the precision of the cart total, is that amount to the cent.
-     */
-    private function sameAmount(WC_Order $order, Money $total): bool
+    private function refuse(?RememberedSession $session, string $code, int $httpStatus, ?string $reason = null): ExpressOrderResult
     {
-        $expected = $total->toDecimal();
-        $decimals = str_contains($expected, '.') ? strlen(substr($expected, strpos($expected, '.') + 1)) : 0;
-
-        return number_format((float) $order->get_total('edit'), $decimals, '.', '') === $expected
-            && $order->get_currency() === $total->currency();
-    }
-
-    private function refuse(ExpressOrderFacts $facts, string $code, int $httpStatus, ?string $reason = null): ExpressOrderResult
-    {
-        $this->log->warning('express.order.refused', ['session' => (string) $facts->sessionId(), 'reason' => $code]);
+        $fields = ['session' => $session === null ? '' : $session->sessionId(), 'reason' => $code];
+        // A refused submit is the shopper's normal flow and anyone may cause one, so it is written
+        // only with the debug log on; an order the store failed to create is a problem.
+        if ($code === 'creation_failed') {
+            $this->log->warning('express.order.refused', $fields);
+        } else {
+            $this->log->info('express.order.refused', $fields);
+        }
 
         return ExpressOrderResult::refused($code, $httpStatus, $reason);
     }

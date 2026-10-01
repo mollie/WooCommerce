@@ -103,9 +103,10 @@ final class FakeMollieApi
             $seen = $state['idempotency'][$key];
             if ($seen['bodyHash'] !== md5($rawBody) || $seen['path'] !== $request['path']) {
                 return $this->problem(
-                    422,
-                    'Unprocessable Entity',
-                    'The idempotency key was already used with a different request.'
+                    400,
+                    'Bad Request',
+                    'You are using an idempotency key that you used before with different parameters.'
+                        . ' Please send a unique idempotency key with each request.'
                 );
             }
             $request['replayed'] = true;
@@ -352,7 +353,7 @@ final class FakeMollieApi
     }
 
     /**
-     * Pins the fake's clock, so createdAt / expiresAt are known values.
+     * Pins the fake's clock, so createdAt, and with it when a session expires, are known values.
      */
     public function setNow(?int $timestamp): void
     {
@@ -420,7 +421,12 @@ final class FakeMollieApi
     private function sessionResource(array $session): array
     {
         $resource = $session;
-        unset($resource['paymentId']);
+        // The real API answers an open session without any expiry
+        // expiredAt appears only once the session has expired.
+        unset($resource['paymentId'], $resource['expiresAt']);
+        if ($session['status'] === 'expired') {
+            $resource['expiredAt'] = $session['expiresAt'];
+        }
         $resource['resource'] = 'session';
         // Opaque to the plugin. The browser stub reads the session id back out of it; like the
         // real token it identifies the session and nothing about the merchant account.

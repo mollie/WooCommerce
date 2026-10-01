@@ -5,8 +5,8 @@ namespace Mollie\WooCommerceTests\Integration\Common;
 use Mockery;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Payment\PaymentProcessor;
-use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerceTests\Integration\API\Traits\APIMockTrait;
+use Mollie\WooCommerceTests\Integration\Common\Traits\IsolatesSiteState;
 use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;
 use WC_Order;
 use WC_Payment_Gateways;
@@ -30,13 +30,7 @@ abstract class PaymentFlowTestCase extends IntegrationMockedTestCase
     protected const CUSTOMER_ID = 'cst_integrationtest';
 
     use APIMockTrait;
-
-    /**
-     * Option names a test overwrote, mapped to their previous value (null when unset).
-     *
-     * @var array<string, mixed>
-     */
-    private array $optionBackups = [];
+    use IsolatesSiteState;
 
     /**
      * The request payloads handed to orders->create(), in call order.
@@ -64,14 +58,13 @@ abstract class PaymentFlowTestCase extends IntegrationMockedTestCase
         parent::setUp();
         $this->initializeApiMock();
 
-        $this->optionBackups = [];
         $this->ordersCreateCalls = [];
         $this->paymentsCreateCalls = [];
 
         // Order notes are an observable side effect of payment creation and are written through
         // __() against the site locale, which is not English on every dev/CI box. Pin the locale so
         // the note assertions in the subclasses compare against the msgids the source declares.
-        $this->forceEnglishOrderNotes();
+        $this->pinEnglishOrderNotes();
 
         // Gateway registration reads Data::getAllAvailablePaymentMethods(), which caches the Mollie
         // methods list in a one-hour transient plus a process-wide static. A stale entry from an
@@ -86,29 +79,15 @@ abstract class PaymentFlowTestCase extends IntegrationMockedTestCase
     public function tearDown(): void
     {
         // Fixture orders are removed by IntegrationMockedTestCase::tearDown(). What is restored here
-        // is the state this harness touches: the settings it overwrote and the user meta it pinned.
-        foreach ($this->optionBackups as $name => $previous) {
-            if ($previous === null) {
-                delete_option($name);
-                continue;
-            }
-            update_option($name, $previous);
-        }
-        $this->optionBackups = [];
-
+        // is the state this harness touches: the user meta it pinned, and the site state of IsolatesSiteState.
         if ($this->customerIdMetaBackup === '') {
             delete_user_meta($this->customer_id, 'mollie_customer_id');
         } else {
             update_user_meta($this->customer_id, 'mollie_customer_id', $this->customerIdMetaBackup);
         }
 
-        // A test that widened the available-methods list (to register a gateway the default fixture
-        // does not carry) must not leave that list cached for the next test.
-        $this->flushMollieMethodsCache();
-
-        if (function_exists('restore_previous_locale')) {
-            restore_previous_locale();
-        }
+        // Options, the methods list a test may have widened, and the locale.
+        $this->restoreSiteState();
 
         parent::tearDown();
     }
@@ -141,21 +120,6 @@ abstract class PaymentFlowTestCase extends IntegrationMockedTestCase
         $processor = $container->get(PaymentProcessor::class);
 
         return $processor->processPayment($order, $gateways[$gatewayId]);
-    }
-
-    /**
-     * An unpaid order ready to be paid: pending, with one physical product, and with no Mollie
-     * reference of its own — the order factory stamps a random transaction id that would otherwise
-     * read as a payment attempt already in flight.
-     */
-    protected function pendingOrder(string $gatewayId): WC_Order
-    {
-        $order = $this->getConfiguredOrder($this->customer_id, $gatewayId, ['simple'], [], false);
-        $order->set_transaction_id('');
-        $order->set_status('pending');
-        $order->save();
-
-        return wc_get_order($order->get_id());
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -337,36 +301,6 @@ abstract class PaymentFlowTestCase extends IntegrationMockedTestCase
     }
 
     /**
-     * Sets an option for the duration of one test, restoring the previous value in tearDown().
-     *
-     * @param string $name
-     * @param mixed $value
-     */
-    protected function setOptionForTest(string $name, $value): void
-    {
-        if (!array_key_exists($name, $this->optionBackups)) {
-            $existing = get_option($name, null);
-            $this->optionBackups[$name] = $existing === false ? null : $existing;
-        }
-
-        update_option($name, $value);
-    }
-
-    /**
-     * Overrides a gateway's stored settings for the duration of one test, merged over whatever the
-     * site already has so unrelated keys (enabled, title, surcharges) keep their real values.
-     *
-     * @param array<string, mixed> $settings
-     */
-    protected function setGatewaySettingsForTest(string $methodId, array $settings): void
-    {
-        $optionName = 'mollie_wc_gateway_' . $methodId . '_settings';
-        $existing = get_option($optionName, []);
-
-        $this->setOptionForTest($optionName, array_merge(is_array($existing) ? $existing : [], $settings));
-    }
-
-    /**
      * Widens the list of methods Mollie reports as available so gateways outside
      * MockedApi::defaultAvailableMethods() register too. processPayment() re-initialises
      * WooCommerce's registry afterwards, so the added gateway is there when the test looks it up;
@@ -386,67 +320,5 @@ abstract class PaymentFlowTestCase extends IntegrationMockedTestCase
             }, $ids));
 
         $this->flushMollieMethodsCache();
-    }
-
-    /**
-     * Drops the cached Mollie methods list — both the transient and the process-wide static behind
-     * it — so the mocked API is the single source of truth for which gateways register.
-     */
-    protected function flushMollieMethodsCache(): void
-    {
-        global $wpdb;
-
-        $names = $wpdb->get_col(
-            "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_%mollie-wc-%'"
-        );
-
-        foreach ($names as $name) {
-            delete_transient(preg_replace('/^_transient_(timeout_)?/', '', $name));
-        }
-
-        $regularMethods = new \ReflectionProperty(Data::class, 'regular_api_methods');
-        $regularMethods->setAccessible(true);
-        $regularMethods->setValue(null, []);
-    }
-
-    /**
-     * Pins order-note rendering to the source language for the duration of a test.
-     */
-    private function forceEnglishOrderNotes(): void
-    {
-        if (function_exists('switch_to_locale')) {
-            switch_to_locale('en_US');
-        }
-
-        // switch_to_locale() reloads text domains for the new locale; a plugin translation already
-        // resident in memory would otherwise keep translating. Unload both domains the notes use.
-        unload_textdomain('mollie-payments-for-woocommerce');
-        unload_textdomain('woocommerce');
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // Assertions
-    // ──────────────────────────────────────────────────────────────────────────
-
-    protected function assertOrderHasNoteContaining(WC_Order $order, string $needle): void
-    {
-        $notes = wc_get_order_notes(['order_id' => $order->get_id()]);
-        $matching = array_filter($notes, static function ($note) use ($needle) {
-            return strpos($note->content, $needle) !== false;
-        });
-
-        $this->assertNotCount(
-            0,
-            $matching,
-            sprintf('Expected an order note containing "%s".', $needle)
-        );
-    }
-
-    /**
-     * The order total in the string form the Mollie request carries it in.
-     */
-    protected function formattedTotal(WC_Order $order): string
-    {
-        return number_format((float) $order->get_total(), 2, '.', '');
     }
 }

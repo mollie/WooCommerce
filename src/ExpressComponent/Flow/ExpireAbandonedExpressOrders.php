@@ -64,13 +64,14 @@ final class ExpireAbandonedExpressOrders
             return;
         }
 
+        $handledEvent = ($payment !== null ? $payment->id() : $sessionId) . ':' . $status;
         try {
-            $cancelled = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh): bool {
+            $cancelled = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($handledEvent): bool {
                 // The webhook may have paid the order while Mollie was being asked.
                 if (!$fresh->has_status('pending')) {
                     return false;
                 }
-                $this->writer->cancelAbandoned($fresh);
+                $this->writer->cancelAbandoned($fresh, $handledEvent);
 
                 return true;
             });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
@@ -27,8 +28,11 @@ final class ExpressOrderWriter
         ],
     ];
 
-    public function __construct(private EventLog $log)
+    private ProcessRecordStore $records;
+
+    public function __construct(private EventLog $log, ?ProcessRecordStore $records = null)
     {
+        $this->records = $records ?? new ProcessRecordStore();
     }
 
     /** The payment method is provisional: the first webhook corrects it to the wallet that paid. */
@@ -80,10 +84,15 @@ final class ExpressOrderWriter
         $this->finish($order, $changed, $notes, $started);
     }
 
-    public function cancelAbandoned(WC_Order $order): void
+    /**
+     * @param string $handledEvent "<session or payment id>:<status>"
+     */
+    public function cancelAbandoned(WC_Order $order, string $handledEvent = ''): void
     {
         $started = microtime(true);
-        $changed = $this->setStatus($order, 'cancelled');
+        // Before the status, so both go in the same save.
+        $changed = $this->recordCancelledByCleanup($order, $handledEvent);
+        $changed = $this->setStatus($order, 'cancelled') || $changed;
 
         $this->finish(
             $order,
@@ -119,6 +128,21 @@ final class ExpressOrderWriter
                 'ms' => (int) round((microtime(true) - $started) * 1000),
             ]);
         }
+    }
+
+    private function recordCancelledByCleanup(WC_Order $order, string $handledEvent): bool
+    {
+        $stored = $this->records->read($order);
+        $record = $stored->withCancelledBy('cleanup');
+        if ($handledEvent !== '') {
+            $record = $record->withProcessed($handledEvent);
+        }
+        if ($order->meta_exists(ProcessRecordStore::META_KEY) && $record->toArray() === $stored->toArray()) {
+            return false;
+        }
+        $this->records->write($order, $record);
+
+        return true;
     }
 
     private function setMeta(WC_Order $order, string $key, string $value): bool

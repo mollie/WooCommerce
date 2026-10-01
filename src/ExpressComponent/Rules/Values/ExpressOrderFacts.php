@@ -10,6 +10,7 @@ final class ExpressOrderFacts
 {
     /**
      * @param ?string $trackedPaymentId The payment the order already follows.
+     * @param list<string> $processed
      */
     public function __construct(
         private int $orderId,
@@ -19,7 +20,9 @@ final class ExpressOrderFacts
         private ?string $trackedPaymentId,
         private bool $needsPayment,
         private bool $holdsShipping,
-        private bool $needsShipping
+        private bool $needsShipping,
+        private ?string $cancelledBy = null,
+        private array $processed = []
     ) {
     }
 
@@ -61,5 +64,18 @@ final class ExpressOrderFacts
     public function needsShipping(): bool
     {
         return $this->needsShipping;
+    }
+
+    public function cancelledBy(): ?string
+    {
+        return $this->cancelledBy;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function processed(): array
+    {
+        return $this->processed;
     }
 }

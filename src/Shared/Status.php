@@ -140,10 +140,12 @@ class Status
             $apiClient->methods->all();
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
             $code = (int) $apiException->getCode();
+            // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- not output; escaped once where rendered
             if ($code === 401) {
                 throw new \Mollie\Api\Exceptions\ApiException(__('incorrect API key or other authentication issue. Please check your API keys!', 'mollie-payments-for-woocommerce'), $code, null, null, null, $apiException);
             }
             throw new \Mollie\Api\Exceptions\ApiException(self::plainApiErrorMessage($apiException), $code, null, null, null, $apiException);
+            // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
         }
     }
     /**

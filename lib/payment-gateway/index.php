@@ -7,8 +7,8 @@ namespace Mollie;
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version: 8.1.10+piwoo-954-update-the-bundled-apple-pay-domain-verification-file.d261d55
- * SHA: d261d5590ed97db93fe26d7f22d24bd91f57a0d0
+ * Version: 8.1.10+piwoo-954-update-the-bundled-apple-pay-domain-verification-file.7a941b1
+ * SHA: 7a941b1cc7d7bc89b6388948b8bdc7965931ab01
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3

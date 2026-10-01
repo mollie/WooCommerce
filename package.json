@@ -78,7 +78,11 @@
     "e2e:test:order-api:smoke": "npx playwright test --project=order-api --workers=1 --grep \"@Critical\"",
     "e2e:test:order-api:refund": "npx playwright test --project=refund-order-api --workers=4",
     "e2e:test:order-api:multistep": "npx playwright test --project=multistep-order-api --workers=1",
-    "e2e:test:order-api:multistep:smoke": "npx playwright test --project=multistep-order-api --workers=1 --grep \"@Critical\""
+    "e2e:test:order-api:multistep:smoke": "npx playwright test --project=multistep-order-api --workers=1 --grep \"@Critical\"",
+
+    "e2e:express:install": "node tests/qa/express/bin/install.mjs",
+    "e2e:express:uninstall": "node tests/qa/express/bin/install.mjs --uninstall",
+    "e2e:express": "npx playwright test --config=playwright.express.config.ts"
   },
   "eslintConfig": {
     "extends": [

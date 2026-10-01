@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
-/**
- * What a matched express order is given the first time its payment is seen, as decided by
- * FirstSight. ExpressOrderWriter carries it out.
- */
 final class FirstSightData
 {
     /**
-     * @param string|null $gatewayId The plugin's payment method of the wallet that paid; null keeps the provisional one.
-     * @param string|null $unmatchedMethod The Mollie method that paid, when no payment method matches it; noted on the order.
-     * @param array<string, string> $billing WooCommerce billing fields from the wallet; empty when it gave none.
-     * @param array<string, string>|null $shipping WooCommerce shipping fields from the wallet; null when they are not written.
+     * @param string|null $gatewayId Null keeps the provisional gateway.
+     * @param string|null $unmatchedMethod Mollie method no gateway matches; noted on the order.
+     * @param array<string, string> $billing
+     * @param array<string, string>|null $shipping Null when not written.
      */
     public function __construct(
         private string $paymentId,

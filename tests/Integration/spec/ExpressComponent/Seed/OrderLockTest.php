@@ -6,23 +6,19 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent\Seed;
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use InvalidArgumentException;
-use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
-use Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout;
+use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\Payment\OrderLockTimeout;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use WC_Order;
 use wpdb;
 
 /**
- * The per-order lock when a locked operation takes a second lock (ADR-007, REQ-B5).
- *
- * StartExpressOrder holds the lock of an express_ref while it stamps the new order
- * under the order's own lock. MySQL 5.7.5 and MariaDB 10.0.2 can hold both; before them, taking a
- * second named lock silently releases the first, which would let a second submit create a second
- * order. On such a server the nested work runs under the lock already held.
+ * The per-order lock: nested locks, fresh reads, and a lock held elsewhere.
+ * Before MySQL 5.7.5 / MariaDB 10.0.2 a second named lock releases the first, so nested work runs under the held one.
  *
  * @group integration
  * @group ExpressComponent
- * @covers \Mollie\WooCommerce\Adapter\WordPress\OrderLock
+ * @covers \Mollie\WooCommerce\Payment\OrderLock
  */
 class OrderLockTest extends ExpressFlowTestCase
 {
@@ -128,10 +124,7 @@ class OrderLockTest extends ExpressFlowTestCase
      *   Then the work receives the order with the new status
      *   And with the new meta row
      *
-     * This is the stale read measured on 2026-09-30 (blueprint section 8): without removing the
-     * order from WooCommerce's OrderCache, the "fresh" order is the one this process loaded before.
-     * The other process is simulated the way it looks from here: rows written with $wpdb, no hook,
-     * no cache touched. No wp_cache_flush() and no `new WC_Order()`, which would hide the bug.
+     * No wp_cache_flush() and no `new WC_Order()`: either would hide a stale OrderCache read.
      *
      * @test
      */
@@ -225,8 +218,7 @@ class OrderLockTest extends ExpressFlowTestCase
     }
 
     /**
-     * What another PHP process writing the order looks like from here: rows changed in the
-     * authoritative order tables, with no WooCommerce hook and no cache of this process touched.
+     * Another process's write: rows changed directly, no WooCommerce hook, no local cache touched.
      */
     private function writeAsAnotherProcess(int $orderId, string $status, string $metaKey, string $metaValue): void
     {
@@ -250,8 +242,7 @@ class OrderLockTest extends ExpressFlowTestCase
     }
 
     /**
-     * A second connection takes the same lock, which is what a concurrent request would do. It has
-     * to be a second connection: MySQL grants a session the lock it already holds.
+     * A second connection, because MySQL grants a session the lock it already holds.
      */
     private function holdTheLockElsewhere(string $orderKey): wpdb
     {

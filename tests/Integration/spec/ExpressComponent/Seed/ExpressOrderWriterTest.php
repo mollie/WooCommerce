@@ -5,8 +5,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent\Seed;
 
-use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
-use Mollie\WooCommerce\Core\Types\RememberedSession;
+use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
@@ -15,18 +15,8 @@ use Psr\Container\ContainerInterface;
 use WC_Order;
 
 /**
- * The three writes express makes to an order, as ordinary WooCommerce calls (blueprint revision 5,
- * practice P2; replaces EffectInterpreter).
- *
- * A flow takes the per-order lock and the fresh order through OrderLock::withFreshOrder(), and hands
- * that order to the writer. The writer carries over what the interpreter guaranteed, because the
- * flows' integration tests depend on it: a value is written only when it differs; the order is saved
- * once per call and only when something changed; each note is added only when the order does not
- * carry that exact text yet; address fields are limited to an allowlist; setting the payment method
- * also sets the gateway's title; one order.written event per call that wrote something.
- *
- * Every case of the former Seed/EffectInterpreterTest lives here or, for the lock timeout, in
- * Seed/OrderLockTest.
+ * The three writes express makes to an order: stamp, first sight, cancel as abandoned.
+ * Each saves once and only on change, adds a note once, writes only allowlisted address fields.
  *
  * @covers \Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter
  *
@@ -135,7 +125,7 @@ class ExpressOrderWriterTest extends ExpressFlowTestCase
      *   When the writer records it
      *   Then the payment id, the transaction id and the mode are recorded
      *   And the payment method is still the provisional one
-     *   And one note names the Mollie method, in the interpreter's words, byte for byte
+     *   And one note names the Mollie method, byte for byte
      *
      * @test
      */
@@ -158,8 +148,7 @@ class ExpressOrderWriterTest extends ExpressFlowTestCase
      *   And a first-sight verdict whose shipping fields hold a city and a field named "total"
      *   When the writer records it
      *   Then the shipping city is written
-     *   And the order's shipping total is unchanged: WC_Order has set_shipping_total(), but "total"
-     *       is not an address field, so a value from Mollie can never reach it
+     *   And the order's shipping total is unchanged, since "total" is not an address field
      *
      * @test
      */
@@ -324,8 +313,7 @@ class ExpressOrderWriterTest extends ExpressFlowTestCase
     }
 
     /**
-     * A first-sight verdict with the canary billing address, mapped to WooCommerce field names the
-     * way the rule maps it, and no shipping address.
+     * A first-sight verdict with the canary billing address in WooCommerce field names, no shipping.
      */
     private function firstSight(?string $gatewayId, ?string $unmatchedMethod): FirstSightData
     {

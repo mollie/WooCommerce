@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
-use Mollie\WooCommerce\Adapter\WordPress\EventLog;
-use Mollie\WooCommerce\Core\Express\StartOrderDecision;
-use Mollie\WooCommerce\Core\Types\RememberedSession;
+use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 use WC_Order;
 
 /**
- * The writes express makes to an order, as ordinary WooCommerce calls.
- *
- * Each method is given the order OrderLock::withFreshOrder() read under the per-order lock. A value
- * is written only when it differs, the order is saved once and only when something changed, and a
- * note is added only when the order does not carry that exact text yet, so making the same write
- * again changes nothing: a webhook Mollie retries is harmless.
+ * Values are written only when they differ and notes only when absent, so a retried webhook
+ * changes nothing. Callers pass the order read under OrderLock::withFreshOrder().
  */
 final class ExpressOrderWriter
 {
@@ -35,10 +31,7 @@ final class ExpressOrderWriter
     {
     }
 
-    /**
-     * Everything written on a newly created express order. The payment method is provisional: the
-     * first webhook corrects it to the wallet that paid.
-     */
+    /** The payment method is provisional: the first webhook corrects it to the wallet that paid. */
     public function stampNewOrder(
         WC_Order $order,
         RememberedSession $session,
@@ -59,9 +52,6 @@ final class ExpressOrderWriter
         $this->finish($order, $changed, [__('Express checkout started', 'mollie-payments-for-woocommerce')], $started);
     }
 
-    /**
-     * What a matched express order is given the first time its payment is seen.
-     */
     public function recordFirstSight(WC_Order $order, FirstSightData $firstSight): void
     {
         $started = microtime(true);
@@ -90,9 +80,6 @@ final class ExpressOrderWriter
         $this->finish($order, $changed, $notes, $started);
     }
 
-    /**
-     * An order the shopper started and Mollie says can no longer be paid.
-     */
     public function cancelAbandoned(WC_Order $order): void
     {
         $started = microtime(true);
@@ -107,9 +94,6 @@ final class ExpressOrderWriter
     }
 
     /**
-     * Saves once if anything changed, adds the notes the order does not carry yet, and logs one
-     * event when something was written.
-     *
      * @param array<int, string> $notes
      */
     private function finish(WC_Order $order, bool $changed, array $notes, float $started): void
@@ -178,9 +162,6 @@ final class ExpressOrderWriter
         return true;
     }
 
-    /**
-     * Also sets the gateway's title, so the order reads like any other order of that method.
-     */
     private function setPaymentMethod(WC_Order $order, string $gatewayId): bool
     {
         if ($order->get_payment_method() === $gatewayId) {
@@ -197,9 +178,9 @@ final class ExpressOrderWriter
     }
 
     /**
-     * Only the fields of the allowlist: a value from Mollie never reaches another order setter.
+     * Allowlisted fields only: a value from Mollie never reaches another order setter.
      *
-     * @param array<string, string> $fields WooCommerce field names without the billing_/shipping_ prefix.
+     * @param array<string, string> $fields Field names without the billing_/shipping_ prefix.
      */
     private function setAddress(WC_Order $order, string $type, array $fields): bool
     {

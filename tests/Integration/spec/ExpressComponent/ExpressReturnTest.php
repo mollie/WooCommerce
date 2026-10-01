@@ -5,21 +5,15 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
-use Mollie\WooCommerce\Adapter\WordPress\ExpressUrls;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\RedirectCaptured;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use WC_Order;
 
 /**
- * wc-api/mollie_express_return?ref=…: where the shopper lands after the wallet (REQ-C5, D2; AC-18, AC-22).
- *
- * The session's redirectUrl was fixed before any order existed, so it carries the express_ref, not
- * an order id and key. The handler finds the order by that ref and only decides where to send the
- * shopper: to the order-received page when the order exists (paid, or still awaiting the webhook),
- * back to the checkout with a notice when it does not or its payment failed. It never changes the
- * order: only the webhook does that. The ref is a capability, compared with hash_equals, and an
- * unknown ref gets the same answer as a failed payment.
+ * The express return URL: where the shopper lands after the wallet, found by express_ref.
+ * It only redirects; it never changes the order.
  *
  * @group integration
  * @group ExpressComponent

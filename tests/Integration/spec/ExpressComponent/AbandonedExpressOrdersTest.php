@@ -6,24 +6,14 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use Mollie\WooCommerce\Core\Clock;
+use Mollie\WooCommerce\Shared\Clock;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\SettableClock;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use WC_Order;
 
 /**
- * Cleanup of express orders the shopper started and never finished (REQ-E1 to E4; AC-27 to AC-30).
- *
- * It runs on the plugin's existing Action Scheduler action mollie_woocommerce_cancel_unpaid_orders.
- * It selects only pending orders created via mollie_express whose session expiry plus the grace
- * period has passed, asks Mollie about the payment when the order knows one and otherwise about the
- * session, and cancels only when Mollie positively says the order can no longer be paid. Paid,
- * authorized, pending, open or completed keeps the order however old it is; so does not being able
- * to reach Mollie.
- *
- * The orders are created the way the browser creates them, a session and then submit. The plugin's
- * clock is then moved past the order's expiry and grace; the fake Mollie is told what happened.
+ * Cleanup of abandoned express orders: cancelled only when Mollie says they can no longer be paid.
  *
  * @group integration
  * @group ExpressComponent
@@ -295,7 +285,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   And an ordinary pending PayPal order last modified an hour ago
      *   When the plugin's cleanup action runs
      *   Then the express order is still pending: only the express cleanup, which asks Mollie first, may cancel it
-     *   And the ordinary order is cancelled exactly as before (REQ-E2, REQ-E4)
+     *   And the ordinary order is cancelled exactly as before
      *
      * @test
      */
@@ -318,10 +308,6 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         $this->assertSame('cancelled', wc_get_order($ordinary->get_id())->get_status(), 'An ordinary unpaid order must still expire as before.');
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Helpers
-    // ──────────────────────────────────────────────────────────────────────────
-
     /**
      * Scenario: an order another process paid while Mollie was being asked is not cancelled
      *   Given a pending express order past its expiry and grace, whose session Mollie reports expired
@@ -333,9 +319,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   And it carries no abandon note
      *   And express.abandoned.kept is logged with the reason no_longer_pending
      *
-     * The "still pending?" check is made on the order read inside OrderLock::withFreshOrder(). Before,
-     * it was made on a read WooCommerce served from its OrderCache, so cleanup cancelled an order a
-     * webhook had just paid.
+     * The status is written straight to the table so only a fresh read, not OrderCache, can see it.
      *
      * @test
      */
@@ -366,9 +350,12 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         $this->assertSame([], $this->eventsFor('express.abandoned.cancelled', $order['id']));
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ──────────────────────────────────────────────────────────────────────────
+
     /**
-     * A status written the way another PHP process writes it, seen from here: the order row changed,
-     * no WooCommerce hook run, no cache of this process touched.
+     * Writes the order row directly, as another PHP process would: no hook, no cache touched.
      */
     private function writeStatusAsAnotherProcess(int $orderId, string $status): void
     {
@@ -398,8 +385,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
     }
 
     /**
-     * A pending express order created the way the browser creates it, at the real time. A negative
-     * offset makes Mollie create the session that many seconds earlier, so it expires sooner.
+     * A pending express order created as the browser does; a negative offset makes its session expire sooner.
      *
      * @return array{id: int, session: string, ref: string, expiresAt: int}
      */

@@ -4,25 +4,17 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent\Seed;
 
-use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
-use Mollie\WooCommerce\Core\Security\IdempotencyKey;
+use Mollie\WooCommerce\SDK\MollieApi;
+use Mollie\WooCommerce\SDK\IdempotencyKey;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
 
 /**
- * The one adapter that may call a mutating Mollie endpoint (blueprint chokepoint 2, ADR-012/013).
+ * SdkMollieApi sessions: idempotency key header, raw call keeping clientAccessToken, expiry.
+ * Observed at the HTTP layer, where the header and the dropped field actually happen.
  *
- * Two properties are what make it a chokepoint rather than a wrapper. It sets the deterministic
- * idempotency key on the client before the call, so a retried intent — a shopper who resubmits
- * after a timeout, a scheduler that runs twice — gets the first session back instead of creating
- * a second one. And it sends the session as a raw call: SDK v2.79's typed sessions endpoint drops
- * clientAccessToken, and without that token mollie.js cannot render the wallet buttons at all.
- *
- * Both are observed at the HTTP layer, through the real SDK and the real WordPress HTTP adapter,
- * because that is where the header and the dropped field actually happen.
- *
- * @covers \Mollie\WooCommerce\Adapter\Mollie\SdkMollieApi
+ * @covers \Mollie\WooCommerce\SDK\SdkMollieApi
  *
  * @group integration
  * @group ExpressComponent
@@ -109,9 +101,7 @@ class SdkMollieApiTest extends ExpressFlowTestCase
      *   Then its expiry is createdAt plus the configured session lifetime
      *   And a session the store remembers can therefore be handed out again until then
      *
-     * The real API omits every expiry field while a session is open and sends expiredAt only once
-     * it has expired (seen live, 2026-09-23). Without this the workflow read an empty expiry as a
-     * failed call and answered every shopper with mollie_unavailable.
+     * The real API sends no expiry field while a session is open, only expiredAt once expired.
      *
      * @test
      */

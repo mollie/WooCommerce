@@ -15,7 +15,7 @@ use function Brain\Monkey\Functions\when;
 /**
  * The locale the v1 card fields get (REQ-513, CF-02).
  *
- * getValidatedLocale() now delegates to Core\Payment\MollieJsLocale; this pins that the card fields
+ * getValidatedLocale() now delegates to Components\Rules\MollieJsLocale; this pins that the card fields
  * still receive the shop's WordPress locale mapped exactly as before the extraction.
  *
  * @covers \Mollie\WooCommerce\Components\ComponentDataService

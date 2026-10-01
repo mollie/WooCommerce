@@ -6,7 +6,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
 use Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
@@ -16,23 +16,8 @@ use WP_Query;
 use WP_Scripts;
 
 /**
- * What the Express Component puts on a page, and where (REQ-G1, NF-1, NF-4; AC-2, AC-19, AC-34).
- *
- * Mollie.js v2 publishes itself as window.Mollie unless window.Mollie is already a function or a
- * mollie.js script tag carries a 'compatible' query parameter; v1, a runtime dependency of the block
- * checkout, then overwrites it without an error anywhere. So the one v2 handle is registered for
- * exactly https://js.mollie.com/v2/mollie.js?compatible, with no version argument that could change
- * the URL, and v1 keeps its own registration untouched.
- *
- * Both load only on a block checkout that Express owns: not on the block cart, the product page or
- * the classic checkout, and not where Express cannot run (test mode, plain HTTP, no wallet with its
- * checkout button on). mollieExpressData is an allowlist: the REST base, the nonce the two routes
- * admit, the locale for Mollie.js, the wallets to offer and the shopper-facing messages. Nothing
- * identifying the Mollie account and nothing about the shopper crosses to the browser.
- *
- * Real WordPress, real plugin boot, real page queries. Only this boot's wp_enqueue_scripts
- * callbacks run, so earlier boots in the same process cannot enqueue on its behalf. The shop is
- * the one ExpressCheckoutFixtures sets up: live, HTTPS, PayPal the only express wallet.
+ * Which pages load the Mollie.js v2 bundle and what mollieExpressData exposes to the browser.
+ * The v2 URL carries ?compatible so Mollie.js v1 on the block checkout does not overwrite it.
  *
  * @group integration
  * @group ExpressComponent
@@ -51,8 +36,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     private const WALLETS = ['applepay', 'googlepay', 'paypal'];
 
     /**
-     * The values mollie.js v2 treats as "do not show this wallet" (see the stand-in,
-     * tests/qa/express/fake-mollie/mollie-v2-stub.js). A wallet missing from the map is shown.
+     * Values mollie.js v2 treats as "do not show this wallet"; a wallet missing from the map is shown.
      */
     private const HIDDEN = ['hidden', 'never', 'none', false];
 
@@ -85,8 +69,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             'post' => $GLOBALS['post'] ?? null,
         ];
         $this->wpActionBackup = $GLOBALS['wp_actions']['wp'] ?? null;
-        // Registrations are objects shared by every clone of WP_Scripts: copy them one by one so
-        // what a scenario registers, enqueues or localizes is gone for the next one.
+        // Registrations are shared objects across WP_Scripts clones: copy each so scenarios stay isolated.
         $scripts = wp_scripts();
         $this->scriptsBackup = clone $scripts;
         $this->scriptsBackup->registered = array_map(static function ($dependency) {
@@ -204,8 +187,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             'block cart' => ['block cart', 'owned'],
             'product page' => ['product', 'owned'],
             'classic checkout' => ['classic checkout', 'owned'],
-            // The legacy buttons step aside only where is_checkout() holds: loading here would put two
-            // express offers on one page.
+            // Legacy buttons step aside only where is_checkout() holds: two express offers otherwise.
             'a page with the checkout block that is not the checkout page' => ['stray checkout block', 'owned'],
             'the order-received page' => ['order received', 'owned'],
             'block checkout in test mode' => ['block checkout', 'test mode'],
@@ -426,9 +408,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         $GLOBALS['wp_query'] = $query;
         $GLOBALS['wp_the_query'] = $query;
         $GLOBALS['post'] = $query->post;
-        // WooCommerce answers is_cart()/is_checkout() only once 'wp' has run, and caches the answer
-        // for the rest of the request. This is a new request for a new page: mark 'wp' as done
-        // without running its callbacks, and forget the previous page's answer.
+        // is_cart()/is_checkout() answer only after 'wp' and cache it: mark 'wp' done and forget the cache.
         $GLOBALS['wp_actions']['wp'] = max(1, (int) ($GLOBALS['wp_actions']['wp'] ?? 0));
         $this->forgetPageType();
 

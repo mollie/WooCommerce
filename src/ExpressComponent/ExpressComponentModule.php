@@ -7,14 +7,14 @@ namespace Mollie\WooCommerce\ExpressComponent;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
-use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressAssets;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressReturnHandler;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressUrls;
-use Mollie\WooCommerce\Core\Express\SurfaceOwnership;
-use Mollie\WooCommerce\Workflow\ExpireAbandonedExpressOrders;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressAssets;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressReturnHandler;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
+use Mollie\WooCommerce\ExpressComponent\Rules\SurfaceOwnership;
+use Mollie\WooCommerce\ExpressComponent\Flow\ExpireAbandonedExpressOrders;
 use Psr\Container\ContainerInterface;
 
 class ExpressComponentModule implements ServiceModule, ExecutableModule
@@ -52,7 +52,6 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $routes->register();
         });
 
-        // Mollie.js v2 and mollieExpressData, on a block checkout that Express owns only.
         add_action('wp_enqueue_scripts', static function () use ($container): void {
             $assets = $container->get(ExpressAssets::class);
             assert($assets instanceof ExpressAssets);
@@ -65,16 +64,14 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $handler->handle();
         });
 
-        // Discovered in a webhook, which is no place to show anything: the notice waits for an
-        // administrator to load a page.
+        // Orphans are found in webhooks; the notice waits for an admin page load.
         add_action('admin_notices', static function () use ($container): void {
             $orphaned = $container->get(OrphanedExpressPayments::class);
             assert($orphaned instanceof OrphanedExpressPayments);
             $orphaned->renderNotice();
         });
 
-        // Runs on the plugin's existing cleanup action, which PaymentModule keeps scheduled while
-        // Express is enabled (see 'express.enabled').
+        // PaymentModule keeps this action scheduled while 'express.enabled' is true.
         add_action('mollie_woocommerce_cancel_unpaid_orders', static function () use ($container): void {
             $cleanup = $container->get(ExpireAbandonedExpressOrders::class);
             assert($cleanup instanceof ExpireAbandonedExpressOrders);

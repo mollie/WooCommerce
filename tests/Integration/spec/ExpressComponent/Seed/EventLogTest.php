@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent\Seed;
 
-use Mollie\WooCommerce\Adapter\WordPress\EventLog;
+use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\RecordingLogger;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
@@ -12,19 +12,9 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * The only way new code may log (blueprint chokepoint 4, ADR-014).
+ * EventLog: allowlisted fields only, one correlation id per request, problems logged with debug off.
  *
- * 231 of 237 log calls today are debug lines behind one switch, and what they write includes whole
- * Mollie objects, the webhook URL with its secret and the return URL with the order key (S-01,
- * S-05). The answer is not to mask those values one by one — a blocklist fails the first time
- * somebody logs a new object. It is an allowlist: the fields in docs/architecture/events.md are
- * the fields that may be written, and anything else is dropped rather than masked.
- *
- * The correlation id is the other half. Without it the story of one order has to be reassembled by
- * timestamp; with it, support reads one cid top to bottom and the event names say how far the
- * request got. So it has to be the same for every event of a request, and different for the next.
- *
- * @covers \Mollie\WooCommerce\Adapter\WordPress\EventLog
+ * @covers \Mollie\WooCommerce\Log\EventLog
  *
  * @group integration
  * @group ExpressComponent
@@ -133,10 +123,7 @@ class EventLogTest extends ExpressFlowTestCase
      *   When its first event is written
      *   Then the cid is present, non-empty and well formed
      *
-     * The boundary matters because the id is generated lazily and read by every call site. An id
-     * that is only created on the second event would leave the first line of every request — often
-     * the admission or refusal line, the one support looks for — with an empty cid that still
-     * passes an assertArrayHasKey.
+     * The id is generated lazily, so the first event is the boundary that could get an empty cid.
      *
      * @test
      */
@@ -163,9 +150,8 @@ class EventLogTest extends ExpressFlowTestCase
      * Scenario: with the debug switch off, only problems are written
      *   Given the merchant's debug switch is off, so the plugin logger writes nothing
      *   When an info, a warning and an error event are logged
-     *   Then the warning and the error reach WooCommerce's log anyway (REQ-D7: an unmatched
-     *        notification is recorded for investigation)
-     *   And the info event is not written, as before
+     *   Then the warning and the error reach WooCommerce's log anyway
+     *   And the info event is not written
      *
      * @test
      */

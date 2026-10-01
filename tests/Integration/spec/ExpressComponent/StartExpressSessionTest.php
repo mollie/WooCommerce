@@ -5,7 +5,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
-use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
@@ -14,22 +14,9 @@ use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use WP_REST_Response;
 
 /**
- * POST mollie/v1/express/session: the token that lets the Express Component render its buttons
- * (REQ-B2, B4, B6, G1, G2, G3, G6; AC-8 to AC-12, AC-34 to AC-37, AC-40).
- *
- * Any anonymous visitor of the checkout triggers this before tapping anything, so it is an
- * anonymous caller causing a Mollie call (blueprint S-04). What keeps that safe is observed here
- * end to end, through the real REST server, the real cart, the real SDK and HTTP adapter, with only
- * Mollie faked at the HTTP layer:
- *  - the route takes a nonce and nothing else; the amount comes from the server-side cart;
- *  - no Mollie call while the cart is ineligible or its shipping is incomplete;
- *  - one session per shopper and pricing fingerprint, reused until the price changes or it expires;
- *  - a budget of new sessions per window (WC_Rate_Limiter), and a deterministic idempotency key;
- *  - the browser gets {clientAccessToken, expiresAt} and nothing else; Mollie's text never leaves.
- *
- * The shop: live, HTTPS, PayPal the only wallet with its checkout express button on. PayPal takes
- * its address from the checkout form, so the shipping rules apply. Prices include 21% VAT; zone LU
- * has two flat rates, zone AT one, zone MT none.
+ * POST mollie/v1/express/session: admission, pricing from the server cart, session reuse,
+ * the rate budget, idempotency and what reaches the browser. Only Mollie is faked.
+ * Shop: PayPal the only express wallet; zone LU has two flat rates, AT one, MT none.
  *
  * @group integration
  * @group ExpressComponent
@@ -150,10 +137,6 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *   Then requiredCustomerDetails asks for email and billing-address either way
      *   And never for the shipping address, which the session's fixed amount was priced for
      *
-     * The wallet sheet is where the shopper picks their contact and billing address, so what comes
-     * back from it takes precedence over anything the store already had (owner, 2026-09-24,
-     * revising REQ-C2). Asking only for what the store lacked is what this test used to pin.
-     *
      * @test
      * @dataProvider shoppers
      */
@@ -271,9 +254,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *   Then it is answered 403 and nothing is sent to Mollie
      *   And that other shopper's own nonce is accepted
      *
-     * Without this, every guest would share one nonce and it would prove nothing about the page the
-     * request came from (REQ-G3). WooCommerce binds a guest nonce to the WooCommerce session only for
-     * actions whose name starts with 'woocommerce'.
+     * WooCommerce binds a guest nonce to its session only for actions named 'woocommerce*'.
      *
      * @test
      */
@@ -688,8 +669,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * What WooCommerce stores for this shopper, as the end of the request would leave it:
-     * get_session_data() reads the database, which WooCommerce only writes at shutdown.
+     * Saves first: get_session_data() reads the database, which WooCommerce writes only at shutdown.
      */
     private function storedShopperSession(): string
     {
@@ -712,8 +692,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Mollie receives and creates the next session, but its answer never arrives: the transport
-     * (priority 1) has answered, and this turns that answer into a timeout once.
+     * Mollie creates the next session, then this turns the fake transport's answer into a timeout once.
      */
     private function loseTheNextSessionAnswer(): void
     {

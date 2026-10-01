@@ -5,8 +5,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
-use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
-use Mollie\WooCommerce\Core\Clock;
+use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\Shared\Clock;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\SettableClock;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
@@ -17,18 +17,8 @@ use WP_REST_Response;
 use wpdb;
 
 /**
- * POST mollie/v1/express/order: the pending order created at Mollie's checkout.on('submit'), after the
- * shopper authorised in the wallet and before Mollie creates the payment (REQ-B3, B5, B6, C3, C4;
- * AC-8, AC-10, AC-12, AC-14, AC-14b, AC-16, AC-17).
- *
- * The route takes a nonce and nothing else. The session, the cart, the total, the shipping and the
- * addresses all come from the server side. One order per express_ref is enforced under the lock. A
- * refusal answers {ok: false, code, message} and leaves no order behind, so the browser can reject
- * the submit and the shopper can still check out normally.
- *
- * Observed end to end: the real REST server, cart, WooCommerce checkout and order storage, with only
- * Mollie faked at the HTTP layer. The shop is the one of ExpressCheckoutFixtures: PayPal the only
- * express wallet, 21% VAT, LU with 'standard' and 'express' rates.
+ * POST mollie/v1/express/order: the pending order created at the wallet's submit, one per express_ref.
+ * A refusal answers {ok: false, code, message} and leaves no order behind.
  *
  * @group integration
  * @group ExpressComponent
@@ -231,7 +221,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   Given a started express order that the webhook has since paid
      *   When the same shopper submits again with the same session and the same cart
      *   Then the store refuses with order_not_payable and creates no order
-     *   And the session is forgotten, so the next start creates a new one (REQ-B5, REQ-D4)
+     *   And the session is forgotten, so the next start creates a new one
      *
      * @test
      */
@@ -483,11 +473,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   Then the answer says only that the order was started
      *   And it carries no email, billing address or shipping address
      *
-     * Anything handed to event.resolve() overrides what the wallet collected, and the sheet is
-     * where the shopper picks their contact and billing address (owner, 2026-09-24, revising
-     * REQ-C2). Until then this route answered the store's own details and this test pinned them.
-     * The shipping address still comes from the form, and stays on the server: the order ships to
-     * the address its shipping was priced for.
+     * Anything handed to event.resolve() would override what the wallet collected.
      *
      * @test
      */
@@ -512,9 +498,6 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   When a session is started and the order requested
      *   Then the session asked the wallet for the email and the billing address, and not where to ship
      *   And the order is answered with the fact only, so nothing overrides what the sheet collected
-     *
-     * Nothing is shipped, so a shipping address from the wallet would add nothing *(owner,
-     * 2026-09-24)*.
      *
      * @test
      */
@@ -763,8 +746,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     }
 
     /**
-     * A REST request loads the cart from the session with fresh product objects; under PHPUnit the
-     * cart would otherwise still hold the product as it was before the scenario changed it.
+     * Reloads cart products fresh, as a real REST request would, so stock changes are seen.
      */
     private function reloadCartAsTheNextRequestWould(): void
     {
@@ -820,8 +802,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     }
 
     /**
-     * Holds the express_ref's lock from another connection for a number of seconds, without blocking
-     * this process: the holder's query runs asynchronously and releases the lock itself.
+     * Holds the express_ref's lock from another connection for some seconds, asynchronously.
      */
     private function holdTheLockBriefly(string $ref, int $seconds): wpdb
     {

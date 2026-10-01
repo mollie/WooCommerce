@@ -8,6 +8,8 @@ use Mollie\WooCommerceTests\Integration\API\Traits\APIMockTrait;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -450,6 +452,246 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
             $order->get_status(),
             'A late failed webhook must not move a refunded order to failed.'
         );
+    }
+
+    /**
+     * Scenario: A webhook for a stale payment attempt that no order tracks any more exits cleanly (PIWOO-949, GH#1292)
+     *   Given an order tracked to its latest payment attempt (transaction id and _mollie_payment_id)
+     *   And an earlier attempt on the same order that Mollie now reports as expired
+     *   When the WC-API webhook for the earlier attempt arrives with a valid order id and key
+     *   Then the fallback runs once with the request's order id, key and payment id
+     *   And the webhook completes without a PHP error or warning
+     *   And the order is not cancelled, because a newer payment is pending
+     *
+     * @test
+     * @group integration
+     * @group Webhooks
+     * @covers \Mollie\WooCommerce\Payment\MollieOrderService::onWebhookAction
+     */
+    public function it_returns_cleanly_when_no_order_matches_a_stale_payment_id()
+    {
+        [$orderId, $orderKey, $stalePaymentId] = $this->makeOrderWithStalePaymentAttempt();
+        $container = $this->bootstrapModule($this->getMockedApiServices());
+        $this->setupWebhookRequest($orderId, $orderKey, $stalePaymentId);
+
+        $this->webhookService = $this->create_webhook_service_with_response_spy(
+            $container,
+            $stalePaymentId,
+            Mockery::spy(HttpResponse::class)
+        );
+        $this->webhookService->shouldReceive('onWebhookActionFallback')
+            ->once()
+            ->with((string) $orderId, $orderKey, $stalePaymentId)
+            ->passthru();
+
+        $this->webhookService->onWebhookAction();
+
+        $this->assertEquals(
+            'pending',
+            wc_get_order($orderId)->get_status(),
+            'A stale expired attempt must not cancel an order that has a newer pending payment.'
+        );
+        $staleNotes = array_filter(
+            wc_get_order_notes(['order_id' => $orderId]),
+            static function ($note) use ($stalePaymentId): bool {
+                return strpos($note->content, $stalePaymentId) !== false
+                    && strpos($note->content, 'not cancelled because of another pending payment') !== false;
+            }
+        );
+        $this->assertCount(1, $staleNotes, 'The fallback must process the stale payment exactly once.');
+    }
+
+    /**
+     * Scenario: After the fallback, the matched-order checks do not run (PIWOO-949)
+     *   Given an order tracked to its latest payment attempt
+     *   When the WC-API webhook for an earlier, expired attempt arrives
+     *   Then the payment is processed exactly once, by the fallback, for the stale payment id
+     *   And no 401 "found order is not the same as provided order" response is set
+     *
+     * @test
+     * @group integration
+     * @group Webhooks
+     * @covers \Mollie\WooCommerce\Payment\MollieOrderService::onWebhookAction
+     */
+    public function it_does_not_run_the_matched_order_checks_after_the_fallback()
+    {
+        [$orderId, $orderKey, $stalePaymentId] = $this->makeOrderWithStalePaymentAttempt();
+        $container = $this->bootstrapModule($this->getMockedApiServices());
+        $this->setupWebhookRequest($orderId, $orderKey, $stalePaymentId);
+
+        $httpResponse = Mockery::spy(HttpResponse::class);
+        $this->webhookService = $this->create_webhook_service_with_response_spy(
+            $container,
+            $stalePaymentId,
+            $httpResponse
+        );
+        $this->webhookService->shouldReceive('doPaymentForOrder')
+            ->once()
+            ->with(Mockery::type(\WC_Order::class), $stalePaymentId)
+            ->passthru();
+
+        $this->webhookService->onWebhookAction();
+
+        $httpResponse->shouldNotHaveReceived('setHttpResponseCode', [401]);
+    }
+
+    /**
+     * Scenario: The webhook keeps the HTTP code the fallback set (PIWOO-949)
+     *   Given a request authenticated with the webhook secret
+     *   And a payment id that no order tracks
+     *   When the fallback rejects the request (order not found, or invalid order key)
+     *   Then exactly one HTTP code is set, the one the fallback chose
+     *   And the webhook completes without a PHP error or warning
+     *
+     * @test
+     * @group integration
+     * @group Webhooks
+     * @covers \Mollie\WooCommerce\Payment\MollieOrderService::onWebhookAction
+     * @dataProvider fallbackRejectionProvider
+     */
+    public function it_keeps_the_http_code_the_fallback_set(string $rejection, int $expectedCode)
+    {
+        $order = $this->getConfiguredOrder(1, 'mollie_wc_gateway_ideal', ['simple'], [], false);
+        $orderId = $rejection === 'order not found' ? $order->get_id() + 100000 : $order->get_id();
+        $orderKey = $rejection === 'invalid key' ? 'wc_order_notTheRealKey' : $order->get_order_key();
+        $stalePaymentId = 'tr_staleAttempt949';
+
+        $container = $this->bootstrapModule($this->getMockedApiServices());
+        $this->setupWebhookRequest($orderId, $orderKey, $stalePaymentId);
+        $_GET['mollie_webhook_secret'] = $container->get(WebhookSecret::class)->getOrCreate();
+
+        $httpResponse = Mockery::spy(HttpResponse::class);
+        $this->webhookService = $this->create_webhook_service_with_response_spy(
+            $container,
+            $stalePaymentId,
+            $httpResponse
+        );
+
+        try {
+            $this->webhookService->onWebhookAction();
+        } finally {
+            unset($_GET['mollie_webhook_secret']);
+        }
+
+        $httpResponse->shouldHaveReceived('setHttpResponseCode')->once();
+        $httpResponse->shouldHaveReceived('setHttpResponseCode', [$expectedCode]);
+    }
+
+    public function fallbackRejectionProvider(): array
+    {
+        return [
+            'order not found' => ['order not found', 404],
+            'invalid key' => ['invalid key', 401],
+        ];
+    }
+
+    /**
+     * Scenario: A webhook whose payment id matches an order is processed as before (PIWOO-949 regression guard)
+     *   Given an order that holds the webhook's payment id, as its transaction id or only in _mollie_payment_id
+     *   And Mollie reports that payment as paid
+     *   When the WC-API webhook arrives with the order's id and key
+     *   Then the fallback is not used
+     *   And the payment is processed once for the matched order
+     *   And the order is processing
+     *
+     * @test
+     * @group integration
+     * @group Webhooks
+     * @covers \Mollie\WooCommerce\Payment\MollieOrderService::onWebhookAction
+     * @dataProvider matchedByProvider
+     */
+    public function it_processes_the_matched_order_without_the_fallback(string $matchedBy)
+    {
+        $order = $this->getConfiguredOrder(1, 'mollie_wc_gateway_ideal', ['simple'], [], false);
+        $orderId = $order->get_id();
+        $transactionId = $order->get_transaction_id();
+        if ($matchedBy === 'Mollie meta') {
+            // Only the meta lookup can find this order: its transaction id is empty.
+            $order->set_transaction_id('');
+            $order->update_meta_data('_mollie_payment_id', $transactionId);
+            $order->save();
+        }
+
+        $this->mockSuccessfulPaymentGet($transactionId, 'paid', [
+            'metadata' => ['order_id' => $orderId],
+            'method' => 'ideal',
+            'mode' => 'test',
+        ]);
+        $container = $this->bootstrapModule($this->getMockedApiServices());
+        $this->setupWebhookRequest($orderId, $order->get_order_key(), $transactionId);
+
+        $this->webhookService = $this->create_webhook_service_with_response_spy(
+            $container,
+            $transactionId,
+            Mockery::spy(HttpResponse::class)
+        );
+        $this->webhookService->shouldNotReceive('onWebhookActionFallback');
+        $this->webhookService->shouldReceive('doPaymentForOrder')
+            ->once()
+            ->with(Mockery::on(static function ($matched) use ($orderId): bool {
+                return $matched instanceof \WC_Order && $matched->get_id() === $orderId;
+            }))
+            ->passthru();
+
+        $this->webhookService->onWebhookAction();
+
+        $this->assertEquals('processing', wc_get_order($orderId)->get_status());
+    }
+
+    public function matchedByProvider(): array
+    {
+        return [
+            'matched by transaction id' => ['transaction id'],
+            'matched by Mollie meta' => ['Mollie meta'],
+        ];
+    }
+
+    /**
+     * Same as createMockedWebhookService(), with an HttpResponse spy so the codes set can be asserted.
+     *
+     * @return \Mockery\MockInterface|MollieOrderService
+     */
+    private function create_webhook_service_with_response_spy(
+        ContainerInterface $container,
+        string $paymentId,
+        HttpResponse $httpResponse
+    ) {
+        $webhookService = Mockery::mock(MollieOrderService::class, [
+            $httpResponse,
+            $container->get(Logger::class),
+            $container->get(PaymentFactory::class),
+            $container->get('settings.data_helper'),
+            $container->get('shared.plugin_id'),
+            $container,
+            $container->get(WebhookHandler::class)
+        ])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $webhookService->shouldReceive('getPaymentIdFromRequest')
+            ->andReturn($paymentId);
+
+        return $webhookService;
+    }
+
+    /**
+     * Builds a pending order tracked to its latest payment attempt, and mocks an earlier attempt on the
+     * same order as expired at Mollie. No order holds the earlier attempt's id any more.
+     *
+     * @return array{0: int, 1: string, 2: string} order id, order key, stale payment id
+     */
+    private function makeOrderWithStalePaymentAttempt(): array
+    {
+        $order = $this->getConfiguredOrder(1, 'mollie_wc_gateway_ideal', ['simple'], [], false, 'tr_latestAttempt949');
+        $order->update_meta_data('_mollie_payment_id', 'tr_latestAttempt949');
+        $order->save();
+
+        $stalePaymentId = 'tr_staleAttempt949';
+        $this->mockSuccessfulPaymentGet($stalePaymentId, 'expired', [
+            'metadata' => ['order_id' => $order->get_id()],
+            'method' => 'ideal',
+            'mode' => 'test',
+        ]);
+
+        return [$order->get_id(), $order->get_order_key(), $stalePaymentId];
     }
 
     /**

@@ -13,7 +13,7 @@ final class ExpressSettings
     /**
      * @param list<string> $supportedSurfaces Surfaces the feature can render on.
      * @param list<string> $allowedModes Shop modes the feature may run in.
-     * @param array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}> $wallets
+     * @param array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}> $wallets
      */
     public function __construct(private array $supportedSurfaces, private array $allowedModes, private array $wallets)
     {
@@ -33,7 +33,7 @@ final class ExpressSettings
         return $this->allowedModes;
     }
     /**
-     * @return array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>
+     * @return array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}>
      */
     public function wallets(): array
     {

@@ -27,7 +27,7 @@ use WC_Order;
 final class ResolveExpressPayment
 {
     /**
-     * @param array<string, array{gatewayId: string, mollieMethod: string}> $wallets The wallets table of config/express.php.
+     * @param array<string, array{gatewayId: string, paidAs: string}> $wallets The wallets table of config/express.php.
      * @param callable(): array<int, string> $registeredGatewayIds
      */
     public function __construct(private MollieApi $mollie, private ExpressOrderFactsBuilder $orderFacts, private EffectInterpreter $effects, private EventLog $log, private OrphanedExpressPayments $orphaned, private array $wallets, private $registeredGatewayIds)

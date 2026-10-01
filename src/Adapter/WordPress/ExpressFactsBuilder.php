@@ -18,7 +18,7 @@ class ExpressFactsBuilder
 {
     private const GATEWAY_PREFIX = 'mollie_wc_gateway_';
     /**
-     * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
+     * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
      * @param array<string, mixed> $paymentMethods The plugin's payment methods, keyed by Mollie method id.
      * @param callable(): array<int, string> $activeMollieMethods Mollie method ids active on the merchant's
      *        profile, from the list the plugin already fetches and caches (this class never sees the API key).

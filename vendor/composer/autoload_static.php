@@ -432,6 +432,7 @@ class ComposerStaticInit614c484ffb864dc3835a7a81a02df6fa
         'Mollie\\WooCommerce\\PaymentMethods\\Directdebit' => __DIR__ . '/../..' . '/src/PaymentMethods/Directdebit.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Eps' => __DIR__ . '/../..' . '/src/PaymentMethods/Eps.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Giftcard' => __DIR__ . '/../..' . '/src/PaymentMethods/Giftcard.php',
+        'Mollie\\WooCommerce\\PaymentMethods\\Googlepay' => __DIR__ . '/../..' . '/src/PaymentMethods/Googlepay.php',
         'Mollie\\WooCommerce\\PaymentMethods\\IconFactory' => __DIR__ . '/../..' . '/src/PaymentMethods/IconFactory.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Icon\\GatewayIconsRenderer' => __DIR__ . '/../..' . '/src/PaymentMethods/Icon/GatewayIconsRenderer.php',
         'Mollie\\WooCommerce\\PaymentMethods\\Ideal' => __DIR__ . '/../..' . '/src/PaymentMethods/Ideal.php',

@@ -355,6 +355,7 @@ return array(
     'Mollie\\WooCommerce\\PaymentMethods\\Directdebit' => $baseDir . '/src/PaymentMethods/Directdebit.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Eps' => $baseDir . '/src/PaymentMethods/Eps.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Giftcard' => $baseDir . '/src/PaymentMethods/Giftcard.php',
+    'Mollie\\WooCommerce\\PaymentMethods\\Googlepay' => $baseDir . '/src/PaymentMethods/Googlepay.php',
     'Mollie\\WooCommerce\\PaymentMethods\\IconFactory' => $baseDir . '/src/PaymentMethods/IconFactory.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Icon\\GatewayIconsRenderer' => $baseDir . '/src/PaymentMethods/Icon/GatewayIconsRenderer.php',
     'Mollie\\WooCommerce\\PaymentMethods\\Ideal' => $baseDir . '/src/PaymentMethods/Ideal.php',

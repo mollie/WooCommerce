@@ -6,6 +6,7 @@ use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
 use Mollie\WooCommerce\Adapter\Mollie\SdkMollieApi;
 use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
 use Mollie\WooCommerce\Adapter\WordPress\EventLog;
+use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
 use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
 use Mollie\WooCommerce\Adapter\WordPress\SystemClock;
 use Mollie\WooCommerce\Core\Clock;
@@ -55,6 +56,19 @@ return static function (): array {
             assert($log instanceof EventLog);
 
             return new EffectInterpreter($lock, $log);
+        },
+        ExpressFactsBuilder::class => static function (ContainerInterface $container): ExpressFactsBuilder {
+            $settings = $container->get('settings.settings_helper');
+            assert($settings instanceof Settings);
+
+            return new ExpressFactsBuilder(
+                $container->get('express.config'),
+                $settings,
+                $container->get('gateway.paymentMethods'),
+                static function () use ($container): array {
+                    return $container->get('gateway.paymentMethodsEnabledAtMollie');
+                }
+            );
         },
     ];
 };

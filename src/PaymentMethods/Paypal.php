@@ -114,6 +114,9 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
             return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
         }
         if (is_checkout()) {
+            if (mollieWooCommerceExpressOwnsSurface('checkout')) {
+                return false;
+            }
             return $this->getProperty('mollie_paypal_button_enabled_checkout') === 'yes';
         }
         return false;

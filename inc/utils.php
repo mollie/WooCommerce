@@ -169,3 +169,19 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
 
     return number_format($value, 2, '.', '');
 }
+
+/**
+ * Does the Express Component own this surface, so that the legacy express buttons step aside there?
+ *
+ * @param string $surface checkout, cart or product
+ *
+ * @return bool
+ */
+function mollieWooCommerceExpressOwnsSurface(string $surface): bool
+{
+    try {
+        return apply_filters('mollie_wc_express_owns_surface', false, $surface) === true;
+    } catch (\Throwable $throwable) {
+        return false;
+    }
+}

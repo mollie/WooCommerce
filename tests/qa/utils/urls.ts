@@ -36,6 +36,9 @@ export const urls = {
 				additionalCosts:
 					'./wp-admin/admin.php?page=wc-settings&tab=germanized-taxes&section=additional_costs',
 			},
+			checkboxes: {
+				legal: './wp-admin/admin.php?page=wc-settings&tab=germanized-checkboxes&checkbox_id=terms',
+			},
 		},
 	},
 };

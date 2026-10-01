@@ -48,7 +48,7 @@ export const resetEnvironment = async (): Promise< void > => {
 	} else if ( envType === 'ssh' ) {
 		checkEnvVars( [ 'SSH_LOGIN', 'SSH_HOST', 'SSH_PORT' ] );
 
-		const WP_VERSION = process.env.WP_VERSION ?? '6.9';
+		const WP_VERSION = process.env.WP_VERSION ?? '7.1';
 		const WP_TYPE = process.env.WP_TYPE ?? 'single';
 		const remoteCmd = `$HOME/bin/reset-wp.sh --wp-version=${ WP_VERSION } --wp-type=${ WP_TYPE }`;
 

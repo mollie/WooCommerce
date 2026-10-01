@@ -2,7 +2,11 @@
  * Internal dependencies
  */
 import { test as setup } from '../../utils';
-import { shopConfigDefault } from '../../resources';
+import {
+	shopConfigDefault,
+	shopConfigNetherlands,
+	mollieApiKeys,
+} from '../../resources';
 
 // --- Mollie Germany ---
 
@@ -10,6 +14,14 @@ setup( 'setup:mollie;', async ( { utils } ) => {
 	await utils.configureStore( shopConfigDefault );
 	await utils.installAndActivateMollie();
 	await utils.cleanReconnectMollie();
+} );
+
+// --- Mollie Netherlands (Billink) ---
+
+setup( 'setup:mollie:nl;', async ( { utils } ) => {
+	await utils.configureStore( shopConfigNetherlands );
+	await utils.installAndActivateMollie();
+	await utils.cleanReconnectMollie( mollieApiKeys.nl );
 } );
 
 // --- Setup specific Mollie API (assumes Mollie is already installed) ---

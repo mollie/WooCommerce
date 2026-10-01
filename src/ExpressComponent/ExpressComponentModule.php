@@ -8,6 +8,7 @@ use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
+use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
 use Mollie\WooCommerce\Core\Express\SurfaceOwnership;
 use Psr\Container\ContainerInterface;
 
@@ -39,6 +40,12 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             10,
             2
         );
+
+        add_action('rest_api_init', static function () use ($container): void {
+            $routes = $container->get(ExpressRoutes::class);
+            assert($routes instanceof ExpressRoutes);
+            $routes->register();
+        });
 
         return true;
     }

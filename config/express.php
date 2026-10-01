@@ -12,6 +12,9 @@ declare(strict_types=1);
  *     wallets: array<string, array{gatewayId: string, mollieMethod: string, needsHttps: bool, checkoutSetting: string, addressFrom: string}>,
  *     surfaces: array<int, string>,
  *     allowedModes: array<int, string>,
+ *     sessionReuseMarginSeconds: int,
+ *     maxNewSessions: int,
+ *     windowSeconds: int,
  * } $express
  */
 $express = [
@@ -53,6 +56,14 @@ $express = [
     'surfaces' => ['checkout'],
     // Sessions may have no test mode (REQ-H4 is unanswered), so live only until it is answered.
     'allowedModes' => ['live'],
+    // An open session is handed out again only while it has more than this left before it expires,
+    // so the shopper is not given a token that dies while they are in the wallet.
+    'sessionReuseMarginSeconds' => 60,
+    // The anonymous work budget of the session route: at most this many new Mollie sessions per
+    // caller per window. Sized for a shopper who edits the address or the rate a few times (each
+    // price change needs a new session), not for one request per keystroke.
+    'maxNewSessions' => 10,
+    'windowSeconds' => 600,
 ];
 
 return $express;

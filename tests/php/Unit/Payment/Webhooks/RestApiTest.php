@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Payment\Webhooks;
 
 use Mockery;
+use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
+use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
+use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\Adapter\WordPress\EventLog;
+use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
+use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
 use Mollie\WooCommerceTests\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use WP_Error;
 use WP_REST_Request;
 
@@ -42,7 +49,14 @@ class RestApiTest extends TestCase
         $this->logger = Mockery::mock(LoggerInterface::class);
         $this->webhookTestService = Mockery::mock(WebhookTestService::class);
         $this->webhookSecret = Mockery::mock(WebhookSecret::class);
-        $this->sut = new RestApi($this->orderService, $this->logger, $this->webhookTestService, $this->webhookSecret);
+        $this->sut = new RestApi(
+            $this->orderService,
+            $this->logger,
+            $this->webhookTestService,
+            $this->webhookSecret,
+            new EventLog(new NullLogger()),
+            $this->expressStage()
+        );
     }
 
     /**
@@ -134,6 +148,25 @@ class RestApiTest extends TestCase
         $this->sut->registerRoutes();
 
         return $registered['permission_callback'];
+    }
+
+    /**
+     * The express stage, never reached here: these tests exercise the permission callback only.
+     */
+    private function expressStage(): ResolveExpressPayment
+    {
+        $log = new EventLog(new NullLogger());
+
+        return new ResolveExpressPayment(
+            Mockery::mock(MollieApi::class),
+            Mockery::mock(ExpressOrderFactsBuilder::class),
+            new EffectInterpreter(new OrderLock(Mockery::mock(\wpdb::class)), $log),
+            $log,
+            [],
+            static function (): array {
+                return [];
+            }
+        );
     }
 
     private function request(?string $secret, ?string $id): WP_REST_Request

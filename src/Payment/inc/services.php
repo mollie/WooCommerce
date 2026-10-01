@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrder;
+use Mollie\WooCommerce\Adapter\WordPress\EventLog;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Payment\LineItems\LineItemProvider;
 use Mollie\WooCommerce\Payment\LineItems\OrderLines;
@@ -209,7 +211,9 @@ return static function (): array {
                 $container->get(MollieOrderService::class),
                 $container->get(Logger::class),
                 $webhookTestService,
-                $container->get(WebhookSecret::class)
+                $container->get(WebhookSecret::class),
+                $container->get(EventLog::class),
+                $container->get(ResolveExpressPayment::class)
             );
         },
 

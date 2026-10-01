@@ -6,6 +6,9 @@ namespace Mollie\WooCommerce\Core\Types;
 
 /**
  * A Mollie payment as the core sees it. The raw resource is kept opaque, for public hooks only.
+ *
+ * expressRef is metadata.express_ref, which a payment created from an express session inherits;
+ * the addresses are what the wallet collected.
  */
 final class PaymentSnapshot
 {
@@ -19,8 +22,17 @@ final class PaymentSnapshot
 
     private ?object $raw;
 
-    public function __construct(string $id, string $status, ?string $method, Money $amount, ?object $raw = null)
-    {
+    public function __construct(
+        string $id,
+        string $status,
+        ?string $method,
+        Money $amount,
+        ?object $raw = null,
+        private string $mode = 'live',
+        private ?string $expressRef = null,
+        private ?MollieAddress $billingAddress = null,
+        private ?MollieAddress $shippingAddress = null
+    ) {
         $this->id = $id;
         $this->status = $status;
         $this->method = $method;
@@ -51,5 +63,25 @@ final class PaymentSnapshot
     public function raw(): ?object
     {
         return $this->raw;
+    }
+
+    public function mode(): string
+    {
+        return $this->mode;
+    }
+
+    public function expressRef(): ?string
+    {
+        return $this->expressRef;
+    }
+
+    public function billingAddress(): ?MollieAddress
+    {
+        return $this->billingAddress;
+    }
+
+    public function shippingAddress(): ?MollieAddress
+    {
+        return $this->shippingAddress;
     }
 }

@@ -23,6 +23,7 @@ use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Workflow\ExpireAbandonedExpressOrders;
+use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
 use Mollie\WooCommerce\Workflow\StartExpressOrder;
 use Mollie\WooCommerce\Workflow\StartExpressSession;
 use Psr\Container\ContainerInterface;
@@ -154,6 +155,19 @@ return static function (): array {
                 $container->get(Clock::class),
                 $container->get(EventLog::class),
                 (int) $container->get('express.config')['abandonGraceSeconds']
+            );
+        },
+        // The webhook's express stage. Its callers, RestApi and MollieOrderService, get it through their factories.
+        ResolveExpressPayment::class => static function (ContainerInterface $container): ResolveExpressPayment {
+            return new ResolveExpressPayment(
+                $container->get(MollieApi::class),
+                $container->get(ExpressOrderFactsBuilder::class),
+                $container->get(EffectInterpreter::class),
+                $container->get(EventLog::class),
+                $container->get('express.config')['wallets'],
+                static function (): array {
+                    return array_keys(WC()->payment_gateways()->payment_gateways());
+                }
             );
         },
         ExpressRoutes::class => static function (ContainerInterface $container): ExpressRoutes {

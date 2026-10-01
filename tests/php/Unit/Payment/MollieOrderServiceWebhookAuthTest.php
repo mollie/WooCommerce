@@ -5,15 +5,22 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Payment;
 
 use Mockery;
+use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
+use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
+use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\Adapter\WordPress\EventLog;
+use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
+use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
 use Mollie\WooCommerceTests\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use WC_Order;
 
 use function Brain\Monkey\Functions\when;
@@ -56,7 +63,27 @@ class MollieOrderServiceWebhookAuthTest extends TestCase
             Mockery::mock(Data::class),
             'mollie-payments-for-woocommerce',
             $container,
-            Mockery::mock(WebhookHandler::class)
+            Mockery::mock(WebhookHandler::class),
+            $this->expressStage()
+        );
+    }
+
+    /**
+     * The express stage, never reached here: authentication rejects the request before any lookup.
+     */
+    private function expressStage(): ResolveExpressPayment
+    {
+        $log = new EventLog(new NullLogger());
+
+        return new ResolveExpressPayment(
+            Mockery::mock(MollieApi::class),
+            Mockery::mock(ExpressOrderFactsBuilder::class),
+            new EffectInterpreter(new OrderLock(Mockery::mock(\wpdb::class)), $log),
+            $log,
+            [],
+            static function (): array {
+                return [];
+            }
         );
     }
 

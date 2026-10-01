@@ -7,11 +7,14 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
+use Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout;
+use Mollie\WooCommerce\Core\Express\AddressMapping;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use WC_Order;
@@ -41,6 +44,7 @@ class MollieOrderService
     // @phpstan-ignore-next-line
     private string $currentLockValue;
     private WebhookHandler $webhookHandler;
+    private ResolveExpressPayment $resolveExpressPayment;
 
     /**
      * MollieOrderService constructor.
@@ -52,7 +56,8 @@ class MollieOrderService
         Data $data,
         string $pluginId,
         ContainerInterface $container,
-        WebhookHandler $webhookHandler
+        WebhookHandler $webhookHandler,
+        ResolveExpressPayment $resolveExpressPayment
     ) {
 
         $this->httpResponse = $httpResponse;
@@ -62,6 +67,7 @@ class MollieOrderService
         $this->pluginId = $pluginId;
         $this->container = $container;
         $this->webhookHandler = $webhookHandler;
+        $this->resolveExpressPayment = $resolveExpressPayment;
     }
 
     public function setGateway($gateway)
@@ -95,24 +101,24 @@ class MollieOrderService
         $transactionID = sanitize_text_field(wp_unslash($paymentId));
         $this->logger->debug(__METHOD__ . ': Received WC-API webhook with transaction ID: ' . $transactionID);
 
-        $orders = wc_get_orders([
-            'transaction_id' => $transactionID,
-            'limit' => 2,
-        ]);
+        $orders = $this->findOrders($transactionID);
 
         if (! $orders) {
-            $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID . ' fall back to search in meta data');
-            //Fallback search order in order mollie oder meta
-            $orders = wc_get_orders([
-                'limit' => 2,
-                'meta_key' => substr($transactionID, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
-                'meta_compare' => '=',
-                'meta_value' => $transactionID,
-            ]);
-            if (! $orders) {
-                $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
-                $this->onWebhookActionFallback($order_id, $key, $transactionID);
+            try {
+                $expressOrder = $this->resolveExpressPayment->resolve($transactionID);
+            } catch (OrderLockTimeout $timeout) {
+                // Nothing was written; Mollie retries.
+                $this->httpResponse->setHttpResponseCode(503);
+                return;
             }
+            if ($expressOrder !== null) {
+                $orders = [$expressOrder];
+            }
+        }
+
+        if (! $orders) {
+            $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
+            $this->onWebhookActionFallback($order_id, $key, $transactionID);
         }
 
         if (count($orders) > 1) {
@@ -138,6 +144,30 @@ class MollieOrderService
             $this->httpResponse->setHttpResponseCode(400);
         };
         // Status 200
+    }
+
+    /**
+     * The indexed lookups, in order: transaction_id, then the Mollie order or payment meta. At most
+     * two orders, so an ambiguous id can be told apart from a unique one.
+     *
+     * @return array<int, WC_Order>
+     */
+    private function findOrders(string $transactionId): array
+    {
+        $orders = wc_get_orders([
+            'transaction_id' => $transactionId,
+            'limit' => 2,
+        ]);
+        if ($orders) {
+            return $orders;
+        }
+
+        return wc_get_orders([
+            'limit' => 2,
+            'meta_key' => substr($transactionId, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id',
+            'meta_compare' => '=',
+            'meta_value' => $transactionId,
+        ]);
     }
 
     /**
@@ -800,20 +830,8 @@ class MollieOrderService
      */
     protected function setBillingAddressAfterPayment($payment, $order)
     {
-        $billingAddress = $payment->billingAddress;
-        $wooBillingAddress = [
-            'first_name' => $billingAddress->givenName,
-            'last_name' => $billingAddress->familyName,
-            'email' => $billingAddress->email,
-            'phone' => null,
-            'address_1' => $billingAddress->streetAndNumber,
-            'address_2' => null,
-            'city' => $billingAddress->city,
-            'state' => null,
-            'postcode' => $billingAddress->postalCode,
-            'country' => $billingAddress->country,
-        ];
-        $order->set_address($wooBillingAddress, 'billing');
+        // Only what Mollie supplied is written; phone, second line and state are no longer blanked.
+        $order->set_address(AddressMapping::toWooCommerce((array) $payment->billingAddress), 'billing');
     }
 
     /**

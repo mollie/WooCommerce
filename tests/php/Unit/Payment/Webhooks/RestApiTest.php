@@ -162,7 +162,7 @@ class RestApiTest extends TestCase
             Mockery::mock(MollieApi::class),
             Mockery::mock(ExpressOrderFactsBuilder::class),
             new OrderLock(Mockery::mock(\wpdb::class)),
-            new ExpressOrderWriter($log),
+            new ExpressOrderWriter(),
             $log,
             Mockery::mock(OrphanedExpressPayments::class)->shouldIgnoreMissing(),
             [],

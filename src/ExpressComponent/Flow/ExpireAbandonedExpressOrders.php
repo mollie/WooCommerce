@@ -22,6 +22,8 @@ use WC_Order;
  */
 final class ExpireAbandonedExpressOrders
 {
+    private const FLOW = 'express.abandoned.expire';
+
     private const BATCH = 50;
 
     public function __construct(
@@ -44,6 +46,30 @@ final class ExpireAbandonedExpressOrders
 
     private function expire(WC_Order $order): void
     {
+        $started = microtime(true);
+        $this->log->step(self::FLOW . '.started', [
+            'order' => $order->get_id(),
+            'mollie_id' => (string) $order->get_meta('_mollie_payment_id'),
+            'entry' => 'cleanup',
+        ]);
+        $result = 'failed';
+        try {
+            $result = $this->cancelIfUnpayable($order);
+        } finally {
+            $this->log->step(self::FLOW . '.finished', [
+                'order' => $order->get_id(),
+                'result' => $result,
+                'ms' => (int) round((microtime(true) - $started) * 1000),
+            ]);
+            $this->log->flush($result === 'failed');
+        }
+    }
+
+    /**
+     * @return 'cancelled'|'kept'
+     */
+    private function cancelIfUnpayable(WC_Order $order): string
+    {
         $sessionId = (string) $order->get_meta('_mollie_express_session_id');
         $paymentId = (string) $order->get_meta('_mollie_payment_id');
         $fields = ['order' => $order->get_id(), 'session' => $sessionId];
@@ -53,15 +79,25 @@ final class ExpireAbandonedExpressOrders
         } catch (Throwable $unreachable) {
             $this->log->info('express.abandoned.kept', $fields + ['reason' => 'mollie_unreachable']);
 
-            return;
+            return 'kept';
         }
 
         $canNoLongerBePaid = AbandonDecision::decide($session, $payment);
         $status = $payment !== null ? $payment->status() : ($session !== null ? $session->status() : 'unknown');
+        $this->log->info('rule.decided', [
+            'order' => $order->get_id(),
+            'rule' => 'AbandonDecision',
+            'verdict' => $canNoLongerBePaid ? 'cancel' : 'keep',
+            'inputs' => sprintf(
+                'payment_status=%s session_status=%s',
+                $payment !== null ? $payment->status() : '',
+                $session !== null ? $session->status() : ''
+            ),
+        ]);
         if (!$canNoLongerBePaid) {
             $this->log->info('express.abandoned.kept', $fields + ['reason' => $status]);
 
-            return;
+            return 'kept';
         }
 
         $handledEvent = ($payment !== null ? $payment->id() : $sessionId) . ':' . $status;
@@ -81,10 +117,12 @@ final class ExpireAbandonedExpressOrders
         if (!$cancelled) {
             $this->log->info('express.abandoned.kept', $fields + ['reason' => 'no_longer_pending']);
 
-            return;
+            return 'kept';
         }
 
         $this->log->info('express.abandoned.cancelled', $fields + ['reason' => $status]);
+
+        return 'cancelled';
     }
 
     /**

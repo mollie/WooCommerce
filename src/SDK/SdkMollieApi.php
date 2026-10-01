@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\SDK;
 use InvalidArgumentException;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\MollieApiClient;
+use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Values\ExpressSession;
 use Mollie\WooCommerce\Shared\Values\MollieAddress;
@@ -16,11 +17,19 @@ use UnexpectedValueException;
 
 final class SdkMollieApi implements MollieApi
 {
+    private int $callsMade = 0;
+
     public function __construct(
         private Api $api,
         private Settings $settings,
-        private int $sessionLifetimeSeconds
+        private int $sessionLifetimeSeconds,
+        private ?EventLog $log = null
     ) {
+    }
+
+    public function callsMade(): int
+    {
+        return $this->callsMade;
     }
 
     public function createSession(array $payload, string $idempotencyKey): ExpressSession
@@ -29,7 +38,10 @@ final class SdkMollieApi implements MollieApi
         $client->setIdempotencyKey($idempotencyKey);
 
         try {
-            $response = $client->performHttpCall('POST', 'sessions', json_encode($payload, JSON_THROW_ON_ERROR));
+            $body = json_encode($payload, JSON_THROW_ON_ERROR);
+            $response = $this->sendLogged('POST', 'sessions', $idempotencyKey, static function () use ($client, $body) {
+                return $client->performHttpCall('POST', 'sessions', $body);
+            });
         } catch (ApiException $exception) {
             // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- only the code is read; the message is fixed
             throw MollieCallFailed::fromThrowable($exception);
@@ -52,7 +64,11 @@ final class SdkMollieApi implements MollieApi
             throw new InvalidArgumentException('Not a Mollie session id.');
         }
 
-        return $this->toSession($this->client()->performHttpCall('GET', 'sessions/' . $sessionId));
+        $client = $this->client();
+
+        return $this->toSession($this->sendLogged('GET', 'sessions/' . $sessionId, '', static function () use ($client, $sessionId) {
+            return $client->performHttpCall('GET', 'sessions/' . $sessionId);
+        }));
     }
 
     public function payment(string $paymentId): PaymentSnapshot
@@ -61,7 +77,10 @@ final class SdkMollieApi implements MollieApi
             throw new InvalidArgumentException('Not a Mollie payment id.');
         }
 
-        $payment = $this->client()->payments->get($paymentId);
+        $client = $this->client();
+        $payment = $this->sendLogged('GET', 'payments/' . $paymentId, '', static function () use ($client, $paymentId) {
+            return $client->payments->get($paymentId);
+        });
         $method = (string) ($payment->method ?? '');
 
         return new PaymentSnapshot(
@@ -74,6 +93,38 @@ final class SdkMollieApi implements MollieApi
             billingAddress: $this->address($payment->billingAddress ?? null),
             shippingAddress: $this->address($payment->shippingAddress ?? null)
         );
+    }
+
+    /**
+     * @template T
+     * @param callable(): T $request
+     * @return T
+     */
+    private function sendLogged(string $method, string $path, string $idempotencyKey, callable $request)
+    {
+        $this->callsMade++;
+        $started = microtime(true);
+        $result = 'unreachable';
+        try {
+            $response = $request();
+            $result = 'ok';
+
+            return $response;
+        } catch (ApiException $refused) {
+            $result = $refused->getCode() >= 400 && $refused->getCode() < 500 ? 'refused' : 'unreachable';
+            throw $refused;
+        } finally {
+            $fields = [
+                'method' => $method,
+                'path' => $path,
+                'result' => $result,
+                'ms' => (int) round((microtime(true) - $started) * 1000),
+            ];
+            if ($idempotencyKey !== '') {
+                $fields['key'] = $idempotencyKey;
+            }
+            $this->log?->step('mollie.called', $fields);
+        }
     }
 
     /**

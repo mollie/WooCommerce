@@ -112,6 +112,7 @@ class MollieOrderService
             if (! $orders) {
                 $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
                 $this->onWebhookActionFallback($order_id, $key, $transactionID);
+                return;
             }
         }
 

@@ -7,9 +7,8 @@ namespace Mollie\WooCommerce\Payment\Webhooks;
 use WC_Order;
 
 /**
- * The indexed order lookups both webhook paths make for a Mollie id, in order: transaction_id, then
- * the Mollie order or payment meta. At most two orders, so an ambiguous id can be told apart from a
- * unique one. Reads only.
+ * Looks up by transaction_id, then by the Mollie order or payment meta.
+ * At most two orders, so an ambiguous id can be told from a unique one.
  */
 final class WebhookOrderLookup
 {

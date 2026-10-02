@@ -8,7 +8,7 @@ use Psr\Container\ContainerInterface;
 
 /**
  * Only for the Express Component: Mollie takes no standalone Google Pay payment, so it is never
- * offered at checkout. Extending AbstractPaymentMethod is a recorded exception (express-component.md §7).
+ * offered at checkout.
  */
 class Googlepay extends AbstractPaymentMethod implements PaymentMethodI
 {

@@ -831,7 +831,7 @@ class MollieOrderService
      */
     protected function setBillingAddressAfterPayment($payment, $order)
     {
-        // Only what Mollie supplied is written; phone, second line and state are no longer blanked.
+        // Only the fields Mollie supplied are written.
         $order->set_address(AddressMapping::toWooCommerce((array) $payment->billingAddress), 'billing');
     }
 

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 /**
- * Paid express payments with no order. Webhooks cannot show admin notices, so they are stored
- * and shown on the next admin page load. Ids and amounts only, no personal data.
+ * Paid express payments with no order, kept for an admin notice. Ids and amounts only.
  */
 class OrphanedExpressPayments
 {

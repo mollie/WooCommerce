@@ -171,7 +171,7 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
 }
 
 /**
- * Does the Express Component own this surface, so that the legacy express buttons step aside there?
+ * Whether the Express Component owns the surface, so the legacy express buttons step aside.
  *
  * @param string $surface checkout, cart or product
  *

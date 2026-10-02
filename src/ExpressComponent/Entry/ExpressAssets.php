@@ -8,7 +8,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\SurfaceOwnership;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
 
 /**
- * Loads Mollie.js v2 with ?compatible so the checkout's v1 cannot overwrite it; the component uses window.Mollie2.
+ * ?compatible makes Mollie.js v2 use window.Mollie2, so the checkout's v1 keeps window.Mollie.
  */
 class ExpressAssets
 {

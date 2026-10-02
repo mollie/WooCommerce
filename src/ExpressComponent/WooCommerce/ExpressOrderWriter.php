@@ -12,8 +12,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 use WC_Order;
 
 /**
- * Values are written only when they differ and notes only when absent, so a retried webhook
- * changes nothing. Callers pass the order read under OrderLock::withFreshOrder().
+ * Writes only what differs and notes only once, so a retried webhook changes nothing.
  */
 final class ExpressOrderWriter
 {
@@ -35,7 +34,6 @@ final class ExpressOrderWriter
         $this->records = $records ?? new ProcessRecordStore();
     }
 
-    /** The payment method is provisional: the first webhook corrects it to the wallet that paid. */
     public function stampNewOrder(
         WC_Order $order,
         RememberedSession $session,
@@ -121,8 +119,6 @@ final class ExpressOrderWriter
     }
 
     /**
-     * Logged by OrderLock.
-     *
      * @param array<int, string> $notes
      */
     private function finish(WC_Order $order, bool $changed, array $notes): void

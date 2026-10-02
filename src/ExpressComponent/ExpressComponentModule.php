@@ -65,7 +65,6 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $handler->handle();
         });
 
-        // Orphans are found in webhooks; the notice waits for an admin page load.
         add_action('admin_notices', static function () use ($container): void {
             $orphaned = $container->get(OrphanedExpressPayments::class);
             assert($orphaned instanceof OrphanedExpressPayments);
@@ -78,7 +77,7 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $log->flush();
         });
 
-        // PaymentModule keeps this action scheduled while 'express.enabled' is true.
+        // PaymentModule schedules this action.
         add_action('mollie_woocommerce_cancel_unpaid_orders', static function () use ($container): void {
             $cleanup = $container->get(ExpireAbandonedExpressOrders::class);
             assert($cleanup instanceof ExpireAbandonedExpressOrders);

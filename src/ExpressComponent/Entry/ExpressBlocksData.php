@@ -12,7 +12,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 
 /**
- * Public browser data: never keys, secrets, order keys or amounts. Texts come from PHP (no wp_set_script_translations).
+ * Sent to the browser: no keys, secrets or amounts.
  */
 class ExpressBlocksData
 {

@@ -132,9 +132,7 @@ class RestApi
     /**
      * Handles the callback request from Mollie and processes the payment.
      *
-     * The order is looked up by transaction id, then by the Mollie order/payment meta, then — for a
-     * payment the plugin never created — by the express_ref in the payment's metadata, and last by
-     * the order id and key in the payment's redirectUrl.
+     * Lookup order: transaction id, Mollie order or payment meta, the payment's express_ref, its redirectUrl.
      *
      * @param WP_REST_Request $request The REST request object containing callback parameters.
      *
@@ -189,7 +187,7 @@ class RestApi
             } catch (OrderLockTimeout $timeout) {
                 return new \WP_REST_Response(null, 503);
             } catch (ApiException $exception) {
-                // The exception text carries Mollie's response body; it is never logged (S-09).
+                // The exception text carries Mollie's response body, so it is not logged.
                 $this->log->warning('webhook.failed', ['mollie_id' => (string) $transactionID, 'kind' => 'outage']);
                 return new \WP_REST_Response(null, 500);
             }

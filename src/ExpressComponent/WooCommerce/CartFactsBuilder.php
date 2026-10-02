@@ -14,8 +14,7 @@ use WC_Cart;
 use WC_Customer;
 
 /**
- * Reads the server-side cart, never browser input. A REST request loads neither cart nor totals,
- * so both are loaded here as the Store API does.
+ * Reads the server-side cart. A REST request loads neither cart nor totals, so both are loaded here.
  */
 class CartFactsBuilder
 {

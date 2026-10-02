@@ -283,8 +283,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
     }
 
     /**
-     * Mollie's SVG for this method from the (cached) methods list, or null when its entry has none —
-     * no image, or no SVG in it — so the caller keeps the plugin's own icon.
+     * Mollie's SVG for this method, or null when the cached methods list has none.
      */
     private function getApiIcon(ContainerInterface $container): ?string
     {

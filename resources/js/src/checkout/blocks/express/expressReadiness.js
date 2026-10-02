@@ -1,14 +1,10 @@
 /**
- * Which of its three states the Express Component shows, from what the block checkout already knows.
- *
- *   hidden   the cart cannot be paid this way: it is empty or holds a subscription
- *   blocked  the cart ships and the checkout form cannot price it yet: a required shipping field is
- *            empty, no rate is selected, the shipping cost is not known, or the totals are still
- *            being calculated
+ * Which state the Express Component shows:
+ *   hidden   empty cart, a subscription, or a final total of zero
+ *   blocked  the cart ships and the form cannot price it yet
  *   ready    the store can price a session
  *
- * A convenience, not a control: the store routes apply every one of these rules again. Every wallet
- * waits for the form, so the answer does not depend on the wallet.
+ * A convenience: the store routes apply every rule again.
  *
  * @param {Object}   input
  * @param {number}   input.itemCount              Lines in the cart.
@@ -19,6 +15,7 @@
  * @param {boolean}  input.hasSelectedRate        Every package has a selected shipping rate.
  * @param {boolean}  input.hasShippingAmount      The store has priced the shipping for this address.
  * @param {boolean}  input.isCalculating          The store is recalculating the totals.
+ * @param {boolean}  input.nothingToPay           The cart's total is zero.
  * @return {{status: string, reason?: string}} The state.
  */
 export function expressReadiness( {
@@ -30,24 +27,24 @@ export function expressReadiness( {
 	hasSelectedRate,
 	hasShippingAmount,
 	isCalculating,
+	nothingToPay = false,
 } ) {
 	if ( ! itemCount || hasSubscription ) {
 		return { status: 'hidden' };
 	}
+	// Only a final total counts: a cart that ships may still get a shipping cost.
+	const priced = nothingToPay ? { status: 'hidden' } : { status: 'ready' };
 	if ( ! needsShipping ) {
-		return { status: 'ready' };
+		return priced;
 	}
 
 	const missingField = requiredShippingFields.some(
 		( field ) => String( shippingAddress?.[ field ] ?? '' ).trim() === ''
 	);
-	// A country on its own is enough for WooCommerce to offer a rate, which is how a session came to
-	// be priced for an address the shopper had not finished. Express waits for
-	// the whole address AND for a shipping cost that belongs to it, because the session's amount is
-	// fixed the moment it is created.
+	// A country alone gets a rate from WooCommerce: wait for the whole address and its shipping cost.
 	if ( missingField || ! hasSelectedRate || ! hasShippingAmount || isCalculating ) {
 		return { status: 'blocked', reason: 'shipping_incomplete' };
 	}
 
-	return { status: 'ready' };
+	return priced;
 }

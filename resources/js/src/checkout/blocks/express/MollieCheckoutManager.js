@@ -1,12 +1,6 @@
 /**
- * The page's side of mollie.js v2: Mollie2.Checkout, the express component, and the one submit handler.
- *
- * Always window.Mollie2 — the name the ?compatible bundle publishes itself under — never
- * window.Mollie, which belongs to v1, and no fallback between the two. The client access token is
- * passed straight to Mollie2.Checkout and not kept: dropping the checkout on unmount drops it too.
- *
- * Mounting is asynchronous and the component may be remounted while a mount is still running (a new
- * price). A generation number makes sure only the latest mount stays on the page.
+ * Always window.Mollie2, the name the ?compatible bundle uses; window.Mollie belongs to v1.
+ * The generation number keeps only the latest of overlapping mounts on the page.
  */
 export class MollieCheckoutManager {
 	/**

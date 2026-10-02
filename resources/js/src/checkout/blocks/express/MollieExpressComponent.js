@@ -1,19 +1,7 @@
 /**
- * The Express Component in the block checkout's express area.
- *
- * It shows one of three states, decided by expressReadiness over the cart store:
- *   hidden   nothing
- *   blocked  the shipping message and our own neutral placeholder; no session, no Mollie2
- *   ready    asks the store for a session and mounts Mollie's component with its token
- *
- * While ready it watches the price — the total, the currency and the selected rates — and when that
- * settles on a new value it remounts with a new session. A change must hold for SETTLE_MS before it
- * counts, so typing an address or a recalculation does not produce a request each. On Mollie's
- * submit it asks the store to start the order and resolves with the details the store holds, or
- * rejects with the store's message.
- *
- * A failure shows nothing and leaves the normal payment methods alone (NF-2); it is reported through
- * the block's onError only once the shopper has interacted. The token lives in the manager only.
+ * While ready it remounts with a new session when the price settles on a new value. A session
+ * about to expire is replaced once; after that the component is idle until the shopper is back.
+ * A failure shows nothing and leaves the normal payment methods alone.
  */
 /**
  * WordPress dependencies
@@ -33,9 +21,10 @@ import { ORDER_ROUTE, SESSION_ROUTE, postToStore } from './expressTransport';
 
 const CART_STORE = 'wc/store/cart';
 const SETTLE_MS = 1000;
-/** A session is replaced this long before it expires (the store reuses one only with 60s left). */
+/** A session is replaced this long before it expires. */
 const EXPIRY_MARGIN_MS = 30000;
-/** Refusals after which the session no longer fits the checkout: one fresh session, then give up. */
+const SHOPPER_IS_BACK = [ 'pointermove', 'pointerdown', 'keydown', 'focus' ];
+/** Refusals after which one fresh session is tried. */
 const REMOUNT_AFTER = [ 'cart_changed', 'session_expired', 'session_missing' ];
 const ADDRESS_FIELDS = [
 	'first_name',
@@ -125,15 +114,12 @@ function readCart( select ) {
 			store.isCustomerDataUpdating() ||
 			store.isShippingRateBeingSelected() ||
 			Boolean( store.isAddressFieldsForShippingRatesUpdating?.() ),
+		nothingToPay: Number( totals.total_price ) === 0,
 	} );
 
 	return {
 		status,
-		// Everything PricingFingerprint::of() hashes server-side, and nothing more. The destination
-		// counts only while something ships — a new city with the same flat rate still reprices the
-		// session as far as the store is concerned — and the lines count for a swap of two equally
-		// priced items. For a cart with nothing to ship the store ignores the address, because
-		// WooCommerce fills the shipping fields from the billing ones behind the page's back.
+		// What PricingFingerprint::of() hashes server-side; the destination only while something ships.
 		fingerprint: [
 			totals.currency_code,
 			totals.total_price,
@@ -201,9 +187,11 @@ export default function MollieExpressComponent( {
 	const [ failedAt, setFailedAt ] = useState( null );
 	const [ refusedShippingAt, setRefusedShippingAt ] = useState( null );
 	const [ attempt, setAttempt ] = useState( 0 );
+	const [ idle, setIdle ] = useState( false );
 	const [ notice, setNotice ] = useState( '' );
 	const mountRef = useRef( null );
 	const interacted = useRef( false );
+	const sessionIsAReplacement = useRef( false );
 	// The submit handler outlives renders: it reads the latest props and price from here.
 	const latest = useRef( {} );
 	latest.current = {
@@ -226,11 +214,10 @@ export default function MollieExpressComponent( {
 		settled.status === 'blocked' ||
 		refusedShippingAt === settled.fingerprint;
 	const failed = failedAt === settled.fingerprint;
-	const ready = settled.status === 'ready' && ! blocked && ! failed;
+	const ready = settled.status === 'ready' && ! blocked && ! failed && ! idle;
 
 	async function submit( event ) {
-		// First, synchronously: without defer() Mollie does not wait for this handler and creates
-		// the payment straight away, so a later reject() would arrive after the shopper has paid.
+		// First and synchronously: without defer() Mollie creates the payment before this handler answers.
 		event.defer();
 
 		const current = latest.current;
@@ -240,8 +227,7 @@ export default function MollieExpressComponent( {
 
 		const answer = await postToStore( current.data, ORDER_ROUTE );
 		if ( answer.ok ) {
-			// Nothing is passed on purpose: details handed to resolve() override what the wallet
-			// collected, and the wallet's contact and billing address are the ones that count
+			// Nothing is passed: details given to resolve() would override the wallet's.
 			event.resolve();
 			return;
 		}
@@ -318,11 +304,14 @@ export default function MollieExpressComponent( {
 				Date.now() -
 				EXPIRY_MARGIN_MS;
 			if ( expiresIn > 0 ) {
-				// Replaced once; if the replacement fails, fail() gives up quietly.
-				expiry = setTimeout(
-					() => setAttempt( ( value ) => value + 1 ),
-					expiresIn
-				);
+				expiry = setTimeout( () => {
+					if ( sessionIsAReplacement.current ) {
+						setIdle( true );
+						return;
+					}
+					sessionIsAReplacement.current = true;
+					setAttempt( ( value ) => value + 1 );
+				}, expiresIn );
 			}
 		} )();
 
@@ -332,6 +321,28 @@ export default function MollieExpressComponent( {
 			manager.unmount();
 		};
 	}, [ ready, settled.fingerprint, attempt ] );
+
+	useEffect( () => {
+		sessionIsAReplacement.current = false;
+		setIdle( false );
+	}, [ settled.fingerprint ] );
+
+	useEffect( () => {
+		if ( ! idle ) {
+			return undefined;
+		}
+		const wake = () => {
+			sessionIsAReplacement.current = false;
+			setIdle( false );
+		};
+		SHOPPER_IS_BACK.forEach( ( name ) =>
+			window.addEventListener( name, wake )
+		);
+		return () =>
+			SHOPPER_IS_BACK.forEach( ( name ) =>
+				window.removeEventListener( name, wake )
+			);
+	}, [ idle ] );
 
 	useEffect( () => () => managerRef.current.unmount(), [] );
 

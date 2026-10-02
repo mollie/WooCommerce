@@ -1,14 +1,8 @@
 /**
- * The one place that talks to the store's two express routes.
- *
- * It sends the nonce and nothing else: the store reads the cart, the prices and the addresses
- * itself (REQ-B4). apiFetch is used for its REST nonce middleware, which keeps a logged-in shopper
- * logged in on the REST request. The answer is always an object, never a throw:
- *   { ok: true, data }            the route answered 2xx and did not say ok: false
- *   { ok: false, code, message }  a refusal with the store's code and shopper-facing message, or
- *                                 code 'network' and an empty message when the store was not reached
- *
- * Written so the Apple Pay and PayPal buttons can adopt it later.
+ * Posts to the store's express routes. Sends only the nonce: the store reads the cart itself.
+ * apiFetch keeps a logged-in shopper logged in. Always answers an object, never throws:
+ *   { ok: true, data }
+ *   { ok: false, code, message }  code 'network' when the store was not reached
  */
 /**
  * WordPress dependencies

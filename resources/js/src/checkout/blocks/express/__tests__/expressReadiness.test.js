@@ -143,6 +143,22 @@ describe( 'expressReadiness', () => {
 			} ),
 			READY,
 		],
+		[
+			// The store refuses it too (nothing_to_pay): there is no payment to make.
+			'nothing to ship and nothing to pay',
+			virtual( { nothingToPay: true } ),
+			HIDDEN,
+		],
+		[
+			'shipping priced and nothing to pay',
+			shippable( { nothingToPay: true } ),
+			HIDDEN,
+		],
+		[
+			'nothing to pay so far, but the shipping is not priced yet',
+			shippable( { nothingToPay: true, hasShippingAmount: false } ),
+			BLOCKED,
+		],
 		[ 'empty cart', virtual( { itemCount: 0 } ), HIDDEN ],
 		[
 			'subscription in the cart',

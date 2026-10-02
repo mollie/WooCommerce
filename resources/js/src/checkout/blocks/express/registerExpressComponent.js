@@ -1,10 +1,5 @@
 /**
- * Registers the Express Component as its own Blocks express payment method, with no host gateway.
- *
- * Only when mollieExpressData is on the page, which the store prints on a block checkout that
- * Express owns and nowhere else — so nothing is registered on the cart block, the product page or a
- * checkout Express does not own. Like the two existing express buttons it drives its own flow and
- * lets Mollie redirect, instead of submitting through the Store API checkout.
+ * Registers only when the store printed mollieExpressData, which it does on a checkout Express owns.
  */
 /**
  * External dependencies

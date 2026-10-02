@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 /**
- * The token is a shopper credential: it lives only in the WC session, never in options, meta or logs.
- * The attempt counter gives each new session a new idempotency key; a failed retry keeps the old one.
+ * The token is a shopper credential: it lives only in the WC session.
+ * The seed is lost with the attempt counter, so a counter that restarts never repeats a key.
  */
 class ExpressSessionStore
 {
     private const SESSION_KEY = 'mollie_express_session';
 
     private const ATTEMPTS_KEY = 'mollie_express_session_attempts';
+
+    private const SEED_KEY = 'mollie_express_session_seed';
 
     /**
      * @return array{id: string, token: string, expiresAt: int, fingerprint: string, ref: string, attempt: int}|null
@@ -65,12 +67,13 @@ class ExpressSessionStore
         return $this->attemptsSoFar() + 1;
     }
 
-    /** Hashed, never the raw customer id. */
+    /** Hashed, never the raw customer id; one per WooCommerce session, not per customer. */
     public function customerKey(): string
     {
         $session = $this->session();
+        $customer = $session ? (string) $session->get_customer_id() : '';
 
-        return hash_hmac('sha256', $session ? (string) $session->get_customer_id() : '', wp_salt('nonce'));
+        return hash_hmac('sha256', $customer . '|' . $this->seed(), wp_salt('nonce'));
     }
 
     /** Derived, not random, so a retry sends the same body under the same idempotency key. */
@@ -81,6 +84,21 @@ class ExpressSessionStore
             0,
             32
         );
+    }
+
+    private function seed(): string
+    {
+        $session = $this->session();
+        if (!$session) {
+            return '';
+        }
+        $seed = $session->get(self::SEED_KEY);
+        if (!is_string($seed) || $seed === '') {
+            $seed = bin2hex(random_bytes(16));
+            $session->set(self::SEED_KEY, $seed);
+        }
+
+        return $seed;
     }
 
     private function attemptsSoFar(): int

@@ -308,6 +308,58 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a shopper buys the same cart again after their shop session was lost
+     *   Given a shopper, with an account or a guest, who paid an express order
+     *   And their WooCommerce session is gone, as after logging out or 48 hours
+     *   When they put the same cart together and use express checkout again
+     *   Then the session carries another express_ref and the order request creates a second order
+     *
+     * A customer's WooCommerce session is keyed on the user id, and its attempt counter starts again
+     * when the session is lost, so nothing but the session's own seed tells the two purchases apart.
+     *
+     * @test
+     * @dataProvider shoppers
+     */
+    public function it_lets_a_shopper_buy_the_same_cart_again_after_their_session_was_lost(bool $hasAccount): void
+    {
+        $this->bootExpress();
+        if ($hasAccount) {
+            $this->actAsCustomer();
+            // WooCommerce started this process's session before the login; a browser's is the account's.
+            $this->loseTheShopSession();
+            $this->assertSame((string) get_current_user_id(), (string) WC()->session->get_customer_id());
+        } else {
+            $this->actAsGuest();
+        }
+        $this->checkoutOfTheCurrentShopper();
+        $first = $this->startedSession();
+        $this->assertAnsweredOk($this->startOrder());
+        $payment = $this->fakeMollie()->completeSession($first['id'], ['status' => 'paid', 'method' => 'paypal']);
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+        $this->assertTrue(wc_get_order($this->onlyOrderFor($first['ref'])->get_id())->is_paid(), 'The first purchase must be paid.');
+
+        $this->loseTheShopSession();
+        $this->checkoutOfTheCurrentShopper();
+        $second = $this->startedSession();
+        $answer = $this->startOrder();
+
+        $this->assertNotSame($first['ref'], $second['ref'], 'Two purchases must not share an express_ref.');
+        $this->assertAnsweredOk($answer);
+        $this->assertNotSame($this->onlyOrderFor($first['ref'])->get_id(), $this->onlyOrderFor($second['ref'])->get_id());
+    }
+
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public function shoppers(): array
+    {
+        return [
+            'a customer with an account' => [true],
+            'a guest' => [false],
+        ];
+    }
+
+    /**
      * Scenario: there is no order without an open session
      *   Given a guest ready to check out who never started a session, or whose session's expiresAt has passed
      *   When the order is requested
@@ -781,6 +833,31 @@ class StartExpressOrderTest extends ExpressFlowTestCase
         }
         $change($product);
         $product->save();
+    }
+
+    /**
+     * The checkout of whoever is acting: two simple products shipped to LU at the standard rate.
+     */
+    private function checkoutOfTheCurrentShopper(): void
+    {
+        if (get_current_user_id() > 0) {
+            WC()->customer = new \WC_Customer(get_current_user_id(), true);
+        }
+        $this->cartWith(['simple'], 2);
+        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+        $this->chooseRate('standard');
+    }
+
+    /**
+     * What logging out, or 48 hours, leaves of the WooCommerce session: nothing.
+     */
+    private function loseTheShopSession(): void
+    {
+        $userId = get_current_user_id();
+        $this->newShopper();
+        if ($userId > 0) {
+            wp_set_current_user($userId);
+        }
     }
 
     /**

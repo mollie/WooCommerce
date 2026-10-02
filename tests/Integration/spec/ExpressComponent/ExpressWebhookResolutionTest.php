@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use Mockery;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\OrderLock;
@@ -44,6 +45,14 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     private int $paymentCompletions = 0;
 
     /**
+     * Run once, just before the next GET_LOCK of the plugin's OrderLock: what another process did
+     * while this one was on its way to the lock.
+     *
+     * @var (callable(): void)|null
+     */
+    private $beforeTheNextLock = null;
+
+    /**
      * The fixture customer's billing address before a scenario changed it, restored in tearDown().
      *
      * @var array<string, string>|null
@@ -56,6 +65,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
 
         $this->setUpExpressCheckout();
         $this->paymentCompletions = 0;
+        $this->beforeTheNextLock = null;
         $this->addTestFilter('woocommerce_payment_complete', function (): void {
             $this->paymentCompletions++;
         });
@@ -604,6 +614,67 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: the match is decided on the order as it is under the lock
+     *   Given a pending express order and a paid payment from its session
+     *   And another process cancels the order just before the webhook takes the order lock
+     *   When Mollie calls the webhook
+     *   Then the order is still cancelled and unpaid, as for an order found cancelled
+     *   And the payment is remembered as paid_after_cancel
+     *
+     * The outside write for this entry point (R-04): written straight to the table, so only the read
+     * under the lock can see it.
+     *
+     * @test
+     */
+    public function it_does_not_revive_an_order_cancelled_while_the_webhook_waited_for_the_lock(): void
+    {
+        [$order, , $sessionId] = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $raced = false;
+        $this->beforeTheNextLock = function () use ($order, &$raced): void {
+            $this->writeStatusAsAnotherProcess($order->get_id(), 'wc-cancelled');
+            $raced = true;
+        };
+
+        $status = $this->deliverWebhook($payment['id']);
+
+        $this->assertTrue($raced, 'The webhook never asked for the lock, so nothing raced.');
+        $this->assertSame(200, $status);
+        $after = $this->fresh($order);
+        $this->assertSame('cancelled', $after->get_status(), 'The webhook decided on the order it read before the lock.');
+        $this->assertFalse($after->is_paid());
+        $this->assertSame(0, $this->paymentCompletions);
+        $this->assertSame('paid_after_cancel', (new OrphanedExpressPayments())->all()[$payment['id']]['reason'] ?? null);
+    }
+
+    /**
+     * Scenario: a payment the order already tracks pays it after a merchant's cancel
+     *   Given an express order that tracks its payment since the webhook of its open status
+     *   And the merchant cancels the order
+     *   When the payment is paid and Mollie calls the webhook again
+     *   Then the order is paid and nothing is remembered as an orphan
+     *
+     * Decided in bug:944-refactor-07: row 1, "the order tracks this payment", admits before row 3b
+     * looks at who cancelled. A merchant's cancel is kept only when the paid webhook is the first seen.
+     *
+     * @test
+     */
+    public function it_pays_an_order_the_merchant_cancelled_with_a_payment_the_order_already_tracks(): void
+    {
+        [$order, , $sessionId] = $this->expressOrder();
+        $payment = $this->tracksAnOpenFirstPayment($order, $sessionId);
+        $cancelled = $this->fresh($order);
+        $cancelled->set_status('cancelled');
+        $cancelled->save();
+        $this->fakeMollie()->setPaymentStatus($payment['id'], 'paid', ['paidAt' => gmdate('c')]);
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        $this->assertTrue($this->fresh($order)->is_paid());
+        $this->assertSame([], (new OrphanedExpressPayments())->all());
+    }
+
+    /**
      * Scenario: a paid payment for an order another payment paid changes nothing
      *   Given an order paid by a first payment
      *   When the webhook for a paid second payment arrives
@@ -771,6 +842,31 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $this->assertSame($payment['id'], $context['mollie_id'] ?? null);
         $this->assertSame('unknown_ref', $context['reason'] ?? null);
         $this->assertSame([], array_diff(array_keys($context), ['cid', 'mollie_id', 'reason']), 'Only ids and the reason may be logged.');
+    }
+
+    /**
+     * Scenario: a payment without a ref is not reported as a problem
+     *   Given an ordinary pending order and its paid payment, which carries no express_ref
+     *   And the order does not hold the payment id yet, so the indexed lookup misses
+     *   When Mollie calls the webhook
+     *   Then express.webhook.unmatched is logged as info with missing_ref, and no warning is logged
+     *
+     * @test
+     */
+    public function it_logs_a_payment_without_a_ref_as_information_not_as_a_problem(): void
+    {
+        $this->boot();
+        $ordinary = $this->pendingOrder(self::PAYPAL_GATEWAY);
+        $payment = $this->paymentFor($ordinary, ['status' => 'paid', 'method' => 'paypal']);
+        $this->logger()->reset();
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        $unmatched = $this->loggedEvents('express.webhook.unmatched');
+        $this->assertCount(1, $unmatched);
+        $this->assertSame(['info', 'missing_ref'], [$unmatched[0]['level'], $unmatched[0]['context']['reason'] ?? null]);
+        $this->assertSame([], $this->logger()->records('warning'), 'Nothing went wrong: it is not an express payment.');
+        $this->assertSame([], (new OrphanedExpressPayments())->all());
     }
 
     /**
@@ -1169,13 +1265,74 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
 
+    /**
+     * The plugin's own OrderLock, on a connection that lets a scenario act just before a lock is asked for.
+     */
     private function boot(): ContainerInterface
     {
         if ($this->container === null) {
-            $this->container = $this->bootExpress();
+            $this->container = $this->bootExpress([
+                OrderLock::class => function (ContainerInterface $container): OrderLock {
+                    return new OrderLock($this->databaseActingBeforeALock(), $container->get(EventLog::class));
+                },
+            ]);
         }
 
         return $this->container;
+    }
+
+    private function databaseActingBeforeALock(): wpdb
+    {
+        $beforeTheNextLock = function (): void {
+            $act = $this->beforeTheNextLock;
+            $this->beforeTheNextLock = null;
+            if ($act !== null) {
+                $act();
+            }
+        };
+
+        return new class ($GLOBALS['wpdb'], $beforeTheNextLock) extends wpdb {
+            private wpdb $real;
+
+            /** @var callable(): void */
+            private $beforeTheNextLock;
+
+            // phpcs:ignore -- delegates to the site's connection; never connects itself.
+            public function __construct(wpdb $real, callable $beforeTheNextLock)
+            {
+                $this->real = $real;
+                $this->beforeTheNextLock = $beforeTheNextLock;
+            }
+
+            public function prepare($query, ...$args)
+            {
+                return $this->real->prepare($query, ...$args);
+            }
+
+            public function get_var($query = null, $x = 0, $y = 0)
+            {
+                if (strpos((string) $query, 'SELECT GET_LOCK') === 0) {
+                    ($this->beforeTheNextLock)();
+                }
+
+                return $this->real->get_var($query, $x, $y);
+            }
+        };
+    }
+
+    /**
+     * Writes the order row directly, as another PHP process would: no hook, no cache touched.
+     */
+    private function writeStatusAsAnotherProcess(int $orderId, string $status): void
+    {
+        global $wpdb;
+        $hpos = OrderUtil::custom_orders_table_usage_is_enabled();
+        $updated = $wpdb->update(
+            OrderUtil::get_table_for_orders(),
+            [$hpos ? 'status' : 'post_status' => $status],
+            [$hpos ? 'id' : 'ID' => $orderId]
+        );
+        $this->assertSame(1, $updated, 'The outside write did not change the order row.');
     }
 
     /**

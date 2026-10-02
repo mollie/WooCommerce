@@ -8,9 +8,12 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\SDK\MollieApi;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
+use Mollie\WooCommerceTests\Integration\Common\Doubles\RecordingLogger;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Throwable;
 use WC_Order;
 use wpdb;
@@ -96,9 +99,10 @@ class StepTraceTest extends ExpressFlowTestCase
             [
                 self::FLOW . '.started',
                 'mollie.called',
-                'rule.decided',
-                'rule.decided',
+                // The match is decided on the order as read under the lock (R-04).
                 'lock.taken',
+                'rule.decided',
+                'rule.decided',
                 'order.written',
                 'lock.released',
                 self::FLOW . '.finished',
@@ -119,7 +123,7 @@ class StepTraceTest extends ExpressFlowTestCase
         $this->assertNotSame('', (string) ($steps[0]['context']['cid'] ?? ''));
         $this->assertSame($payment['id'], $steps[0]['context']['mollie_id'] ?? null);
         $this->assertSame($order->get_id(), (int) ($steps[7]['context']['order'] ?? 0));
-        $this->assertSame(['ExpressOrderMatch', 'FirstSight'], [$steps[2]['context']['rule'] ?? null, $steps[3]['context']['rule'] ?? null]);
+        $this->assertSame(['ExpressOrderMatch', 'FirstSight'], [$steps[3]['context']['rule'] ?? null, $steps[4]['context']['rule'] ?? null]);
     }
 
     /**
@@ -176,10 +180,11 @@ class StepTraceTest extends ExpressFlowTestCase
         $this->assertCount(1, $timeouts);
         $cid = (string) $timeouts[0]['context']['cid'];
         $messages = array_column($this->recordsOf($cid), 'message');
-        foreach ([self::FLOW . '.started', 'mollie.called', 'rule.decided', self::FLOW . '.finished'] as $step) {
+        foreach ([self::FLOW . '.started', 'mollie.called', self::FLOW . '.finished'] as $step) {
             $this->assertContains($step, $messages, "A failure must come with its whole trace:\n" . $this->logger()->dump());
         }
         $this->assertNotContains('lock.taken', $messages, 'The lock was never taken.');
+        $this->assertNotContains('rule.decided', $messages, 'Nothing is decided about an order that was not read under its lock.');
     }
 
     /**
@@ -213,6 +218,49 @@ class StepTraceTest extends ExpressFlowTestCase
         $this->assertSame($orderId, (int) ($observed[0]['context']['order'] ?? 0));
         $this->assertSame('on-hold', $observed[0]['context']['status_asked'] ?? null);
         $this->assertSame('processing', $observed[0]['context']['status_found'] ?? null);
+    }
+
+    /**
+     * Scenario: with debug and trace off, the lock still reports listeners and does not collect an audit nobody reads
+     *   Given debug logging and trace are off, so order.written would not be written
+     *   And a listener that moves on-hold orders to processing
+     *   When the work puts the order on hold
+     *   Then listeners.observed is written to the log that is always on
+     *   And the lock read no order notes
+     *
+     * @test
+     */
+    public function it_reports_listeners_without_collecting_the_write_audit_when_nobody_reads_it(): void
+    {
+        $alwaysOn = new RecordingLogger();
+        $container = $this->bootExpress([
+            LoggerInterface::class => static fn (): LoggerInterface => new NullLogger(),
+            'settings.IsDebugEnabled' => static fn (): bool => false,
+            'log.always_on' => static fn (): LoggerInterface => $alwaysOn,
+        ]);
+        $lock = $container->get(OrderLock::class);
+        $orderId = $this->pendingOrder('mollie_wc_gateway_ideal')->get_id();
+        $this->addTestFilter('woocommerce_order_status_on-hold', static function ($id): void {
+            $other = wc_get_order((int) $id);
+            if ($other instanceof WC_Order) {
+                $other->set_status('processing');
+                $other->save();
+            }
+        });
+        $noteReads = 0;
+        $this->addTestFilter('pre_get_comments', static function () use (&$noteReads): void {
+            $noteReads++;
+        });
+
+        $lock->withFreshOrder($orderId, static function (WC_Order $fresh): void {
+            $fresh->set_status('on-hold');
+            $fresh->save();
+        });
+
+        $observed = array_values(array_filter($alwaysOn->records(), static fn (array $record): bool => $record['message'] === 'listeners.observed'));
+        $this->assertCount(1, $observed, "A status changed behind the flow's back is reported whatever the debug switch says.");
+        $this->assertSame(['on-hold', 'processing'], [$observed[0]['context']['status_asked'] ?? null, $observed[0]['context']['status_found'] ?? null]);
+        $this->assertSame(0, $noteReads, 'The lock read order notes for an order.written line nobody will read.');
     }
 
     /**

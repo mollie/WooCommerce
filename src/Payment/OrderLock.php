@@ -118,7 +118,8 @@ final class OrderLock
             return $work($order);
         }
 
-        $before = $this->snapshot($order);
+        // Collected only when order.written will be written.
+        $before = $this->log->writesInfo() ? $this->snapshot($order) : null;
         $callsBefore = ($this->countMollieCalls)();
         $started = microtime(true);
 
@@ -128,16 +129,18 @@ final class OrderLock
         $statusAsked = $order->get_status();
         $mollieCalls = ($this->countMollieCalls)() - $callsBefore;
         try {
-            $after = $this->snapshot($this->freshOrder($orderId));
+            $after = $this->freshOrder($orderId);
         } catch (InvalidArgumentException $deleted) {
             return $result;
         }
-        $this->reportWrite($orderId, $before, $after, $ms);
-        if ($after['status'] !== $statusAsked || $mollieCalls > 0) {
+        if ($before !== null) {
+            $this->reportWrite($orderId, $before, $this->snapshot($after), $ms);
+        }
+        if ($after->get_status() !== $statusAsked || $mollieCalls > 0) {
             $this->log->warning('listeners.observed', [
                 'order' => $orderId,
                 'status_asked' => $statusAsked,
-                'status_found' => $after['status'],
+                'status_found' => $after->get_status(),
                 'mollie_calls' => $mollieCalls,
             ]);
         }

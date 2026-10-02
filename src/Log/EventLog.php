@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Log;
 
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Unknown fields are dropped, never masked; only the field name is reported.
@@ -79,6 +80,14 @@ final class EventLog
         $this->buffer[] = [$event, $context];
     }
 
+    /**
+     * False with debug and trace off.
+     */
+    public function writesInfo(): bool
+    {
+        return !$this->infoLogger() instanceof NullLogger;
+    }
+
     public function flush(bool $endedBadly = false): void
     {
         $buffer = $this->buffer;
@@ -136,7 +145,7 @@ final class EventLog
         if (defined('WP_DEBUG') && WP_DEBUG) {
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- developer notice, WP_DEBUG only, field name never value.
             error_log(sprintf(
-                'Mollie EventLog dropped the field "%s" of event "%s": not in docs/architecture/events.md.',
+                'Mollie EventLog dropped the field "%s" of event "%s": it is not an allowed field.',
                 preg_replace('/[^A-Za-z0-9_.\-]/', '', $field),
                 preg_replace('/[^A-Za-z0-9_.\-]/', '', $event)
             ));

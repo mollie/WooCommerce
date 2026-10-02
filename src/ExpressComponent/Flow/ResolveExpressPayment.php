@@ -15,6 +15,7 @@ use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\OrderLockTimeout;
 use Mollie\WooCommerce\SDK\MollieApi;
 use Mollie\WooCommerce\SDK\MollieCallFailed;
+use Mollie\WooCommerce\Shared\Values\Admit;
 use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
 use Mollie\WooCommerce\Shared\Values\Refuse;
 use Throwable;
@@ -49,7 +50,7 @@ final class ResolveExpressPayment
      */
     public function resolve(string $paymentId): ?WC_Order
     {
-        // Express payments are Payments API payments; anything else goes on to the redirectUrl fallback.
+        // Only a tr_ id can be an express payment.
         if (preg_match('/^tr_.+$/D', $paymentId) !== 1) {
             return null;
         }
@@ -100,40 +101,49 @@ final class ResolveExpressPayment
             return null;
         }
 
-        $order = $this->orderFacts->orderByRef((string) $payment->expressRef());
-        $facts = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
-
-        $decision = ExpressOrderMatch::admit($payment, $facts);
-        $this->log->info('rule.decided', [
-            'order' => $order instanceof WC_Order ? $order->get_id() : 0,
-            'rule' => 'ExpressOrderMatch',
-            'verdict' => $decision instanceof Refuse ? $decision->code() : 'admit',
-            'inputs' => $this->matchInputs($payment, $facts),
-        ]);
-        if ($decision instanceof Refuse || $order === null || $facts === null) {
-            $reason = $decision instanceof Refuse ? $decision->code() : 'unknown_ref';
-            $this->log->warning('express.webhook.unmatched', [
-                'mollie_id' => $paymentId,
-                'reason' => $reason,
-            ]);
-            $this->traceRefusedPayment($payment, $order, $reason);
+        $found = $this->orderFacts->orderByRef((string) $payment->expressRef());
+        if ($found === null) {
+            $refusal = $this->decide($payment, null);
+            $reason = $refusal instanceof Refuse ? $refusal->code() : 'unknown_ref';
+            $this->reportUnmatched($payment, $reason);
             $result = 'unmatched';
 
             return null;
         }
 
-        $firstSight = FirstSight::decide($payment, $facts, $this->wallets, ($this->registeredGatewayIds)());
-        $this->log->info('rule.decided', [
-            'order' => $facts->orderId(),
-            'rule' => 'FirstSight',
-            'verdict' => $firstSight->gatewayId() !== null ? 'gateway' : 'unmatched',
-            'inputs' => sprintf('method=%s gateway=%s', (string) $payment->method(), (string) $firstSight->gatewayId()),
-        ]);
-        $order = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($firstSight): WC_Order {
-            $this->writer->recordFirstSight($fresh, $firstSight);
+        // Not an order fact, so it is read before the lock.
+        $registeredGatewayIds = ($this->registeredGatewayIds)();
+        $reason = null;
+        $order = $this->lock->withFreshOrder(
+            $found->get_id(),
+            function (WC_Order $fresh) use ($payment, $registeredGatewayIds, &$reason): ?WC_Order {
+                $facts = $this->orderFacts->fromOrder($fresh);
+                $decision = $this->decide($payment, $facts);
+                if ($decision instanceof Refuse) {
+                    $reason = $decision->code();
+                    $this->noteRefusedPayment($fresh, $payment, $reason);
 
-            return $fresh;
-        });
+                    return null;
+                }
+
+                $firstSight = FirstSight::decide($payment, $facts, $this->wallets, $registeredGatewayIds);
+                $this->log->info('rule.decided', [
+                    'order' => $facts->orderId(),
+                    'rule' => 'FirstSight',
+                    'verdict' => $firstSight->gatewayId() !== null ? 'gateway' : 'unmatched',
+                    'inputs' => sprintf('method=%s gateway=%s', (string) $payment->method(), (string) $firstSight->gatewayId()),
+                ]);
+                $this->writer->recordFirstSight($fresh, $firstSight);
+
+                return $fresh;
+            }
+        );
+        if ($order === null) {
+            $this->reportUnmatched($payment, (string) $reason);
+            $result = 'unmatched';
+
+            return null;
+        }
 
         $this->log->info('express.payment.matched', [
             'order' => $order->get_id(),
@@ -144,6 +154,19 @@ final class ResolveExpressPayment
         $result = 'matched';
 
         return $order;
+    }
+
+    private function decide(PaymentSnapshot $payment, ?ExpressOrderFacts $facts): Admit|Refuse
+    {
+        $decision = ExpressOrderMatch::admit($payment, $facts);
+        $this->log->info('rule.decided', [
+            'order' => $facts !== null ? $facts->orderId() : 0,
+            'rule' => 'ExpressOrderMatch',
+            'verdict' => $decision instanceof Refuse ? $decision->code() : 'admit',
+            'inputs' => $this->matchInputs($payment, $facts),
+        ]);
+
+        return $decision;
     }
 
     private function matchInputs(PaymentSnapshot $payment, ?ExpressOrderFacts $facts): string
@@ -161,23 +184,30 @@ final class ResolveExpressPayment
         );
     }
 
-    /**
-     * @throws OrderLockTimeout Retryable; nothing was written.
-     */
-    private function traceRefusedPayment(PaymentSnapshot $payment, ?WC_Order $order, string $reason): void
+    private function noteRefusedPayment(WC_Order $fresh, PaymentSnapshot $payment, string $reason): void
     {
-        $ref = (string) $payment->expressRef();
-        if ($ref === '' || !ExpressOrderMatch::tookMoney($payment)) {
+        if (!ExpressOrderMatch::tookMoney($payment)) {
+            return;
+        }
+        $amount = $payment->amount();
+        $this->writer->recordRefusedPayment($fresh, $payment->id(), $amount->toDecimal(), $amount->currency(), $reason);
+    }
+
+    private function reportUnmatched(PaymentSnapshot $payment, string $reason): void
+    {
+        $fields = ['mollie_id' => $payment->id(), 'reason' => $reason];
+        if ($reason === ExpressOrderMatch::MISSING_REF) {
+            // Not an express payment: nothing went wrong.
+            $this->log->info('express.webhook.unmatched', $fields);
+
+            return;
+        }
+        $this->log->warning('express.webhook.unmatched', $fields);
+        if (!ExpressOrderMatch::tookMoney($payment)) {
             return;
         }
 
         $amount = $payment->amount();
-        if ($order instanceof WC_Order) {
-            $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($payment, $amount, $reason): void {
-                $this->writer->recordRefusedPayment($fresh, $payment->id(), $amount->toDecimal(), $amount->currency(), $reason);
-            });
-        }
-
         $this->log->error('express.payment.orphaned', [
             'mollie_id' => $payment->id(),
             'reason' => $reason,

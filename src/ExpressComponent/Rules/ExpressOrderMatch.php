@@ -16,6 +16,8 @@ final class ExpressOrderMatch
 
     public const PAID_AFTER_CANCEL = 'paid_after_cancel';
 
+    public const MISSING_REF = 'missing_ref';
+
     private const CLEANUP = 'cleanup';
 
     private const MONEY_TAKEN = ['paid', 'authorized'];
@@ -24,7 +26,7 @@ final class ExpressOrderMatch
     {
         $ref = (string) $payment->expressRef();
         if ($ref === '') {
-            return self::refuse('missing_ref');
+            return self::refuse(self::MISSING_REF);
         }
         if ($order === null || !hash_equals($order->expressRef(), $ref)) {
             return self::refuse('unknown_ref');

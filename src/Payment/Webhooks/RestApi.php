@@ -5,6 +5,7 @@ namespace Mollie\WooCommerce\Payment\Webhooks;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\OrderLockTimeout;
+use Mollie\WooCommerce\SDK\MollieCallFailed;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
@@ -140,7 +141,8 @@ class RestApi
      * @return \WP_REST_Response A response object with the corresponding status code.
      * - 200: When the request is successfully handled, whether for testing, no results, or successful processing.
      * - 404: When the "id" parameter is not provided in the request.
-     * - 503: When the order's lock could not be taken; nothing was written and Mollie retries.
+     * - 503: When the order's lock could not be taken, or Mollie could not be asked about an express
+     *        payment; nothing was written and Mollie retries.
      */
     public function callback(WP_REST_Request $request)
     {
@@ -168,7 +170,7 @@ class RestApi
         if (! $orders) {
             try {
                 $expressOrder = $this->resolveExpressPayment->resolve((string) $transactionID);
-            } catch (OrderLockTimeout $timeout) {
+            } catch (OrderLockTimeout | MollieCallFailed $retryable) {
                 return new \WP_REST_Response(null, 503);
             }
             if ($expressOrder !== null) {

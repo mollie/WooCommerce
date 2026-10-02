@@ -75,11 +75,23 @@ final class ResolveExpressPayment
     /**
      * @param-out string $result
      * @throws OrderLockTimeout
+     * @throws MollieCallFailed
      */
     private function matchToOrder(string $paymentId, string &$result): ?WC_Order
     {
         try {
             $payment = $this->mollie->payment($paymentId);
+        } catch (MollieCallFailed $failed) {
+            if ($failed->kind() !== MollieCallFailed::NOT_FOUND) {
+                // A 200 would end Mollie's retries and leave a paid payment without its order.
+                $this->log->warning('webhook.failed', ['mollie_id' => $paymentId, 'kind' => $failed->kind()]);
+
+                throw $failed;
+            }
+            $this->log->warning('express.webhook.unmatched', ['mollie_id' => $paymentId, 'reason' => 'payment_unavailable']);
+            $result = 'unmatched';
+
+            return null;
         } catch (Throwable $unavailable) {
             // The exception text holds Mollie's response body, so it is not logged.
             $this->log->warning('express.webhook.unmatched', ['mollie_id' => $paymentId, 'reason' => 'payment_unavailable']);

@@ -15,6 +15,7 @@ final class MollieCallFailed extends RuntimeException
     public const VALIDATION = 'validation';
     public const RATE_LIMIT = 'rate_limit';
     public const OUTAGE = 'outage';
+    public const NOT_FOUND = 'not_found';
 
     private function __construct(private string $kind)
     {
@@ -31,7 +32,15 @@ final class MollieCallFailed extends RuntimeException
     }
 
     /**
-     * @return 'validation'|'rate_limit'|'outage'
+     * A read tells Mollie not holding the resource apart from an outage.
+     */
+    public static function fromRead(Throwable $error): self
+    {
+        return (int) $error->getCode() === 404 ? new self(self::NOT_FOUND) : self::fromThrowable($error);
+    }
+
+    /**
+     * @return 'validation'|'rate_limit'|'outage'|'not_found'
      */
     public function kind(): string
     {

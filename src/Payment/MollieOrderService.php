@@ -12,6 +12,7 @@ use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookOrderLookup;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\HttpResponse;
+use Mollie\WooCommerce\SDK\MollieCallFailed;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
@@ -114,7 +115,7 @@ class MollieOrderService
         if (! $orders) {
             try {
                 $expressOrder = $this->resolveExpressPayment->resolve($transactionID);
-            } catch (OrderLockTimeout $timeout) {
+            } catch (OrderLockTimeout | MollieCallFailed $retryable) {
                 // Nothing was written; Mollie retries.
                 $this->httpResponse->setHttpResponseCode(503);
                 return;

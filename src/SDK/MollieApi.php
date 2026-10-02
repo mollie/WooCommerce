@@ -17,5 +17,8 @@ interface MollieApi
 
     public function session(string $sessionId): ExpressSession;
 
+    /**
+     * @throws MollieCallFailed
+     */
     public function payment(string $paymentId): PaymentSnapshot;
 }

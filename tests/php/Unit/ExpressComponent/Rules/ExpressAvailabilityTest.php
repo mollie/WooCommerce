@@ -10,6 +10,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartLine;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
+use Mollie\WooCommerce\Shared\Values\Money;
 use Mollie\WooCommerceTests\TestCase;
 
 /**
@@ -171,6 +172,53 @@ class ExpressAvailabilityTest extends TestCase
             'both wallets, ships, form empty: both wait' => [[false], self::ALL_WALLETS, true, false, false, 'blocked', 'shipping_incomplete'],
             // Filling in the form cannot fix a subscription, so it is unavailable, not blocked.
             'PayPal only, ships incomplete, with a subscription' => [[true], ['paypal'], true, false, false, 'unavailable', 'subscription_in_cart'],
+        ];
+    }
+
+    /**
+     * Scenario: a cart with nothing to pay is not offered express checkout
+     *   Given the checkout is otherwise available and the cart's price is final
+     *   When availability is resolved for a cart whose total is zero
+     *   Then it is unavailable with nothing_to_pay
+     *   And a cart that still waits for its shipping is blocked, not refused: its total is not final
+     *   And a cart whose total is not known is not refused for it
+     *
+     * @dataProvider totals
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     */
+    public function testRefusesACartWithNothingToPay(
+        ?int $totalInCents,
+        bool $needsShipping,
+        bool $shippingComplete,
+        string $expectedStatus,
+        ?string $expectedReason
+    ): void {
+
+        $cart = new CartFacts(
+            lines: [new CartLine(productId: 100, quantity: 1, isSubscription: false)],
+            needsShipping: $needsShipping,
+            shippingDestinationComplete: $shippingComplete,
+            shippingRateChosen: $shippingComplete,
+            total: $totalInCents === null ? null : Money::fromMinorUnits($totalInCents, 'EUR')
+        );
+
+        $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
+
+        self::assertSame($expectedStatus, $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: ?int, 1: bool, 2: bool, 3: string, 4: ?string}>
+     */
+    public function totals(): array
+    {
+        return [
+            'nothing ships, total zero' => [0, false, false, 'unavailable', 'nothing_to_pay'],
+            'ships, form complete, total zero' => [0, true, true, 'unavailable', 'nothing_to_pay'],
+            'ships, form incomplete, total zero so far' => [0, true, false, 'blocked', 'shipping_incomplete'],
+            'one cent to pay' => [1, false, false, 'available', null],
+            'total not known' => [null, false, false, 'available', null],
         ];
     }
 

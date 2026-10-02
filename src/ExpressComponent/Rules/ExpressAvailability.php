@@ -53,6 +53,11 @@ final class ExpressAvailability
         if (!in_array(true, WalletVisibility::buttons($settings, $shop, $cart), true)) {
             return ExpressAvailabilityResult::blocked('shipping_incomplete');
         }
+        // After the shipping check: until then the total is not final.
+        $total = $cart->total();
+        if ($total !== null && $total->minorUnits() <= 0) {
+            return ExpressAvailabilityResult::unavailable('nothing_to_pay');
+        }
 
         return ExpressAvailabilityResult::available();
     }

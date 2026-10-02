@@ -16,9 +16,7 @@ class ProcessRecordTest extends TestCase
 {
     private const EMPTY = [
         'version' => 1,
-        'attempts' => [],
         'processed' => [],
-        'inFlight' => [],
         'open' => [],
         'cancelledBy' => null,
     ];
@@ -45,17 +43,7 @@ class ProcessRecordTest extends TestCase
     {
         return [
             'empty' => [self::EMPTY],
-            'attempts' => [array_replace(self::EMPTY, ['attempts' => [
-                ['id' => 'tr_1', 'origin' => 'express_session:ses_9', 'supersededBy' => 'tr_2'],
-                ['id' => 'tr_2', 'origin' => 'express_session:ses_9', 'supersededBy' => null],
-            ]])],
             'processed' => [array_replace(self::EMPTY, ['processed' => ['ses_9:expired', 'tr_1:canceled', 're_4qqh']])],
-            'in flight' => [array_replace(self::EMPTY, ['inFlight' => [[
-                'kind' => 'capture',
-                'idempotencyKey' => 'capture-tr_1-1',
-                'amount' => ['value' => '49.90', 'currency' => 'EUR'],
-                'by' => 'merchant',
-            ]]])],
             'open' => [array_replace(self::EMPTY, ['open' => [['question' => 'paid_after_merchant_cancel', 'mollieId' => 'tr_3']]])],
             'cancelled by cleanup' => [array_replace(self::EMPTY, ['cancelledBy' => 'cleanup'])],
             'cancelled by the merchant' => [array_replace(self::EMPTY, ['cancelledBy' => 'merchant'])],

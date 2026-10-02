@@ -59,16 +59,6 @@ on:
           - e2e:test:order-api:multistep:non-eur-classic
           - e2e:test:order-api:multistep:card-disabled
           - e2e:test:order-api:multistep:paypal-express
-      TESTRAIL_PLAN_ID:
-        description: TestRail plan ID for reporting.
-        required: false
-        default: ''
-        type: string
-      TESTRAIL_RUN_ID:
-        description: TestRail run ID for reporting.
-        required: false
-        default: ''
-        type: string
 #  pull_request:
 #    branches: [dev/develop]
 #    paths:
@@ -198,8 +188,6 @@ jobs:
       # shard (e.g. from different branches) cannot overlap; runs of the same
       # branch replace each other via the concurrency group above.
       NGROK_DOMAIN: ${{ matrix.slug }}.e2e.mollie.syde.wpinfra.cloud
-      TESTRAIL_PLAN_ID: ${{ inputs.TESTRAIL_PLAN_ID }}
-      TESTRAIL_RUN_ID: ${{ inputs.TESTRAIL_RUN_ID }}
 
       PRE_SCRIPT: |
         # 1. Download and unzip the built plugin

@@ -14,6 +14,7 @@ use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\OrderLockTimeout;
 use Mollie\WooCommerce\SDK\MollieApi;
+use Mollie\WooCommerce\SDK\MollieCallFailed;
 use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
 use Mollie\WooCommerce\Shared\Values\Refuse;
 use Throwable;
@@ -44,11 +45,12 @@ final class ResolveExpressPayment
 
     /**
      * @throws OrderLockTimeout Retryable; nothing was written.
+     * @throws MollieCallFailed Retryable; Mollie could not be asked, nothing was written.
      */
     public function resolve(string $paymentId): ?WC_Order
     {
-        // Orders API ids and malformed ids are never express payments.
-        if (preg_match('/^tr_[A-Za-z0-9]+$/', $paymentId) !== 1) {
+        // Express payments are Payments API payments; anything else goes on to the redirectUrl fallback.
+        if (preg_match('/^tr_.+$/D', $paymentId) !== 1) {
             return null;
         }
 

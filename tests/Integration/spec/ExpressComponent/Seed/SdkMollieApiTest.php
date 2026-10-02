@@ -147,6 +147,84 @@ class SdkMollieApiTest extends ExpressFlowTestCase
         );
     }
 
+    /**
+     * Scenario: any id with the documented prefix is asked for, and stays one path segment
+     *   Given ids that keep the documented sess_ or tr_ prefix, followed by more than letters and digits
+     *   When the adapter reads the session or the payment
+     *   Then exactly one request reaches Mollie, for that id encoded as one segment of its own path
+     *
+     * Mollie documents ^sess_.+$ and ^tr_.+$, nothing narrower.
+     *
+     * @test
+     * @dataProvider idsWithTheDocumentedPrefix
+     */
+    public function it_asks_mollie_for_any_id_with_the_documented_prefix_inside_its_own_path_segment(string $resource, string $id): void
+    {
+        $api = $this->expressApi();
+
+        try {
+            $resource === 'sessions' ? $api->session($id) : $api->payment($id);
+        } catch (\InvalidArgumentException $refused) {
+            $this->fail("An id with the documented prefix must reach Mollie: {$id}");
+        } catch (\Throwable $unknownToTheFake) {
+            // The fake knows no such id; only the request matters here.
+        }
+
+        $requests = array_merge($this->fakeMollie()->requests('GET', 'sessions'), $this->fakeMollie()->requests('GET', 'payments'));
+        $this->assertCount(1, $requests);
+        $this->assertSame($resource . '/' . rawurlencode($id), $requests[0]['path']);
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public function idsWithTheDocumentedPrefix(): array
+    {
+        return [
+            'session id with a hyphen' => ['sessions', 'sess_fake-0001'],
+            'session id that climbs the path' => ['sessions', 'sess_x/../payments/tr_1'],
+            'session id with a query' => ['sessions', 'sess_x?include=details'],
+            'payment id with an underscore' => ['payments', 'tr_fake_0001'],
+            'payment id that climbs the path' => ['payments', 'tr_x/../../sessions'],
+        ];
+    }
+
+    /**
+     * Scenario: an id without the documented prefix never reaches Mollie
+     *   Given an id that does not start with the resource's prefix, or is nothing after it
+     *   When the adapter is asked to read it
+     *   Then it refuses before any request
+     *
+     * @test
+     * @dataProvider idsWithoutTheDocumentedPrefix
+     */
+    public function it_refuses_an_id_without_the_documented_prefix_before_asking_mollie(string $resource, string $id): void
+    {
+        $api = $this->expressApi();
+
+        try {
+            $resource === 'sessions' ? $api->session($id) : $api->payment($id);
+            $this->fail("The adapter must refuse {$id}.");
+        } catch (\InvalidArgumentException $refused) {
+            $this->assertSame([], $this->fakeMollie()->requests('GET', 'sessions'));
+            $this->assertSame([], $this->fakeMollie()->requests('GET', 'payments'));
+        }
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public function idsWithoutTheDocumentedPrefix(): array
+    {
+        return [
+            'a payment id as session' => ['sessions', 'tr_fake0001'],
+            'the bare session prefix' => ['sessions', 'sess_'],
+            'an Orders API id as payment' => ['payments', 'ord_fake0001'],
+            'the bare payment prefix' => ['payments', 'tr_'],
+            'a prefix in the middle' => ['payments', 'x_tr_fake0001'],
+        ];
+    }
+
     private function expressApi(): MollieApi
     {
         $api = $this->bootExpress()->get(MollieApi::class);

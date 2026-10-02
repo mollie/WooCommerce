@@ -218,6 +218,100 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a payment id beyond letters and digits is still resolved
+     *   Given a pending express order
+     *   And Mollie created its paid payment with an id that only keeps the documented tr_ prefix
+     *   When Mollie calls the webhook
+     *   Then the order is paid and tracks that payment, as for any other id
+     *
+     * Mollie documents payment ids as ^tr_.+$, nothing narrower.
+     *
+     * @test
+     * @dataProvider paymentIdsBeyondLettersAndDigits
+     */
+    public function it_pays_an_express_order_whose_payment_id_is_not_only_letters_and_digits(string $paymentId): void
+    {
+        [$order, , $sessionId] = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal', 'id' => $paymentId]);
+
+        $status = $this->deliverWebhook($payment['id']);
+
+        $this->assertSame(200, $status);
+        $paid = $this->fresh($order);
+        $this->assertTrue($paid->is_paid(), 'The express order must be paid whatever follows tr_.');
+        $this->assertSame($paymentId, (string) $paid->get_meta('_mollie_payment_id'));
+        $this->assertSame([], $this->loggedEvents('express.webhook.unmatched'));
+    }
+
+    /**
+     * Scenario: a paid express payment Mollie could not be asked about is retried, not dropped
+     *   Given a pending express order and its paid payment
+     *   And Mollie fails once, with an outage or a rate limit, when the express stage asks for the payment
+     *   When Mollie calls the webhook
+     *   Then it is answered 503, so Mollie delivers it again, and the failure is logged without Mollie's text
+     *   And the next delivery pays the order
+     *
+     * A payment Mollie answers 404 for still goes on to the redirectUrl fallback: see the unknown id above.
+     *
+     * @test
+     * @dataProvider mollieFailuresWorthARetry
+     */
+    public function it_has_mollie_retry_a_webhook_whose_payment_could_not_be_fetched(int $mollieStatus, string $kind): void
+    {
+        [$order, , $sessionId] = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $this->fakeMollie()->failNext('GET', 'payments/' . $payment['id'], $mollieStatus);
+
+        $first = $this->deliverWebhook($payment['id']);
+
+        $this->assertFalse($this->fresh($order)->is_paid(), 'Nothing is known about the payment yet.');
+        $this->assertSame(503, $first, 'A 200 tells Mollie to stop: the paid payment would never reach its order.');
+        $failed = $this->loggedEvents('webhook.failed');
+        $this->assertCount(1, $failed);
+        $this->assertSame(['cid', 'kind', 'mollie_id'], $this->sortedKeys($failed[0]['context']));
+        $this->assertSame($kind, $failed[0]['context']['kind']);
+        $this->assertSame([], $this->loggedEvents('express.webhook.unmatched'));
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+        $this->assertTrue($this->fresh($order)->is_paid(), 'The retried delivery must pay the order.');
+    }
+
+    /**
+     * @return array<string, array{0: int, 1: string}>
+     */
+    public function mollieFailuresWorthARetry(): array
+    {
+        return [
+            'an internal error' => [500, 'outage'],
+            'unavailable' => [503, 'outage'],
+            'a rate limit' => [429, 'rate_limit'],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array<int, string>
+     */
+    private function sortedKeys(array $context): array
+    {
+        $keys = array_keys($context);
+        sort($keys);
+
+        return $keys;
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public function paymentIdsBeyondLettersAndDigits(): array
+    {
+        return [
+            'a hyphen' => ['tr_fake-0001'],
+            'an underscore' => ['tr_fake_0001'],
+            'a dot' => ['tr_fake.0001'],
+        ];
+    }
+
+    /**
      * Scenario: the first resolution records the payment and gives the order the wallet's payment method
      *   Given a pending express order and a paid payment from its session, made with Apple Pay or PayPal
      *   When Mollie calls the webhook

@@ -60,20 +60,23 @@ final class SdkMollieApi implements MollieApi
 
     public function session(string $sessionId): ExpressSession
     {
-        if (preg_match('/^sess_[A-Za-z0-9]+$/', $sessionId) !== 1) {
+        // Mollie documents only the prefix; the id is encoded, so it stays one path segment.
+        if (preg_match('/^sess_.+$/D', $sessionId) !== 1) {
             throw new InvalidArgumentException('Not a Mollie session id.');
         }
 
         $client = $this->client();
+        $path = 'sessions/' . rawurlencode($sessionId);
 
-        return $this->toSession($this->sendLogged('GET', 'sessions/' . $sessionId, '', static function () use ($client, $sessionId) {
-            return $client->performHttpCall('GET', 'sessions/' . $sessionId);
+        return $this->toSession($this->sendLogged('GET', $path, '', static function () use ($client, $path) {
+            return $client->performHttpCall('GET', $path);
         }));
     }
 
     public function payment(string $paymentId): PaymentSnapshot
     {
-        if (preg_match('/^tr_[A-Za-z0-9]+$/', $paymentId) !== 1) {
+        // Mollie documents only the prefix; the SDK encodes the id into the path.
+        if (preg_match('/^tr_.+$/D', $paymentId) !== 1) {
             throw new InvalidArgumentException('Not a Mollie payment id.');
         }
 

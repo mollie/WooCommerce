@@ -257,7 +257,8 @@ final class FakeMollieApi
      * The shopper authorised in the wallet: Mollie creates the payment for the session.
      *
      * @param array<string, mixed> $outcome status (paid), method (applepay), billingAddress,
-     *                                      shippingAddress, amount (to simulate a mismatch).
+     *                                      shippingAddress, amount (to simulate a mismatch), id (any
+     *                                      tr_ id, since Mollie only promises the prefix).
      * @return array<string, mixed> The payment as stored, including its webhookUrl.
      */
     public function completeSession(string $sessionId, array $outcome = []): array
@@ -273,7 +274,7 @@ final class FakeMollieApi
 
         $status = (string) ($outcome['status'] ?? 'paid');
         $now = $this->now($state);
-        $id = 'tr_fake' . $this->nextSequence($state);
+        $id = (string) ($outcome['id'] ?? 'tr_fake' . $this->nextSequence($state));
         $payment = [
             'id' => $id,
             'mode' => $session['mode'],

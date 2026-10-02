@@ -108,8 +108,10 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
         }
 
         $this->setOptionForTest(OrphanedExpressPayments::OPTION, []);
-        $this->setOptionForTest(self::PLUGIN_ID . '_live_api_key', CanaryData::LIVE_API_KEY);
-        $this->setOptionForTest(self::PLUGIN_ID . '_test_api_key', CanaryData::TEST_API_KEY);
+        $this->withoutEarlierBootsApiKeyListeners(function (): void {
+            $this->setOptionForTest(self::PLUGIN_ID . '_live_api_key', CanaryData::LIVE_API_KEY);
+            $this->setOptionForTest(self::PLUGIN_ID . '_test_api_key', CanaryData::TEST_API_KEY);
+        });
         $this->setOptionForTest('mollie_webhook_secret', CanaryData::WEBHOOK_SECRET);
         $this->useLiveMode();
 
@@ -144,8 +146,36 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
             $GLOBALS['wp_rest_server'] = null;
         }
 
-        $this->restoreSiteState();
+        $this->withoutEarlierBootsApiKeyListeners(function (): void {
+            $this->restoreSiteState();
+        });
         parent::tearDown();
+    }
+
+    /**
+     * Those listeners would check the key against their own boot's, possibly mocked, Mollie client.
+     */
+    private function withoutEarlierBootsApiKeyListeners(callable $write): void
+    {
+        $hooks = [
+            'update_option_' . self::PLUGIN_ID . '_live_api_key',
+            'update_option_' . self::PLUGIN_ID . '_test_api_key',
+        ];
+        $suspended = [];
+        foreach ($hooks as $hook) {
+            if (isset($GLOBALS['wp_filter'][$hook])) {
+                $suspended[$hook] = $GLOBALS['wp_filter'][$hook];
+                unset($GLOBALS['wp_filter'][$hook]);
+            }
+        }
+
+        try {
+            $write();
+        } finally {
+            foreach ($suspended as $hook => $listeners) {
+                $GLOBALS['wp_filter'][$hook] = $listeners;
+            }
+        }
     }
 
     /**

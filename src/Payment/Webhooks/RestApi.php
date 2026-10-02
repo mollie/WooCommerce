@@ -184,6 +184,8 @@ class RestApi
                 $key = $this->mollieOrderService->getKeyFromRedirectUrl($redirectUrl);
                 $this->mollieOrderService->onWebhookActionFallback($order_id, $key, $transactionID);
                 return new \WP_REST_Response(null, 200);
+            } catch (OrderLockTimeout $timeout) {
+                return new \WP_REST_Response(null, 503);
             } catch (ApiException $exception) {
                 // The exception text carries Mollie's response body; it is never logged (S-09).
                 $this->log->warning('webhook.failed', ['mollie_id' => (string) $transactionID, 'kind' => 'outage']);
@@ -196,7 +198,11 @@ class RestApi
             return new \WP_REST_Response(null, 200);
         }
 
-        $this->mollieOrderService->doPaymentForOrder($orders[0]);
+        try {
+            $this->mollieOrderService->doPaymentForOrder($orders[0]);
+        } catch (OrderLockTimeout $timeout) {
+            return new \WP_REST_Response(null, 503);
+        }
 
         return new \WP_REST_Response(null, 200);
     }

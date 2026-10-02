@@ -19,6 +19,7 @@ use Mollie\WooCommerce\Gateway\Refund\RefundProcessor;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -205,7 +206,9 @@ return static function (): array {
             $webhookHandler = $container->get(WebhookHandler::class);
             $resolveExpressPayment = $container->get(ResolveExpressPayment::class);
             assert($resolveExpressPayment instanceof ResolveExpressPayment);
-            return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId, $container, $webhookHandler, $resolveExpressPayment);
+            $orderLock = $container->get(OrderLock::class);
+            assert($orderLock instanceof OrderLock);
+            return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId, $container, $webhookHandler, $resolveExpressPayment, $orderLock);
         },
         ApplePayDirectHandler::class => static function (ContainerInterface $container) {
             $appleGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_applepay']) ? $container->get(

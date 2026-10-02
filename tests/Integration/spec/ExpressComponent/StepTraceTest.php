@@ -102,6 +102,10 @@ class StepTraceTest extends ExpressFlowTestCase
                 'order.written',
                 'lock.released',
                 self::FLOW . '.finished',
+                // doPaymentForOrder()
+                'lock.taken',
+                'order.written',
+                'lock.released',
             ],
             array_column($steps, 'message'),
             "The trace must read top to bottom as the webhook ran:\n" . $this->logger()->dump()

@@ -827,7 +827,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   When Mollie calls the webhook, which waits for the lock and then resolves the payment
      *   And a second resolution of the same payment runs the same rails afterwards, as a return would
      *   Then the webhook waited and was answered 200
-     *   And the order has one _mollie_payment_id, the order was written once, the payment was completed once
+     *   And the order has one _mollie_payment_id, was written once per stage, and the payment was completed once
      *   And the second resolution added no note
      *
      * @test
@@ -852,7 +852,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $this->assertSame(200, $status);
         $after = $this->fresh($order);
         $this->assertCount(1, $after->get_meta('_mollie_payment_id', false));
-        $this->assertCount(1, $this->orderWrittenFor($order));
+        $this->assertCount(2, $this->orderWrittenFor($order));
         $this->assertSame(1, $this->paymentCompletions);
         $this->assertSame($notesAfterWebhook, $this->notes($order));
         $this->assertTrue($after->is_paid());
@@ -1106,6 +1106,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             $container,
             $container->get(WebhookHandler::class),
             $container->get(ResolveExpressPayment::class),
+            $container->get(OrderLock::class),
         ])->makePartial()->shouldAllowMockingProtectedMethods();
         $service->shouldReceive('getPaymentIdFromRequest')->andReturn($paymentId);
 

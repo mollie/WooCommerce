@@ -65,7 +65,8 @@ class MollieOrderServiceWebhookAuthTest extends TestCase
             'mollie-payments-for-woocommerce',
             $container,
             Mockery::mock(WebhookHandler::class),
-            $this->expressStage()
+            $this->expressStage(),
+            new OrderLock(Mockery::mock(\wpdb::class))
         );
     }
 

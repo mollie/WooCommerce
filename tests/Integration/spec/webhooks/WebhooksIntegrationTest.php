@@ -7,6 +7,7 @@ use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;
 use Mollie\WooCommerceTests\Integration\API\Traits\APIMockTrait;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Psr\Container\ContainerInterface;
@@ -62,6 +63,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
             $container,
             $container->get(WebhookHandler::class),
             $container->get(ResolveExpressPayment::class),
+            $container->get(OrderLock::class),
         ])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $webhookService->shouldReceive('getPaymentIdFromRequest')

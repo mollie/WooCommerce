@@ -130,7 +130,14 @@ Shards whose tests don't change shared store or Mollie settings (EUR transaction
 
 ## Run tests in CI
 
-The [E2E Tests](./.github/workflows/playwright.yml) workflow runs every shard of the selected suite as a separate parallel job on its own wp-env. `e2e:test:<api>-api` and `e2e:test:<api>-api:multistep` (plus their `:smoke` variants) run all shards of a suite; `e2e:test:<api>-api:<shard>` runs a single shard.
+The [E2E Tests](./.github/workflows/playwright.yml) workflow runs every selected shard as a separate parallel job on its own wp-env. When you start it, choose:
+
+- **API method**: `payment` (default) or `order`.
+- **Checkout type**: `single` (default) or `multistep`. Multistep runs only the transaction shards.
+- **Test suite**: `all` (default) runs all shards in parallel, or pick a single shard.
+- **Smoke**: run only `@Critical` tests (on by default).
+
+A shard that doesn't exist for the chosen API method or checkout type (for example, surcharge with the Order API) fails with a clear error.
 
 Each shard that processes payments gets its own ngrok tunnel on `<api>-<shard>.e2e.mollie.syde.wpinfra.cloud` for webhook delivery. An endpoint can only be online once, so two runs of the same shard (e.g. from different branches) can't overlap.
 

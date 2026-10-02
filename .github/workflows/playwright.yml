@@ -1,64 +1,57 @@
 name: E2E Tests
 
+run-name: E2E Tests / ${{ inputs.API_METHOD }}-api / ${{ inputs.CHECKOUT }} / ${{ inputs.TEST_SUITE }}${{ inputs.SMOKE && ' / smoke' || '' }}
+
 on:
   workflow_dispatch:
     inputs:
-      TEST_SUITE:
-        description: 'Test suite (e2e:test:<api>-api runs all its shards in parallel; e2e:test:<api>-api:<shard> runs a single shard)'
+      API_METHOD:
+        description: 'Mollie API method'
         required: true
-        default: 'e2e:test:payment-api:smoke'
+        default: 'payment'
         type: choice
         options:
-          - e2e:test:payment-api
-          - e2e:test:payment-api:smoke
-          - e2e:test:payment-api:multistep
-          - e2e:test:payment-api:multistep:smoke
-          - e2e:test:order-api
-          - e2e:test:order-api:smoke
-          - e2e:test:order-api:multistep
-          - e2e:test:order-api:multistep:smoke
-          - e2e:test:payment-api:plugin-foundation
-          - e2e:test:payment-api:merchant-setup
-          - e2e:test:payment-api:plugin-settings
-          - e2e:test:payment-api:surcharge:no-fee
-          - e2e:test:payment-api:surcharge:fixed
-          - e2e:test:payment-api:surcharge:percentage
-          - e2e:test:payment-api:surcharge:fixed-and-percentage
-          - e2e:test:payment-api:frontend-ui
-          - e2e:test:payment-api:phone-validation
-          - e2e:test:payment-api:transaction:eur-block
-          - e2e:test:payment-api:transaction:eur-classic
-          - e2e:test:payment-api:transaction:non-eur-block
-          - e2e:test:payment-api:transaction:non-eur-classic
-          - e2e:test:payment-api:transaction:card-disabled
-          - e2e:test:payment-api:transaction:paypal-express
-          - e2e:test:payment-api:transaction:nl
-          - e2e:test:payment-api:refund
-          - e2e:test:payment-api:subscription
-          - e2e:test:payment-api:bug-verification
-          - e2e:test:payment-api:multistep:eur-block
-          - e2e:test:payment-api:multistep:eur-classic
-          - e2e:test:payment-api:multistep:non-eur-block
-          - e2e:test:payment-api:multistep:non-eur-classic
-          - e2e:test:payment-api:multistep:card-disabled
-          - e2e:test:payment-api:multistep:paypal-express
-          - e2e:test:order-api:frontend-ui
-          - e2e:test:order-api:phone-validation
-          - e2e:test:order-api:transaction:eur-block
-          - e2e:test:order-api:transaction:eur-classic
-          - e2e:test:order-api:transaction:non-eur-block
-          - e2e:test:order-api:transaction:non-eur-classic
-          - e2e:test:order-api:transaction:card-disabled
-          - e2e:test:order-api:transaction:paypal-express
-          - e2e:test:order-api:refund
-          - e2e:test:order-api:subscription
-          - e2e:test:order-api:bug-verification
-          - e2e:test:order-api:multistep:eur-block
-          - e2e:test:order-api:multistep:eur-classic
-          - e2e:test:order-api:multistep:non-eur-block
-          - e2e:test:order-api:multistep:non-eur-classic
-          - e2e:test:order-api:multistep:card-disabled
-          - e2e:test:order-api:multistep:paypal-express
+          - payment
+          - order
+      CHECKOUT:
+        description: 'Checkout type (multistep runs only transaction shards)'
+        required: true
+        default: 'single'
+        type: choice
+        options:
+          - single
+          - multistep
+      TEST_SUITE:
+        description: 'Shard to run, or all shards in parallel'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - plugin-foundation
+          - merchant-setup
+          - plugin-settings
+          - surcharge:no-fee
+          - surcharge:fixed
+          - surcharge:percentage
+          - surcharge:fixed-and-percentage
+          - frontend-ui
+          - phone-validation
+          - transaction:eur-block
+          - transaction:eur-classic
+          - transaction:non-eur-block
+          - transaction:non-eur-classic
+          - transaction:card-disabled
+          - transaction:paypal-express
+          - transaction:nl
+          - refund
+          - subscription
+          - bug-verification
+      SMOKE:
+        description: 'Run only @Critical tests'
+        required: false
+        default: true
+        type: boolean
 #  pull_request:
 #    branches: [dev/develop]
 #    paths:
@@ -103,7 +96,10 @@ jobs:
         id: resolve
         shell: bash
         env:
+          API_METHOD: ${{ inputs.API_METHOD }}
+          CHECKOUT: ${{ inputs.CHECKOUT }}
           TEST_SUITE: ${{ inputs.TEST_SUITE }}
+          SMOKE: ${{ inputs.SMOKE }}
         run: |
           # Shards are the e2e:test:<api>-api:<shard> scripts in package.json
           # (one per project shard in tests/qa/project-shards.ts).
@@ -112,31 +108,28 @@ jobs:
           # Admin-only shards: no payments, so no webhooks and no tunnel needed.
           NO_NGROK='^(plugin-foundation|merchant-setup|plugin-settings|surcharge(:.*)?|frontend-ui)$'
 
-          SMOKE=false
-          [[ "$TEST_SUITE" == *:smoke ]] && SMOKE=true
-          SUITE="${TEST_SUITE%:smoke}"
-
+          PREFIX="e2e:test:${API_METHOD}-api:"
           SELECTED=()
-          case "$SUITE" in
-            e2e:test:payment-api|e2e:test:order-api)
-              for s in "${SCRIPTS[@]}"; do
-                [[ "$s" == "$SUITE:"* && "$s" != "$SUITE:multistep:"* ]] && SELECTED+=("$s")
-              done
-              ;;
-            e2e:test:payment-api:multistep|e2e:test:order-api:multistep)
-              for s in "${SCRIPTS[@]}"; do
-                [[ "$s" == "$SUITE:"* ]] && SELECTED+=("$s")
-              done
-              ;;
-            *)
-              SELECTED=("$SUITE")
-              ;;
-          esac
+          if [[ "$TEST_SUITE" == all ]]; then
+            for s in "${SCRIPTS[@]}"; do
+              [[ "$s" == "$PREFIX"* ]] || continue
+              if [[ "$CHECKOUT" == multistep ]]; then
+                [[ "$s" == "${PREFIX}multistep:"* ]] && SELECTED+=("$s")
+              else
+                [[ "$s" != "${PREFIX}multistep:"* ]] && SELECTED+=("$s")
+              fi
+            done
+          elif [[ "$CHECKOUT" == multistep ]]; then
+            # Multistep shards reuse the transaction specs: transaction:<x> -> multistep:<x>
+            SELECTED=("${PREFIX}multistep:${TEST_SUITE#transaction:}")
+          else
+            SELECTED=("${PREFIX}${TEST_SUITE}")
+          fi
 
           ITEMS=()
           for s in "${SELECTED[@]}"; do
             if ! printf '%s\n' "${SCRIPTS[@]}" | grep -qxF -- "$s"; then
-              echo "::error::Unknown test script: $s"
+              echo "::error::Shard '$TEST_SUITE' is not available for ${API_METHOD} API with ${CHECKOUT} checkout ($s)"
               exit 1
             fi
             NAME="${s#e2e:test:}"        # <api>-api:<shard>
@@ -148,7 +141,7 @@ jobs:
             SCRIPT="$s"
             # CLI --grep narrows the shard's own project grep; shards without
             # @Critical tests pass instead of failing with "No tests found".
-            $SMOKE && SCRIPT="$s -- --grep @Critical --pass-with-no-tests"
+            [[ "$SMOKE" == true ]] && SCRIPT="$s -- --grep @Critical --pass-with-no-tests"
             ITEMS+=("$(jq -cn \
               --arg script "$SCRIPT" \
               --arg name_suffix " / ${API}-api / ${SHARD}" \

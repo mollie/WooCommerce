@@ -137,14 +137,11 @@ class ExpressOrderFactsBuilder
             'status' => ['pending'],
             'orderby' => 'date',
             'order' => 'ASC',
-            'meta_query' => [
-                [
-                    'key' => '_mollie_express_expires_at',
-                    'value' => $cutoff,
-                    'compare' => '<',
-                    'type' => 'NUMERIC',
-                ],
-            ],
+            // Not meta_query: the posts order storage ignores it.
+            'meta_key' => '_mollie_express_expires_at',
+            'meta_value' => $cutoff,
+            'meta_compare' => '<',
+            'meta_type' => 'NUMERIC',
         ]);
 
         return array_values(array_filter($orders, static function ($order): bool {

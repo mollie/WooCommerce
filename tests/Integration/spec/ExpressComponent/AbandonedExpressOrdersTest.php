@@ -8,6 +8,7 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\Payment\Rules\Values\ProcessRecord;
 use Mollie\WooCommerce\Shared\Clock;
@@ -218,6 +219,151 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: an order whose session Mollie does not know is cancelled
+     *   Given a pending express order past its expiry and grace
+     *   And Mollie answers 404 for its session, as after the shop changed its API key
+     *   When the cleanup action runs
+     *   Then the order is cancelled with the abandon note, by cleanup, so a payment paid later still pays it
+     *   And express.abandoned.cancelled is logged with the reason unknown_at_mollie
+     *   And no Mollie event is recorded as handled: Mollie reported none
+     *
+     * @test
+     */
+    public function it_cancels_an_order_whose_session_mollie_does_not_know(): void
+    {
+        $order = $this->expressOrder();
+        $this->fakeMollie()->failNext('GET', 'sessions', 404);
+        $this->clock->set($order['expiresAt'] + $this->graceSeconds + 1);
+
+        $this->runCleanup();
+
+        $this->assertSame('cancelled', wc_get_order($order['id'])->get_status());
+        $cancelled = $this->eventsFor('express.abandoned.cancelled', $order['id']);
+        $this->assertCount(1, $cancelled);
+        $this->assertSame('unknown_at_mollie', $cancelled[0]['context']['reason'] ?? null);
+        $record = $this->storedRecord($order['id']);
+        $this->assertSame('cleanup', $record['cancelledBy'] ?? null);
+        $this->assertSame([], $record['processed'] ?? null);
+    }
+
+    /**
+     * Scenario: orders Mollie does not know do not keep cleanup from the others
+     *   Given a pending express order whose session Mollie reports expired
+     *   And a full batch of older pending express orders whose session Mollie does not know
+     *   When the cleanup action runs twice, past expiry and grace
+     *   Then the first run cancels the batch, and the second reaches the expired order and cancels it
+     *
+     * @test
+     */
+    public function it_reaches_an_expired_order_behind_a_batch_mollie_does_not_know(): void
+    {
+        $order = $this->expressOrder();
+        $this->fakeMollie()->expireSession($order['session']);
+        $unknown = [];
+        for ($n = 0; $n < 50; $n++) {
+            $unknown[] = $this->expressOrderMollieDoesNotKnow($order['expiresAt'] - DAY_IN_SECONDS, $n);
+        }
+        $this->clock->set($order['expiresAt'] + $this->graceSeconds + 1);
+
+        $this->runCleanup();
+        $this->assertSame('pending', wc_get_order($order['id'])->get_status(), 'The batch is full of older orders, or the scenario proves nothing.');
+        foreach ($unknown as $orderId) {
+            $this->assertSame('cancelled', wc_get_order($orderId)->get_status());
+        }
+        $this->runCleanup();
+
+        $this->assertSame('cancelled', wc_get_order($order['id'])->get_status());
+    }
+
+    /**
+     * Scenario: an order Mollie could not be asked about is given up on after the give-up time, not before
+     *   Given a pending express order and a Mollie that answers every lookup with an outage
+     *   When the cleanup action runs one second before the give-up time after its expiry, and one second after
+     *   Then the first run keeps it, with the reason mollie_unreachable
+     *   And the second cancels it, by cleanup, with the reason unanswered
+     *
+     * @test
+     */
+    public function it_gives_up_on_an_order_mollie_could_not_be_asked_about_for_the_give_up_time(): void
+    {
+        $order = $this->expressOrder();
+        $giveUp = (int) $this->container->get('express.config')['abandonGiveUpSeconds'];
+
+        $this->clock->set($order['expiresAt'] + $giveUp - 1);
+        $this->fakeMollie()->failNext('GET', 'sessions', 503);
+        $this->runCleanup();
+        $this->assertSame('pending', wc_get_order($order['id'])->get_status());
+        $this->assertSame('mollie_unreachable', $this->eventsFor('express.abandoned.kept', $order['id'])[0]['context']['reason'] ?? null);
+
+        $this->clock->set($order['expiresAt'] + $giveUp + 1);
+        $this->fakeMollie()->failNext('GET', 'sessions', 503);
+        $this->runCleanup();
+
+        $this->assertSame('cancelled', wc_get_order($order['id'])->get_status());
+        $this->assertSame('unanswered', $this->eventsFor('express.abandoned.cancelled', $order['id'])[0]['context']['reason'] ?? null);
+        $this->assertSame('cleanup', $this->storedRecord($order['id'])['cancelledBy'] ?? null);
+    }
+
+    /**
+     * Scenario: an answer that the order may still be paid is never overruled by its age
+     *   Given a pending express order whose session Mollie reports open
+     *   When the cleanup action runs long after the give-up time
+     *   Then the order is still pending
+     *
+     * @test
+     */
+    public function it_keeps_an_order_mollie_says_is_payable_however_old_it_is(): void
+    {
+        $order = $this->expressOrder();
+        $giveUp = (int) $this->container->get('express.config')['abandonGiveUpSeconds'];
+        $this->clock->set($order['expiresAt'] + 2 * $giveUp);
+
+        $this->runCleanup();
+
+        $this->assertSame('pending', wc_get_order($order['id'])->get_status());
+        $this->assertSame('open', $this->eventsFor('express.abandoned.kept', $order['id'])[0]['context']['reason'] ?? null);
+    }
+
+    /**
+     * Scenario: cleanup selects by expiry under either order storage
+     *   Given HPOS or posts storage
+     *   And two pending express orders, one whose session expired a day ago and one that expires in a day
+     *   When the candidates past expiry are asked for
+     *   Then only the expired order is one
+     *
+     * The posts storage ignores meta_query, so the selection must not depend on it.
+     *
+     * @test
+     * @dataProvider orderStorages
+     */
+    public function it_selects_only_expired_orders_under_either_order_storage(bool $hpos): void
+    {
+        $this->useOrderStorage($hpos);
+        $this->bootExpress();
+        $expired = $this->expressOrderMollieDoesNotKnow(time() - DAY_IN_SECONDS, 1);
+        $open = $this->expressOrderMollieDoesNotKnow(time() + DAY_IN_SECONDS, 2);
+
+        $candidates = array_map(
+            static fn (WC_Order $order): int => $order->get_id(),
+            (new ExpressOrderFactsBuilder(new ExpressSessionStore(), new ProcessRecordStore()))->abandonCandidates(time(), 50)
+        );
+
+        $this->assertContains($expired, $candidates);
+        $this->assertNotContains($open, $candidates, 'An order whose session has not expired was selected for cleanup.');
+    }
+
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public function orderStorages(): array
+    {
+        return [
+            'HPOS' => [true],
+            'posts storage' => [false],
+        ];
+    }
+
+    /**
      * Scenario: cleanup never selects an order that is not a pending express order
      *   Given an order created via the checkout that carries the same express meta, pending and long expired
      *   Or an express order that is no longer pending
@@ -302,9 +448,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         $ordinary = $this->pendingOrder('mollie_wc_gateway_paypal');
         $this->setGatewaySettingsForTest('paypal', ['activate_expiry_days_setting' => 'yes', 'order_dueDate' => '10']);
         foreach ([$order['id'], $ordinary->get_id()] as $orderId) {
-            $stale = wc_get_order($orderId);
-            $stale->set_date_modified(time() - 3600);
-            $stale->save();
+            $this->lastModifiedAt(wc_get_order($orderId), time() - 3600);
         }
         $this->bootExpressOwning(['init', self::CLEANUP_ACTION]);
         do_action('init');
@@ -428,8 +572,8 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
             'no record' => null,
             'a string' => 'not a record',
             'a number' => 42,
-            'an unknown section' => ['version' => 1, 'attempts' => [], 'processed' => [], 'inFlight' => [], 'open' => [], 'cancelledBy' => null, 'status' => 'paid'],
-            'a newer version' => ['version' => 99, 'attempts' => [], 'processed' => [], 'inFlight' => [], 'open' => [], 'cancelledBy' => null],
+            'an unknown section' => ['version' => 1, 'processed' => [], 'open' => [], 'cancelledBy' => null, 'status' => 'paid'],
+            'a newer version' => ['version' => 99, 'processed' => [], 'open' => [], 'cancelledBy' => null],
         ];
         $rows = [];
         foreach (['HPOS' => true, 'posts' => false] as $storage => $hpos) {
@@ -637,6 +781,24 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         $this->newShopper();
 
         return $this->expressOrder();
+    }
+
+    /**
+     * A pending express order whose session the Mollie account in use has never heard of.
+     */
+    private function expressOrderMollieDoesNotKnow(int $expiredAt, int $n): int
+    {
+        $order = wc_create_order();
+        $order->set_created_via('mollie_express');
+        $order->set_payment_method('mollie_wc_gateway_paypal');
+        $order->set_status('pending');
+        $order->set_date_created($expiredAt - 900);
+        $order->update_meta_data('_mollie_express_ref', 'exr_' . str_pad((string) $n, 32, '0', STR_PAD_LEFT));
+        $order->update_meta_data('_mollie_express_session_id', 'sess_gone' . $n);
+        $order->update_meta_data('_mollie_express_expires_at', (string) $expiredAt);
+        $order->save();
+
+        return $order->get_id();
     }
 
     /**

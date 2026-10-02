@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Integration\Common;
 
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\PendingExpressOrders;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
@@ -108,6 +109,7 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
         }
 
         $this->setOptionForTest(OrphanedExpressPayments::OPTION, []);
+        $this->setOptionForTest(PendingExpressOrders::OPTION, 'no');
         $this->withoutEarlierBootsApiKeyListeners(function (): void {
             $this->setOptionForTest(self::PLUGIN_ID . '_live_api_key', CanaryData::LIVE_API_KEY);
             $this->setOptionForTest(self::PLUGIN_ID . '_test_api_key', CanaryData::TEST_API_KEY);

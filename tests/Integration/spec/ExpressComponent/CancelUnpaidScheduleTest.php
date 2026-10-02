@@ -125,6 +125,43 @@ class CancelUnpaidScheduleTest extends ExpressFlowTestCase
         $this->assertSame([self::ACTION], $this->pendingMollieCleanupHooks());
     }
 
+    /**
+     * Scenario: the cleanup stays scheduled for a pending express order after the express buttons are turned off
+     *   Given a pending express order
+     *   And the merchant then turns every express button off, with no expiry setting on
+     *   When the plugin runs its init callbacks
+     *   Then the action is scheduled: nothing else may cancel an express order
+     *   When the cleanup has cancelled that order and the plugin runs its init callbacks again
+     *   Then the action is no longer scheduled
+     *
+     * @test
+     */
+    public function it_keeps_the_cleanup_scheduled_until_no_pending_express_order_is_left(): void
+    {
+        $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple'], 2);
+        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+        $this->chooseRate('standard');
+        $session = $this->startedSession();
+        $this->assertAnsweredOk($this->startOrder());
+        $order = $this->onlyOrderFor($session['ref']);
+        $this->fakeMollie()->expireSession($session['id']);
+        $order->update_meta_data('_mollie_express_expires_at', (string) (time() - DAY_IN_SECONDS));
+        $order->save();
+
+        $this->expressOff();
+        $this->bootAndSetGateways([]);
+        $this->runPluginInit();
+        $this->assertTrue($this->isScheduled(), 'With the express buttons off, a pending express order was left without cleanup.');
+
+        do_action(self::ACTION);
+        $this->assertSame('cancelled', wc_get_order($order->get_id())->get_status(), 'Cleanup must have cancelled the order.');
+        $this->runPluginInit();
+
+        $this->assertFalse($this->isScheduled());
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────

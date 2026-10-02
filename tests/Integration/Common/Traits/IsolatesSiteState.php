@@ -77,6 +77,28 @@ trait IsolatesSiteState
      * reference of its own — the order factory stamps a random transaction id that would otherwise
      * read as a payment attempt already in flight.
      */
+    /**
+     * Makes an order look last modified at $timestamp, under either order storage. The posts
+     * storage cannot be told through WC_Order: WordPress stamps post_modified on every save.
+     */
+    protected function lastModifiedAt(WC_Order $order, int $timestamp): void
+    {
+        global $wpdb;
+
+        $order->set_date_modified($timestamp);
+        $order->save();
+        if (\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
+            return;
+        }
+        $gmt = gmdate('Y-m-d H:i:s', $timestamp);
+        $wpdb->update(
+            $wpdb->posts,
+            ['post_modified' => get_date_from_gmt($gmt), 'post_modified_gmt' => $gmt],
+            ['ID' => $order->get_id()]
+        );
+        clean_post_cache($order->get_id());
+    }
+
     protected function pendingOrder(string $gatewayId): WC_Order
     {
         $order = $this->getConfiguredOrder($this->customer_id, $gatewayId, ['simple'], [], false);

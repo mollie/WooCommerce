@@ -6,11 +6,15 @@ namespace Mollie\WooCommerce\ExpressComponent\Flow;
 
 use InvalidArgumentException;
 use Mollie\WooCommerce\ExpressComponent\Rules\AbandonDecision;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\AbandonVerdict;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\PendingExpressOrders;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\Payment\OrderLockTimeout;
 use Mollie\WooCommerce\SDK\MollieApi;
+use Mollie\WooCommerce\SDK\MollieCallFailed;
 use Mollie\WooCommerce\Shared\Clock;
 use Mollie\WooCommerce\Shared\Values\ExpressSession;
 use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
@@ -18,7 +22,7 @@ use Throwable;
 use WC_Order;
 
 /**
- * Cancels abandoned express orders only when Mollie confirms they can no longer be paid.
+ * Mollie is asked outside the lock; the order is decided on under it.
  */
 final class ExpireAbandonedExpressOrders
 {
@@ -33,7 +37,9 @@ final class ExpireAbandonedExpressOrders
         private ExpressOrderWriter $writer,
         private Clock $clock,
         private EventLog $log,
-        private int $graceSeconds
+        private PendingExpressOrders $pending,
+        private int $graceSeconds,
+        private int $giveUpSeconds
     ) {
     }
 
@@ -42,6 +48,7 @@ final class ExpireAbandonedExpressOrders
         foreach ($this->orderFacts->abandonCandidates($this->clock->now() - $this->graceSeconds, self::BATCH) as $order) {
             $this->expire($order);
         }
+        $this->pending->recount();
     }
 
     private function expire(WC_Order $order): void
@@ -72,68 +79,86 @@ final class ExpireAbandonedExpressOrders
     {
         $sessionId = (string) $order->get_meta('_mollie_express_session_id');
         $paymentId = (string) $order->get_meta('_mollie_payment_id');
-        $fields = ['order' => $order->get_id(), 'session' => $sessionId];
+        $sinceExpiry = $this->clock->now() - (int) $order->get_meta('_mollie_express_expires_at');
+        [$session, $payment, $unknownAtMollie] = $this->askMollie($sessionId, $paymentId);
 
         try {
-            [$session, $payment] = $this->askMollie($sessionId, $paymentId);
-        } catch (Throwable $unreachable) {
-            $this->log->info('express.abandoned.kept', $fields + ['reason' => 'mollie_unreachable']);
+            $verdict = $this->lock->withFreshOrder(
+                $order->get_id(),
+                function (WC_Order $fresh) use ($session, $payment, $unknownAtMollie, $sinceExpiry): AbandonVerdict {
+                    // The webhook may have paid the order while Mollie was being asked.
+                    $verdict = AbandonDecision::decide(
+                        $fresh->has_status('pending'),
+                        $session,
+                        $payment,
+                        $unknownAtMollie,
+                        $sinceExpiry,
+                        $this->giveUpSeconds
+                    );
+                    $this->log->info('rule.decided', [
+                        'order' => $fresh->get_id(),
+                        'rule' => 'AbandonDecision',
+                        'verdict' => $verdict->cancels() ? 'cancel' : 'keep',
+                        'inputs' => sprintf(
+                            'pending=%d payment_status=%s session_status=%s unknown=%d reason=%s',
+                            $fresh->has_status('pending') ? 1 : 0,
+                            $payment !== null ? $payment->status() : '',
+                            $session !== null ? $session->status() : '',
+                            $unknownAtMollie ? 1 : 0,
+                            $verdict->reason()
+                        ),
+                    ]);
+                    if ($verdict->cancels()) {
+                        $this->writer->cancelAbandoned($fresh, $this->handledEvent($session, $payment));
+                    }
 
-            return 'kept';
-        }
-
-        $canNoLongerBePaid = AbandonDecision::decide($session, $payment);
-        $status = $payment !== null ? $payment->status() : ($session !== null ? $session->status() : 'unknown');
-        $this->log->info('rule.decided', [
-            'order' => $order->get_id(),
-            'rule' => 'AbandonDecision',
-            'verdict' => $canNoLongerBePaid ? 'cancel' : 'keep',
-            'inputs' => sprintf(
-                'payment_status=%s session_status=%s',
-                $payment !== null ? $payment->status() : '',
-                $session !== null ? $session->status() : ''
-            ),
-        ]);
-        if (!$canNoLongerBePaid) {
-            $this->log->info('express.abandoned.kept', $fields + ['reason' => $status]);
-
-            return 'kept';
-        }
-
-        $handledEvent = ($payment !== null ? $payment->id() : $sessionId) . ':' . $status;
-        try {
-            $cancelled = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($handledEvent): bool {
-                // The webhook may have paid the order while Mollie was being asked.
-                if (!$fresh->has_status('pending')) {
-                    return false;
+                    return $verdict;
                 }
-                $this->writer->cancelAbandoned($fresh, $handledEvent);
-
-                return true;
-            });
+            );
         } catch (InvalidArgumentException $deleted) {
-            $cancelled = false;
+            $verdict = AbandonVerdict::keep(AbandonDecision::NO_LONGER_PENDING);
+        } catch (OrderLockTimeout $busy) {
+            $verdict = AbandonVerdict::keep('order_busy');
         }
-        if (!$cancelled) {
-            $this->log->info('express.abandoned.kept', $fields + ['reason' => 'no_longer_pending']);
+
+        $fields = ['order' => $order->get_id(), 'session' => $sessionId, 'reason' => $verdict->reason()];
+        if (!$verdict->cancels()) {
+            $this->log->info('express.abandoned.kept', $fields);
 
             return 'kept';
         }
-
-        $this->log->info('express.abandoned.cancelled', $fields + ['reason' => $status]);
+        $this->log->info('express.abandoned.cancelled', $fields);
 
         return 'cancelled';
     }
 
     /**
-     * @return array{0: ?ExpressSession, 1: ?PaymentSnapshot}
+     * Never throws.
+     *
+     * @return array{0: ?ExpressSession, 1: ?PaymentSnapshot, 2: bool} Last: Mollie knows neither.
      */
     private function askMollie(string $sessionId, string $paymentId): array
     {
-        if ($paymentId !== '') {
-            return [null, $this->mollie->payment($paymentId)];
+        try {
+            return $paymentId !== ''
+                ? [null, $this->mollie->payment($paymentId), false]
+                : [$this->mollie->session($sessionId), null, false];
+        } catch (MollieCallFailed $failed) {
+            return [null, null, $failed->kind() === MollieCallFailed::NOT_FOUND];
+        } catch (Throwable $unreachable) {
+            return [null, null, false];
+        }
+    }
+
+    /**
+     * "<id>:<status>" as Mollie reported it, or empty.
+     */
+    private function handledEvent(?ExpressSession $session, ?PaymentSnapshot $payment): string
+    {
+        if ($payment !== null) {
+            return $payment->id() . ':' . $payment->status();
         }
 
-        return [$this->mollie->session($sessionId), null];
+        return $session !== null ? $session->id() . ':' . $session->status() : '';
     }
 }

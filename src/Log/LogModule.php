@@ -38,6 +38,26 @@ class LogModule implements ServiceModule
                 }
                 return new NullLogger();
             },
+            // Written whatever the debug switch says.
+            'log.always_on' => static function (ContainerInterface $container): Logger {
+                return new WcPsrLoggerAdapter(\wc_get_logger(), $container->get('shared.plugin_id') . '-');
+            },
+            EventLog::class => static function (ContainerInterface $container): EventLog {
+                $logger = $container->get(Logger::class);
+                assert($logger instanceof Logger);
+                if ($container->get('settings.IsDebugEnabled')) {
+                    return new EventLog($logger);
+                }
+
+                $alwaysOn = $container->get('log.always_on');
+                assert($alwaysOn instanceof Logger);
+                // Debug off: warnings and errors are always written, info only if the site opts in.
+                if (apply_filters('mollie_wc_event_log_always_on', false)) {
+                    return new EventLog($alwaysOn);
+                }
+
+                return new EventLog($logger, $alwaysOn);
+            },
         ];
     }
 }

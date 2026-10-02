@@ -8,6 +8,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\Shared\Values\Admit;
+use Mollie\WooCommerce\Shared\Values\Money;
 use Mollie\WooCommerce\Shared\Values\Refuse;
 
 final class StartOrderDecision
@@ -38,6 +39,18 @@ final class StartOrderDecision
         if ($existing !== null && !$existing->needsPayment()) {
             // Paid or cancelled: never start a second payment for this session.
             return new Refuse('order_not_payable', self::REFUSED);
+        }
+
+        return new Admit();
+    }
+
+    /**
+     * The fingerprint matched, so the order WooCommerce built must cost what the session was priced for.
+     */
+    public static function admitCreatedOrder(?Money $orderTotal, Money $sessionTotal): Admit|Refuse
+    {
+        if ($orderTotal === null || !$orderTotal->isSameAs($sessionTotal)) {
+            return new Refuse('amount_mismatch', self::REFUSED);
         }
 
         return new Admit();

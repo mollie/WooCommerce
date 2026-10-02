@@ -8,6 +8,7 @@ use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
 use Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability;
 use Mollie\WooCommerce\ExpressComponent\Rules\PricingFingerprint;
 use Mollie\WooCommerce\ExpressComponent\Rules\SessionLines;
+use Mollie\WooCommerce\ExpressComponent\Rules\SessionReuse;
 use Mollie\WooCommerce\ExpressComponent\Rules\SessionPayload;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressAvailabilityResult;
@@ -54,10 +55,14 @@ final class StartExpressSession
         $fingerprint = PricingFingerprint::of($cart);
         $remembered = $this->store->remembered();
         if ($remembered !== null) {
-            if (
-                $remembered['fingerprint'] === $fingerprint
-                && $remembered['expiresAt'] - $this->clock->now() > $this->reuseMarginSeconds
-            ) {
+            $fits = SessionReuse::fits(
+                $remembered['fingerprint'],
+                $remembered['expiresAt'],
+                $fingerprint,
+                $this->clock->now(),
+                $this->reuseMarginSeconds
+            );
+            if ($fits) {
                 $this->log->info('express.session.reused', ['session' => $remembered['id'], 'surface' => $surface]);
 
                 return ExpressSessionResult::started($remembered['token'], gmdate('c', $remembered['expiresAt']));
@@ -65,7 +70,12 @@ final class StartExpressSession
             $this->store->forget();
         }
 
-        if (!$this->budget->take($callerAddress)) {
+        $budget = $this->budget->take($callerAddress);
+        if ($budget !== ExpressSessionBudget::TAKEN) {
+            if ($this->budget->refusalIsNews()) {
+                $this->log->warning('express.session.budget_spent', ['surface' => $surface, 'reason' => $budget]);
+            }
+
             return $this->refuse($surface, 'budget_exhausted', 429);
         }
 
@@ -127,7 +137,7 @@ final class StartExpressSession
 
     private function refuse(string $surface, string $reason, int $httpStatus): ExpressSessionResult
     {
-        // Anyone can cause a refusal, so it is info, not a warning.
+        // Anyone can cause a refusal: info, not a warning.
         $this->log->info('express.session.refused', ['surface' => $surface, 'reason' => $reason]);
 
         return ExpressSessionResult::refused($reason, $httpStatus);

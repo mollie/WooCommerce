@@ -15,6 +15,9 @@ interface MollieApi
      */
     public function createSession(array $payload, string $idempotencyKey): ExpressSession;
 
+    /**
+     * @throws MollieCallFailed
+     */
     public function session(string $sessionId): ExpressSession;
 
     /**

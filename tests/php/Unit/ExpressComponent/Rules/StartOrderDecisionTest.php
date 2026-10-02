@@ -30,6 +30,44 @@ class StartOrderDecisionTest extends TestCase
     private const EXPIRES_AT = self::NOW + 600;
 
     /**
+     * Scenario: the order WooCommerce built must cost what the session was priced for
+     *   Given the total of the order just created and the cart total the session was priced from
+     *   When the created order is checked
+     *   Then it is admitted when they are the same amount in the same currency
+     *   And refused with amount_mismatch otherwise, or when the order has no usable total
+     *
+     * @dataProvider createdOrders
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision::admitCreatedOrder
+     */
+    public function testAdmitsACreatedOrderOnlyAtTheSessionsAmount(?Money $orderTotal, ?string $expectedRefusal): void
+    {
+        $decision = StartOrderDecision::admitCreatedOrder($orderTotal, Money::fromDecimal('49.90', 'EUR'));
+
+        if ($expectedRefusal === null) {
+            self::assertInstanceOf(Admit::class, $decision);
+
+            return;
+        }
+        self::assertInstanceOf(Refuse::class, $decision);
+        self::assertSame($expectedRefusal, $decision->code());
+        self::assertSame(409, $decision->httpStatus());
+    }
+
+    /**
+     * @return array<string, array{0: ?Money, 1: ?string}>
+     */
+    public function createdOrders(): array
+    {
+        return [
+            'the same amount' => [Money::fromDecimal('49.90', 'EUR'), null],
+            'a cent more' => [Money::fromDecimal('49.91', 'EUR'), 'amount_mismatch'],
+            'a cent less' => [Money::fromDecimal('49.89', 'EUR'), 'amount_mismatch'],
+            'the same number in another currency' => [Money::fromDecimal('49.90', 'USD'), 'amount_mismatch'],
+            'no usable total' => [null, 'amount_mismatch'],
+        ];
+    }
+
+    /**
      * Scenario: every reason code and the admission have a row
      *   Given the facts of an order request: the remembered session, an order already carrying its ref, the cart
      *   When the decision is asked at a fixed time

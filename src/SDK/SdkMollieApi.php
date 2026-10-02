@@ -68,9 +68,14 @@ final class SdkMollieApi implements MollieApi
         $client = $this->client();
         $path = 'sessions/' . rawurlencode($sessionId);
 
-        return $this->toSession($this->sendLogged('GET', $path, '', static function () use ($client, $path) {
-            return $client->performHttpCall('GET', $path);
-        }));
+        try {
+            return $this->toSession($this->sendLogged('GET', $path, '', static function () use ($client, $path) {
+                return $client->performHttpCall('GET', $path);
+            }));
+        } catch (ApiException $exception) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- only the code is read; the message is fixed
+            throw MollieCallFailed::fromRead($exception);
+        }
     }
 
     public function payment(string $paymentId): PaymentSnapshot

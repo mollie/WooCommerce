@@ -9,6 +9,13 @@ use WC_Order;
 
 class ExpressOrderFactory
 {
+    private PendingExpressOrders $pending;
+
+    public function __construct(?PendingExpressOrders $pending = null)
+    {
+        $this->pending = $pending ?? new PendingExpressOrders();
+    }
+
     /** Consumes the raised notices so they are not shown again on the next page. */
     public function invalidCartReason(): ?string
     {
@@ -62,6 +69,8 @@ class ExpressOrderFactory
             }
             throw new RuntimeException('WooCommerce did not create the express order.');
         }
+        // Keeps cleanup scheduled.
+        $this->pending->remember();
 
         return $order;
     }

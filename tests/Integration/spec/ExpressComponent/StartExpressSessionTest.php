@@ -8,9 +8,11 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
+use Mollie\WooCommerceTests\Integration\Common\Doubles\RecordingLogger;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
+use Psr\Log\LoggerInterface;
 use WP_REST_Response;
 
 /**
@@ -367,6 +369,28 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
+     * Scenario: a cart with nothing to pay is not sent to Mollie
+     *   Given a checkout that is otherwise ready, whose total is zero
+     *   When the checkout asks for a session
+     *   Then the request is refused as not available, and nothing is sent to Mollie
+     *
+     * @test
+     */
+    public function it_sends_no_session_to_mollie_for_a_cart_that_costs_nothing(): void
+    {
+        $this->readyGuestCheckout();
+        $this->addTestFilter('woocommerce_calculated_total', static fn (): float => 0.0, PHP_INT_MAX);
+        $this->recalculate();
+        $this->assertSame('0.00', $this->cartTotal(), 'The cart must cost nothing, or the scenario proves nothing.');
+
+        $answer = $this->startSession();
+
+        $this->assertSame(409, $answer->get_status());
+        $this->assertSame([], $this->fakeMollie()->requests('POST', 'sessions'));
+        $this->assertSame('nothing_to_pay', $this->loggedEvents('express.session.refused')[0]['context']['reason'] ?? null);
+    }
+
+    /**
      * Scenario: the same checkout gets the same session
      *   Given a guest who started a session
      *   When the session is requested again with nothing changed, within its lifetime
@@ -516,37 +540,118 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: behind a proxy the shop vouches for, the forwarded address is the caller
-     *   Given the shop enabled the Store API's proxy support, as WooCommerce documents for proxies and CDNs
-     *   And two guests reach the shop through the same proxy address
-     *   When the first spends its budget
-     *   Then the second, with its own X-Real-IP, still gets a session
+     * Scenario: shoppers who reach the shop through one address do not use up each other's budget
+     *   Given the shop is reached through one address: an office, a mobile carrier, a proxy without proxy support
+     *   When one more guest than a shopper's budget allows each opens the checkout once
+     *   Then every one of them gets a session
      *
      * @test
      */
-    public function it_keys_the_budget_on_the_forwarded_address_when_the_shop_enables_proxy_support(): void
+    public function it_gives_every_shopper_behind_one_address_their_own_budget(): void
     {
         $budget = $this->configuredBudget();
+        $this->bootExpress();
+        $answers = [];
+
+        $this->fromAddress('203.0.113.7', function () use ($budget, &$answers): void {
+            for ($shopper = 0; $shopper <= $budget; $shopper++) {
+                $this->nextGuestAtTheCheckout();
+                $answers[] = $this->startSession()->get_status();
+            }
+        });
+
+        $this->assertSame(array_fill(0, $budget + 1, 200), $answers);
+    }
+
+    /**
+     * Scenario: dropping the WooCommerce session does not buy sessions without limit
+     *   Given a ceiling of new sessions per address, above a shopper's own budget
+     *   When a caller on one address starts over as a new guest for every session
+     *   Then the request over the ceiling is answered 429 and sends nothing to Mollie
+     *
+     * @test
+     */
+    public function it_caps_the_new_sessions_of_one_address_whoever_asks(): void
+    {
+        $ceiling = $this->configuredBudget() + 2;
+        $this->bootExpress($this->withAddressCeiling($ceiling));
+
+        $this->fromAddress('203.0.113.7', function () use ($ceiling): void {
+            for ($guest = 0; $guest <= $ceiling; $guest++) {
+                $this->nextGuestAtTheCheckout();
+                $status = $this->startSession()->get_status();
+
+                $this->assertSame($guest < $ceiling ? 200 : 429, $status, "Guest {$guest} on the same address.");
+            }
+        });
+        $this->assertCount($ceiling, $this->fakeMollie()->requests('POST', 'sessions'));
+    }
+
+    /**
+     * Scenario: behind a proxy the shop vouches for, the forwarded address is the caller
+     *   Given the shop enabled the Store API's proxy support, as WooCommerce documents for proxies and CDNs
+     *   And guests reach the shop through the same proxy address
+     *   When the guests of one forwarded address spend its ceiling
+     *   Then a guest with another X-Real-IP still gets a session
+     *
+     * @test
+     */
+    public function it_keys_the_address_ceiling_on_the_forwarded_address_when_the_shop_enables_proxy_support(): void
+    {
+        $ceiling = 3;
         $this->addTestFilter('woocommerce_store_api_rate_limit_options', static function (array $options): array {
             $options['proxy_support'] = true;
 
             return $options;
         });
-        $this->readyGuestCheckout();
+        $this->bootExpress($this->withAddressCeiling($ceiling));
 
-        $this->fromAddress('10.0.0.1', function () use ($budget): void {
+        $this->fromAddress('10.0.0.1', function () use ($ceiling): void {
             $_SERVER['HTTP_X_REAL_IP'] = '198.51.100.1';
-            for ($attempt = 0; $attempt <= $budget; $attempt++) {
-                $this->chooseRate($attempt % 2 === 0 ? 'express' : 'standard');
+            for ($guest = 0; $guest <= $ceiling; $guest++) {
+                $this->nextGuestAtTheCheckout();
                 $status = $this->startSession()->get_status();
 
-                $this->assertSame($attempt < $budget ? 200 : 429, $status, "Attempt {$attempt} of the first guest.");
+                $this->assertSame($guest < $ceiling ? 200 : 429, $status, "Guest {$guest} of the first forwarded address.");
             }
 
             $_SERVER['HTTP_X_REAL_IP'] = '198.51.100.2';
-            $this->chooseRate($budget % 2 === 0 ? 'standard' : 'express');
-            $this->assertSame(200, $this->startSession()->get_status(), 'Another guest behind the same proxy has its own budget.');
+            $this->nextGuestAtTheCheckout();
+            $this->assertSame(200, $this->startSession()->get_status(), 'A guest behind the same proxy with another address is not held to that ceiling.');
         });
+    }
+
+    /**
+     * Scenario: the merchant can see that the budget withholds express checkout, with debug off
+     *   Given debug logging is off
+     *   When the budget refuses a shopper, and refuses again in the same window
+     *   Then express.session.budget_spent is written once to the log that is always on, as a warning naming the budget
+     *
+     * @test
+     */
+    public function it_warns_once_per_window_when_the_budget_refuses_a_shopper(): void
+    {
+        $budget = $this->configuredBudget();
+        $alwaysOn = new RecordingLogger();
+        $this->readyGuestCheckout([
+            'settings.IsDebugEnabled' => static fn (): bool => false,
+            'log.always_on' => static fn (): LoggerInterface => $alwaysOn,
+        ]);
+        for ($attempt = 0; $attempt < $budget; $attempt++) {
+            $this->chooseRate($attempt % 2 === 0 ? 'express' : 'standard');
+            $this->assertSame(200, $this->startSession()->get_status());
+        }
+        $this->assertSame([], $alwaysOn->records(), 'Nothing is a problem while the budget has room.');
+
+        foreach ([0, 1] as $refusal) {
+            $this->chooseRate(($budget + $refusal) % 2 === 0 ? 'express' : 'standard');
+            $this->assertSame(429, $this->startSession()->get_status());
+        }
+
+        $written = $alwaysOn->records();
+        $this->assertCount(1, $written, 'Anyone can be refused, so the log gets one line per window.');
+        $this->assertSame(['warning', 'express.session.budget_spent'], [$written[0]['level'], $written[0]['message']]);
+        $this->assertSame('shopper', $written[0]['context']['reason'] ?? null);
     }
 
     /**
@@ -660,6 +765,30 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * A new guest with the checkout ready for a session.
+     */
+    private function nextGuestAtTheCheckout(): void
+    {
+        $this->newShopper();
+        $this->actAsGuest();
+        $this->cartWith(['simple'], 2);
+        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+        $this->chooseRate('standard');
+    }
+
+    /**
+     * @return array<string, callable> The express.config override for bootExpress().
+     */
+    private function withAddressCeiling(int $ceiling): array
+    {
+        return [
+            'express.config' => static function () use ($ceiling): array {
+                return array_merge(require ROOT_DIR . '/config/express.php', ['maxNewSessionsPerAddress' => $ceiling]);
+            },
+        ];
+    }
 
     private function configuredBudget(): int
     {

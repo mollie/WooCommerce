@@ -163,7 +163,7 @@ class EventLogTest extends ExpressFlowTestCase
             LoggerInterface::class => static function (): LoggerInterface {
                 return new NullLogger();
             },
-            'express.event_log.always_on' => static function () use ($problems): LoggerInterface {
+            'log.always_on' => static function () use ($problems): LoggerInterface {
                 return $problems;
             },
         ])->get(EventLog::class);

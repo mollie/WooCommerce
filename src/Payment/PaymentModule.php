@@ -113,8 +113,8 @@ class PaymentModule implements ServiceModule, ExecutableModule
         add_action(
             'init',
             function () use ($paymentMethods, $container) {
-                $expressEnabled = $container->has('express.enabled') && ($container->get('express.enabled'))();
-                $this->handleExpiryDateCancelation($paymentMethods, $expressEnabled);
+                $expressCleanup = $container->has('express.cleanup_needed') && ($container->get('express.cleanup_needed'))();
+                $this->handleExpiryDateCancelation($paymentMethods, $expressCleanup);
             },
             10,
             0
@@ -204,8 +204,17 @@ class PaymentModule implements ServiceModule, ExecutableModule
             // An express order is cancelled only by ExpireAbandonedExpressOrders, which asks Mollie first.
             return;
         }
+        if (!$order->has_status('pending')) {
+            return;
+        }
         $mollieOrderService = $this->container->get(MollieOrderService::class);
-        if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
+        try {
+            $checked = $mollieOrderService->doPaymentForOrder($order);
+        } catch (OrderLockTimeout $busy) {
+            // Busy elsewhere; the next run looks again.
+            return;
+        }
+        if ($checked) {
             $order = wc_get_order($unpaid_order);
             if (!$order->has_status('pending')) {
                 return;
@@ -530,12 +539,12 @@ class PaymentModule implements ServiceModule, ExecutableModule
      * Add/remove scheduled action to cancel orders on expiration date, and to clean up abandoned
      * express orders, which run on the same action
      * @param $paymentMethods
-     * @param bool $expressEnabled
+     * @param bool $expressCleanup Express is on, or one of its pending orders may be left.
      * @return void
      */
-    public function handleExpiryDateCancelation($paymentMethods, bool $expressEnabled = false)
+    public function handleExpiryDateCancelation($paymentMethods, bool $expressCleanup = false)
     {
-        if (!CancelUnpaidSchedule::needed($this->gatewaySettings($paymentMethods), $expressEnabled)) {
+        if (!CancelUnpaidSchedule::needed($this->gatewaySettings($paymentMethods), $expressCleanup)) {
             as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;
         }

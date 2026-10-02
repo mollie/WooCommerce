@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Mollie\WooCommerce\SDK\MollieApi;
-use Mollie\WooCommerce\SDK\SdkMollieApi;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\CartFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressBlocksData;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactory;
@@ -18,78 +17,22 @@ use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
 use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
-use Mollie\WooCommerce\Shared\SystemClock;
 use Mollie\WooCommerce\Shared\Clock;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
-use Mollie\WooCommerce\Log\WcPsrLoggerAdapter;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
-use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\ExpressComponent\Flow\ExpireAbandonedExpressOrders;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\PendingExpressOrders;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressOrder;
 use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressSession;
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
 
 return static function (): array {
     return [
         'express.config' => static function (): array {
             return require dirname(__DIR__, 3) . '/config/express.php';
-        },
-        MollieApi::class => static function (ContainerInterface $container): MollieApi {
-            $api = $container->get('SDK.api_helper');
-            assert($api instanceof Api);
-            $settings = $container->get('settings.settings_helper');
-            assert($settings instanceof Settings);
-
-            $log = $container->get(EventLog::class);
-            assert($log instanceof EventLog);
-
-            return new SdkMollieApi(
-                $api,
-                $settings,
-                (int) $container->get('express.config')['sessionLifetimeSeconds'],
-                $log
-            );
-        },
-        Clock::class => static function (): Clock {
-            return new SystemClock();
-        },
-        OrderLock::class => static function (ContainerInterface $container): OrderLock {
-            global $wpdb;
-            $log = $container->get(EventLog::class);
-            assert($log instanceof EventLog);
-
-            return new OrderLock($wpdb, $log, countMollieCalls: static function () use ($container): int {
-                $mollie = $container->get(MollieApi::class);
-
-                return $mollie instanceof SdkMollieApi ? $mollie->callsMade() : 0;
-            });
-        },
-        ProcessRecordStore::class => static function (): ProcessRecordStore {
-            return new ProcessRecordStore();
-        },
-        // WooCommerce's log, whatever the merchant's debug switch says.
-        'express.event_log.always_on' => static function (ContainerInterface $container): LoggerInterface {
-            return new WcPsrLoggerAdapter(wc_get_logger(), $container->get('shared.plugin_id') . '-');
-        },
-        EventLog::class => static function (ContainerInterface $container): EventLog {
-            $logger = $container->get(LoggerInterface::class);
-            assert($logger instanceof LoggerInterface);
-            if ($container->get('settings.IsDebugEnabled')) {
-                return new EventLog($logger);
-            }
-
-            $alwaysOn = $container->get('express.event_log.always_on');
-            assert($alwaysOn instanceof LoggerInterface);
-            // Debug off: warnings and errors are always written, info only if the site opts in.
-            if (apply_filters('mollie_wc_event_log_always_on', false)) {
-                return new EventLog($alwaysOn);
-            }
-
-            return new EventLog($logger, $alwaysOn);
         },
         ExpressOrderWriter::class => static function (ContainerInterface $container): ExpressOrderWriter {
             return new ExpressOrderWriter($container->get(ProcessRecordStore::class));
@@ -116,7 +59,11 @@ return static function (): array {
         ExpressSessionBudget::class => static function (ContainerInterface $container): ExpressSessionBudget {
             $config = $container->get('express.config');
 
-            return new ExpressSessionBudget((int) $config['maxNewSessions'], (int) $config['windowSeconds']);
+            return new ExpressSessionBudget(
+                (int) $config['maxNewSessions'],
+                (int) $config['maxNewSessionsPerAddress'],
+                (int) $config['windowSeconds']
+            );
         },
         ExpressUrls::class => static function (ContainerInterface $container): ExpressUrls {
             $secret = $container->get(WebhookSecret::class);
@@ -137,13 +84,18 @@ return static function (): array {
                 (int) $container->get('express.config')['sessionReuseMarginSeconds']
             );
         },
-        // Options only: the unpaid-orders schedule calls this on every init.
-        'express.enabled' => static function (ContainerInterface $container): callable {
+        PendingExpressOrders::class => static function (): PendingExpressOrders {
+            return new PendingExpressOrders();
+        },
+        // Options only: called on every init.
+        'express.cleanup_needed' => static function (ContainerInterface $container): callable {
             return static function () use ($container): bool {
                 $facts = $container->get(ExpressFactsBuilder::class);
                 assert($facts instanceof ExpressFactsBuilder);
+                $pending = $container->get(PendingExpressOrders::class);
+                assert($pending instanceof PendingExpressOrders);
 
-                return $facts->anyWalletTurnedOn();
+                return $facts->anyWalletTurnedOn() || $pending->mayExist();
             };
         },
         ExpressOrderFactsBuilder::class => static function (ContainerInterface $container): ExpressOrderFactsBuilder {
@@ -152,8 +104,8 @@ return static function (): array {
                 $container->get(ProcessRecordStore::class)
             );
         },
-        ExpressOrderFactory::class => static function (): ExpressOrderFactory {
-            return new ExpressOrderFactory();
+        ExpressOrderFactory::class => static function (ContainerInterface $container): ExpressOrderFactory {
+            return new ExpressOrderFactory($container->get(PendingExpressOrders::class));
         },
         StartExpressOrder::class => static function (ContainerInterface $container): StartExpressOrder {
             return new StartExpressOrder(
@@ -182,7 +134,9 @@ return static function (): array {
                 $container->get(ExpressOrderWriter::class),
                 $container->get(Clock::class),
                 $container->get(EventLog::class),
-                (int) $container->get('express.config')['abandonGraceSeconds']
+                $container->get(PendingExpressOrders::class),
+                (int) $container->get('express.config')['abandonGraceSeconds'],
+                (int) $container->get('express.config')['abandonGiveUpSeconds']
             );
         },
         OrphanedExpressPayments::class => static function (): OrphanedExpressPayments {

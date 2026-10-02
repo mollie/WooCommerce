@@ -26,6 +26,13 @@ class WebhookConcurrentDeliveriesTest extends ExpressFlowTestCase
     use ExpressCheckoutFixtures;
     use WebhookOrderFixtures;
 
+    private const CANCEL_UNPAID_ACTION = 'mollie_woocommerce_cancel_unpaid_orders';
+
+    /**
+     * Whether the site had the action scheduled before a scenario ran the plugin's init; null when none did.
+     */
+    private ?bool $cancelUnpaidWasScheduled = null;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -37,6 +44,10 @@ class WebhookConcurrentDeliveriesTest extends ExpressFlowTestCase
     public function tearDown(): void
     {
         unset($_GET['mollie_webhook_secret'], $_GET['order_id'], $_GET['key']);
+        if ($this->cancelUnpaidWasScheduled === false) {
+            as_unschedule_all_actions(self::CANCEL_UNPAID_ACTION);
+        }
+        $this->cancelUnpaidWasScheduled = null;
         $this->container = null;
         $this->tearDownExpressCheckout();
         Mockery::close();
@@ -253,6 +264,45 @@ class WebhookConcurrentDeliveriesTest extends ExpressFlowTestCase
     }
 
     /**
+     * Given a pending order past its gateway's expiry setting, whose payment is paid at Mollie
+     * And the order lock is held elsewhere, as by the webhook that is paying it
+     * When the cancel-unpaid action runs
+     * Then the order is not cancelled: the next run looks at it again
+     *
+     * @test
+     */
+    public function it_does_not_cancel_an_unpaid_order_while_the_order_lock_is_held(): void
+    {
+        $order = $this->orderPastItsExpirySetting();
+
+        $holder = $this->holdTheLock((string) $order->get_id());
+        try {
+            do_action(self::CANCEL_UNPAID_ACTION);
+        } finally {
+            $this->releaseTheLock($holder, (string) $order->get_id());
+        }
+
+        $this->assertSame('pending', $this->fresh($order)->get_status());
+        $this->assertSame([], $this->notesContaining($order, 'Unpaid order cancelled'));
+    }
+
+    /**
+     * Given the same order with its lock free
+     * When the cancel-unpaid action runs
+     * Then the order is paid, as before the lock existed
+     *
+     * @test
+     */
+    public function it_pays_an_unpaid_order_past_its_expiry_setting_when_mollie_says_paid(): void
+    {
+        $order = $this->orderPastItsExpirySetting();
+
+        do_action(self::CANCEL_UNPAID_ACTION);
+
+        $this->assertTrue($this->fresh($order)->is_paid());
+    }
+
+    /**
      * Given the order lock is held elsewhere
      * When checkPaymentForUnpaidOrder() runs
      * Then it returns true with the order untouched
@@ -337,6 +387,26 @@ class WebhookConcurrentDeliveriesTest extends ExpressFlowTestCase
         $service->shouldReceive('getPaymentIdFromRequest')->andReturn($paymentId);
 
         return $service;
+    }
+
+    /**
+     * A pending PayPal order the cancel-unpaid action selects, whose payment is paid at Mollie.
+     */
+    private function orderPastItsExpirySetting(): WC_Order
+    {
+        // The plugin attaches its listener to the action on init, so this boot owns both.
+        $this->cancelUnpaidWasScheduled = as_next_scheduled_action(self::CANCEL_UNPAID_ACTION) !== false;
+        $this->container = $this->bootExpressOwning(['init', self::CANCEL_UNPAID_ACTION]);
+        [$order] = $this->orderWithPayment('paid');
+        $this->setGatewaySettingsForTest('paypal', ['activate_expiry_days_setting' => 'yes', 'order_dueDate' => '10']);
+        $this->lastModifiedAt($order, time() - 3600);
+        do_action('init');
+        $this->assertNotFalse(
+            has_action(self::CANCEL_UNPAID_ACTION),
+            'Nothing listens on the cancel-unpaid action, so the scenario proves nothing.'
+        );
+
+        return $order;
     }
 
     private function holdTheLock(string $orderKey): wpdb

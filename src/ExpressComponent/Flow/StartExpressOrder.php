@@ -23,7 +23,7 @@ use Throwable;
 use WC_Order;
 
 /**
- * Creates the pending express order; the lock on express_ref makes retries and double taps reuse it.
+ * The lock on express_ref makes retries and double taps reuse the order.
  */
 final class StartExpressOrder
 {
@@ -142,12 +142,11 @@ final class StartExpressOrder
             $mode = $this->expressFacts->shopFacts()->mode();
             [$wallet, $gatewayId] = $this->provisionalWallet();
             $order = $this->factory->create($this->orderFacts->shopperDetails());
-            // The fingerprint matched, so the cart total is the session's priced amount.
-            $orderTotal = $this->orderFacts->total($order);
-            if ($orderTotal === null || !$orderTotal->isSameAs($total)) {
+            $priced = StartOrderDecision::admitCreatedOrder($this->orderFacts->total($order), $total);
+            if ($priced instanceof Refuse) {
                 $this->factory->delete($order);
 
-                return $this->refuse($session, 'amount_mismatch', self::HTTP_CONFLICT);
+                return $this->refuse($session, $priced->code(), $priced->httpStatus());
             }
             $order = $this->lock->withFreshOrder(
                 $order->get_id(),
@@ -200,7 +199,7 @@ final class StartExpressOrder
     private function refuse(?RememberedSession $session, string $code, int $httpStatus, ?string $reason = null): ExpressOrderResult
     {
         $fields = ['session' => $session === null ? '' : $session->sessionId(), 'reason' => $code];
-        // Anyone can cause a refusal, so only a failed creation is a warning.
+        // Anyone can cause a refusal: only a failed creation is a warning.
         if ($code === 'creation_failed') {
             $this->log->warning('express.order.refused', $fields);
         } else {

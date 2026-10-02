@@ -12,9 +12,9 @@ final class CancelUnpaidSchedule
     /**
      * @param array<int, mixed> $gatewaySettings Each gateway's get_option() value.
      */
-    public static function needed(array $gatewaySettings, bool $expressEnabled): bool
+    public static function needed(array $gatewaySettings, bool $expressCleanup): bool
     {
-        return $expressEnabled || self::expiryEnabled($gatewaySettings);
+        return $expressCleanup || self::expiryEnabled($gatewaySettings);
     }
 
     /**

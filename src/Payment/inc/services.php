@@ -34,6 +34,10 @@ use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\SDK\SdkMollieApi;
+use Mollie\WooCommerce\SDK\MollieApi;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
+use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerce\Shared\Data;
@@ -42,6 +46,20 @@ use Psr\Log\LoggerInterface as Logger;
 
 return static function (): array {
     return [
+        OrderLock::class => static function (ContainerInterface $container): OrderLock {
+            global $wpdb;
+            $log = $container->get(EventLog::class);
+            assert($log instanceof EventLog);
+
+            return new OrderLock($wpdb, $log, countMollieCalls: static function () use ($container): int {
+                $mollie = $container->get(MollieApi::class);
+
+                return $mollie instanceof SdkMollieApi ? $mollie->callsMade() : 0;
+            });
+        },
+        ProcessRecordStore::class => static function (): ProcessRecordStore {
+            return new ProcessRecordStore();
+        },
         MollieObject::class => static function (ContainerInterface $container): MollieObject {
             $logger = $container->get(Logger::class);
             assert($logger instanceof Logger);

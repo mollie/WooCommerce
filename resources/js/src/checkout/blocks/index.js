@@ -39,12 +39,18 @@ if (!isOrderPayPage) {
         registerGatewayRegistrationHooks(mollieGateways);
         registerExpressPaymentMethodHooks(mollieGateways);
         registerIconHooks(mollieGateways);
-        registerExpressComponent();
 
         initializeMollieStoreListeners();
 
     } catch (error) {
         console.error('Mollie: Initialization failed:', error);
+    }
+
+    // Apart, so a failing Express Component leaves the rest of the checkout working.
+    try {
+        registerExpressComponent();
+    } catch (error) {
+        console.error('Mollie: Express Component registration failed:', error);
     }
 }
 

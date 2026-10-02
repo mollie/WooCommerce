@@ -33,6 +33,9 @@ class ExpressOrderFactory
      */
     public function create(array $details): WC_Order
     {
+        $session = WC()->session;
+        $this->releaseStockHeldByShoppersPendingOrder($session);
+
         $created = null;
         $capture = static function (WC_Order $order) use (&$created): void {
             $created = $order;
@@ -40,7 +43,6 @@ class ExpressOrderFactory
         add_action('woocommerce_checkout_create_order', $capture, PHP_INT_MIN, 1);
 
         // create_order() would otherwise resume another checkout's order awaiting payment.
-        $session = WC()->session;
         $awaiting = $session->get('order_awaiting_payment');
         $session->set('order_awaiting_payment', null);
 
@@ -67,6 +69,26 @@ class ExpressOrderFactory
     public function delete(WC_Order $order): void
     {
         $order->delete(true);
+    }
+
+    private function releaseStockHeldByShoppersPendingOrder(\WC_Session $session): void
+    {
+        if (!function_exists('wc_release_stock_for_order')) {
+            return;
+        }
+        $order = $this->shoppersOwnOrder($session);
+        if ($order !== null && $order->has_status('pending')) {
+            wc_release_stock_for_order($order);
+        }
+    }
+
+    /** As WC_Cart::check_cart_item_stock() reads it. */
+    private function shoppersOwnOrder(\WC_Session $session): ?WC_Order
+    {
+        $orderId = absint($session->get('order_awaiting_payment')) ?: absint($session->get('store_api_draft_order', 0));
+        $order = $orderId > 0 ? wc_get_order($orderId) : null;
+
+        return $order instanceof WC_Order ? $order : null;
     }
 
     /**

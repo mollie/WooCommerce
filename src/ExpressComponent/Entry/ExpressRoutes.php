@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\Entry;
 
+use Automattic\WooCommerce\StoreApi\Utilities\RateLimits;
 use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressOrder;
 use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Admission;
@@ -11,6 +12,7 @@ use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\Shared\Values\Admit;
 use Mollie\WooCommerce\Shared\Values\Refuse;
+use WC_Geolocation;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -82,7 +84,7 @@ class ExpressRoutes
      */
     public function startSession(WP_REST_Request $request)
     {
-        $result = $this->startSession->start(self::SURFACE);
+        $result = $this->startSession->start(self::SURFACE, $this->callerAddress());
         if (!$result->isStarted()) {
             return new WP_Error($result->code(), self::messageFor($result->code()), ['status' => $result->httpStatus()]);
         }
@@ -195,6 +197,21 @@ class ExpressRoutes
                 'mollie-payments-for-woocommerce'
             ),
         };
+    }
+
+    /**
+     * Chosen as the Store API's rate limit chooses it: the connection's address, the forwarded one
+     * only when the shop enabled the Store API's proxy support. Forwarded headers are the caller's
+     * to write.
+     */
+    private function callerAddress(): string
+    {
+        if (class_exists(RateLimits::class) && (bool) RateLimits::get_options()->proxy_support) {
+            return WC_Geolocation::get_ip_address();
+        }
+        $address = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'] ?? ''));
+
+        return filter_var($address, FILTER_VALIDATE_IP) !== false ? $address : '';
     }
 
     private function loadWooCommerceSession(): void

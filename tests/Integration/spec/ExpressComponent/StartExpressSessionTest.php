@@ -489,6 +489,67 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a guest cannot buy a fresh budget by sending a forwarded-IP header
+     *   Given a guest whose connection comes from one address
+     *   And the shop has not enabled the Store API's proxy support
+     *   When each session request carries a different X-Real-IP or X-Forwarded-For header
+     *   Then the requests share one budget and the one over it is answered 429
+     *
+     * @test
+     */
+    public function it_keeps_one_budget_for_a_guest_who_varies_forwarded_ip_headers(): void
+    {
+        $budget = $this->configuredBudget();
+        $this->readyGuestCheckout();
+
+        $this->fromAddress('203.0.113.7', function () use ($budget): void {
+            for ($attempt = 0; $attempt <= $budget; $attempt++) {
+                $_SERVER['HTTP_X_REAL_IP'] = '198.51.100.' . ($attempt + 1);
+                $_SERVER['HTTP_X_FORWARDED_FOR'] = '192.0.2.' . ($attempt + 1);
+                $this->chooseRate($attempt % 2 === 0 ? 'express' : 'standard');
+                $status = $this->startSession()->get_status();
+
+                $this->assertSame($attempt < $budget ? 200 : 429, $status, "Attempt {$attempt} with a new forwarded address.");
+            }
+        });
+        $this->assertCount($budget, $this->fakeMollie()->requests('POST', 'sessions'));
+    }
+
+    /**
+     * Scenario: behind a proxy the shop vouches for, the forwarded address is the caller
+     *   Given the shop enabled the Store API's proxy support, as WooCommerce documents for proxies and CDNs
+     *   And two guests reach the shop through the same proxy address
+     *   When the first spends its budget
+     *   Then the second, with its own X-Real-IP, still gets a session
+     *
+     * @test
+     */
+    public function it_keys_the_budget_on_the_forwarded_address_when_the_shop_enables_proxy_support(): void
+    {
+        $budget = $this->configuredBudget();
+        $this->addTestFilter('woocommerce_store_api_rate_limit_options', static function (array $options): array {
+            $options['proxy_support'] = true;
+
+            return $options;
+        });
+        $this->readyGuestCheckout();
+
+        $this->fromAddress('10.0.0.1', function () use ($budget): void {
+            $_SERVER['HTTP_X_REAL_IP'] = '198.51.100.1';
+            for ($attempt = 0; $attempt <= $budget; $attempt++) {
+                $this->chooseRate($attempt % 2 === 0 ? 'express' : 'standard');
+                $status = $this->startSession()->get_status();
+
+                $this->assertSame($attempt < $budget ? 200 : 429, $status, "Attempt {$attempt} of the first guest.");
+            }
+
+            $_SERVER['HTTP_X_REAL_IP'] = '198.51.100.2';
+            $this->chooseRate($budget % 2 === 0 ? 'standard' : 'express');
+            $this->assertSame(200, $this->startSession()->get_status(), 'Another guest behind the same proxy has its own budget.');
+        });
+    }
+
+    /**
      * Scenario: a create whose answer was lost is retried under the same key
      *   Given Mollie created the session but the answer timed out on the way back
      *   When the shopper's browser asks again with nothing changed
@@ -599,6 +660,31 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
+
+    private function configuredBudget(): int
+    {
+        $config = require ROOT_DIR . '/config/express.php';
+        $budget = (int) $config['maxNewSessions'];
+        $this->assertGreaterThan(0, $budget);
+
+        return $budget;
+    }
+
+    /**
+     * Runs the requests as if the connection came from $remoteAddr; the forwarded headers the
+     * callback sets are removed afterwards.
+     */
+    private function fromAddress(string $remoteAddr, callable $requests): void
+    {
+        $saved = array_intersect_key($_SERVER, array_flip(['REMOTE_ADDR', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR']));
+        $_SERVER['REMOTE_ADDR'] = $remoteAddr;
+        try {
+            $requests();
+        } finally {
+            unset($_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_X_REAL_IP'], $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $_SERVER = array_merge($_SERVER, $saved);
+        }
+    }
 
     /**
      * @return array<string, mixed>

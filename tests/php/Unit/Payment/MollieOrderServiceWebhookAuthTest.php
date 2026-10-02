@@ -66,7 +66,8 @@ class MollieOrderServiceWebhookAuthTest extends TestCase
             $container,
             Mockery::mock(WebhookHandler::class),
             $this->expressStage(),
-            new OrderLock(Mockery::mock(\wpdb::class))
+            new OrderLock(Mockery::mock(\wpdb::class)),
+            new EventLog(new NullLogger())
         );
     }
 

@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
 use Mockery;
+use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
 use Mollie\WooCommerce\Payment\MollieOrderService;
@@ -1079,6 +1080,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             $container->get(WebhookHandler::class),
             $container->get(ResolveExpressPayment::class),
             $container->get(OrderLock::class),
+            $container->get(EventLog::class),
         ])->makePartial()->shouldAllowMockingProtectedMethods();
         $service->shouldReceive('getPaymentIdFromRequest')->andReturn($paymentId);
 

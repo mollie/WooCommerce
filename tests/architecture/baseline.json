@@ -9,7 +9,7 @@
     "superglobals-outside-entry": 23,
     "mutating-sdk-calls": 14,
     "api-key-readers": 17,
-    "raw-logging": 230,
+    "raw-logging": 226,
     "admin-ajax": 12,
     "order-creation-paths": 3,
     "library-mollie-symbols": 0,

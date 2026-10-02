@@ -104,6 +104,7 @@ class StepTraceTest extends ExpressFlowTestCase
                 self::FLOW . '.finished',
                 // doPaymentForOrder()
                 'lock.taken',
+                'rule.decided',
                 'order.written',
                 'lock.released',
             ],

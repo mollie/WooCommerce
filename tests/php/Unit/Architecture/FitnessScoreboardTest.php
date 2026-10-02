@@ -216,6 +216,57 @@ class FitnessScoreboardTest extends TestCase
     }
 
     /**
+     * Scenario: a new _mollie_* meta key written through a helper fails the run too
+     *   Given a fixture tree where new-meta-keys is 0
+     *   When a file in src/ reads a new key through a helper
+     *   Then the row stays 0
+     *   When it writes the key through a helper that takes the order first, as ExpressOrderWriter::setMeta() does
+     *   Then the run exits non-zero with a failure line starting with R-25
+     */
+    public function testFailsNamingR25WhenSrcWritesANewMollieMetaKeyThroughAHelper(): void
+    {
+        $this->fixtureTree();
+        $this->runScript($this->tree, ['--update-baseline']);
+
+        $this->write(
+            'src/Fresh/MetaReader.php',
+            "<?php\nfunction recall(\$order)\n{\n    return \$this->getMeta(\$order, '_mollie_foo');\n}\n"
+        );
+        [, $table] = $this->runScript($this->tree, ['--format=md']);
+        self::assertSame('0', $this->nowOf($table, 'new-meta-keys'), 'Reading a key must not count.');
+
+        $this->write(
+            'src/Fresh/MetaWriter.php',
+            "<?php\nfunction remember(\$order)\n{\n    \$this->setMeta(\$order, '_mollie_foo', 'yes');\n}\n"
+        );
+        [$exit, $output] = $this->runScript($this->tree);
+
+        self::assertNotSame(0, $exit, "A new _mollie_* key written through a helper must fail the run:\n" . $output);
+        self::assertRegExp('/^R-25: /m', $output);
+        self::assertStringContainsString('new-meta-keys', $output);
+    }
+
+    /**
+     * Scenario: the express lookup keys are a recorded exception, not a blind spot
+     *   Given ExpressOrderWriter writes the three _mollie_express_* keys through its helper
+     *   When the scoreboard runs on the repository
+     *   Then new-meta-keys is 0 because the script names those keys, and lists no other writer
+     */
+    public function testNamesTheExpressLookupKeysItAllows(): void
+    {
+        $script = (string) file_get_contents(PROJECT_DIR . '/' . self::SCRIPT);
+        $writer = (string) file_get_contents(PROJECT_DIR . '/src/ExpressComponent/WooCommerce/ExpressOrderWriter.php');
+        preg_match_all('/[\'"](_mollie_express_\w+)[\'"]/', $writer, $written);
+        self::assertNotSame([], $written[1], 'The writer no longer names an express meta key.');
+
+        foreach (array_unique($written[1]) as $key) {
+            self::assertStringContainsString("'{$key}'", $script, "{$key} is written but not named in the scoreboard.");
+        }
+        [, $hits] = $this->runScript(PROJECT_DIR, ['--list=new-meta-keys']);
+        self::assertSame('', trim($hits), 'A _mollie_* key outside the contract, the record and the express lookup keys is written.');
+    }
+
+    /**
      * Scenario: a blocking metric off its target fails even with an updated baseline
      *   Given a fixture library file that names the Mollie SDK
      *   When the baseline is updated and the run is repeated

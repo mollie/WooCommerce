@@ -51,6 +51,17 @@ const COMPATIBLE_META_KEYS = [
 ];
 
 /**
+ * The keys an express order is found by: its reference, its session and that session's expiry. They
+ * are queried (meta_key, meta_query), which a field of the process record cannot be. Recorded as an
+ * exception in RULES.md section 3.
+ */
+const EXPRESS_LOOKUP_META_KEYS = [
+    '_mollie_express_expires_at',
+    '_mollie_express_ref',
+    '_mollie_express_session_id',
+];
+
+/**
  * Every metric of RULES.md section 2, in its order.
  *
  * scope: where the files are. count: 'hits' counts lines, 'files' counts files with a hit.
@@ -276,16 +287,18 @@ function metrics(): array
             'count' => 'hits',
             'match' => static function (string $path, string $code): array {
                 $lines = [];
+                // Any call named after meta, with the key first or after the order: a helper counts too.
                 $found = preg_match_all(
-                    '/->(?:update|add)_meta_data\(\s*[\'"](_mollie_\w+)[\'"]/',
+                    '/\b(\w*meta\w*)\(\s*(?:\$[\w>-]+\s*,\s*)?[\'"](_mollie_\w+)[\'"]/i',
                     $code,
                     $matches,
                     PREG_OFFSET_CAPTURE
                 );
+                $known = array_merge(['_mollie_process'], COMPATIBLE_META_KEYS, EXPRESS_LOOKUP_META_KEYS);
                 for ($i = 0; $i < (int) $found; $i++) {
-                    $key = $matches[1][$i][0];
-                    if ($key !== '_mollie_process' && !in_array($key, COMPATIBLE_META_KEYS, true)) {
-                        $lines[] = lineAt($code, $matches[1][$i][1]);
+                    $isRead = preg_match('/^(?:get|has|delete)|exists$/i', $matches[1][$i][0]) === 1;
+                    if (!$isRead && !in_array($matches[2][$i][0], $known, true)) {
+                        $lines[] = lineAt($code, $matches[2][$i][1]);
                     }
                 }
 

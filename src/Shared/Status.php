@@ -180,6 +180,10 @@ class Status
     }
 
     /**
+     * Re-throws the API failure with its HTTP status code intact, so callers can tell an
+     * authentication problem from an outage or from a request that never left the server.
+     * The message is left unescaped here; escaping belongs to whoever renders it.
+     *
      * @throws \Mollie\Api\Exceptions\ApiException
      */
     public function getMollieApiStatus($apiClient)
@@ -188,13 +192,40 @@ class Status
             // Try to load Mollie issuers
             $apiClient->methods->all();
         } catch (\Mollie\Api\Exceptions\ApiException $apiException) {
-            if ($apiException->getMessage() === 'Error executing API call (401: Unauthorized Request): Missing authentication, or failed to authenticate. Documentation: https://docs.mollie.com/guides/authentication') {
+            $code = (int) $apiException->getCode();
+            if ($code === 401) {
                 throw new \Mollie\Api\Exceptions\ApiException(
-                    esc_html__('incorrect API key or other authentication issue. Please check your API keys!', 'mollie-payments-for-woocommerce')
+                    __('incorrect API key or other authentication issue. Please check your API keys!', 'mollie-payments-for-woocommerce'),
+                    $code,
+                    null,
+                    null,
+                    null,
+                    $apiException
                 );
             }
-            $message = $apiException->getMessage();
-            throw new \Mollie\Api\Exceptions\ApiException(esc_html($message));
+
+            throw new \Mollie\Api\Exceptions\ApiException(
+                self::plainApiErrorMessage($apiException),
+                $code,
+                null,
+                null,
+                null,
+                $apiException
+            );
         }
+    }
+
+    /**
+     * The undecorated failure text, without the ISO-8601 prefix, documentation link and
+     * request body that ApiException appends to getMessage().
+     */
+    public static function plainApiErrorMessage(\Mollie\Api\Exceptions\ApiException $exception): string
+    {
+        $plain = method_exists($exception, 'getPlainMessage') ? (string) $exception->getPlainMessage() : '';
+        if ($plain !== '') {
+            return $plain;
+        }
+
+        return (string) preg_replace('/^(\[[\d\-T:+]+\]\s*)+/', '', $exception->getMessage());
     }
 }

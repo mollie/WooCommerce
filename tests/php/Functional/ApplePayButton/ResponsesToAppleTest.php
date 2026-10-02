@@ -4,7 +4,6 @@ namespace Mollie\WooCommerceTests\Functional\ApplePayButton;
 
 use Faker;
 use Faker\Generator;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ResponsesToApple;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -16,7 +15,6 @@ use function Brain\Monkey\Functions\when;
 
 class ResponsesToAppleTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
     /**
      * @var Generator
      */

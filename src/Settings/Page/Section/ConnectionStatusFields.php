@@ -16,7 +16,7 @@ class ConnectionStatusFields extends AbstractSection
                 'title' => '',
                 'type' => 'title',
             ],
-            $this->connectionStatusField($this->settings, $this->connectionStatus),
+            $this->connectionStatusField($this->settings, $this->connectionResult),
             $this->refreshStatusField(),
             [
                 'id' => $this->settings->getSettingId('sectionend'),

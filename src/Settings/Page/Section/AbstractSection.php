@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Settings\Page\Section;
 
+use Mollie\WooCommerce\Settings\ConnectionResult;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Shared\Data;
 use Psr\Container\ContainerInterface;
@@ -18,6 +19,7 @@ abstract class AbstractSection
     protected array $pages;
     protected Data $dataHelper;
     protected ContainerInterface $container;
+    protected ConnectionResult $connectionResult;
 
     public function __construct(
         Settings $settings,
@@ -27,7 +29,8 @@ abstract class AbstractSection
         bool $connectionStatus,
         bool $testModeEnabled,
         Data $dataHelper,
-        ContainerInterface $container
+        ContainerInterface $container,
+        ?ConnectionResult $connectionResult = null
     ) {
 
         $this->settings = $settings;
@@ -38,6 +41,7 @@ abstract class AbstractSection
         $this->pages = $pages;
         $this->dataHelper = $dataHelper;
         $this->container = $container;
+        $this->connectionResult = $connectionResult ?? ConnectionResult::fromStatus($connectionStatus);
     }
 
     abstract public function config(): array;

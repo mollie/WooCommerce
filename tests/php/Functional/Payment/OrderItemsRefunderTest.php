@@ -3,7 +3,6 @@
 namespace Mollie\WooCommerceTests\Functional\Payment;
 
 use Brain\Monkey\Expectation\Exception\ExpectationArgsRequired;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
@@ -29,8 +28,6 @@ use function Brain\Monkey\Functions\when;
  */
 class OrderItemsRefunderTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
     /**
      * @var PHPUnit_Framework_MockObject_MockObject|RefundLineItemsBuilder
      */

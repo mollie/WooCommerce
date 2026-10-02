@@ -2,7 +2,6 @@
 
 namespace Mollie\WooCommerceTests\Functional\ApplePayButton;
 
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\ApplePayButton\DataToAppleButtonScripts;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\Stubs\WC_Product;
@@ -13,9 +12,6 @@ use function Brain\Monkey\Functions\when;
 
 class ApplePayDirectHandlerTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
-
     /**
      *
      */

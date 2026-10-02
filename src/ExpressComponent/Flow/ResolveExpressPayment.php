@@ -102,7 +102,7 @@ final class ResolveExpressPayment
                 'mollie_id' => $paymentId,
                 'reason' => $reason,
             ]);
-            $this->reportOrphan($payment, $order, $reason);
+            $this->traceRefusedPayment($payment, $order, $reason);
             $result = 'unmatched';
 
             return null;
@@ -135,23 +135,35 @@ final class ResolveExpressPayment
     private function matchInputs(PaymentSnapshot $payment, ?ExpressOrderFacts $facts): string
     {
         return sprintf(
-            'status=%s ref=%d order=%d needs_payment=%d tracked=%d',
+            'status=%s ref=%d order=%d needs_payment=%d tracked=%d webhook_needs_payment=%d cancelled=%d cancelled_by=%s',
             $payment->status(),
             $payment->expressRef() !== null ? 1 : 0,
             $facts !== null ? 1 : 0,
             $facts !== null && $facts->needsPayment() ? 1 : 0,
-            $facts !== null && $facts->trackedPaymentId() !== null ? 1 : 0
+            $facts !== null && $facts->trackedPaymentId() !== null ? 1 : 0,
+            $facts !== null && $facts->webhookNeedsPayment() ? 1 : 0,
+            $facts !== null && $facts->cancelled() ? 1 : 0,
+            $facts !== null ? (string) $facts->cancelledBy() : ''
         );
     }
 
-    private function reportOrphan(PaymentSnapshot $payment, ?WC_Order $order, string $reason): void
+    /**
+     * @throws OrderLockTimeout Retryable; nothing was written.
+     */
+    private function traceRefusedPayment(PaymentSnapshot $payment, ?WC_Order $order, string $reason): void
     {
         $ref = (string) $payment->expressRef();
-        if ($order instanceof WC_Order || $ref === '' || !in_array($payment->status(), ['paid', 'authorized'], true)) {
+        if ($ref === '' || !ExpressOrderMatch::tookMoney($payment)) {
             return;
         }
 
         $amount = $payment->amount();
+        if ($order instanceof WC_Order) {
+            $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($payment, $amount, $reason): void {
+                $this->writer->recordRefusedPayment($fresh, $payment->id(), $amount->toDecimal(), $amount->currency(), $reason);
+            });
+        }
+
         $this->log->error('express.payment.orphaned', [
             'mollie_id' => $payment->id(),
             'reason' => $reason,

@@ -11,6 +11,7 @@ final class ExpressOrderFacts
     /**
      * @param ?string $trackedPaymentId The payment the order already follows.
      * @param list<string> $processed
+     * @param bool $webhookNeedsPayment WebhookGuards::needsPayment().
      */
     public function __construct(
         private int $orderId,
@@ -22,7 +23,9 @@ final class ExpressOrderFacts
         private bool $holdsShipping,
         private bool $needsShipping,
         private ?string $cancelledBy = null,
-        private array $processed = []
+        private array $processed = [],
+        private bool $webhookNeedsPayment = false,
+        private bool $cancelled = false
     ) {
     }
 
@@ -77,5 +80,15 @@ final class ExpressOrderFacts
     public function processed(): array
     {
         return $this->processed;
+    }
+
+    public function webhookNeedsPayment(): bool
+    {
+        return $this->webhookNeedsPayment;
+    }
+
+    public function cancelled(): bool
+    {
+        return $this->cancelled;
     }
 }

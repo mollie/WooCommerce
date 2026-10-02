@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
+use Mollie\WooCommerce\ExpressComponent\Rules\ExpressOrderMatch;
 use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
@@ -97,6 +98,28 @@ final class ExpressOrderWriter
         );
     }
 
+    public function recordRefusedPayment(
+        WC_Order $order,
+        string $paymentId,
+        string $amount,
+        string $currency,
+        string $reason
+    ): void {
+
+        $changed = false;
+        if ($reason === ExpressOrderMatch::PAID_AFTER_CANCEL) {
+            $changed = $this->recordOpenQuestion($order, $reason, $paymentId);
+        }
+
+        $this->finish($order, $changed, [
+            strtr(
+                /* translators: {payment} payment id, {amount} {currency} its amount, {reason} reason code. */
+                __('Mollie payment {payment} ({amount} {currency}) was not applied to this order ({reason}). Check it in your Mollie dashboard and refund it or handle it by hand.', 'mollie-payments-for-woocommerce'),
+                ['{payment}' => $paymentId, '{amount}' => $amount, '{currency}' => $currency, '{reason}' => $reason]
+            ),
+        ]);
+    }
+
     /**
      * Logged by OrderLock.
      *
@@ -124,6 +147,18 @@ final class ExpressOrderWriter
         if ($handledEvent !== '') {
             $record = $record->withProcessed($handledEvent);
         }
+        if ($order->meta_exists(ProcessRecordStore::META_KEY) && $record->toArray() === $stored->toArray()) {
+            return false;
+        }
+        $this->records->write($order, $record);
+
+        return true;
+    }
+
+    private function recordOpenQuestion(WC_Order $order, string $question, string $paymentId): bool
+    {
+        $stored = $this->records->read($order);
+        $record = $stored->withOpen($question, $paymentId);
         if ($order->meta_exists(ProcessRecordStore::META_KEY) && $record->toArray() === $stored->toArray()) {
             return false;
         }

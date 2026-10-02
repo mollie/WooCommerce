@@ -11,6 +11,8 @@ use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
+use Mollie\WooCommerce\Payment\Rules\Values\ProcessRecord;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
@@ -370,19 +372,16 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: a payment that does not match its order is refused and the order is untouched
-     *   Given a pending express order and a paid payment from its session
-     *   And the payment and the order differ in one way: no ref in the metadata, a ref no order carries,
-     *     an order not created via mollie_express, an amount that differs, or an order tracking another payment
-     *   When Mollie calls the webhook
-     *   Then it is answered 200
-     *   And the order's status, meta and notes are exactly as before
-     *   And express.webhook.unmatched is logged with that case's reason
+     * Scenario: a mismatched payment is refused and the order's state is untouched
+     *   Given a pending express order and a paid payment differing in ref, origin or amount
+     *   When the webhook arrives
+     *   Then 200, status and meta unchanged, unmatched logged with the reason
+     *   And an order the ref found gets one note
      *
      * @test
      * @dataProvider mismatches
      */
-    public function it_refuses_a_mismatched_payment_and_touches_nothing(string $case, string $expectedReason): void
+    public function it_refuses_a_mismatched_payment_and_touches_nothing(string $case, string $expectedReason, int $newNotes): void
     {
         [$order, , $sessionId] = $this->expressOrder();
         $outcome = ['status' => 'paid', 'method' => 'paypal'];
@@ -401,10 +400,6 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
                 $order->set_created_via('checkout');
                 $order->save();
                 break;
-            case 'other payment':
-                $order->update_meta_data('_mollie_payment_id', 'tr_anotherAttempt');
-                $order->save();
-                break;
         }
         $state = $this->state($order);
         $notes = $this->notes($order);
@@ -413,7 +408,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
 
         $this->assertSame(200, $status);
         $this->assertSame($state, $this->state($order));
-        $this->assertSame($notes, $this->notes($order));
+        $this->assertCount(count($notes) + $newNotes, $this->notes($order));
         $this->assertFalse($this->fresh($order)->is_paid());
         $unmatched = $this->loggedEvents('express.webhook.unmatched');
         $this->assertCount(1, $unmatched);
@@ -421,43 +416,117 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * @return array<string, array{0: string, 1: string}>
+     * @return array<string, array{0: string, 1: string, 2: int}>
      */
     public function mismatches(): array
     {
         return [
-            'metadata without a ref' => ['no ref', 'missing_ref'],
-            'a ref no order carries' => ['unknown ref', 'unknown_ref'],
-            'an order not created via mollie_express' => ['not express', 'not_express'],
-            'an amount that differs from the order total' => ['amount', 'amount_mismatch'],
-            'an order already tracking a different payment' => ['other payment', 'other_payment'],
+            'metadata without a ref' => ['no ref', 'missing_ref', 0],
+            'a ref no order carries' => ['unknown ref', 'unknown_ref', 0],
+            'an order not created via mollie_express' => ['not express', 'not_express', 1],
+            'an amount that differs from the order total' => ['amount', 'amount_mismatch', 1],
         ];
     }
 
     /**
-     * Scenario: a second payment carrying the ref of an order that tracks a first one is refused as other_payment
-     *   Given a pending express order whose first payment, still open, Mollie already called the webhook for
-     *   And so the order tracks that first payment
-     *   And a second payment, paid, from the same session, carrying the same express_ref
-     *   When Mollie calls the webhook for the second payment
-     *   Then it is answered 200
-     *   And express.webhook.unmatched is logged once with the reason other_payment and the second payment's id
-     *   And the order's status, meta and notes are exactly as before, it is not paid, and no payment was completed
-     *   And no orphaned payment is reported, because an order carries the ref
+     * Scenario: a second paid payment pays an order tracking an earlier unpaid one
+     *   Given an order tracking an open first payment
+     *   When the webhook for a paid second payment arrives
+     *   Then 200, the order is paid once and tracks the second payment, no orphan
      *
      * @test
      */
-    public function it_refuses_a_second_payment_carrying_the_ref_of_an_order_that_tracks_a_first_one(): void
+    public function it_pays_the_order_with_a_second_paid_payment_while_it_tracks_an_earlier_unpaid_one(): void
     {
         [$order, $ref, $sessionId] = $this->expressOrder();
-        $first = $this->fakeMollie()->completeSession($sessionId, ['status' => 'open', 'method' => 'paypal']);
-        $this->assertSame(200, $this->deliverWebhook($first['id']));
-        $this->assertSame($first['id'], (string) $this->fresh($order)->get_meta('_mollie_payment_id'), 'The order must track the first payment.');
-        $this->assertSame('pending', $this->fresh($order)->get_status());
-
+        $first = $this->tracksAnOpenFirstPayment($order, $sessionId);
         $second = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
         $this->assertNotSame($first['id'], $second['id']);
         $this->assertSame($ref, $second['metadata']['express_ref'] ?? null, 'The second payment must carry the same express_ref.');
+        $completions = $this->paymentCompletions;
+
+        $status = $this->deliverWebhook($second['id']);
+
+        $this->assertSame(200, $status);
+        $paid = $this->fresh($order);
+        $this->assertTrue($paid->is_paid(), 'A paid payment for an order that still needs payment must pay it.');
+        $this->assertSame($completions + 1, $this->paymentCompletions);
+        $this->assertSame($second['id'], (string) $paid->get_meta('_mollie_payment_id'));
+        $this->assertSame($second['id'], $paid->get_transaction_id());
+        $this->assertSame([], $this->loggedEvents('express.payment.orphaned'));
+        $this->assertSame([], (new OrphanedExpressPayments())->all());
+    }
+
+    /**
+     * Scenario: a paid payment does not revive an order cancelled by the merchant or without a record
+     *   Given a cancelled order with cancelledBy = merchant, or no record
+     *   When the webhook for its paid payment arrives
+     *   Then 200, still cancelled and unpaid, open question paid_after_cancel
+     *   And the payment is remembered, with one note and one orphaned error
+     *
+     * @test
+     * @dataProvider cancellersOtherThanCleanup
+     */
+    public function it_does_not_revive_a_paid_payment_for_an_order_cancelled_by_the_merchant_or_without_a_record(?string $canceller): void
+    {
+        [$order, , $sessionId] = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $cancelled = $this->fresh($order);
+        if ($canceller !== null) {
+            $records = $this->boot()->get(ProcessRecordStore::class);
+            $records->write($cancelled, ProcessRecord::empty()->withCancelledBy($canceller));
+        }
+        $cancelled->set_status('cancelled');
+        $cancelled->save();
+        $this->assertSame('cancelled', $this->fresh($order)->get_status());
+        $notes = $this->notes($order);
+        $this->logger()->reset();
+
+        $status = $this->deliverWebhook($payment['id']);
+
+        $this->assertSame(200, $status);
+        $after = $this->fresh($order);
+        $this->assertSame('cancelled', $after->get_status(), 'An order cancelled on purpose must not be revived.');
+        $this->assertFalse($after->is_paid());
+        $this->assertSame(0, $this->paymentCompletions);
+        $record = $after->get_meta(ProcessRecordStore::META_KEY);
+        $this->assertIsArray($record, 'The open question must be written to the process record.');
+        $this->assertContains(
+            ['question' => 'paid_after_cancel', 'mollieId' => $payment['id']],
+            $record['open'] ?? []
+        );
+        $this->assertRememberedWithOneNoteAndOneError($order, $notes, $payment, 'paid_after_cancel');
+    }
+
+    /**
+     * @return array<string, array{0: ?string}>
+     */
+    public function cancellersOtherThanCleanup(): array
+    {
+        return [
+            'the merchant' => ['merchant'],
+            'no record' => [null],
+        ];
+    }
+
+    /**
+     * Scenario: a paid payment for an order another payment paid changes nothing
+     *   Given an order paid by a first payment
+     *   When the webhook for a paid second payment arrives
+     *   Then 200, state unchanged, no second completion
+     *   And the payment is remembered, with one note and one orphaned error
+     *
+     * @test
+     */
+    public function it_remembers_a_paid_payment_for_an_order_another_payment_already_paid(): void
+    {
+        [$order, , $sessionId] = $this->expressOrder();
+        // Open keeps the session payable.
+        $first = $this->fakeMollie()->completeSession($sessionId, ['status' => 'open', 'method' => 'paypal']);
+        $second = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $this->fakeMollie()->setPaymentStatus($first['id'], 'paid', ['paidAt' => gmdate('c')]);
+        $this->assertSame(200, $this->deliverWebhook($first['id']));
+        $this->assertTrue($this->fresh($order)->is_paid(), 'The first payment must have paid the order.');
         $state = $this->state($order);
         $notes = $this->notes($order);
         $completions = $this->paymentCompletions;
@@ -466,16 +535,70 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $status = $this->deliverWebhook($second['id']);
 
         $this->assertSame(200, $status);
+        $this->assertSame($state, $this->state($order));
+        $this->assertSame($completions, $this->paymentCompletions);
+        $this->assertRememberedWithOneNoteAndOneError($order, $notes, $second, 'other_payment');
+    }
+
+    /**
+     * Scenario: a paid payment the amount guard refuses is remembered
+     *   Given a pending order and a paid payment a cent over its total
+     *   When the webhook arrives
+     *   Then 200, state unchanged and unpaid
+     *   And the payment is remembered as amount_mismatch, with one note and one orphaned error
+     *
+     * @test
+     */
+    public function it_remembers_a_paid_payment_the_amount_guard_refuses_for_an_existing_order(): void
+    {
+        [$order, , $sessionId] = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($sessionId, [
+            'status' => 'paid',
+            'method' => 'paypal',
+            'amount' => ['currency' => 'EUR', 'value' => $this->decimal((float) $order->get_total() + 0.01)],
+        ]);
+        $state = $this->state($order);
+        $notes = $this->notes($order);
+
+        $status = $this->deliverWebhook($payment['id']);
+
+        $this->assertSame(200, $status);
+        $this->assertSame($state, $this->state($order));
+        $this->assertFalse($this->fresh($order)->is_paid());
+        $this->assertSame(0, $this->paymentCompletions);
+        $this->assertRememberedWithOneNoteAndOneError($order, $notes, $payment, 'amount_mismatch');
+    }
+
+    /**
+     * Scenario: a dead payment for an order tracking another one is only logged
+     *   Given an order tracking an open first payment
+     *   When the webhook for a failed, canceled or expired second payment arrives
+     *   Then 200, nothing written, unmatched other_payment, no orphan
+     *
+     * @test
+     * @dataProvider unsuccessfulStatuses
+     */
+    public function it_changes_nothing_for_a_dead_payment_on_an_order_that_tracks_another(string $paymentStatus): void
+    {
+        [$order, , $sessionId] = $this->expressOrder();
+        $this->tracksAnOpenFirstPayment($order, $sessionId);
+        $dead = $this->fakeMollie()->completeSession($sessionId, ['status' => $paymentStatus, 'method' => 'paypal']);
+        $state = $this->state($order);
+        $notes = $this->notes($order);
+        $this->logger()->reset();
+
+        $status = $this->deliverWebhook($dead['id']);
+
+        $this->assertSame(200, $status);
+        $this->assertSame($state, $this->state($order));
+        $this->assertSame($notes, $this->notes($order));
+        $this->assertSame(0, $this->paymentCompletions);
+        $this->assertSame([], $this->loggedEvents('order.written'), 'Nothing may be written for a dead attempt.');
         $unmatched = $this->loggedEvents('express.webhook.unmatched');
         $this->assertCount(1, $unmatched);
         $this->assertSame('other_payment', $unmatched[0]['context']['reason'] ?? null);
-        $this->assertSame($second['id'], $unmatched[0]['context']['mollie_id'] ?? null);
-        $this->assertSame($state, $this->state($order));
-        $this->assertSame($notes, $this->notes($order));
-        $this->assertFalse($this->fresh($order)->is_paid());
-        $this->assertSame($completions, $this->paymentCompletions);
         $this->assertSame([], $this->loggedEvents('express.payment.orphaned'));
-        $this->assertSame([], $this->loggedEvents('order.written'), 'Nothing may be written for a refused payment.');
+        $this->assertSame([], (new OrphanedExpressPayments())->all());
     }
 
     /**
@@ -1046,6 +1169,51 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $session = $client->performHttpCall('POST', 'sessions', (string) wp_json_encode($payload));
 
         return $this->fakeMollie()->completeSession($session->id, $outcome);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function tracksAnOpenFirstPayment(WC_Order $order, string $sessionId): array
+    {
+        $first = $this->fakeMollie()->completeSession($sessionId, ['status' => 'open', 'method' => 'paypal']);
+        $this->assertSame(200, $this->deliverWebhook($first['id']));
+        $this->assertSame($first['id'], (string) $this->fresh($order)->get_meta('_mollie_payment_id'), 'The order must track the first payment.');
+        $this->assertSame('pending', $this->fresh($order)->get_status());
+        $this->logger()->reset();
+
+        return $first;
+    }
+
+    /**
+     * @param array<int, string> $notesBefore
+     * @param array<string, mixed> $payment
+     */
+    private function assertRememberedWithOneNoteAndOneError(WC_Order $order, array $notesBefore, array $payment, string $reason): void
+    {
+        $remembered = (new OrphanedExpressPayments())->all();
+        $this->assertArrayHasKey($payment['id'], $remembered, 'The payment must be remembered for the admin notice.');
+        $this->assertSame($reason, $remembered[$payment['id']]['reason']);
+        $this->assertSame($payment['amount']['currency'], $remembered[$payment['id']]['currency']);
+
+        $added = array_values(array_diff($this->notes($order), $notesBefore));
+        $this->assertCount(1, $added, 'Exactly one note must name the refused payment.');
+        $this->assertStringContainsString($payment['id'], $added[0]);
+        $this->assertStringContainsString($payment['amount']['value'], $added[0]);
+        $this->assertFalse(CanaryData::leakedIn($added[0]), 'The note must carry no personal data.');
+
+        $orphaned = $this->loggedEvents('express.payment.orphaned');
+        $this->assertCount(1, $orphaned, 'A refused paid payment must be logged as an error.');
+        $this->assertSame('error', $orphaned[0]['level']);
+        $context = $orphaned[0]['context'];
+        $this->assertSame($payment['id'], $context['mollie_id'] ?? null);
+        $this->assertSame($reason, $context['reason'] ?? null);
+        $this->assertSame(
+            [],
+            array_diff(array_keys($context), ['cid', 'mollie_id', 'reason', 'status', 'amount', 'currency']),
+            'Only ids, the reason and the money may be logged.'
+        );
+        $this->assertNothingLeakedToLog();
     }
 
     private function knows(WC_Order $order, string $paymentId): void

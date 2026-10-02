@@ -10,6 +10,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\Payment\MolliePaymentAttempt;
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
+use Mollie\WooCommerce\Payment\Rules\WebhookGuards;
 use Mollie\WooCommerce\Shared\Values\Money;
 use WC_Customer;
 use WC_Order;
@@ -83,7 +84,20 @@ class ExpressOrderFactsBuilder
             holdsShipping: $this->holdsShipping($order),
             needsShipping: $order->needs_shipping_address(),
             cancelledBy: $record->cancelledBy(),
-            processed: $record->processed()
+            processed: $record->processed(),
+            webhookNeedsPayment: $this->webhookNeedsPayment($order),
+            cancelled: $order->has_status('cancelled')
+        );
+    }
+
+    private function webhookNeedsPayment(WC_Order $order): bool
+    {
+        return WebhookGuards::needsPayment(
+            (bool) $order->get_meta('_mollie_paid_by_other_gateway'),
+            (bool) $order->get_meta('_mollie_paid_and_processed'),
+            $order->get_meta('_mollie_authorized') === '1',
+            $order->needs_payment(),
+            false // on-hold initial status: no wallet delays confirmation
         );
     }
 

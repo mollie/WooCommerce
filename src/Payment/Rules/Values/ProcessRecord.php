@@ -116,6 +116,23 @@ final class ProcessRecord
         return $copy;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function withOpen(string $question, string $mollieId): self
+    {
+        if (!self::isText($question) || !self::isText($mollieId)) {
+            throw new InvalidArgumentException('An open question names a question and a Mollie id.');
+        }
+        $entry = ['question' => $question, 'mollieId' => $mollieId];
+        $copy = clone $this;
+        if (!in_array($entry, $copy->open, true)) {
+            $copy->open[] = $entry;
+        }
+
+        return $copy;
+    }
+
     public function cancelledBy(): ?string
     {
         return $this->cancelledBy;
@@ -127,6 +144,14 @@ final class ProcessRecord
     public function processed(): array
     {
         return $this->processed;
+    }
+
+    /**
+     * @return list<array{question: string, mollieId: string}>
+     */
+    public function open(): array
+    {
+        return $this->open;
     }
 
     /**

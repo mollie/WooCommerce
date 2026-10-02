@@ -358,6 +358,40 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a payment paid after cleanup cancelled its order pays it
+     *   Given an order cleanup cancelled while its payment was open
+     *   When the payment is paid and the webhook arrives
+     *   Then 200, the order is paid once and tracks the payment, no orphan
+     *
+     * @test
+     */
+    public function it_pays_an_order_cleanup_cancelled_when_its_payment_is_paid_late(): void
+    {
+        $order = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($order['session'], ['status' => 'open', 'method' => 'paypal']);
+        $this->fakeMollie()->expireSession($order['session']);
+        $this->clock->set($order['expiresAt'] + $this->graceSeconds + 1);
+        $this->runCleanup();
+        $this->assertSame('cancelled', wc_get_order($order['id'])->get_status(), 'Cleanup must have cancelled the order.');
+        $this->assertSame('cleanup', $this->storedRecord($order['id'])['cancelledBy'] ?? null);
+        $completions = 0;
+        $this->addTestFilter('woocommerce_payment_complete', static function () use (&$completions): void {
+            $completions++;
+        });
+        $this->fakeMollie()->setPaymentStatus($payment['id'], 'paid', ['paidAt' => gmdate('c')]);
+        $this->logger()->reset();
+
+        $status = $this->deliverWebhook($payment['id']);
+
+        $this->assertSame(200, $status);
+        $paid = wc_get_order($order['id']);
+        $this->assertTrue($paid->is_paid(), 'A late payment for an order cleanup cancelled must pay it.');
+        $this->assertSame(1, $completions);
+        $this->assertSame($payment['id'], (string) $paid->get_meta('_mollie_payment_id'));
+        $this->assertSame([], $this->loggedEvents('express.payment.orphaned'));
+    }
+
+    /**
      * Scenario: a missing or unreadable record reads as empty
      *   Given HPOS or posts storage, and an express order with no or an unreadable _mollie_process
      *   When the store reads it

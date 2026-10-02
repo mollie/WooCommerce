@@ -14,6 +14,12 @@ final class ExpressOrderMatch
     // 200 so Mollie stops retrying a notification that will never match.
     private const UNMATCHED = 200;
 
+    public const PAID_AFTER_CANCEL = 'paid_after_cancel';
+
+    private const CLEANUP = 'cleanup';
+
+    private const MONEY_TAKEN = ['paid', 'authorized'];
+
     public static function admit(PaymentSnapshot $payment, ?ExpressOrderFacts $order): Admit|Refuse
     {
         $ref = (string) $payment->expressRef();
@@ -34,6 +40,19 @@ final class ExpressOrderMatch
         if ($tracked === $payment->id()) {
             return new Admit();
         }
+
+        return self::tookMoney($payment)
+            ? self::admitTakenMoney($order, $tracked)
+            : self::admitUnfinishedAttempt($order, $tracked);
+    }
+
+    public static function tookMoney(PaymentSnapshot $payment): bool
+    {
+        return in_array($payment->status(), self::MONEY_TAKEN, true);
+    }
+
+    private static function admitUnfinishedAttempt(ExpressOrderFacts $order, string $tracked): Admit|Refuse
+    {
         if ($tracked !== '') {
             return self::refuse('other_payment');
         }
@@ -42,6 +61,18 @@ final class ExpressOrderMatch
         }
 
         return new Admit();
+    }
+
+    private static function admitTakenMoney(ExpressOrderFacts $order, string $tracked): Admit|Refuse
+    {
+        if ($order->cancelled() && $order->cancelledBy() !== self::CLEANUP) {
+            return self::refuse(self::PAID_AFTER_CANCEL);
+        }
+        if ($order->webhookNeedsPayment()) {
+            return new Admit();
+        }
+
+        return self::refuse($tracked !== '' ? 'other_payment' : 'not_payable');
     }
 
     private static function sameAmount(PaymentSnapshot $payment, ExpressOrderFacts $order): bool

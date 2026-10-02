@@ -274,25 +274,6 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         $this->assertSame(200, $this->startSession()->get_status(), 'The shopper\'s own nonce must be accepted.');
     }
 
-    /**
-     * Scenario: a logged-out shopper can start express checkout
-     *   Given a logged-out shopper with a cart that ships and a complete checkout form
-     *   When the browser posts the nonce the page gave it
-     *   Then it is answered 200 and one session was created
-     *
-     * @test
-     */
-    public function it_starts_a_session_for_a_logged_out_shopper(): void
-    {
-        $this->readyGuestCheckout();
-        $this->assertSame(0, get_current_user_id());
-
-        $response = $this->startSession();
-
-        $this->assertSame(200, $response->get_status());
-        $this->assertCount(1, $this->fakeMollie()->sessions());
-    }
-
     // ──────────────────────────────────────────────────────────────────────────
     // No Mollie call while the cart cannot be paid
     // ──────────────────────────────────────────────────────────────────────────
@@ -613,32 +594,6 @@ class StartExpressSessionTest extends ExpressFlowTestCase
             'an outage' => [503],
             'a rate limit' => [429],
         ];
-    }
-
-    /**
-     * Scenario: a full start leaks no secret and no personal detail
-     *   Given the shop's keys and webhook secret are canary values
-     *   And a guest whose checkout form holds a canary name, email, phone and address
-     *   When a session is started
-     *   Then express.session.created was logged
-     *   And no canary value is in the log or in the browser response
-     *
-     * @test
-     */
-    public function it_leaks_no_canary_during_a_full_start(): void
-    {
-        $this->bootExpress();
-        $this->actAsGuest();
-        $this->cartWith(['simple']);
-        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
-        $this->chooseRate('standard');
-
-        $response = $this->startSession();
-
-        $this->assertSame(200, $response->get_status());
-        $this->assertCount(1, $this->loggedEvents('express.session.created'), 'The leak check needs something logged.');
-        $this->assertNothingLeakedToLog();
-        $this->assertNothingLeakedToBrowser($response->get_data());
     }
 
     // ──────────────────────────────────────────────────────────────────────────

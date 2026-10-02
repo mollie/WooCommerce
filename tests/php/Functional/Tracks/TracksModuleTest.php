@@ -374,10 +374,11 @@ class TracksModuleTest extends TestCase
         when('sanitize_text_field')->returnArg();
         when('wp_unslash')->returnArg();
 
+        $recorded = [];
         $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_api_key_saved', Mockery::any());
-        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+        $recorder->shouldReceive('recordEvent')->andReturnUsing(static function (string $event) use (&$recorded): void {
+            $recorded[] = $event;
+        });
 
         $container = $this->createMockContainer($recorder);
         $module = new TracksModule();
@@ -386,7 +387,7 @@ class TracksModuleTest extends TestCase
         $cbs = $this->getCallbacks('woocommerce_settings_saved');
         $this->assertNotEmpty($cbs);
         $cbs[0]();
-        $this->addToAssertionCount(1);
+        $this->assertNotContains('mollie_api_key_saved', $recorded);
     }
 
     /**

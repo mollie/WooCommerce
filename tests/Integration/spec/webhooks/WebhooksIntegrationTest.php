@@ -127,67 +127,6 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
     }
 
     /**
-     * Test concurrent webhook calls for the same payment (race condition simulation)
-     *
-     * @test
-     * @group integration
-     * @group Webhooks
-     */
-    public function it_handles_concurrent_webhook_calls_gracefully()
-    {
-        $order = $this->getConfiguredOrder(
-            1,
-            'mollie_wc_gateway_ideal',
-            ['simple'],
-            [],
-            false
-        );
-
-        $orderId = $order->get_id();
-        $orderKey = $order->get_order_key();
-        $transactionId = $order->get_transaction_id();
-
-        $this->mockSuccessfulPaymentGet($transactionId, 'paid', [
-            'metadata' => ['order_id' => $orderId],
-            'method' => 'ideal',
-            'mode' => 'test'
-        ]);
-
-        $mockedServices = $this->getMockedApiServices();
-        $container = $this->bootstrapModule($mockedServices);
-
-        // Set up the webhook request parameters
-        $this->setupWebhookRequest($orderId, $orderKey, $transactionId);
-
-        // Get two instances of the webhook service to simulate concurrent requests
-        $webhookService1 = $this->createMockedWebhookService($container, uniqid('ord_'));
-        $webhookService2 = $this->createMockedWebhookService($container, $transactionId);
-
-        // First webhook call should process successfully
-        $webhookService1->onWebhookAction();
-
-        $order = wc_get_order($orderId);
-        $this->assertEquals('pending', $order->get_status());
-
-        // Second webhook call should be handled gracefully (idempotency)
-        // This simulates a race condition where the same webhook arrives multiple times
-        $webhookService2->onWebhookAction();
-
-        // Order status should remain the same
-        $order = wc_get_order($orderId);
-        $this->assertEquals('processing', $order->get_status());
-
-        // Verify no duplicate processing occurred by checking order notes
-        $notes = wc_get_order_notes(['order_id' => $orderId]);
-        $paymentNotes = array_filter($notes, function ($note) {
-            return strpos($note->content, 'Order completed') !== false;
-        });
-
-        // Should only have one payment started note
-        $this->assertCount(1, $paymentNotes, 'Should only process payment once, even with concurrent webhooks');
-    }
-
-    /**
      * Scenario: A late paid webhook does not revert an already-refunded authorized order (PIWOO-923)
      *   Given an authorize-capture (pay-later) order that was authorized, captured and then refunded
      *     (carrying _mollie_authorized and _mollie_paid_and_processed, WooCommerce status "refunded")

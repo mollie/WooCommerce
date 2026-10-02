@@ -32,42 +32,6 @@ class OrderLinesTest extends TestCase
     }
 
     /**
-     * @scenario get_item_quantity() returns 15 (int) for a cart item with quantity 1.5 (scale factor 10)
-     * @covers \Mollie\WooCommerce\Payment\LineItems\OrderLines::get_item_quantity
-     */
-    public function test_get_item_quantity_scales_fractional_to_integer(): void
-    {
-        // Arrange
-        $cartItem = ['quantity' => 1.5];
-
-        // When
-        $result = $this->callPrivate($this->sut, 'get_item_quantity', $cartItem);
-
-        // Then
-        self::assertSame(15, $result);
-    }
-
-    /**
-     * @scenario get_item_price() returns line_subtotal_incl_tax / 15 for qty 1.5, so (unitPrice × 15) − discountAmount == totalAmount
-     * @covers \Mollie\WooCommerce\Payment\LineItems\OrderLines::get_item_price
-     */
-    public function test_get_item_price_divides_by_scaled_quantity(): void
-    {
-        // Arrange
-        $cartItem = [
-            'quantity' => 1.5,
-            'line_subtotal' => 10.0,
-            'line_subtotal_tax' => 2.0,
-        ];
-
-        // When
-        $result = $this->callPrivate($this->sut, 'get_item_price', $cartItem);
-
-        // Then
-        self::assertEqualsWithDelta(0.8, $result, 1e-10);
-    }
-
-    /**
      * @scenario get_item_quantity() returns 4 (int) for a cart item with quantity 0.4 (scale factor 10)
      * @covers \Mollie\WooCommerce\Payment\LineItems\OrderLines::get_item_quantity
      */

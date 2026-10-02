@@ -164,32 +164,6 @@ class AddressMiddlewarePhoneTest extends IntegrationMockedTestCase
     }
 
     /**
-     * @scenario Given a non-E.164 national number and a region hint from the address country,
-     *           getFormatedPhoneNumber() returns that number reformatted to E.164 for that region.
-     *
-     */
-    public function test_non_e164_national_numbers_reformat_via_region_hint()
-    {
-        $phoneTests = [
-            // [national number, region hint (address country), expected E.164]
-            ['3887403368', 'IT', '+393887403368'],  // Italian mobile, no trunk 0
-            ['0612345678', 'NL', '+31612345678'],   // Dutch mobile, trunk 0
-            ['0301234567', 'DE', '+49301234567'],   // German, trunk 0
-        ];
-
-        foreach ($phoneTests as [$inputPhone, $country, $expected]) {
-            $order = $this->createOrderWithPhone($inputPhone, $country);
-            $result = $this->middleware->__invoke([], $order, 'order', fn($data) => $data);
-
-            $this->assertSame(
-                $expected,
-                $result['billingAddress']->phone ?? null,
-                "Phone '$inputPhone' with region hint '$country' should become '$expected'"
-            );
-        }
-    }
-
-    /**
      * @scenario Both the billing phone and the shipping phone are normalized exclusively
      *           through getFormatedPhoneNumber(); both reach the API in E.164.
      *

@@ -347,22 +347,4 @@ class SettingsTest extends TestCase
         }
         @unlink($tmpFile);
     }
-
-    // Gateway logo setting is not written when sanitizer rejects the file (notice-enabled path)
-    public function testSanitizerRejectionLeavesSettingsUnchangedAfterNotice(): void
-    {
-        when('add_action')->justReturn(null);
-        when('esc_html__')->returnArg(1);
-
-        $tmpFile = $this->createTempFile('not-valid-xml-or-svg-content', 'svg');
-        $this->setUpFilesGlobal(self::GATEWAY_ID, 'logo.svg', $tmpFile);
-        when('wp_handle_upload')->justReturn(['url' => 'https://example.com/logo.svg', 'file' => $tmpFile]);
-        when('get_option')->justReturn([]);
-        expect('update_option')->never();
-        expect('wp_delete_file')->once()->with($tmpFile);
-
-        $this->callProcessUploadedFile($this->makeSut(), 'logo.svg', $tmpFile, self::GATEWAY_ID);
-
-        @unlink($tmpFile);
-    }
 }

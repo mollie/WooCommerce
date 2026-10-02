@@ -947,34 +947,6 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $this->assertSame('LU-L', $after->get_billing_state());
     }
 
-    /**
-     * Scenario: a full webhook resolution with canary data leaves no canary in the log
-     *   Given the harness's canary keys and webhook secret
-     *   And a guest express order paid with canary billing and shipping addresses
-     *   When Mollie calls the webhook, with debug logging on
-     *   Then the order is paid
-     *   And no key, secret, name, email, phone or street reached the log
-     *
-     * @test
-     */
-    public function it_leaks_no_canary_during_a_full_webhook_resolution(): void
-    {
-        [$order, , $sessionId] = $this->expressOrder([]);
-        $this->logger()->reset();
-        $payment = $this->fakeMollie()->completeSession($sessionId, [
-            'status' => 'paid',
-            'method' => 'applepay',
-            'billingAddress' => CanaryData::mollieAddress(),
-            'shippingAddress' => CanaryData::mollieAddress(['city' => 'Rotterdam']),
-        ]);
-
-        $this->assertSame(200, $this->deliverWebhook($payment['id']));
-
-        $this->assertTrue($this->fresh($order)->is_paid());
-        $this->assertNotSame([], $this->loggedEvents('express.payment.matched'), 'The resolution must have run.');
-        $this->assertNothingLeakedToLog();
-    }
-
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────

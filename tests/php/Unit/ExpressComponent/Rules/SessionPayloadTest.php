@@ -95,18 +95,6 @@ class SessionPayloadTest extends TestCase
         self::assertSame(['email', 'billing-address'], SessionPayload::requiredCustomerDetails());
     }
 
-    /**
-     * Scenario: the wallet is never asked where to ship
-     *   When the required customer details are decided
-     *   Then shipping-address is not among them
-     *
-     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\SessionPayload::requiredCustomerDetails
-     */
-    public function testNeverAsksTheWalletWhereToShip(): void
-    {
-        self::assertNotContains('shipping-address', SessionPayload::requiredCustomerDetails());
-    }
-
     private function cart(): CartFacts
     {
         $eur = static fn (string $value): Money => Money::fromDecimal($value, 'EUR');

@@ -20,7 +20,6 @@ import {
 	guests,
 	flatRate,
 	shopSettings,
-	shopConfigClassic,
 } from '../../../resources';
 
 const allTests = [
@@ -35,12 +34,6 @@ const allTests = [
 	surchargeFixedAndPercentageUnderLimit,
 	surchargeFixedAndPercentageOverLimit,
 ];
-
-test.beforeAll( async ( { utils } ) => {
-	await utils.configureStore( shopConfigClassic );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-} );
 
 for ( const surcharge of allTests ) {
 	test.describe( surcharge.describeTitle, () => {

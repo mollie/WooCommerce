@@ -12,16 +12,6 @@ import {
 	creditCardDisabledMollieComponentsCheckout,
 	creditCardDisabledMollieComponentsPayForOrder,
 } from './_test-data';
-import { shopConfigDefault } from '../../resources';
-
-test.beforeAll( async ( { utils, mollieApi } ) => {
-	await utils.configureStore( shopConfigDefault );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-	await mollieApi.updateMollieGateway( 'creditcard', {
-		mollie_components_enabled: 'no',
-	} );
-} );
 
 // Classic checkout page
 test.describe( () => {

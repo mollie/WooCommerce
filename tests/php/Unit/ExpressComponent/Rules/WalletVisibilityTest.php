@@ -56,6 +56,47 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
+     * Scenario: a wallet whose payment method carries a surcharge is not shown
+     *   Given both wallets pass every other check
+     *   And the merchant set a surcharge on some of their payment methods
+     *   When the buttons map is built
+     *   Then only the wallets without a surcharge are shown: one session has one amount for every wallet
+     *
+     * @dataProvider surcharges
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons
+     * @param array<int, string> $surcharged Wallets whose payment method carries a surcharge.
+     * @param array<int, string> $expectedShown
+     */
+    public function testHidesAWalletWhosePaymentMethodCarriesASurcharge(array $surcharged, array $expectedShown): void
+    {
+        $both = ['applepay', 'paypal'];
+        $shop = new ShopFacts(
+            mode: 'live',
+            isHttps: true,
+            registeredGatewayIds: $this->column($both, 'gatewayId'),
+            enabledGatewayIds: $this->column($both, 'gatewayId'),
+            activeMollieMethods: $this->column($both, 'mollieMethod'),
+            expressCheckoutGatewayIds: $this->column($both, 'gatewayId'),
+            surchargedGatewayIds: $this->column($surcharged, 'gatewayId')
+        );
+
+        $this->assertShownExactly($expectedShown, WalletVisibility::buttons($this->settings(), $shop));
+    }
+
+    /**
+     * @return array<string, array{0: array<int, string>, 1: array<int, string>}>
+     */
+    public function surcharges(): array
+    {
+        return [
+            'no surcharge anywhere' => [[], ['applepay', 'paypal']],
+            'PayPal carries a surcharge' => [['paypal'], ['applepay']],
+            'Apple Pay carries a surcharge' => [['applepay'], ['paypal']],
+            'both carry a surcharge' => [['applepay', 'paypal'], []],
+        ];
+    }
+
+    /**
      * @return array<string, array{0: bool, 1: array<int, string>, 2: array<int, string>, 3: array<int, string>, 4: array<int, string>, 5: array<int, string>}>
      */
     public function visibilityCases(): array

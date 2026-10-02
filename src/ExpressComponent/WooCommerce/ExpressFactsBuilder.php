@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
+use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
 use Mollie\WooCommerce\Settings\Settings;
@@ -39,7 +40,7 @@ class ExpressFactsBuilder
 
     public function shopFacts(): ShopFacts
     {
-        [$registered, $enabled, $expressOnCheckout] = $this->merchantSettings();
+        [$registered, $enabled, $expressOnCheckout, $surcharged] = $this->merchantSettings();
 
         return new ShopFacts(
             mode: $this->settings->isTestModeEnabled() ? 'test' : 'live',
@@ -47,22 +48,23 @@ class ExpressFactsBuilder
             registeredGatewayIds: $registered,
             enabledGatewayIds: $enabled,
             activeMollieMethods: $this->activeMollieMethods(),
-            expressCheckoutGatewayIds: $expressOnCheckout
+            expressCheckoutGatewayIds: $expressOnCheckout,
+            surchargedGatewayIds: $surcharged
         );
     }
 
     /** Options only, no Mollie call: cheap enough to run on every request. */
     public function anyWalletTurnedOn(): bool
     {
-        [, $enabled, $expressOnCheckout] = $this->merchantSettings();
+        [, $enabled, $expressOnCheckout, $surcharged] = $this->merchantSettings();
 
-        return array_intersect($enabled, $expressOnCheckout) !== [];
+        return array_diff(array_intersect($enabled, $expressOnCheckout), $surcharged) !== [];
     }
 
     /**
-     * Registered, enabled and express-on-checkout gateway ids.
+     * Registered, enabled, express-on-checkout and surcharged gateway ids.
      *
-     * @return array{0: list<string>, 1: list<string>, 2: list<string>}
+     * @return array{0: list<string>, 1: list<string>, 2: list<string>, 3: list<string>}
      */
     private function merchantSettings(): array
     {
@@ -73,6 +75,7 @@ class ExpressFactsBuilder
 
         $enabled = [];
         $expressOnCheckout = [];
+        $surcharged = [];
         foreach ($this->config['wallets'] as $row) {
             $gatewayId = $row['gatewayId'];
             if (!in_array($gatewayId, $registered, true)) {
@@ -85,9 +88,13 @@ class ExpressFactsBuilder
             if (mollieWooCommerceIsGatewayEnabled($settingsOption, $row['checkoutSetting'])) {
                 $expressOnCheckout[] = $gatewayId;
             }
+            $surcharge = ((array) get_option($settingsOption, []))['payment_surcharge'] ?? '';
+            if ($surcharge !== '' && $surcharge !== Surcharge::NO_FEE) {
+                $surcharged[] = $gatewayId;
+            }
         }
 
-        return [$registered, $enabled, $expressOnCheckout];
+        return [$registered, $enabled, $expressOnCheckout, $surcharged];
     }
 
     /**

@@ -25,6 +25,8 @@ final class WalletVisibility
                 && in_array($gatewayId, $shop->enabledGatewayIds(), true)
                 && in_array($row['mollieMethod'], $shop->activeMollieMethods(), true)
                 && in_array($gatewayId, $shop->expressCheckoutGatewayIds(), true)
+                // One session has one amount for every wallet, so it cannot carry one wallet's fee.
+                && !in_array($gatewayId, $shop->surchargedGatewayIds(), true)
                 && !self::waitsForTheCheckoutForm($row['addressFrom'], $cart);
         }
 

@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Entry;
 
 use Automattic\WooCommerce\StoreApi\Utilities\RateLimits;
+use Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult;
+use Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult;
 use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressOrder;
 use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Admission;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\FormPaymentMethod;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\Shared\Values\Admit;
@@ -54,7 +57,6 @@ class ExpressRoutes
             ],
         ]);
 
-        // Called on Mollie's submit event, before the payment exists.
         register_rest_route(RestApi::ROUTE_NAMESPACE, self::ORDER_ROUTE, [
             [
                 'methods' => 'POST',
@@ -84,7 +86,9 @@ class ExpressRoutes
      */
     public function startSession(WP_REST_Request $request)
     {
-        $result = $this->startSession->start(self::SURFACE, $this->callerAddress());
+        $result = FormPaymentMethod::setAsideDuring(
+            fn (): ExpressSessionResult => $this->startSession->start(self::SURFACE, $this->callerAddress())
+        );
         if (!$result->isStarted()) {
             return new WP_Error($result->code(), self::messageFor($result->code()), ['status' => $result->httpStatus()]);
         }
@@ -93,7 +97,6 @@ class ExpressRoutes
             'clientAccessToken' => $result->clientAccessToken(),
             'expiresAt' => $result->expiresAt(),
         ], 200);
-        // Per-shopper credential.
         $response->header('Cache-Control', 'no-store, private');
 
         return $response;
@@ -109,7 +112,7 @@ class ExpressRoutes
 
     public function startOrder(WP_REST_Request $request): WP_REST_Response
     {
-        $result = $this->startOrder->start();
+        $result = FormPaymentMethod::setAsideDuring(fn (): ExpressOrderResult => $this->startOrder->start());
         if ($result->isOk()) {
             $data = ['ok' => true];
         } else {
@@ -137,7 +140,7 @@ class ExpressRoutes
             return true;
         }
 
-        // Anyone can cause this, so it is info, not a warning.
+        // Anyone can cause this: info, not a warning.
         $this->log->info($event, $fields + ['reason' => $decision->code()]);
 
         return new WP_Error(
@@ -200,9 +203,7 @@ class ExpressRoutes
     }
 
     /**
-     * Chosen as the Store API's rate limit chooses it: the connection's address, the forwarded one
-     * only when the shop enabled the Store API's proxy support. Forwarded headers are the caller's
-     * to write.
+     * The forwarded address counts only when the shop enabled the Store API's proxy support.
      */
     private function callerAddress(): string
     {

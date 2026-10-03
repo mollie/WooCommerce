@@ -306,7 +306,7 @@ class SettingsModule implements ServiceModule, ExecutableModule
             ) . '">',
             '</a>'
         );
-        $notice->addNotice('notice-error', $message);
+        $notice->addNotice('notice-warning', $message);
         return true;
     }
 

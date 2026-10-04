@@ -17,7 +17,9 @@ use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\Payment\Rules\PendingPaymentHold;
 use Mollie\WooCommerce\Payment\Rules\WebhookGuards;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use WC_Order;
@@ -356,6 +358,7 @@ class MollieOrderService
                 if (method_exists($this->webhookHandler, $method_name)) {
                     do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
                     $this->webhookHandler->{$method_name}($order, $payment, $payment_method_title, $payment_object);
+                    $this->holdOrderForPendingPayment($order, $status, (string) ($payment->method ?? ''));
                 } else {
                     $order->add_order_note(sprintf(
                        /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
@@ -371,6 +374,66 @@ class MollieOrderService
 
                 return true;
             }
+        );
+    }
+
+    private function holdOrderForPendingPayment(WC_Order $order, string $paymentStatus, string $paymentMethod): void
+    {
+        if ($paymentStatus !== 'pending') {
+            return;
+        }
+
+        $orderStatus = (string) $order->get_status();
+        $initialOrderStatus = $this->initialOrderStatusOf($order);
+        $holds = PendingPaymentHold::holds($paymentStatus, $paymentMethod, $orderStatus, $initialOrderStatus);
+        $this->eventLog->info('rule.decided', [
+            'order' => $order->get_id(),
+            'rule' => 'PendingPaymentHold',
+            'verdict' => $holds ? 'hold' : 'keep',
+            'inputs' => sprintf(
+                'status=%s method=%s order_status=%s initial=%s',
+                $paymentStatus,
+                $paymentMethod,
+                $orderStatus,
+                $initialOrderStatus
+            ),
+        ]);
+
+        if ($holds) {
+            $this->updateOrderStatus(
+                $order,
+                SharedDataDictionary::STATUS_ON_HOLD,
+                __('Awaiting payment confirmation.', 'mollie-payments-for-woocommerce') . "\n"
+            );
+        }
+    }
+
+    /**
+     * The status the order's method starts its orders in, as the payment processor reads it.
+     */
+    private function initialOrderStatusOf(WC_Order $order): string
+    {
+        $gateway = wc_get_payment_gateway_by_order($order);
+        if (!$gateway instanceof \WC_Payment_Gateway) {
+            return '';
+        }
+        try {
+            $paymentMethod = $this->container->get('payment_gateway.getPaymentMethod')($gateway->id);
+        } catch (\Throwable $notFound) {
+            return '';
+        }
+        if (!$paymentMethod instanceof PaymentMethodI) {
+            return '';
+        }
+
+        $initialOrderStatus = apply_filters(
+            $this->pluginId . '_initial_order_status',
+            $paymentMethod->getInitialOrderStatus()
+        );
+
+        return (string) apply_filters(
+            $this->pluginId . '_initial_order_status_' . $paymentMethod->getProperty('id'),
+            $initialOrderStatus
         );
     }
 

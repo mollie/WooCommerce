@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\Common\Traits;
 
+use Mockery;
+use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Psr\Container\ContainerInterface;
 use WC_Order;
@@ -120,6 +123,32 @@ trait WebhookOrderFixtures
         $session = $client->performHttpCall('POST', 'sessions', (string) wp_json_encode($payload));
 
         return $this->fakeMollie()->completeSession($session->id, $outcome);
+    }
+
+    /**
+     * filter_input(INPUT_POST) is empty on the CLI.
+     *
+     * @return MollieOrderService&\Mockery\MockInterface
+     */
+    private function legacyWebhookService(string $paymentId, HttpResponse $httpResponse): MollieOrderService
+    {
+        $real = $this->boot()->get(MollieOrderService::class);
+        $service = Mockery::mock(MollieOrderService::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        foreach ((new \ReflectionClass(MollieOrderService::class))->getProperties() as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+            $property->setAccessible(true);
+            if ($property->isInitialized($real)) {
+                $property->setValue($service, $property->getValue($real));
+            }
+        }
+        $response = new \ReflectionProperty(MollieOrderService::class, 'httpResponse');
+        $response->setAccessible(true);
+        $response->setValue($service, $httpResponse);
+        $service->shouldReceive('getPaymentIdFromRequest')->andReturn($paymentId);
+
+        return $service;
     }
 
     private function fresh(WC_Order $order): WC_Order

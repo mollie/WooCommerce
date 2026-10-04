@@ -1,12 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Mollie;
 
 // Data for the Express Component that differs by wallet, surface or mode.
 //
 // A table, not code: nothing here does I/O at load. Later specs add what they need (the session
 // reuse margin, the anonymous work budget, the abandon grace) next to the rows that use them.
-
 /**
  * @var array{
  *     wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}>,
@@ -32,29 +32,14 @@ $express = [
     //
     // mollieMethod is the id in Mollie's methods API (is it active?); paidAs is the method Mollie reports on
     // the payment, which the webhook matches. Mollie reports Google Pay payments as creditcard.
-    'wallets' => [
-        'applepay' => [
-            'gatewayId' => 'mollie_wc_gateway_applepay',
-            'mollieMethod' => 'applepay',
-            'paidAs' => 'applepay',
-            'checkoutSetting' => 'mollie_apple_pay_button_enabled_express_checkout',
-            'addressFrom' => 'form',
-        ],
-        'paypal' => [
-            'gatewayId' => 'mollie_wc_gateway_paypal',
-            'mollieMethod' => 'paypal',
-            'paidAs' => 'paypal',
-            'checkoutSetting' => 'mollie_paypal_button_enabled_checkout',
-            'addressFrom' => 'form',
-        ],
-        'googlepay' => [
-            'gatewayId' => 'mollie_wc_gateway_googlepay',
-            'mollieMethod' => 'googlepay',
-            'paidAs' => 'creditcard',
-            'checkoutSetting' => 'enabled', // its only setting: the method exists only for express
-            'addressFrom' => 'form',
-        ],
-    ],
+    'wallets' => ['applepay' => ['gatewayId' => 'mollie_wc_gateway_applepay', 'mollieMethod' => 'applepay', 'paidAs' => 'applepay', 'checkoutSetting' => 'mollie_apple_pay_button_enabled_express_checkout', 'addressFrom' => 'form'], 'paypal' => ['gatewayId' => 'mollie_wc_gateway_paypal', 'mollieMethod' => 'paypal', 'paidAs' => 'paypal', 'checkoutSetting' => 'mollie_paypal_button_enabled_checkout', 'addressFrom' => 'form'], 'googlepay' => [
+        'gatewayId' => 'mollie_wc_gateway_googlepay',
+        'mollieMethod' => 'googlepay',
+        'paidAs' => 'creditcard',
+        'checkoutSetting' => 'enabled',
+        // its only setting: the method exists only for express
+        'addressFrom' => 'form',
+    ]],
     'surfaces' => ['checkout'],
     // Sessions may have no test mode, so live only until it is answered.
     'allowedModes' => ['live'],
@@ -73,5 +58,4 @@ $express = [
     // so an order is never cancelled while its payment could still arrive
     'abandonGraceSeconds' => 3600,
 ];
-
 return $express;

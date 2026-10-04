@@ -1,20 +1,16 @@
 <?php
 
 # -*- coding: utf-8 -*-
-
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Tracks;
 
 class TracksEventRecorder
 {
     private string $pluginVersion;
-
     public function __construct(string $pluginVersion)
     {
         $this->pluginVersion = $pluginVersion;
     }
-
     /**
      * Record a WooCommerce Tracks event.
      *
@@ -27,13 +23,10 @@ class TracksEventRecorder
     {
         $properties['plugin_version'] = $this->pluginVersion;
         $properties['store_url'] = preg_replace('#^https?://(www\.)?#', '', get_site_url());
-
         do_action('mollie_tracks_event_recorded', $eventName, $properties);
-
         if (!class_exists('WC_Tracks')) {
             return;
         }
-
         \WC_Tracks::record_event($eventName, $properties);
     }
 }

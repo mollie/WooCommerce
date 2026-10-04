@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Inpsyde\PaymentGateway;
+declare (strict_types=1);
+namespace Mollie\Inpsyde\PaymentGateway;
 
 /**
  * Class StaticIconProvider
@@ -16,12 +15,10 @@ class StaticIconProvider implements IconProviderInterface
      * @var Icon[]
      */
     private array $icons;
-
     public function __construct(Icon ...$icons)
     {
         $this->icons = $icons;
     }
-
     /**
      * Provides access to the internal collection of icons passed during construction.
      *

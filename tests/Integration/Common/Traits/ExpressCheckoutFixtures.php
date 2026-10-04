@@ -5,7 +5,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\Common\Traits;
 
-use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Psr\Container\ContainerInterface;
 use WC_Order;

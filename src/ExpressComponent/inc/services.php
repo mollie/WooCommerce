@@ -2,33 +2,33 @@
 
 declare(strict_types=1);
 
-use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
-use Mollie\WooCommerce\Adapter\Mollie\SdkMollieApi;
-use Mollie\WooCommerce\Adapter\WooCommerce\CartFactsBuilder;
-use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
-use Mollie\WooCommerce\Adapter\WooCommerce\ExpressBlocksData;
-use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactory;
-use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
-use Mollie\WooCommerce\Adapter\WooCommerce\ExpressSessionBudget;
-use Mollie\WooCommerce\Adapter\WooCommerce\ExpressSessionStore;
-use Mollie\WooCommerce\Adapter\WordPress\EventLog;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressAssets;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressFactsBuilder;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressReturnHandler;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressRoutes;
-use Mollie\WooCommerce\Adapter\WordPress\ExpressUrls;
-use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
-use Mollie\WooCommerce\Adapter\WordPress\SystemClock;
-use Mollie\WooCommerce\Core\Clock;
+use Mollie\WooCommerce\SDK\MollieApi;
+use Mollie\WooCommerce\SDK\SdkMollieApi;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\CartFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressBlocksData;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactory;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionBudget;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
+use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressAssets;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressReturnHandler;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
+use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\Shared\SystemClock;
+use Mollie\WooCommerce\Shared\Clock;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
 use Mollie\WooCommerce\Log\WcPsrLoggerAdapter;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Settings\Settings;
-use Mollie\WooCommerce\Workflow\ExpireAbandonedExpressOrders;
-use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
-use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
-use Mollie\WooCommerce\Workflow\StartExpressOrder;
-use Mollie\WooCommerce\Workflow\StartExpressSession;
+use Mollie\WooCommerce\ExpressComponent\Flow\ExpireAbandonedExpressOrders;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
+use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressOrder;
+use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressSession;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -52,10 +52,12 @@ return static function (): array {
         Clock::class => static function (): Clock {
             return new SystemClock();
         },
-        OrderLock::class => static function (): OrderLock {
+        OrderLock::class => static function (ContainerInterface $container): OrderLock {
             global $wpdb;
+            $log = $container->get(EventLog::class);
+            assert($log instanceof EventLog);
 
-            return new OrderLock($wpdb);
+            return new OrderLock($wpdb, $log);
         },
         // WooCommerce's log, whatever the merchant's debug switch says.
         'express.event_log.always_on' => static function (ContainerInterface $container): LoggerInterface {
@@ -70,21 +72,18 @@ return static function (): array {
 
             $alwaysOn = $container->get('express.event_log.always_on');
             assert($alwaysOn instanceof LoggerInterface);
-            // With the debug switch off the plugin logger is a NullLogger: info events are written only
-            // if a site opts in, warnings and errors always, because they are what gets investigated.
+            // Debug off: warnings and errors are always written, info only if the site opts in.
             if (apply_filters('mollie_wc_event_log_always_on', false)) {
                 return new EventLog($alwaysOn);
             }
 
             return new EventLog($logger, $alwaysOn);
         },
-        EffectInterpreter::class => static function (ContainerInterface $container): EffectInterpreter {
-            $lock = $container->get(OrderLock::class);
-            assert($lock instanceof OrderLock);
+        ExpressOrderWriter::class => static function (ContainerInterface $container): ExpressOrderWriter {
             $log = $container->get(EventLog::class);
             assert($log instanceof EventLog);
 
-            return new EffectInterpreter($lock, $log);
+            return new ExpressOrderWriter($log);
         },
         ExpressFactsBuilder::class => static function (ContainerInterface $container): ExpressFactsBuilder {
             $settings = $container->get('settings.settings_helper');
@@ -129,7 +128,7 @@ return static function (): array {
                 (int) $container->get('express.config')['sessionReuseMarginSeconds']
             );
         },
-        // Whether any wallet has Express turned on, from options only: the unpaid-orders schedule asks on every init.
+        // Options only: the unpaid-orders schedule calls this on every init.
         'express.enabled' => static function (ContainerInterface $container): callable {
             return static function () use ($container): bool {
                 $facts = $container->get(ExpressFactsBuilder::class);
@@ -151,7 +150,7 @@ return static function (): array {
                 $container->get(ExpressOrderFactsBuilder::class),
                 $container->get(ExpressSessionStore::class),
                 $container->get(ExpressOrderFactory::class),
-                $container->get(EffectInterpreter::class),
+                $container->get(ExpressOrderWriter::class),
                 $container->get(OrderLock::class),
                 $container->get(Clock::class),
                 $container->get(EventLog::class)
@@ -167,13 +166,13 @@ return static function (): array {
             return new ExpireAbandonedExpressOrders(
                 $container->get(ExpressOrderFactsBuilder::class),
                 $container->get(MollieApi::class),
-                $container->get(EffectInterpreter::class),
+                $container->get(OrderLock::class),
+                $container->get(ExpressOrderWriter::class),
                 $container->get(Clock::class),
                 $container->get(EventLog::class),
                 (int) $container->get('express.config')['abandonGraceSeconds']
             );
         },
-        // The webhook's express stage. Its callers, RestApi and MollieOrderService, get it through their factories.
         OrphanedExpressPayments::class => static function (): OrphanedExpressPayments {
             return new OrphanedExpressPayments();
         },
@@ -181,7 +180,8 @@ return static function (): array {
             return new ResolveExpressPayment(
                 $container->get(MollieApi::class),
                 $container->get(ExpressOrderFactsBuilder::class),
-                $container->get(EffectInterpreter::class),
+                $container->get(OrderLock::class),
+                $container->get(ExpressOrderWriter::class),
                 $container->get(EventLog::class),
                 $container->get(OrphanedExpressPayments::class),
                 $container->get('express.config')['wallets'],

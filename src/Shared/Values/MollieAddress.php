@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Mollie\WooCommerce\Shared\Values;
+
+/**
+ * Personal data: never a log field.
+ */
+final class MollieAddress
+{
+    /**
+     * @param array<string, string> $fields
+     */
+    private function __construct(private array $fields)
+    {
+    }
+
+    /**
+     * @param array<string, mixed> $fields
+     */
+    public static function fromArray(array $fields): self
+    {
+        $kept = [];
+        foreach ($fields as $name => $value) {
+            if (is_scalar($value) && trim((string) $value) !== '') {
+                $kept[(string) $name] = (string) $value;
+            }
+        }
+
+        return new self($kept);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function fields(): array
+    {
+        return $this->fields;
+    }
+}

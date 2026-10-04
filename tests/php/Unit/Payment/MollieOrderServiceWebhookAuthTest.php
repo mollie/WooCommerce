@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Payment;
 
 use Mockery;
-use Mollie\WooCommerce\Adapter\Mollie\MollieApi;
-use Mollie\WooCommerce\Adapter\WooCommerce\EffectInterpreter;
-use Mollie\WooCommerce\Adapter\WooCommerce\ExpressOrderFactsBuilder;
-use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
-use Mollie\WooCommerce\Adapter\WordPress\EventLog;
-use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
+use Mollie\WooCommerce\SDK\MollieApi;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
+use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\Shared\Data;
-use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerceTests\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -79,7 +79,8 @@ class MollieOrderServiceWebhookAuthTest extends TestCase
         return new ResolveExpressPayment(
             Mockery::mock(MollieApi::class),
             Mockery::mock(ExpressOrderFactsBuilder::class),
-            new EffectInterpreter(new OrderLock(Mockery::mock(\wpdb::class)), $log),
+            new OrderLock(Mockery::mock(\wpdb::class)),
+            new ExpressOrderWriter($log),
             $log,
             Mockery::mock(OrphanedExpressPayments::class)->shouldIgnoreMissing(),
             [],

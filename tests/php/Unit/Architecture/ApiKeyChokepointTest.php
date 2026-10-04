@@ -11,37 +11,43 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
- * One class reads the API key, and this is the check that keeps it at one (ADR-013, finding S-08).
+ * Within the new code, only SDK\SdkMollieApi reads the API key; any other reader fails with its
+ * file name. Legacy code is out of scope.
  *
- * The key passes through 19 files today. That is the finding the seed exists to stop spreading:
- * every reader is a place it can be logged, echoed into a template, handed to a filter or sent to
- * the browser, and every one of them has to be reviewed again whenever key handling changes. The
- * blueprint's answer is a chokepoint — Adapter\Mollie\SdkMollieApi resolves the key internally and
- * nothing else ever sees it.
- *
- * This test does not clean up the 19. It draws the line around the new code, so the count can only
- * go down: the moment a second file under src/Core, src/Workflow, src/Adapter or src/ExpressComponent
- * reaches for the key, the suite says so, with the file name.
- *
- * @covers \Mollie\WooCommerce\Adapter\Mollie\SdkMollieApi
+ * @covers \Mollie\WooCommerce\SDK\SdkMollieApi
  */
 class ApiKeyChokepointTest extends TestCase
 {
-    private const CHOKEPOINT = 'src/Adapter/Mollie/SdkMollieApi.php';
+    private const CHOKEPOINT = 'src/SDK/SdkMollieApi.php';
 
     /**
-     * The two spellings the criterion names: the accessor, and the option ids it reads.
+     * The two spellings that read the key: the accessor, and the option ids it reads.
      */
     private const KEY_PATTERNS = ['getApiKey(', 'api_key'];
 
     /**
-     * Everything the seed adds. Legacy directories are deliberately out of scope.
+     * Everything the new code adds, directories and single files. Legacy code is deliberately out of
+     * scope: src/SDK/Api.php and the settings still read the key today.
      */
-    private const NEW_CODE_DIRS = ['src/Core', 'src/Workflow', 'src/Adapter', 'src/ExpressComponent'];
+    private const NEW_CODE = [
+        'src/ExpressComponent',
+        'src/Shared/Values',
+        'src/Payment/Rules',
+        'src/Components/Rules',
+        'src/SDK/MollieApi.php',
+        'src/SDK/SdkMollieApi.php',
+        'src/SDK/MollieCallFailed.php',
+        'src/SDK/IdempotencyKey.php',
+        'src/Log/EventLog.php',
+        'src/Payment/OrderLock.php',
+        'src/Payment/OrderLockTimeout.php',
+        'src/Shared/Clock.php',
+        'src/Shared/SystemClock.php',
+    ];
 
     /**
      * Scenario: only the Mollie adapter reads the API key
-     *   Given every file the seed commits under src/Core, src/Workflow, src/Adapter and src/ExpressComponent
+     *   Given every file of the new code
      *   When each is searched for getApiKey( and api_key
      *   Then the only file that matches is the SdkMollieApi adapter
      */
@@ -53,12 +59,10 @@ class ApiKeyChokepointTest extends TestCase
         );
 
         $readers = [];
-        foreach (self::NEW_CODE_DIRS as $dir) {
-            $path = PROJECT_DIR . '/' . $dir;
-            if (!is_dir($path)) {
-                continue;
-            }
-            foreach ($this->phpFilesIn($path) as $file) {
+        foreach (self::NEW_CODE as $entry) {
+            $path = PROJECT_DIR . '/' . $entry;
+            self::assertFileExists($path, "{$entry} is listed as new code but does not exist.");
+            foreach (is_dir($path) ? $this->phpFilesIn($path) : [$path] as $file) {
                 $matched = $this->patternsIn((string) file_get_contents($file));
                 if ($matched !== []) {
                     $readers[$this->relative($file)] = $matched;
@@ -69,7 +73,7 @@ class ApiKeyChokepointTest extends TestCase
         self::assertSame(
             [self::CHOKEPOINT],
             array_keys($readers),
-            "The API key is read outside Adapter\\Mollie\\SdkMollieApi:\n" . $this->describe($readers)
+            "The API key is read outside SDK\\SdkMollieApi:\n" . $this->describe($readers)
         );
         self::assertNotSame(
             [],

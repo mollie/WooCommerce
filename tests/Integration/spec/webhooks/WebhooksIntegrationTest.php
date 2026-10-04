@@ -8,7 +8,7 @@ use Mollie\WooCommerceTests\Integration\API\Traits\APIMockTrait;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
-use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Mollie\WooCommerce\Payment\PaymentFactory;

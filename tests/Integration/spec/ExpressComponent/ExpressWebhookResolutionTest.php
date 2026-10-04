@@ -6,12 +6,12 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
 use Mockery;
-use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
-use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
+use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
-use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
@@ -21,22 +21,8 @@ use WC_Order;
 use wpdb;
 
 /**
- * The webhook of a payment the plugin never created (REQ-D1, D3, D4, D5, D6, D7, F2, G4, G5, G6;
- * AC-20 to AC-26, AC-33, AC-38, AC-39, AC-40).
- *
- * Mollie creates the express payment from the session, so when its webhook arrives the order knows
- * neither a transaction id nor _mollie_payment_id, and the session's redirectUrl carries an
- * express_ref instead of an order id. One new stage — ResolveExpressPayment, between the two indexed
- * lookups and the redirectUrl fallback, on both webhook paths — fetches the payment, finds the order
- * carrying the ref in its metadata, checks the match, and writes the first-sight effects under the
- * per-order lock. The existing doPaymentForOrder() then decides the status exactly as today.
- *
- * Observed end to end: the real REST route with the shop secret, the real WooCommerce order storage,
- * the real SDK and HTTP adapter, with only Mollie faked at the HTTP layer. deliverWebhook() returns
- * the status code, which is the whole contract with Mollie's retries.
- *
- * The first three scenarios are characterisation tests of the route as it is today; they pin the
- * refactor of RestApi::callback() and setBillingAddressAfterPayment() and pass before any change.
+ * The webhook of an express payment, which Mollie created from the session: resolving it to the
+ * order carrying its express_ref, end to end with only Mollie faked at the HTTP layer.
  *
  * @group integration
  * @group ExpressComponent
@@ -102,9 +88,6 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   Given the plugin is booted and the request carries the shop secret
      *   When Mollie posts no id, then its testByMollie probe, then an id no order and no payment knows
      *   Then they are answered 404, 200 and 200
-     *
-     * The unknown id reaches the redirectUrl fallback, whose failed payment fetch is caught inside
-     * MollieOrderService and ends in 200; the route's own 500 branch is not reachable through it today.
      *
      * @test
      */
@@ -451,6 +434,50 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a second payment carrying the ref of an order that tracks a first one is refused as other_payment
+     *   Given a pending express order whose first payment, still open, Mollie already called the webhook for
+     *   And so the order tracks that first payment
+     *   And a second payment, paid, from the same session, carrying the same express_ref
+     *   When Mollie calls the webhook for the second payment
+     *   Then it is answered 200
+     *   And express.webhook.unmatched is logged once with the reason other_payment and the second payment's id
+     *   And the order's status, meta and notes are exactly as before, it is not paid, and no payment was completed
+     *   And no orphaned payment is reported, because an order carries the ref
+     *
+     * @test
+     */
+    public function it_refuses_a_second_payment_carrying_the_ref_of_an_order_that_tracks_a_first_one(): void
+    {
+        [$order, $ref, $sessionId] = $this->expressOrder();
+        $first = $this->fakeMollie()->completeSession($sessionId, ['status' => 'open', 'method' => 'paypal']);
+        $this->assertSame(200, $this->deliverWebhook($first['id']));
+        $this->assertSame($first['id'], (string) $this->fresh($order)->get_meta('_mollie_payment_id'), 'The order must track the first payment.');
+        $this->assertSame('pending', $this->fresh($order)->get_status());
+
+        $second = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $this->assertNotSame($first['id'], $second['id']);
+        $this->assertSame($ref, $second['metadata']['express_ref'] ?? null, 'The second payment must carry the same express_ref.');
+        $state = $this->state($order);
+        $notes = $this->notes($order);
+        $completions = $this->paymentCompletions;
+        $this->logger()->reset();
+
+        $status = $this->deliverWebhook($second['id']);
+
+        $this->assertSame(200, $status);
+        $unmatched = $this->loggedEvents('express.webhook.unmatched');
+        $this->assertCount(1, $unmatched);
+        $this->assertSame('other_payment', $unmatched[0]['context']['reason'] ?? null);
+        $this->assertSame($second['id'], $unmatched[0]['context']['mollie_id'] ?? null);
+        $this->assertSame($state, $this->state($order));
+        $this->assertSame($notes, $this->notes($order));
+        $this->assertFalse($this->fresh($order)->is_paid());
+        $this->assertSame($completions, $this->paymentCompletions);
+        $this->assertSame([], $this->loggedEvents('express.payment.orphaned'));
+        $this->assertSame([], $this->loggedEvents('order.written'), 'Nothing may be written for a refused payment.');
+    }
+
+    /**
      * Scenario: payment metadata naming an ordinary pending order does not pay it
      *   Given an ordinary pending order placed through the classic checkout
      *   And a paid payment whose metadata names that order by id, or carries a ref that order was given
@@ -535,9 +562,6 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   Then express.payment.orphaned is logged as an error with the payment, its amount and the reason
      *   And the payment is remembered for the admin notice, with its amount and nothing personal
      *   And the notice names the payment and is shown only to someone who can act on it
-     *
-     * The shopper paid and the store has nothing to fulfil. This was silent until 2026-09-24, when a
-     * real payment was captured against a refused submit and only a warning line recorded it.
      *
      * @test
      */
@@ -723,10 +747,6 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And its shipping address is exactly as it was, because that is what priced the shipping
      *   And the order is paid
      *
-     * The sheet is where the shopper picks their contact and billing address, so those take
-     * precedence over the form and over the account (owner, 2026-09-24, revising REQ-C2). Until then
-     * the store's own won, and this test pinned that.
-     *
      * @test
      * @dataProvider heldAddresses
      */
@@ -807,7 +827,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   When Mollie calls the webhook, which waits for the lock and then resolves the payment
      *   And a second resolution of the same payment runs the same rails afterwards, as a return would
      *   Then the webhook waited and was answered 200
-     *   And the order has one _mollie_payment_id, the effects were applied once, the payment was completed once
+     *   And the order has one _mollie_payment_id, the order was written once, the payment was completed once
      *   And the second resolution added no note
      *
      * @test
@@ -832,7 +852,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $this->assertSame(200, $status);
         $after = $this->fresh($order);
         $this->assertCount(1, $after->get_meta('_mollie_payment_id', false));
-        $this->assertCount(1, $this->effectsAppliedTo($order));
+        $this->assertCount(1, $this->orderWrittenFor($order));
         $this->assertSame(1, $this->paymentCompletions);
         $this->assertSame($notesAfterWebhook, $this->notes($order));
         $this->assertTrue($after->is_paid());
@@ -899,7 +919,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the PayPal button writeback keeps what Mollie supplies and no longer blanks what it does not
+     * Scenario: the PayPal button writeback keeps what Mollie supplies and does not blank what it does not
      *   Given a pending PayPal button order holding a billing state
      *   And the paid PayPal payment carries a phone and a second address line, and no region
      *   When Mollie calls the webhook
@@ -969,9 +989,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * An express order created the way the browser creates it: a started session, then submit. A
-     * guest with a cart that ships to LU on the 'standard' rate; the billing form is the fixture's
-     * unless given.
+     * A guest express order created as the browser does: a started session, then submit.
      *
      * @param array<string, string>|null $billing The billing form; [] for a guest who filled none.
      * @return array{0: WC_Order, 1: string, 2: string} The order, its express_ref, its session id.
@@ -988,8 +1006,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * An express order of the fixture customer, whose billing address comes from the account and
-     * whose shipping address was chosen on the checkout.
+     * An express order of the fixture customer, billing from the account, shipping from checkout.
      *
      * @return array{0: WC_Order, 1: string, 2: string}
      */
@@ -1031,8 +1048,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * A payment at the fake Mollie for an order the plugin did not create through express: a session
-     * for the order's total, completed with the given outcome.
+     * A payment at the fake Mollie for a non-express order, completed with the given outcome.
      *
      * @param array<string, mixed> $outcome
      * @return array<string, mixed>
@@ -1076,8 +1092,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * MollieOrderService with only its request-reading seam replaced: filter_input(INPUT_POST) is
-     * always empty on the CLI. Everything else, the express stage included, is the real service.
+     * The real service with only the request reader replaced: filter_input(INPUT_POST) is empty on the CLI.
      */
     private function legacyWebhookService(string $paymentId): MollieOrderService
     {
@@ -1160,9 +1175,9 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     /**
      * @return array<int, array{level: string, message: string, context: array<mixed>}>
      */
-    private function effectsAppliedTo(WC_Order $order): array
+    private function orderWrittenFor(WC_Order $order): array
     {
-        return array_values(array_filter($this->loggedEvents('effects.applied'), static function (array $record) use ($order): bool {
+        return array_values(array_filter($this->loggedEvents('order.written'), static function (array $record) use ($order): bool {
             return (int) ($record['context']['order'] ?? 0) === $order->get_id();
         }));
     }
@@ -1186,8 +1201,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Holds the order's lock from another connection for a number of seconds, without blocking this
-     * process: the holder's query runs asynchronously and releases the lock itself.
+     * Holds the order's lock from another connection for some seconds, asynchronously, so this process is not blocked.
      */
     private function holdTheLockBriefly(string $orderKey, int $seconds): wpdb
     {

@@ -10,12 +10,7 @@ use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use WC_Order;
 
 /**
- * Refunding a paid express order from WooCommerce.
- *
- * The existing refund rails read _mollie_payment_id and throw for an order that never got one. The
- * first sight of an express payment writes it, with the wallet's payment method, so a refund needs
- * nothing special: WooCommerce calls the gateway, RefundProcessor finds the payment, and the refund
- * reaches Mollie. Observed at the fake Mollie and on the order; RefundProcessor is not changed.
+ * Refunding a paid express order from WooCommerce reaches Mollie through the existing refund path.
  *
  * @group integration
  * @group ExpressComponent

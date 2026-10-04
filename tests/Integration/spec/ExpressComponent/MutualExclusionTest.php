@@ -10,20 +10,8 @@ use Mollie\WooCommerce\PaymentMethods\Paypal;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 
 /**
- * The Express Component and the legacy Apple Pay / PayPal express buttons never share a surface
- * (REQ-A1 to A6).
- *
- * Two express buttons on one checkout can mean two orders and two charges: the flows create orders
- * by different routes and no lock or idempotency key spans them. Express has no switch of its own.
- * It takes over the checkout where the merchant already asked for an express button there, through a
- * wallet's own payment method settings, and only when it can run. Then the legacy buttons step aside
- * on the checkout page, and only there. When no wallet has its express button on, or Express cannot
- * run (test mode, plain HTTP, no wallet), the legacy buttons keep exactly what the merchant
- * configured. The cart block, the classic pages and the product page are never touched.
- *
- * Everything real: the gateway settings, the fact builder, the global helper and the two legacy
- * methods. Only Mollie is faked, by the harness, which also provides a registered and active Apple
- * Pay and PayPal.
+ * When Express owns the checkout, the legacy Apple Pay / PayPal express buttons step aside there;
+ * otherwise they keep what the merchant configured.
  *
  * @group integration
  * @group ExpressComponent
@@ -125,8 +113,6 @@ class MutualExclusionTest extends ExpressFlowTestCase
      *   When the Apple Pay express button and the PayPal checkout button are each on or off
      *   Then Express owns the checkout when at least one of them is on
      *   And PayPal's cart setting alone does not make it own anything
-     *
-     * This pins the setting each wallet row reads, and that a wallet counts alone.
      *
      * @test
      * @dataProvider checkoutButtonSettings
@@ -280,7 +266,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // The wallets behind the decision (the adapter's translation of real shop state)
+    // The wallets behind the decision
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
@@ -290,8 +276,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      *   When the plugin is asked whether Express owns the checkout
      *   Then it does, through the wallet that is left
      *
-     * This pins the real gateway id of each wallet row: with a wrong id in config/express.php
-     * that wallet would never be visible, and only a test where it stands alone can tell.
+     * Only a wallet standing alone reveals a wrong gateway id in config/express.php.
      *
      * @test
      * @dataProvider walletsStandingAlone
@@ -355,8 +340,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
     {
         $this->configureLegacyButtons();
         $this->useHttps(true);
-        // Overridden rather than faked: the plugin registers its methods from the same fake list, so
-        // changing that list would also remove the wallets from the registered set and hide this check.
+        // Overridden, not faked: changing the fake list would also unregister the wallets.
         $this->bootExpress([
             'gateway.paymentMethodsEnabledAtMollie' => static function () use ($active): array {
                 return $active;
@@ -386,8 +370,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
-     * Apple Pay and PayPal enabled, with every legacy express setting on. The harness's fake
-     * methods list already reports both as active at Mollie.
+     * Apple Pay and PayPal enabled, with every legacy express setting on.
      */
     private function configureLegacyButtons(): void
     {
@@ -420,8 +403,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
     }
 
     /**
-     * What each legacy method answers on each page. Fresh instances, because the methods read their
-     * stored settings on every call and nothing else about them matters here.
+     * What each legacy method answers on each page.
      *
      * @return array<string, array{applepay: bool, paypal: bool}>
      */

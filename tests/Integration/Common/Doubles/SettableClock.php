@@ -5,7 +5,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\Common\Doubles;
 
-use Mollie\WooCommerce\Core\Clock;
+use Mollie\WooCommerce\Shared\Clock;
 
 /**
  * The plugin's clock, pinned by a test: the real time until set, then whatever the test says.

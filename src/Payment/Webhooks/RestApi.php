@@ -3,11 +3,11 @@
 namespace Mollie\WooCommerce\Payment\Webhooks;
 
 use Mollie\Api\Exceptions\ApiException;
-use Mollie\WooCommerce\Adapter\WordPress\EventLog;
-use Mollie\WooCommerce\Adapter\WordPress\OrderLockTimeout;
+use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\Payment\OrderLockTimeout;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
-use Mollie\WooCommerce\Workflow\ResolveExpressPayment;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Psr\Log\LoggerInterface;
 use WP_REST_Request;
 

@@ -1,0 +1,86 @@
+<?php
+// kb-active
+
+declare(strict_types=1);
+
+namespace Mollie\WooCommerceTests\Unit\ExpressComponent\Rules;
+
+use Mollie\WooCommerce\ExpressComponent\Rules\AbandonDecision;
+use Mollie\WooCommerce\Shared\Values\ExpressSession;
+use Mollie\WooCommerce\Shared\Values\Money;
+use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
+use Mollie\WooCommerceTests\TestCase;
+
+/**
+ * Whether cleanup may cancel a pending express order that outlived its session: only when Mollie
+ * says it can no longer be paid; not knowing keeps the order.
+ *
+ * @covers \Mollie\WooCommerce\ExpressComponent\Rules\AbandonDecision
+ */
+class AbandonDecisionTest extends TestCase
+{
+    /**
+     * Scenario: every Mollie status has a row, and only a final "cannot be paid" cancels
+     *   Given what Mollie reported for the order's session or payment, or that it could not be reached
+     *   When the decision is asked
+     *   Then a status that can no longer be paid gives true: the order can no longer be paid
+     *   And every other status, and no answer at all, gives false: the order is kept
+     *
+     * @dataProvider mollieAnswers
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\AbandonDecision::decide
+     */
+    public function testDecidesWhetherAnAbandonedExpressOrderIsCancelled(
+        ?string $sessionStatus,
+        ?string $paymentStatus,
+        bool $expectCancel
+    ): void {
+
+        $session = $sessionStatus === null ? null : new ExpressSession('sess_abc', $sessionStatus, '', '2026-09-21T10:15:00+00:00');
+        $payment = $paymentStatus === null ? null : new PaymentSnapshot('tr_abc', $paymentStatus, 'paypal', Money::fromDecimal('26.05', 'EUR'));
+
+        $canNoLongerBePaid = AbandonDecision::decide($session, $payment);
+
+        self::assertSame($expectCancel, $canNoLongerBePaid);
+    }
+
+    /**
+     * @return array<string, array{0: ?string, 1: ?string, 2: bool}>
+     */
+    public function mollieAnswers(): array
+    {
+        return [
+            // The order knows no payment yet: the session answers.
+            'session expired' => ['expired', null, true],
+            'session still open' => ['open', null, false],
+            'session completed, payment not known to the order yet' => ['completed', null, false],
+            // The order knows its payment: the payment answers.
+            'payment failed' => [null, 'failed', true],
+            'payment canceled' => [null, 'canceled', true],
+            'payment expired' => [null, 'expired', true],
+            'payment open' => [null, 'open', false],
+            'payment pending' => [null, 'pending', false],
+            'payment authorized' => [null, 'authorized', false],
+            'payment paid' => [null, 'paid', false],
+            // The payment wins over the session.
+            'session expired, payment paid' => ['expired', 'paid', false],
+            'session completed, payment failed' => ['completed', 'failed', true],
+            // Not knowing is never a reason to cancel.
+            'Mollie could not be reached' => [null, null, false],
+            'a status Mollie may add later' => ['unknown_new_status', null, false],
+        ];
+    }
+
+    /**
+     * Scenario: cleanup waits longer than a checkout session can live
+     *   Given config/express.php
+     *   When its abandon grace is compared with the session lifetime
+     *   Then cleanup looks at an order only a full session lifetime or more after its session expired,
+     *        so a payment started at the last moment has had as long again to arrive
+     */
+    public function testTheCleanupGraceIsLongerThanASessionLives(): void
+    {
+        $config = require PROJECT_DIR . '/config/express.php';
+
+        self::assertGreaterThan($config['sessionLifetimeSeconds'], $config['abandonGraceSeconds']);
+    }
+}

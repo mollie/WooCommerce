@@ -12,13 +12,7 @@ use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\SessionRules;
 
 /**
- * Proves the Express Component harness itself, before any feature code exists.
- *
- * Every feature test will lean on these properties — that the real SDK talks to the fake without a
- * key or a network, that the fake is as strict as the Sessions documentation, that a payment the
- * plugin never created can be driven through the real webhook route, and that the leak detector
- * actually detects. A harness that silently did less would make the feature tests pass for the
- * wrong reason, so they are pinned here.
+ * The Express Component harness itself: fake Mollie, strict Sessions rules, webhook route, leak detector.
  *
  * @group integration
  * @group ExpressComponent
@@ -277,8 +271,6 @@ class ExpressHarnessTest extends ExpressFlowTestCase
      *   Then the order is paid and Mollie is answered 200
      *   And nothing marked secret or personal reached the log
      *
-     * This is the rail every express payment will arrive on.
-     *
      * @test
      */
     public function it_drives_a_fake_payment_through_the_real_webhook_route(): void
@@ -387,8 +379,7 @@ class ExpressHarnessTest extends ExpressFlowTestCase
     }
 
     /**
-     * The acceptance-criteria example of the session-client spec: quantity 2, unit price 10.00
-     * including 21% VAT, so totalAmount 20.00 and vatAmount 3.47.
+     * Quantity 2 at 10.00 including 21% VAT: totalAmount 20.00, vatAmount 3.47.
      *
      * @return array<string, mixed>
      */

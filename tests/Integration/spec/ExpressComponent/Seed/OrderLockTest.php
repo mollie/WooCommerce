@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent\Seed;
 
-use Mollie\WooCommerce\Adapter\WordPress\OrderLock;
+use Automattic\WooCommerce\Utilities\OrderUtil;
+use InvalidArgumentException;
+use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\Payment\OrderLockTimeout;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
+use WC_Order;
 use wpdb;
 
 /**
- * The per-order lock when a locked operation takes a second lock (ADR-007, REQ-B5).
- *
- * StartExpressOrder holds the lock of an express_ref while EffectInterpreter stamps the new order
- * under the order's own lock. MySQL 5.7.5 and MariaDB 10.0.2 can hold both; before them, taking a
- * second named lock silently releases the first, which would let a second submit create a second
- * order. On such a server the nested work runs under the lock already held.
+ * The per-order lock: nested locks, fresh reads, and a lock held elsewhere.
+ * Before MySQL 5.7.5 / MariaDB 10.0.2 a second named lock releases the first, so nested work runs under the held one.
  *
  * @group integration
  * @group ExpressComponent
- * @covers \Mollie\WooCommerce\Adapter\WordPress\OrderLock
+ * @covers \Mollie\WooCommerce\Payment\OrderLock
  */
 class OrderLockTest extends ExpressFlowTestCase
 {
@@ -114,6 +114,149 @@ class OrderLockTest extends ExpressFlowTestCase
             'MariaDB 10.0.2 behind the replication prefix' => ['5.5.5-10.0.2-MariaDB'],
             'MariaDB 11' => ['11.8.6-MariaDB-ubu2404-log'],
         ];
+    }
+
+    /**
+     * Scenario: an order another process changed is read as changed inside the lock
+     *   Given an order this process has already loaded, so WooCommerce holds it in its OrderCache
+     *   And another process changes its status and adds a meta row directly in the order tables
+     *   When the order is read through OrderLock::withFreshOrder()
+     *   Then the work receives the order with the new status
+     *   And with the new meta row
+     *
+     * No wp_cache_flush() and no `new WC_Order()`: either would hide a stale OrderCache read.
+     *
+     * @test
+     */
+    public function it_reads_an_order_another_process_changed_through_with_fresh_order(): void
+    {
+        global $wpdb;
+        $order = $this->pendingOrder('mollie_wc_gateway_ideal');
+        $orderId = $order->get_id();
+        $this->assertSame('pending', wc_get_order($orderId)->get_status(), 'The order must be loaded, and cached, by this process first.');
+
+        $this->writeAsAnotherProcess($orderId, 'wc-processing', '_mollie_outside_write', 'written-elsewhere');
+
+        $seen = null;
+        (new OrderLock($wpdb))->withFreshOrder($orderId, static function (WC_Order $fresh) use (&$seen): void {
+            $seen = [
+                'status' => $fresh->get_status(),
+                'meta' => (string) $fresh->get_meta('_mollie_outside_write'),
+            ];
+        });
+
+        $this->assertSame(
+            ['status' => 'processing', 'meta' => 'written-elsewhere'],
+            $seen,
+            'The order read inside the lock is the one this process cached, not the one stored.'
+        );
+    }
+
+    /**
+     * Scenario: nothing runs while another request holds the order lock
+     *   Given a second database connection holding this order's lock
+     *   When OrderLock::withFreshOrder() is asked for that order
+     *   Then it throws the retryable OrderLockTimeout
+     *   And the work never ran
+     *   And the order is exactly as it was
+     *
+     * @test
+     */
+    public function it_runs_no_work_and_throws_when_the_order_lock_is_held_elsewhere(): void
+    {
+        global $wpdb;
+        $order = $this->pendingOrder('mollie_wc_gateway_ideal');
+        $orderId = $order->get_id();
+        $holder = $this->holdTheLockElsewhere((string) $orderId);
+        $ran = false;
+        $thrown = null;
+
+        try {
+            (new OrderLock($wpdb))->withFreshOrder($orderId, static function (WC_Order $fresh) use (&$ran): void {
+                $ran = true;
+                $fresh->update_meta_data('_mollie_payment_id', 'tr_shouldNotBeWritten');
+                $fresh->save();
+            });
+        } catch (OrderLockTimeout $timeout) {
+            $thrown = $timeout;
+        } finally {
+            $this->releaseTheLock($holder, (string) $orderId);
+        }
+
+        $this->assertInstanceOf(OrderLockTimeout::class, $thrown, 'A lock it cannot take must be a retryable failure, not a silent skip.');
+        $this->assertFalse($ran, 'The work must not run without the lock.');
+        $after = wc_get_order($orderId);
+        $this->assertSame('pending', $after->get_status());
+        $this->assertSame('', (string) $after->get_meta('_mollie_payment_id'));
+    }
+
+    /**
+     * Scenario: an order that no longer exists is refused before any work runs
+     *   Given an order that was deleted
+     *   When OrderLock::withFreshOrder() is asked for it
+     *   Then it throws InvalidArgumentException
+     *   And the work never ran
+     *
+     * @test
+     */
+    public function it_throws_and_runs_no_work_when_the_order_no_longer_exists(): void
+    {
+        global $wpdb;
+        $order = $this->pendingOrder('mollie_wc_gateway_ideal');
+        $orderId = $order->get_id();
+        $order->delete(true);
+        $ran = false;
+
+        $this->expectException(InvalidArgumentException::class);
+        try {
+            (new OrderLock($wpdb))->withFreshOrder($orderId, static function () use (&$ran): void {
+                $ran = true;
+            });
+        } finally {
+            $this->assertFalse($ran, 'The work must not run for an order that does not exist.');
+        }
+    }
+
+    /**
+     * Another process's write: rows changed directly, no WooCommerce hook, no local cache touched.
+     */
+    private function writeAsAnotherProcess(int $orderId, string $status, string $metaKey, string $metaValue): void
+    {
+        global $wpdb;
+        $hpos = OrderUtil::custom_orders_table_usage_is_enabled();
+        $ordersTable = OrderUtil::get_table_for_orders();
+        $metaTable = OrderUtil::get_table_for_order_meta();
+
+        $updated = $wpdb->update(
+            $ordersTable,
+            [$hpos ? 'status' : 'post_status' => $status],
+            [$hpos ? 'id' : 'ID' => $orderId]
+        );
+        $inserted = $wpdb->insert(
+            $metaTable,
+            [$hpos ? 'order_id' : 'post_id' => $orderId, 'meta_key' => $metaKey, 'meta_value' => $metaValue]
+        );
+
+        $this->assertSame(1, $updated, 'The outside write did not change the order row.');
+        $this->assertSame(1, $inserted, 'The outside write did not add the meta row.');
+    }
+
+    /**
+     * A second connection, because MySQL grants a session the lock it already holds.
+     */
+    private function holdTheLockElsewhere(string $orderKey): wpdb
+    {
+        $holder = new wpdb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+        $taken = $holder->get_var($holder->prepare('SELECT GET_LOCK(%s, 0)', OrderLock::lockName($orderKey)));
+        $this->assertSame('1', (string) $taken, 'The test could not take the lock it needs to hold.');
+
+        return $holder;
+    }
+
+    private function releaseTheLock(wpdb $holder, string $orderKey): void
+    {
+        $holder->get_var($holder->prepare('SELECT RELEASE_LOCK(%s)', OrderLock::lockName($orderKey)));
+        $holder->close();
     }
 
     private function databaseReporting(string $version): wpdb

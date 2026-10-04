@@ -32,10 +32,13 @@
         <exclude name="Generic.Metrics.NestingLevel.TooHigh"/>
     </rule>
 
-    <!-- src/Core may not call WordPress (CorePurityTest), so it cannot use esc_html(). Its exceptions
-    report invalid arguments to the calling code; escaping is the job of whatever adapter outputs them. -->
+    <!-- Rules/ folders and src/Shared/Values may not call WordPress (PureRulesTest), so they cannot use
+    esc_html(). Their exceptions report invalid arguments to the calling code; escaping is the job of
+    whatever outputs them. IdempotencyKey had the same exemption under src/Core and keeps it in src/SDK. -->
     <rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
-        <exclude-pattern>./src/Core/*</exclude-pattern>
+        <exclude-pattern>./src/*/Rules/*</exclude-pattern>
+        <exclude-pattern>./src/Shared/Values/*</exclude-pattern>
+        <exclude-pattern>./src/SDK/IdempotencyKey.php</exclude-pattern>
     </rule>
 
 </ruleset>

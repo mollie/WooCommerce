@@ -6,8 +6,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
-use Mollie\WooCommerce\Core\Express\StartOrderDecision;
-use Mollie\WooCommerce\Core\Payment\CancelUnpaidSchedule;
+use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
+use Mollie\WooCommerce\Payment\Rules\CancelUnpaidSchedule;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;

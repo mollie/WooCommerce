@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\Common;
 
-use Mollie\WooCommerce\Adapter\WordPress\OrphanedExpressPayments;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;

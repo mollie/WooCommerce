@@ -10,17 +10,8 @@ use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 
 /**
- * Whether the action mollie_woocommerce_cancel_unpaid_orders is scheduled (REQ-E1; AC-27).
- *
- * PaymentModule::handleExpiryDateCancelation() runs on init and schedules the action only while an
- * enabled gateway has activate_expiry_days_setting on; otherwise it unschedules it. The first test
- * pins that behaviour as it is today, before its condition is extracted into a pure predicate. The
- * express cleanup runs on the same action, so it must also stay scheduled while Express is enabled,
- * with no second action name.
- *
- * Driven through the real wiring: the plugin's own init callbacks run, and nothing else's. Express
- * is enabled when a wallet is visible (here PayPal with its checkout button on, in a live HTTPS
- * shop), and off when no wallet's express setting is on.
+ * Whether mollie_woocommerce_cancel_unpaid_orders is scheduled: for the expiry setting, and
+ * while Express is enabled, since the express cleanup runs on the same action.
  *
  * @group integration
  * @group ExpressComponent
@@ -63,9 +54,6 @@ class CancelUnpaidScheduleTest extends ExpressFlowTestCase
      *   And the action was scheduled before, or was not
      *   When the plugin runs its init callbacks
      *   Then the action is scheduled exactly when an enabled gateway has the expiry setting on
-     *
-     * Characterisation test of PaymentModule::handleExpiryDateCancelation(): it must pass before and
-     * after the refactor that extracts its condition.
      *
      * @test
      * @dataProvider todaysDecision

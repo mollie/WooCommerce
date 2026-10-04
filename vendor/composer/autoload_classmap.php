@@ -447,6 +447,7 @@ return array(
     'Mollie\\WooCommerce\\Payment\\Request\\Strategies\\PaymentRequestStrategy' => $baseDir . '/src/Payment/Request/Strategies/PaymentRequestStrategy.php',
     'Mollie\\WooCommerce\\Payment\\Request\\Strategies\\RequestStrategyInterface' => $baseDir . '/src/Payment/Request/Strategies/RequestStrategyInterface.php',
     'Mollie\\WooCommerce\\Payment\\Rules\\CancelUnpaidSchedule' => $baseDir . '/src/Payment/Rules/CancelUnpaidSchedule.php',
+    'Mollie\\WooCommerce\\Payment\\Rules\\PendingPaymentHold' => $baseDir . '/src/Payment/Rules/PendingPaymentHold.php',
     'Mollie\\WooCommerce\\Payment\\Rules\\Values\\ProcessRecord' => $baseDir . '/src/Payment/Rules/Values/ProcessRecord.php',
     'Mollie\\WooCommerce\\Payment\\Rules\\WebhookGuards' => $baseDir . '/src/Payment/Rules/WebhookGuards.php',
     'Mollie\\WooCommerce\\Payment\\Webhooks\\RestApi' => $baseDir . '/src/Payment/Webhooks/RestApi.php',

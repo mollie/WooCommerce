@@ -524,6 +524,7 @@ class ComposerStaticInit614c484ffb864dc3835a7a81a02df6fa
         'Mollie\\WooCommerce\\Payment\\Request\\Strategies\\PaymentRequestStrategy' => __DIR__ . '/../..' . '/src/Payment/Request/Strategies/PaymentRequestStrategy.php',
         'Mollie\\WooCommerce\\Payment\\Request\\Strategies\\RequestStrategyInterface' => __DIR__ . '/../..' . '/src/Payment/Request/Strategies/RequestStrategyInterface.php',
         'Mollie\\WooCommerce\\Payment\\Rules\\CancelUnpaidSchedule' => __DIR__ . '/../..' . '/src/Payment/Rules/CancelUnpaidSchedule.php',
+        'Mollie\\WooCommerce\\Payment\\Rules\\PendingPaymentHold' => __DIR__ . '/../..' . '/src/Payment/Rules/PendingPaymentHold.php',
         'Mollie\\WooCommerce\\Payment\\Rules\\Values\\ProcessRecord' => __DIR__ . '/../..' . '/src/Payment/Rules/Values/ProcessRecord.php',
         'Mollie\\WooCommerce\\Payment\\Rules\\WebhookGuards' => __DIR__ . '/../..' . '/src/Payment/Rules/WebhookGuards.php',
         'Mollie\\WooCommerce\\Payment\\Webhooks\\RestApi' => __DIR__ . '/../..' . '/src/Payment/Webhooks/RestApi.php',

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use Mollie\WooCommerce\Log\EventLog;
@@ -9,38 +8,20 @@ use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 use WC_Order;
-
 /**
  * Values are written only when they differ and notes only when absent, so a retried webhook
  * changes nothing. Callers pass the order read under OrderLock::withFreshOrder().
  */
 final class ExpressOrderWriter
 {
-    private const ADDRESS_FIELDS = [
-        'billing' => [
-            'first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country',
-            'email', 'phone',
-        ],
-        'shipping' => [
-            'first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country',
-            'phone',
-        ],
-    ];
-
+    private const ADDRESS_FIELDS = ['billing' => ['first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country', 'email', 'phone'], 'shipping' => ['first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country', 'phone']];
     public function __construct(private EventLog $log)
     {
     }
-
     /** The payment method is provisional: the first webhook corrects it to the wallet that paid. */
-    public function stampNewOrder(
-        WC_Order $order,
-        RememberedSession $session,
-        string $mode,
-        string $gatewayId,
-        string $wallet
-    ): void {
-
-        $started = microtime(true);
+    public function stampNewOrder(WC_Order $order, RememberedSession $session, string $mode, string $gatewayId, string $wallet): void
+    {
+        $started = microtime(\true);
         $changed = $this->setCreatedVia($order, StartOrderDecision::CREATED_VIA);
         $changed = $this->setMeta($order, '_mollie_express_ref', $session->expressRef()) || $changed;
         $changed = $this->setMeta($order, '_mollie_express_session_id', $session->sessionId()) || $changed;
@@ -48,18 +29,15 @@ final class ExpressOrderWriter
         $changed = $this->setMeta($order, '_mollie_payment_mode', $mode) || $changed;
         $changed = $this->setStatus($order, 'pending') || $changed;
         $changed = $this->setPaymentMethod($order, $gatewayId) || $changed;
-
         $this->finish($order, $changed, [__('Express checkout started', 'mollie-payments-for-woocommerce')], $started);
     }
-
     public function recordFirstSight(WC_Order $order, FirstSightData $firstSight): void
     {
-        $started = microtime(true);
+        $started = microtime(\true);
         $notes = [];
         $changed = $this->setMeta($order, '_mollie_payment_id', $firstSight->paymentId());
         $changed = $this->setTransactionId($order, $firstSight->paymentId()) || $changed;
         $changed = $this->setMeta($order, '_mollie_payment_mode', $firstSight->mode()) || $changed;
-
         $gatewayId = $firstSight->gatewayId();
         if ($gatewayId !== null) {
             $changed = $this->setPaymentMethod($order, $gatewayId) || $changed;
@@ -70,29 +48,19 @@ final class ExpressOrderWriter
                 ['{method}' => $firstSight->unmatchedMethod()]
             );
         }
-
         $changed = $this->setAddress($order, 'billing', $firstSight->billing()) || $changed;
         $shipping = $firstSight->shipping();
         if ($shipping !== null) {
             $changed = $this->setAddress($order, 'shipping', $shipping) || $changed;
         }
-
         $this->finish($order, $changed, $notes, $started);
     }
-
     public function cancelAbandoned(WC_Order $order): void
     {
-        $started = microtime(true);
+        $started = microtime(\true);
         $changed = $this->setStatus($order, 'cancelled');
-
-        $this->finish(
-            $order,
-            $changed,
-            [__('Express checkout was started and not completed', 'mollie-payments-for-woocommerce')],
-            $started
-        );
+        $this->finish($order, $changed, [__('Express checkout was started and not completed', 'mollie-payments-for-woocommerce')], $started);
     }
-
     /**
      * @param array<int, string> $notes
      */
@@ -101,82 +69,64 @@ final class ExpressOrderWriter
         if ($changed) {
             $order->save();
         }
-
-        $noted = false;
+        $noted = \false;
         $existing = $notes === [] ? [] : $this->existingNotes($order->get_id());
         foreach ($notes as $text) {
-            if (!in_array($text, $existing, true)) {
+            if (!in_array($text, $existing, \true)) {
                 $order->add_order_note($text);
                 $existing[] = $text;
-                $noted = true;
+                $noted = \true;
             }
         }
-
         if ($changed || $noted) {
-            $this->log->info('order.written', [
-                'order' => $order->get_id(),
-                'status' => $order->get_status(),
-                'ms' => (int) round((microtime(true) - $started) * 1000),
-            ]);
+            $this->log->info('order.written', ['order' => $order->get_id(), 'status' => $order->get_status(), 'ms' => (int) round((microtime(\true) - $started) * 1000)]);
         }
     }
-
     private function setMeta(WC_Order $order, string $key, string $value): bool
     {
         if ($order->meta_exists($key) && (string) $order->get_meta($key) === $value) {
-            return false;
+            return \false;
         }
         $order->update_meta_data($key, $value);
-
-        return true;
+        return \true;
     }
-
     private function setTransactionId(WC_Order $order, string $transactionId): bool
     {
         if ($order->get_transaction_id() === $transactionId) {
-            return false;
+            return \false;
         }
         $order->set_transaction_id($transactionId);
-
-        return true;
+        return \true;
     }
-
     private function setStatus(WC_Order $order, string $status): bool
     {
         $status = (string) preg_replace('/^wc-/', '', $status);
         if ($order->get_status() === $status) {
-            return false;
+            return \false;
         }
         $order->set_status($status);
-
-        return true;
+        return \true;
     }
-
     private function setCreatedVia(WC_Order $order, string $createdVia): bool
     {
         if ($order->get_created_via() === $createdVia) {
-            return false;
+            return \false;
         }
         $order->set_created_via($createdVia);
-
-        return true;
+        return \true;
     }
-
     private function setPaymentMethod(WC_Order $order, string $gatewayId): bool
     {
         if ($order->get_payment_method() === $gatewayId) {
-            return false;
+            return \false;
         }
-
         $order->set_payment_method($gatewayId);
         $gateways = WC()->payment_gateways()->payment_gateways();
         if (isset($gateways[$gatewayId])) {
             $order->set_payment_method_title($gateways[$gatewayId]->get_title());
         }
-
-        return true;
+        return \true;
     }
-
     /**
      * Allowlisted fields only: a value from Mollie never reaches another order setter.
      *
@@ -184,9 +134,9 @@ final class ExpressOrderWriter
      */
     private function setAddress(WC_Order $order, string $type, array $fields): bool
     {
-        $changed = false;
+        $changed = \false;
         foreach ($fields as $field => $value) {
-            if (!in_array($field, self::ADDRESS_FIELDS[$type], true)) {
+            if (!in_array($field, self::ADDRESS_FIELDS[$type], \true)) {
                 continue;
             }
             $getter = [$order, 'get_' . $type . '_' . $field];
@@ -195,12 +145,10 @@ final class ExpressOrderWriter
                 continue;
             }
             $setter($value);
-            $changed = true;
+            $changed = \true;
         }
-
         return $changed;
     }
-
     /**
      * @return array<int, string>
      */

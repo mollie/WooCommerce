@@ -1,64 +1,40 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
 use Mollie\WooCommerce\Settings\Settings;
-
 /**
  * Express has no option of its own: it reads each wallet's gateway settings, afresh on every call.
  */
 class ExpressFactsBuilder
 {
     private const GATEWAY_PREFIX = 'mollie_wc_gateway_';
-
     /**
      * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
      * @param array<string, mixed> $paymentMethods Keyed by Mollie method id.
      * @param callable(): array<int, string> $activeMollieMethods Cached method ids active on the profile.
      */
-    public function __construct(
-        private array $config,
-        private Settings $settings,
-        private array $paymentMethods,
-        private $activeMollieMethods
-    ) {
+    public function __construct(private array $config, private Settings $settings, private array $paymentMethods, private $activeMollieMethods)
+    {
     }
-
     public function settings(): ExpressSettings
     {
-        return new ExpressSettings(
-            supportedSurfaces: array_values($this->config['surfaces']),
-            allowedModes: array_values($this->config['allowedModes']),
-            wallets: $this->config['wallets']
-        );
+        return new ExpressSettings(supportedSurfaces: array_values($this->config['surfaces']), allowedModes: array_values($this->config['allowedModes']), wallets: $this->config['wallets']);
     }
-
     public function shopFacts(): ShopFacts
     {
         [$registered, $enabled, $expressOnCheckout] = $this->merchantSettings();
-
-        return new ShopFacts(
-            mode: $this->settings->isTestModeEnabled() ? 'test' : 'live',
-            isHttps: wc_site_is_https(),
-            registeredGatewayIds: $registered,
-            enabledGatewayIds: $enabled,
-            activeMollieMethods: $this->activeMollieMethods(),
-            expressCheckoutGatewayIds: $expressOnCheckout
-        );
+        return new ShopFacts(mode: $this->settings->isTestModeEnabled() ? 'test' : 'live', isHttps: wc_site_is_https(), registeredGatewayIds: $registered, enabledGatewayIds: $enabled, activeMollieMethods: $this->activeMollieMethods(), expressCheckoutGatewayIds: $expressOnCheckout);
     }
-
     /** Options only, no Mollie call: cheap enough to run on every request. */
     public function anyWalletTurnedOn(): bool
     {
         [, $enabled, $expressOnCheckout] = $this->merchantSettings();
-
         return array_intersect($enabled, $expressOnCheckout) !== [];
     }
-
     /**
      * Registered, enabled and express-on-checkout gateway ids.
      *
@@ -70,12 +46,11 @@ class ExpressFactsBuilder
         foreach (array_keys($this->paymentMethods) as $methodId) {
             $registered[] = self::GATEWAY_PREFIX . $methodId;
         }
-
         $enabled = [];
         $expressOnCheckout = [];
         foreach ($this->config['wallets'] as $row) {
             $gatewayId = $row['gatewayId'];
-            if (!in_array($gatewayId, $registered, true)) {
+            if (!in_array($gatewayId, $registered, \true)) {
                 continue;
             }
             $settingsOption = $gatewayId . '_settings';
@@ -86,10 +61,8 @@ class ExpressFactsBuilder
                 $expressOnCheckout[] = $gatewayId;
             }
         }
-
         return [$registered, $enabled, $expressOnCheckout];
     }
-
     /**
      * @return list<string>
      */
@@ -101,7 +74,6 @@ class ExpressFactsBuilder
                 $active[] = $methodId;
             }
         }
-
         return $active;
     }
 }

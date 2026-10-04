@@ -43,7 +43,7 @@ final class SessionLines
             $subtotal = $line->subtotal();
             $lines[] = self::raw(
                 'physical',
-                $line->name() !== '' ? $line->name() : 'Product',
+                self::nameOr($line->name(), 'Product'),
                 max(1, $line->quantity()),
                 $subtotal === null ? 0 : $subtotal->minorUnits(),
                 $line->vatRate()
@@ -52,14 +52,14 @@ final class SessionLines
         foreach ($cart->fees() as $fee) {
             $amount = $fee->amount()->minorUnits();
             $lines[] = $amount < 0
-                ? self::raw('discount', $fee->name() !== '' ? $fee->name() : 'Discount', 1, $amount, null)
-                : self::raw('surcharge', $fee->name() !== '' ? $fee->name() : 'Fee', 1, $amount, $fee->vatRate());
+                ? self::raw('discount', self::nameOr($fee->name(), 'Discount'), 1, $amount, null)
+                : self::raw('surcharge', self::nameOr($fee->name(), 'Fee'), 1, $amount, $fee->vatRate());
         }
         $shipping = $cart->shipping();
         if ($shipping !== null) {
             $lines[] = self::raw(
                 'shipping_fee',
-                $shipping->label() !== '' ? $shipping->label() : 'Shipping',
+                self::nameOr($shipping->label(), 'Shipping'),
                 1,
                 $shipping->cost()->minorUnits(),
                 $shipping->vatRate()
@@ -70,6 +70,11 @@ final class SessionLines
         }
 
         return $lines;
+    }
+
+    private static function nameOr(string $name, string $fallback): string
+    {
+        return $name !== '' ? $name : $fallback;
     }
 
     /**

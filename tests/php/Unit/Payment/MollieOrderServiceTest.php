@@ -5,15 +5,23 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Payment;
 
 use Mockery;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
+use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\SDK\HttpResponse;
+use Mollie\WooCommerce\SDK\MollieApi;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerceTests\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Resolving the redirect URL of a Mollie payment in the REST webhook fallback, used when no
@@ -47,7 +55,29 @@ class MollieOrderServiceTest extends TestCase
             Mockery::mock(Data::class),
             'mollie-payments-for-woocommerce',
             Mockery::mock(ContainerInterface::class),
-            Mockery::mock(WebhookHandler::class)
+            Mockery::mock(WebhookHandler::class),
+            $this->expressStage(),
+            new OrderLock(Mockery::mock(\wpdb::class)),
+            new EventLog(new NullLogger())
+        );
+    }
+
+    /**
+     * The express stage, never reached here: the redirect URL is resolved without it.
+     */
+    private function expressStage(): ResolveExpressPayment
+    {
+        return new ResolveExpressPayment(
+            Mockery::mock(MollieApi::class),
+            Mockery::mock(ExpressOrderFactsBuilder::class),
+            new OrderLock(Mockery::mock(\wpdb::class)),
+            new ExpressOrderWriter(),
+            new EventLog(new NullLogger()),
+            Mockery::mock(OrphanedExpressPayments::class)->shouldIgnoreMissing(),
+            [],
+            static function (): array {
+                return [];
+            }
         );
     }
 

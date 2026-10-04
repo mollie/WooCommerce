@@ -37,6 +37,7 @@ final class EventLog
         private LoggerInterface $logger,
         private ?LoggerInterface $problems = null
     ) {
+
         $this->correlationId = bin2hex(random_bytes(8));
     }
 

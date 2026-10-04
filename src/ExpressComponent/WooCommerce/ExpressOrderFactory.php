@@ -47,6 +47,7 @@ class ExpressOrderFactory
         $capture = static function (WC_Order $order) use (&$created): void {
             $created = $order;
         };
+        // phpcs:ignore Inpsyde.CodeQuality.HookPriority.HookPriority -- removed below with the same callback
         add_action('woocommerce_checkout_create_order', $capture, PHP_INT_MIN, 1);
 
         // create_order() would otherwise resume another checkout's order awaiting payment.

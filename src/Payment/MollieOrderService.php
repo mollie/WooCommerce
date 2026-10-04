@@ -157,7 +157,7 @@ class MollieOrderService
         try {
             if (!$this->doPaymentForOrder($order)) {
                 $this->httpResponse->setHttpResponseCode(400);
-            };
+            }
         } catch (OrderLockTimeout $timeout) {
             $this->httpResponse->setHttpResponseCode(503);
             return;

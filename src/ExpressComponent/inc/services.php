@@ -44,10 +44,14 @@ return static function (): array {
             $settings = $container->get('settings.settings_helper');
             assert($settings instanceof Settings);
 
+            $log = $container->get(EventLog::class);
+            assert($log instanceof EventLog);
+
             return new SdkMollieApi(
                 $api,
                 $settings,
-                (int) $container->get('express.config')['sessionLifetimeSeconds']
+                (int) $container->get('express.config')['sessionLifetimeSeconds'],
+                $log
             );
         },
         Clock::class => static function (): Clock {
@@ -58,7 +62,11 @@ return static function (): array {
             $log = $container->get(EventLog::class);
             assert($log instanceof EventLog);
 
-            return new OrderLock($wpdb, $log);
+            return new OrderLock($wpdb, $log, countMollieCalls: static function () use ($container): int {
+                $mollie = $container->get(MollieApi::class);
+
+                return $mollie instanceof SdkMollieApi ? $mollie->callsMade() : 0;
+            });
         },
         ProcessRecordStore::class => static function (): ProcessRecordStore {
             return new ProcessRecordStore();
@@ -84,10 +92,7 @@ return static function (): array {
             return new EventLog($logger, $alwaysOn);
         },
         ExpressOrderWriter::class => static function (ContainerInterface $container): ExpressOrderWriter {
-            $log = $container->get(EventLog::class);
-            assert($log instanceof EventLog);
-
-            return new ExpressOrderWriter($log, $container->get(ProcessRecordStore::class));
+            return new ExpressOrderWriter($container->get(ProcessRecordStore::class));
         },
         ExpressFactsBuilder::class => static function (ContainerInterface $container): ExpressFactsBuilder {
             $settings = $container->get('settings.settings_helper');

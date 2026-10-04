@@ -9,15 +9,28 @@ use Psr\Log\LoggerInterface;
 /**
  * Unknown fields are dropped, never masked; only the field name is reported.
  * Warnings and errors go to $problems so they are written even when debug logging is off.
+ * Steps are written only in trace mode or when the request ends badly.
  */
 final class EventLog
 {
+    private const TRACE_FILTER = 'mollie-payments-for-woocommerce_trace';
+
     private const ALLOWED_FIELDS = [
         'cid', 'order', 'session', 'mollie_id', 'wallet', 'surface', 'mode', 'reason', 'kind', 'status',
         'amount', 'currency', 'ms',
+        'entry', 'result', 'method', 'path', 'key', 'wait_ms', 'held_ms', 'rule', 'verdict', 'inputs',
+        'status_before', 'status_after', 'meta_keys', 'note_keys', 'status_asked', 'status_found',
+        'mollie_calls', 'hooks',
     ];
 
     private string $correlationId;
+
+    /**
+     * @var array<int, array{0: string, 1: array<string, scalar>}>
+     */
+    private array $buffer = [];
+
+    private bool $problemSeen = false;
 
     public function __construct(
         private LoggerInterface $logger,
@@ -31,7 +44,7 @@ final class EventLog
      */
     public function info(string $event, array $fields = []): void
     {
-        $this->logger->info($event, $this->context($event, $fields));
+        $this->infoLogger()->info($event, $this->context($event, $fields));
     }
 
     /**
@@ -39,6 +52,7 @@ final class EventLog
      */
     public function warning(string $event, array $fields = []): void
     {
+        $this->problemSeen = true;
         ($this->problems ?? $this->logger)->warning($event, $this->context($event, $fields));
     }
 
@@ -47,7 +61,49 @@ final class EventLog
      */
     public function error(string $event, array $fields = []): void
     {
+        $this->problemSeen = true;
         ($this->problems ?? $this->logger)->error($event, $this->context($event, $fields));
+    }
+
+    /**
+     * @param array<string, mixed> $fields
+     */
+    public function step(string $event, array $fields = []): void
+    {
+        $context = $this->context($event, $fields);
+        if ($this->traceOn()) {
+            ($this->problems ?? $this->logger)->info($event, $context);
+
+            return;
+        }
+        $this->buffer[] = [$event, $context];
+    }
+
+    public function flush(bool $endedBadly = false): void
+    {
+        $buffer = $this->buffer;
+        $this->buffer = [];
+        if (!$endedBadly && !$this->problemSeen && !$this->traceOn()) {
+            return;
+        }
+
+        $logger = $this->problems ?? $this->logger;
+        foreach ($buffer as [$event, $context]) {
+            $logger->info($event, $context);
+        }
+    }
+
+    private function traceOn(): bool
+    {
+        return (bool) apply_filters(self::TRACE_FILTER, false);
+    }
+
+    /**
+     * Trace is written even with debug off.
+     */
+    private function infoLogger(): LoggerInterface
+    {
+        return $this->traceOn() ? ($this->problems ?? $this->logger) : $this->logger;
     }
 
     /**

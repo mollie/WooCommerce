@@ -15,6 +15,7 @@ use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
 use Mollie\WooCommerce\ExpressComponent\Rules\SurfaceOwnership;
 use Mollie\WooCommerce\ExpressComponent\Flow\ExpireAbandonedExpressOrders;
+use Mollie\WooCommerce\Log\EventLog;
 use Psr\Container\ContainerInterface;
 
 class ExpressComponentModule implements ServiceModule, ExecutableModule
@@ -69,6 +70,12 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $orphaned = $container->get(OrphanedExpressPayments::class);
             assert($orphaned instanceof OrphanedExpressPayments);
             $orphaned->renderNotice();
+        });
+
+        add_action('shutdown', static function () use ($container): void {
+            $log = $container->get(EventLog::class);
+            assert($log instanceof EventLog);
+            $log->flush();
         });
 
         // PaymentModule keeps this action scheduled while 'express.enabled' is true.

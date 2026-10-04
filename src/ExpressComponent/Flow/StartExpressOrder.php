@@ -27,6 +27,8 @@ use WC_Order;
  */
 final class StartExpressOrder
 {
+    private const FLOW = 'express.order.start';
+
     private const HTTP_CONFLICT = 409;
 
     private const REFUSALS_THAT_SPEND_SESSION = ['cart_changed', 'order_not_payable'];
@@ -46,15 +48,42 @@ final class StartExpressOrder
 
     public function start(): ExpressOrderResult
     {
+        $started = microtime(true);
+        $this->log->step(self::FLOW . '.started', ['entry' => 'submit']);
+        $result = null;
+        $endedBadly = true;
+        try {
+            $result = $this->startOrRefuse($endedBadly);
+
+            return $result;
+        } finally {
+            $this->log->step(self::FLOW . '.finished', [
+                'result' => $result === null ? 'failed' : ($result->isOk() ? 'ok' : (string) $result->code()),
+                'ms' => (int) round((microtime(true) - $started) * 1000),
+            ]);
+            $this->log->flush($endedBadly);
+        }
+    }
+
+    /**
+     * @param-out bool $endedBadly
+     */
+    private function startOrRefuse(bool &$endedBadly): ExpressOrderResult
+    {
         $session = $this->orderFacts->rememberedSession();
         if ($session === null) {
+            $endedBadly = false;
+
             return $this->refuse(null, 'session_missing', self::HTTP_CONFLICT);
         }
 
         try {
-            return $this->lock->withLock($session->expressRef(), function () use ($session): ExpressOrderResult {
+            $result = $this->lock->withLock($session->expressRef(), function () use ($session): ExpressOrderResult {
                 return $this->startLocked($session);
             });
+            $endedBadly = false;
+
+            return $result;
         } catch (OrderLockTimeout $timeout) {
             return $this->refuse($session, 'try_again', 503);
         }
@@ -66,6 +95,20 @@ final class StartExpressOrder
         $existing = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
         $cart = $this->cartFacts->fromCart() ?? new CartFacts([], false, false, false);
         $decision = StartOrderDecision::admit($session, $existing, $cart, $this->clock->now());
+        $this->log->info('rule.decided', [
+            'order' => $existing !== null ? $existing->orderId() : 0,
+            'session' => $session->sessionId(),
+            'rule' => 'StartOrderDecision',
+            'verdict' => $decision instanceof Refuse ? $decision->code() : 'admit',
+            'inputs' => sprintf(
+                'order=%d needs_payment=%d needs_shipping=%d shipping_complete=%d rate_chosen=%d',
+                $existing !== null ? 1 : 0,
+                $existing !== null && $existing->needsPayment() ? 1 : 0,
+                $cart->needsShipping() ? 1 : 0,
+                $cart->shippingDestinationComplete() ? 1 : 0,
+                $cart->shippingRateChosen() ? 1 : 0
+            ),
+        ]);
 
         if ($decision instanceof Refuse) {
             if (in_array($decision->code(), self::REFUSALS_THAT_SPEND_SESSION, true)) {

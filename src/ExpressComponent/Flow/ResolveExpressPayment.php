@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\ExpressComponent\Flow;
 
 use Mollie\WooCommerce\ExpressComponent\Rules\ExpressOrderMatch;
 use Mollie\WooCommerce\ExpressComponent\Rules\FirstSight;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
@@ -23,6 +24,8 @@ use WC_Order;
  */
 final class ResolveExpressPayment
 {
+    private const FLOW = 'express.payment.resolve';
+
     /**
      * @param array<string, array{gatewayId: string, paidAs: string}> $wallets
      * @param callable(): array<int, string> $registeredGatewayIds
@@ -49,11 +52,36 @@ final class ResolveExpressPayment
             return null;
         }
 
+        $started = microtime(true);
+        $this->log->step(self::FLOW . '.started', ['mollie_id' => $paymentId, 'entry' => 'webhook']);
+        $order = null;
+        $result = 'failed';
+        try {
+            $order = $this->matchToOrder($paymentId, $result);
+
+            return $order;
+        } finally {
+            $this->log->step(self::FLOW . '.finished', [
+                'order' => $order instanceof WC_Order ? $order->get_id() : 0,
+                'result' => $result,
+                'ms' => (int) round((microtime(true) - $started) * 1000),
+            ]);
+            $this->log->flush($result === 'failed');
+        }
+    }
+
+    /**
+     * @param-out string $result
+     * @throws OrderLockTimeout
+     */
+    private function matchToOrder(string $paymentId, string &$result): ?WC_Order
+    {
         try {
             $payment = $this->mollie->payment($paymentId);
         } catch (Throwable $unavailable) {
             // The exception text holds Mollie's response body, so it is not logged.
             $this->log->warning('express.webhook.unmatched', ['mollie_id' => $paymentId, 'reason' => 'payment_unavailable']);
+            $result = 'unmatched';
 
             return null;
         }
@@ -62,6 +90,12 @@ final class ResolveExpressPayment
         $facts = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
 
         $decision = ExpressOrderMatch::admit($payment, $facts);
+        $this->log->info('rule.decided', [
+            'order' => $order instanceof WC_Order ? $order->get_id() : 0,
+            'rule' => 'ExpressOrderMatch',
+            'verdict' => $decision instanceof Refuse ? $decision->code() : 'admit',
+            'inputs' => $this->matchInputs($payment, $facts),
+        ]);
         if ($decision instanceof Refuse || $order === null || $facts === null) {
             $reason = $decision instanceof Refuse ? $decision->code() : 'unknown_ref';
             $this->log->warning('express.webhook.unmatched', [
@@ -69,11 +103,18 @@ final class ResolveExpressPayment
                 'reason' => $reason,
             ]);
             $this->reportOrphan($payment, $order, $reason);
+            $result = 'unmatched';
 
             return null;
         }
 
         $firstSight = FirstSight::decide($payment, $facts, $this->wallets, ($this->registeredGatewayIds)());
+        $this->log->info('rule.decided', [
+            'order' => $facts->orderId(),
+            'rule' => 'FirstSight',
+            'verdict' => $firstSight->gatewayId() !== null ? 'gateway' : 'unmatched',
+            'inputs' => sprintf('method=%s gateway=%s', (string) $payment->method(), (string) $firstSight->gatewayId()),
+        ]);
         $order = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($firstSight): WC_Order {
             $this->writer->recordFirstSight($fresh, $firstSight);
 
@@ -86,8 +127,21 @@ final class ResolveExpressPayment
             'wallet' => (string) $payment->method(),
             'status' => $payment->status(),
         ]);
+        $result = 'matched';
 
         return $order;
+    }
+
+    private function matchInputs(PaymentSnapshot $payment, ?ExpressOrderFacts $facts): string
+    {
+        return sprintf(
+            'status=%s ref=%d order=%d needs_payment=%d tracked=%d',
+            $payment->status(),
+            $payment->expressRef() !== null ? 1 : 0,
+            $facts !== null ? 1 : 0,
+            $facts !== null && $facts->needsPayment() ? 1 : 0,
+            $facts !== null && $facts->trackedPaymentId() !== null ? 1 : 0
+        );
     }
 
     private function reportOrphan(PaymentSnapshot $payment, ?WC_Order $order, string $reason): void

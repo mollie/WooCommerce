@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
-use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
@@ -30,7 +29,7 @@ final class ExpressOrderWriter
 
     private ProcessRecordStore $records;
 
-    public function __construct(private EventLog $log, ?ProcessRecordStore $records = null)
+    public function __construct(?ProcessRecordStore $records = null)
     {
         $this->records = $records ?? new ProcessRecordStore();
     }
@@ -44,7 +43,6 @@ final class ExpressOrderWriter
         string $wallet
     ): void {
 
-        $started = microtime(true);
         $changed = $this->setCreatedVia($order, StartOrderDecision::CREATED_VIA);
         $changed = $this->setMeta($order, '_mollie_express_ref', $session->expressRef()) || $changed;
         $changed = $this->setMeta($order, '_mollie_express_session_id', $session->sessionId()) || $changed;
@@ -53,12 +51,11 @@ final class ExpressOrderWriter
         $changed = $this->setStatus($order, 'pending') || $changed;
         $changed = $this->setPaymentMethod($order, $gatewayId) || $changed;
 
-        $this->finish($order, $changed, [__('Express checkout started', 'mollie-payments-for-woocommerce')], $started);
+        $this->finish($order, $changed, [__('Express checkout started', 'mollie-payments-for-woocommerce')]);
     }
 
     public function recordFirstSight(WC_Order $order, FirstSightData $firstSight): void
     {
-        $started = microtime(true);
         $notes = [];
         $changed = $this->setMeta($order, '_mollie_payment_id', $firstSight->paymentId());
         $changed = $this->setTransactionId($order, $firstSight->paymentId()) || $changed;
@@ -81,7 +78,7 @@ final class ExpressOrderWriter
             $changed = $this->setAddress($order, 'shipping', $shipping) || $changed;
         }
 
-        $this->finish($order, $changed, $notes, $started);
+        $this->finish($order, $changed, $notes);
     }
 
     /**
@@ -89,7 +86,6 @@ final class ExpressOrderWriter
      */
     public function cancelAbandoned(WC_Order $order, string $handledEvent = ''): void
     {
-        $started = microtime(true);
         // Before the status, so both go in the same save.
         $changed = $this->recordCancelledByCleanup($order, $handledEvent);
         $changed = $this->setStatus($order, 'cancelled') || $changed;
@@ -97,36 +93,27 @@ final class ExpressOrderWriter
         $this->finish(
             $order,
             $changed,
-            [__('Express checkout was started and not completed', 'mollie-payments-for-woocommerce')],
-            $started
+            [__('Express checkout was started and not completed', 'mollie-payments-for-woocommerce')]
         );
     }
 
     /**
+     * Logged by OrderLock.
+     *
      * @param array<int, string> $notes
      */
-    private function finish(WC_Order $order, bool $changed, array $notes, float $started): void
+    private function finish(WC_Order $order, bool $changed, array $notes): void
     {
         if ($changed) {
             $order->save();
         }
 
-        $noted = false;
         $existing = $notes === [] ? [] : $this->existingNotes($order->get_id());
         foreach ($notes as $text) {
             if (!in_array($text, $existing, true)) {
                 $order->add_order_note($text);
                 $existing[] = $text;
-                $noted = true;
             }
-        }
-
-        if ($changed || $noted) {
-            $this->log->info('order.written', [
-                'order' => $order->get_id(),
-                'status' => $order->get_status(),
-                'ms' => (int) round((microtime(true) - $started) * 1000),
-            ]);
         }
     }
 

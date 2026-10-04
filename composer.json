@@ -70,7 +70,8 @@
     "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G",
     "phpstan:raw": "vendor/bin/phpstan analyse --no-progress --error-format=raw",
     "check-psalm": "vendor/bin/psalm",
-    "check-psalm:no-cache": "vendor/bin/psalm --no-cache"
+    "check-psalm:no-cache": "vendor/bin/psalm --no-cache",
+    "fitness": "@php tests/architecture/fitness.php"
   },
   "repositories": [
     {

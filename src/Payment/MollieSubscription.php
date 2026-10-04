@@ -8,30 +8,20 @@ use Mollie\WooCommerce\Payment\Request\Middleware\PaymentDescriptionMiddleware;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\WooCommerce\SDK\Api;
 use Mollie\WooCommerce\Subscription\MollieSubscriptionGatewayHandler;
-use Psr\Log\LoggerInterface as Logger;
-
-class MollieSubscription extends MollieObject
+use Mollie\Psr\Log\LoggerInterface as Logger;
+class MollieSubscription extends \Mollie\WooCommerce\Payment\MollieObject
 {
     protected $pluginId;
     // phpstan:ignore [dead-code] injected via constructor but never read in this class; MollieObject subclasses access it through other paths
     // @phpstan-ignore-next-line
     private PaymentMethodI $paymentMethod;
     protected MiddlewareHandler $middleware;
-
     /**
      * Molliesubscription constructor.
      *
      */
-    public function __construct(
-        $pluginId,
-        Api $apiHelper,
-        $settingsHelper,
-        $dataHelper,
-        Logger $logger,
-        PaymentMethodI $paymentMethod,
-        $middlewareHandler
-    ) {
-
+    public function __construct($pluginId, Api $apiHelper, $settingsHelper, $dataHelper, Logger $logger, PaymentMethodI $paymentMethod, $middlewareHandler)
+    {
         $this->pluginId = $pluginId;
         $this->apiHelper = $apiHelper;
         $this->settingsHelper = $settingsHelper;
@@ -49,50 +39,26 @@ class MollieSubscription extends MollieObject
     {
         $paymentLocale = $this->settingsHelper->getPaymentLocale();
         $gateway = wc_get_payment_gateway_by_order($order);
-
-        if (! $gateway || ! ( mollieWooCommerceIsMollieGateway($gateway->id) )) {
-            return  [ 'result' => 'failure' ];
+        if (!$gateway || !mollieWooCommerceIsMollieGateway($gateway->id)) {
+            return ['result' => 'failure'];
         }
         $gatewayId = $gateway->id;
         $methodId = substr($gatewayId, strrpos($gatewayId, '_') + 1);
         $optionName = $this->pluginId . '_api_payment_description';
         $option = get_option($optionName);
         $paymentDescription = $this->getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI);
-
-        $requestData =  array_filter([
-                                'amount' =>  [
-                                    'currency' => $this->dataHelper->getOrderCurrency($order),
-                                    'value' => $this->dataHelper->formatCurrencyValue(
-                                        $order->get_total(),
-                                        $this->dataHelper->getOrderCurrency($order)
-                                    ),
-                                ],
-                                'description' => $paymentDescription,
-                                'method' => $methodId,
-                                'locale' => $paymentLocale,
-                                'metadata' =>  [
-                                    'order_id' => $order->get_id(),
-                                ],
-                                'sequenceType' => SequenceType::SEQUENCETYPE_RECURRING,
-                                'customerId' => $customerId,
-                            ]);
+        $requestData = array_filter(['amount' => ['currency' => $this->dataHelper->getOrderCurrency($order), 'value' => $this->dataHelper->formatCurrencyValue($order->get_total(), $this->dataHelper->getOrderCurrency($order))], 'description' => $paymentDescription, 'method' => $methodId, 'locale' => $paymentLocale, 'metadata' => ['order_id' => $order->get_id()], 'sequenceType' => SequenceType::SEQUENCETYPE_RECURRING, 'customerId' => $customerId]);
         $context = 'payment';
         return $this->middleware->handle($requestData, $order, $context);
     }
-
     protected function getRecurringPaymentDescription($order, $option, $initialPaymentUsedOrderAPI)
     {
         $description = !$option ? '' : trim($option);
-
         // Also use default when Order API was used on initial payment to match payment descriptions.
         if (!$description || $initialPaymentUsedOrderAPI) {
             $description = sprintf(
                 /* translators: Placeholder 1: order number */
-                _x(
-                    'Order %1$s',
-                    'Default payment description for subscription recurring payments',
-                    'mollie-payments-for-woocommerce'
-                ),
+                _x('Order %1$s', 'Default payment description for subscription recurring payments', 'mollie-payments-for-woocommerce'),
                 $order->get_order_number()
             );
             return $description;
@@ -105,7 +71,6 @@ class MollieSubscription extends MollieObject
         });
         return $result['description'];
     }
-
     /**
      * Validate in the checkout if the gateway is available for subscriptions
      *
@@ -125,41 +90,23 @@ class MollieSubscription extends MollieObject
         // Check recurring totals against recurring payment methods for future renewal payments
         $recurringTotal = $deprecatedSubscriptionHelper->get_recurring_total();
         // See get_available_payment_gateways() in woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php
-        $acceptManualRenewals = 'yes' === get_option(
-            \WC_Subscriptions_Admin::$option_prefix
-                . '_accept_manual_renewals',
-            'no'
-        );
+        $acceptManualRenewals = 'yes' === get_option(\WC_Subscriptions_Admin::$option_prefix . '_accept_manual_renewals', 'no');
         $supportsSubscriptions = $gateway->supports('subscriptions');
-        if ($acceptManualRenewals === true || !$supportsSubscriptions || empty($recurringTotal)) {
+        if ($acceptManualRenewals === \true || !$supportsSubscriptions || empty($recurringTotal)) {
             return $status;
         }
         foreach ($recurringTotal as $recurring_total) {
             // First check recurring payment methods CC and SDD
-            $filters = $this->buildFilters(
-                $currency,
-                $recurring_total,
-                $billingCountry,
-                SequenceType::SEQUENCETYPE_RECURRING,
-                $paymentLocale
-            );
+            $filters = $this->buildFilters($currency, $recurring_total, $billingCountry, SequenceType::SEQUENCETYPE_RECURRING, $paymentLocale);
             $status = $deprecatedSubscriptionHelper->isAvailableMethodInCheckout($filters);
         }
-
         // Check available first payment methods with today's order total, but ignore SSD gateway (not shown in checkout)
         if ($deprecatedSubscriptionHelper->paymentMethod()->getProperty('id') === 'mollie_wc_gateway_directdebit') {
             return $status;
         }
-        $filters = $this->buildFilters(
-            $currency,
-            $orderTotal,
-            $billingCountry,
-            SequenceType::SEQUENCETYPE_FIRST,
-            $paymentLocale
-        );
+        $filters = $this->buildFilters($currency, $orderTotal, $billingCountry, SequenceType::SEQUENCETYPE_FIRST, $paymentLocale);
         return $deprecatedSubscriptionHelper->isAvailableMethodInCheckout($filters);
     }
-
     /**
      * @param string $currency
      * @param $recurring_total
@@ -168,30 +115,10 @@ class MollieSubscription extends MollieObject
      * @param string $paymentLocale
      * @return array
      */
-    protected function buildFilters(
-        string $currency,
-        $recurring_total,
-        string $billingCountry,
-        string $sequenceType,
-        string $paymentLocale
-    ): array {
-
-        $filters = [
-            'amount' => [
-                'currency' => $currency,
-                'value' => $this->dataHelper
-                    ->formatCurrencyValue(
-                        $recurring_total,
-                        $currency
-                    ),
-            ],
-            'resource' => 'orders',
-            'billingCountry' => $billingCountry,
-            'sequenceType' => $sequenceType,
-        ];
-
-        $paymentLocale and
-        $filters['locale'] = $paymentLocale;
+    protected function buildFilters(string $currency, $recurring_total, string $billingCountry, string $sequenceType, string $paymentLocale): array
+    {
+        $filters = ['amount' => ['currency' => $currency, 'value' => $this->dataHelper->formatCurrencyValue($recurring_total, $currency)], 'resource' => 'orders', 'billingCountry' => $billingCountry, 'sequenceType' => $sequenceType];
+        $paymentLocale and $filters['locale'] = $paymentLocale;
         return $filters;
     }
 }

@@ -1,12 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Mollie;
+
 /**
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version:     {VERSION}
- * SHA:         ${GIT_SHA}
+ * Version: 8.1.10+piwoo-945-reconsider-pending-payment-order-status-semantics-for-mollie-payments-e-g-pay-by-bank.d565300
+ * SHA: d5653004db6e0a30b5bba339e99494df211a10c1
  * Requires at least: 5.8
  * Requires PHP: 7.2
  * WC requires at least: 4.3
@@ -17,15 +19,8 @@ declare(strict_types=1);
  * Text Domain: ddev-wordpress-plugin-example
  * Domain Path: /languages
  */
-
-add_action('rest_api_init', function () {
-    register_rest_route('inpsyde', 'example', [
-        'method' => 'GET',
-        'callback' => function () {
-            return ['hello' => __('world', 'ddev-wordpress-plugin-example')];
-        },
-        'permission_callback' => '__return_true',
-    ]);
+\add_action('rest_api_init', function () {
+    \register_rest_route('inpsyde', 'example', ['method' => 'GET', 'callback' => function () {
+        return ['hello' => \__('world', 'ddev-wordpress-plugin-example')];
+    }, 'permission_callback' => '__return_true']);
 });
-
-

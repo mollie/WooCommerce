@@ -1,38 +1,28 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Rules\Values;
 
 use InvalidArgumentException;
-
 /**
  * What only the plugin knows about an order; never what Mollie knows.
  */
 final class ProcessRecord
 {
     public const VERSION = 1;
-
     private const CANCELLERS = ['cleanup', 'merchant', 'webhook'];
-
     private const SECTIONS = ['version', 'processed', 'open', 'cancelledBy'];
-
     /**
      * @param list<string> $processed "<mollie id>[:<status>]"
      * @param list<array{question: string, mollieId: string}> $open
      */
-    private function __construct(
-        private array $processed,
-        private array $open,
-        private ?string $cancelledBy
-    ) {
+    private function __construct(private array $processed, private array $open, private ?string $cancelledBy)
+    {
     }
-
     public static function empty(): self
     {
         return new self([], [], null);
     }
-
     /**
      * A missing or older version reads as empty.
      *
@@ -54,28 +44,19 @@ final class ProcessRecord
         if ($version > self::VERSION) {
             throw new InvalidArgumentException(sprintf('Process record version %d is newer than this code knows.', $version));
         }
-
         $unknown = array_diff(array_keys($stored), self::SECTIONS);
         if ($unknown !== []) {
             throw new InvalidArgumentException(sprintf('The process record has no section "%s".', implode('", "', $unknown)));
         }
-
         return new self(self::processedFrom($stored), self::openFrom($stored), self::cancelledByFrom($stored));
     }
-
     /**
      * @return array{version: int, processed: list<string>, open: list<array<string, string>>, cancelledBy: ?string}
      */
     public function toArray(): array
     {
-        return [
-            'version' => self::VERSION,
-            'processed' => $this->processed,
-            'open' => $this->open,
-            'cancelledBy' => $this->cancelledBy,
-        ];
+        return ['version' => self::VERSION, 'processed' => $this->processed, 'open' => $this->open, 'cancelledBy' => $this->cancelledBy];
     }
-
     /**
      * @throws InvalidArgumentException
      */
@@ -84,10 +65,8 @@ final class ProcessRecord
         self::assertCanceller($cancelledBy);
         $copy = clone $this;
         $copy->cancelledBy = $cancelledBy;
-
         return $copy;
     }
-
     /**
      * @throws InvalidArgumentException
      */
@@ -97,13 +76,11 @@ final class ProcessRecord
             throw new InvalidArgumentException('A processed entry is a non-empty Mollie event id.');
         }
         $copy = clone $this;
-        if (!in_array($event, $copy->processed, true)) {
+        if (!in_array($event, $copy->processed, \true)) {
             $copy->processed[] = $event;
         }
-
         return $copy;
     }
-
     /**
      * @throws InvalidArgumentException
      */
@@ -114,18 +91,15 @@ final class ProcessRecord
         }
         $entry = ['question' => $question, 'mollieId' => $mollieId];
         $copy = clone $this;
-        if (!in_array($entry, $copy->open, true)) {
+        if (!in_array($entry, $copy->open, \true)) {
             $copy->open[] = $entry;
         }
-
         return $copy;
     }
-
     public function cancelledBy(): ?string
     {
         return $this->cancelledBy;
     }
-
     /**
      * @return list<string>
      */
@@ -133,7 +107,6 @@ final class ProcessRecord
     {
         return $this->processed;
     }
-
     /**
      * @return list<array{question: string, mollieId: string}>
      */
@@ -141,7 +114,6 @@ final class ProcessRecord
     {
         return $this->open;
     }
-
     /**
      * @param array<mixed> $stored
      * @return list<string>
@@ -155,10 +127,8 @@ final class ProcessRecord
             }
             $processed[] = $event;
         }
-
         return $processed;
     }
-
     /**
      * @param array<mixed> $stored
      * @return list<array{question: string, mollieId: string}>
@@ -175,10 +145,8 @@ final class ProcessRecord
             }
             $open[] = ['question' => $entry['question'], 'mollieId' => $entry['mollieId']];
         }
-
         return $open;
     }
-
     /**
      * @param array<mixed> $stored
      */
@@ -188,10 +156,8 @@ final class ProcessRecord
         if ($cancelledBy !== null) {
             self::assertCanceller($cancelledBy);
         }
-
         return $cancelledBy;
     }
-
     /**
      * @param array<mixed> $stored
      * @return list<mixed>
@@ -202,17 +168,14 @@ final class ProcessRecord
         if (!is_array($list) || array_values($list) !== $list) {
             throw new InvalidArgumentException(sprintf('The process record section "%s" is not a list.', $section));
         }
-
         return $list;
     }
-
     private static function assertCanceller(mixed $cancelledBy): void
     {
-        if (!in_array($cancelledBy, self::CANCELLERS, true)) {
+        if (!in_array($cancelledBy, self::CANCELLERS, \true)) {
             throw new InvalidArgumentException('An order is cancelled by cleanup, the merchant or a webhook.');
         }
     }
-
     private static function isText(mixed $value): bool
     {
         return is_string($value) && $value !== '';

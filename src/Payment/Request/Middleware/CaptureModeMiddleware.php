@@ -1,22 +1,19 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\Api\Types\SequenceType;
 use WC_Order;
-
 /**
  * Middleware to handle Card Token in the request.
  */
-class CaptureModeMiddleware implements RequestMiddlewareInterface
+class CaptureModeMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * @var array The payment methods.
      */
     private array $paymentMethods;
-
     /**
      * Constructor.
      *
@@ -26,7 +23,6 @@ class CaptureModeMiddleware implements RequestMiddlewareInterface
     {
         $this->paymentMethods = $paymentMethods;
     }
-
     /**
      * Invoke the middleware.
      *
@@ -41,28 +37,22 @@ class CaptureModeMiddleware implements RequestMiddlewareInterface
         if ($context !== 'payment') {
             return $next($requestData, $order, $context);
         }
-
         $gateway = wc_get_payment_gateway_by_order($order);
         if (!$gateway || !isset($gateway->id)) {
             return $requestData;
         }
-        if (strpos($gateway->id, 'mollie_wc_gateway_') === false) {
+        if (strpos($gateway->id, 'mollie_wc_gateway_') === \false) {
             return $requestData;
         }
-
         $requestData['captureMode'] = 'automatic';
-
         $paymentMethodId = substr($gateway->id, strrpos($gateway->id, '_') + 1);
         $paymentMethod = $this->paymentMethods[$paymentMethodId];
-
         if ($paymentMethod->getProperty('paymentCaptureMode')) {
             $requestData['captureMode'] = $paymentMethod->getProperty('paymentCaptureMode');
         }
-
         if (!empty($requestData['sequenceType']) && $requestData['sequenceType'] !== SequenceType::SEQUENCETYPE_ONEOFF) {
             unset($requestData['captureMode']);
         }
-
         return $next($requestData, $order, $context);
     }
 }

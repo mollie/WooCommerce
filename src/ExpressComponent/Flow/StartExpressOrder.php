@@ -5,6 +5,7 @@ namespace Mollie\WooCommerce\ExpressComponent\Flow;
 
 use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\CartFactsBuilder;
@@ -17,6 +18,7 @@ use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\OrderLockTimeout;
 use Mollie\WooCommerce\Shared\Clock;
+use Mollie\WooCommerce\Shared\Values\Admit;
 use Mollie\WooCommerce\Shared\Values\Refuse;
 use Throwable;
 use WC_Order;
@@ -71,7 +73,7 @@ final class StartExpressOrder
         $existing = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
         $cart = $this->cartFacts->fromCart() ?? new CartFacts([], \false, \false, \false);
         $decision = StartOrderDecision::admit($session, $existing, $cart, $this->clock->now());
-        $this->log->info('rule.decided', ['order' => $existing !== null ? $existing->orderId() : 0, 'session' => $session->sessionId(), 'rule' => 'StartOrderDecision', 'verdict' => $decision instanceof Refuse ? $decision->code() : 'admit', 'inputs' => sprintf('order=%d needs_payment=%d needs_shipping=%d shipping_complete=%d rate_chosen=%d', $existing !== null ? 1 : 0, $existing !== null && $existing->needsPayment() ? 1 : 0, $cart->needsShipping() ? 1 : 0, $cart->shippingDestinationComplete() ? 1 : 0, $cart->shippingRateChosen() ? 1 : 0)]);
+        $this->logDecision($session, $existing, $cart, $decision);
         if ($decision instanceof Refuse) {
             if (in_array($decision->code(), self::REFUSALS_THAT_SPEND_SESSION, \true)) {
                 $this->store->forget();
@@ -83,6 +85,13 @@ final class StartExpressOrder
             return \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult::ok();
         }
         return $this->create($session, $cart);
+    }
+    /**
+     * @param Admit|Refuse $decision
+     */
+    private function logDecision(RememberedSession $session, ?ExpressOrderFacts $existing, CartFacts $cart, $decision): void
+    {
+        $this->log->info('rule.decided', ['order' => $existing !== null ? $existing->orderId() : 0, 'session' => $session->sessionId(), 'rule' => 'StartOrderDecision', 'verdict' => $decision instanceof Refuse ? $decision->code() : 'admit', 'inputs' => sprintf('order=%d needs_payment=%d needs_shipping=%d shipping_complete=%d rate_chosen=%d', $existing !== null ? 1 : 0, $existing !== null && $existing->needsPayment() ? 1 : 0, $cart->needsShipping() ? 1 : 0, $cart->shippingDestinationComplete() ? 1 : 0, $cart->shippingRateChosen() ? 1 : 0)]);
     }
     private function create(RememberedSession $session, CartFacts $cart): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult
     {

@@ -136,12 +136,14 @@ class SdkMollieApiTest extends ExpressFlowTestCase
         $api = $this->expressApi();
         $created = $api->createSession($this->sessionPayload(), IdempotencyKey::for('express.session.v1', ['attempt' => 1]));
 
-        $this->fakeMollie()->expireSession($created->id());
+        // Not a lifetime after creation, which is what the adapter would derive on its own.
+        $namedByMollie = 1790000000 + 60;
+        $this->fakeMollie()->expireSession($created->id(), $namedByMollie);
         $session = $api->session($created->id());
 
         $this->assertSame('expired', $session->status());
         $this->assertSame(
-            gmdate('c', 1790000000 + FakeMollieApi::SESSION_LIFETIME_SECONDS),
+            gmdate('c', $namedByMollie),
             $session->expiresAt(),
             'The expiredAt of an expired session is not replaced by a derived value.'
         );

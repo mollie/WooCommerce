@@ -937,6 +937,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
 
         $this->deliverWebhook($payment['id']);
 
+        $this->assertCount(1, $this->loggedEvents('express.webhook.unmatched'), 'The webhook got as far as finding no order.');
         $this->assertSame([], $this->loggedEvents('express.payment.orphaned'));
         $this->assertSame([], (new OrphanedExpressPayments())->all());
     }

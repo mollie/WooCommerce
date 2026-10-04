@@ -295,8 +295,8 @@ class DataToPayPalButtonScriptsTest extends TestCase
          * Execute Test
          */
         $result = $sut->selectedPaypalButtonUrl();
-        self::assertIsString($result);
-        self::assertNotEmpty($result);
+        // An empty colour names no button image, so the default one is used.
+        self::assertStringContainsString('en/checkout/pill-golden.png', $result);
     }
 
     public function testWhichPaypalButtonUsesDefaultColorWhenColorKeyAbsent()

@@ -67,6 +67,7 @@
     "fix-coding-standards": "vendor/bin/phpcbf --standard=phpcs.transition.xml.dist",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",
+    "tests:integration": "ddev exec phpunit -c tests/Integration/phpunit.xml.dist",
     "phpstan": "vendor/bin/phpstan analyse",
     "phpstan:raw": "vendor/bin/phpstan analyse --no-progress --error-format=raw",
     "check-psalm": "vendor/bin/psalm",

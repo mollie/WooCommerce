@@ -64,15 +64,15 @@ class WebhookSecretTest extends TestCase
     }
 
     /**
-     * @scenario check() returns false when the stored option is empty, instead of
-     * generating a secret as a side effect of a verification call.
+     * @scenario check() returns false when the stored option is empty: a secret is generated and
+     * stored on the way, and the incoming value is compared against that one.
      * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookSecret::check
      */
     public function testCheckReturnsFalseWhenStoredSecretIsEmpty(): void
     {
         when('get_option')->justReturn('');
         when('wp_generate_password')->justReturn('freshly-generated-32-char-secret');
-        expect('update_option')->once();
+        expect('update_option')->once()->with('mollie_webhook_secret', 'freshly-generated-32-char-secret');
 
         $result = $this->sut->check('anything');
 
@@ -87,15 +87,15 @@ class WebhookSecretTest extends TestCase
      */
     public function testGetOrCreateGeneratesAndStoresSecretWhenOptionEmpty(): void
     {
-        $generated = 'abcdefghijklmnopqrstuvwxyz123456'; // 32 chars
+        $generated = 'abcdefghijklmnopqrstuvwxyz123456';
         when('get_option')->justReturn('');
-        when('wp_generate_password')->justReturn($generated);
-        expect('update_option')->once()->andReturn(true);
+        // 32 characters, no special characters: the secret travels in a URL.
+        expect('wp_generate_password')->once()->with(32, false)->andReturn($generated);
+        expect('update_option')->once()->with('mollie_webhook_secret', $generated)->andReturn(true);
 
         $result = $this->sut->getOrCreate();
 
         self::assertSame($generated, $result);
-        self::assertGreaterThanOrEqual(32, strlen($result));
     }
 
     /**

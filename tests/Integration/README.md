@@ -2,10 +2,15 @@
 PHPUnit tests that runs against a working WP site. Useful to test modules (ex. classes) together without having the use test doubles but the real infrastructure.
 
 ### How to run tests
-- Copy and rename `.env.integration.example` to  `.env.integration` from the root of the plugin, set configurations if needed.
-- Run configuration: `ddev php tests/integration/PHPUnit/setup.php`
-- Run tests: `ddev exec phpunit -c tests/Integration/phpunit.xml.dist --testdox`
-- Run a single test: `ddev exec phpunit --filter testSomeTestName -c tests/Integration/phpunit.xml.dist --testdox`
+- Start the site once: `ddev start` (the site needs WooCommerce active; WooCommerce Subscriptions is optional, its cases are skipped without it).
+- Run tests: `composer tests:integration` (same as `ddev exec phpunit -c tests/Integration/phpunit.xml.dist`)
+- Run a single test: `ddev exec phpunit -c tests/Integration/phpunit.xml.dist --filter testSomeTestName --testdox`
+- Another WordPress than the DDEV one: copy `.env.integration.example` to `.env.integration` and set `MOLLIE_INTEGRATION_WP_DIR`.
+
+### What the setup guarantees
+- No Mollie API key is needed. Mollie is faked (`Common/FakeMollie`, or the older `API/Mocks/MockedApi`) and the tests bring their own keys.
+- Nothing leaves the machine: a request no test answered is refused and listed at the end of the run.
+- A broken setup stops the run with a non-zero exit code and says what is missing.
 
 ### Guidelines
 

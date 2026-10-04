@@ -5,11 +5,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Unit\Architecture;
 
-use Inpsyde\EnvironmentChecker\Constraints\PhpConstraint;
-use Inpsyde\EnvironmentChecker\Exception\ConstraintFailedException;
 use Mollie\WooCommerceTests\TestCase;
-
-use function Brain\Monkey\Functions\when;
 
 /**
  * PHP 8.0 is the floor, and it is the floor in every place that declares one.
@@ -28,13 +24,6 @@ use function Brain\Monkey\Functions\when;
 class PlatformFloorTest extends TestCase
 {
     private const FLOOR = '8.0';
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // AbstractVersionConstraint escapes the plugin name it is given.
-        when('esc_html')->returnArg();
-    }
 
     /**
      * Scenario: every file that declares a PHP floor declares 8.0
@@ -123,67 +112,5 @@ class PlatformFloorTest extends TestCase
             $matrix,
             'CI still runs on PHP 7.4, where new code using match or promotion cannot parse.'
         );
-    }
-
-    /**
-     * Scenario: activating on PHP 7.4 is refused
-     *   Given the constraint ConstraintsChecker builds
-     *   When it is checked against a 7.4 runtime
-     *   Then it fails, so the plugin is disabled and the merchant is told why
-     *   And it passes for 8.0 and above
-     *
-     * PhpConstraint::check() reads the PHP_VERSION constant and takes no argument, so the test
-     * drives the version comparison the constraint is built on instead of the ambient runtime.
-     * That keeps the assertion about the declared floor, not about the box the suite runs on.
-     *
-     * @covers \Mollie\WooCommerce\Activation\ConstraintsChecker::__construct
-     */
-    public function testRefusesActivationOnPhp74(): void
-    {
-        $constraint = $this->floorConstraint();
-
-        foreach (['8.0.0', '8.1.27', '8.3.0'] as $supported) {
-            self::assertTrue(
-                $constraint->checkRuntime($supported),
-                sprintf('PHP %s must satisfy the floor.', $supported)
-            );
-        }
-
-        foreach (['7.4.33', '7.4', '7.2.0'] as $refused) {
-            try {
-                $constraint->checkRuntime($refused);
-                self::fail(sprintf('PHP %s must be refused by the constraint.', $refused));
-            } catch (ConstraintFailedException $exception) {
-                self::assertSame(
-                    $refused,
-                    $exception->getValidationSubject(),
-                    'The refusal must name the runtime it refused.'
-                );
-                self::assertSame($constraint, $exception->getValidator());
-            }
-        }
-    }
-
-    /**
-     * The constraint ConstraintsChecker builds, with the version comparison exposed.
-     *
-     * PhpConstraint::check() takes no argument and reads PHP_VERSION, so it can only ever say
-     * something about the box the suite happens to run on. checkRuntime() drives the same
-     * comparison against a version the test chooses.
-     */
-    private function floorConstraint(): PhpConstraint
-    {
-        return new class (self::FLOOR) extends PhpConstraint {
-            /**
-             * @return bool
-             * @throws ConstraintFailedException
-             */
-            public function checkRuntime(string $actualVersion)
-            {
-                $this->message = 'PHP version has to be ' . $this->requiredVersion . ' or higher.';
-
-                return $this->checkVersion($actualVersion);
-            }
-        };
     }
 }

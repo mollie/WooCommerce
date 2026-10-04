@@ -92,11 +92,11 @@ class PaymentMethodIconTest extends PaymentFlowTestCase
      */
     private function iconSources(array $methodsList): array
     {
-        $container = $this->bootstrapModule([
+        $container = $this->bootstrapModule(array_merge($this->getMockedApiServices(), [
             'gateway.getPaymentMethodsAfterFeatureFlag' => static function () use ($methodsList): array {
                 return $methodsList;
             },
-        ]);
+        ]));
         $method = $container->get('gateway.paymentMethods')[self::METHOD] ?? null;
         $this->assertInstanceOf(AbstractPaymentMethod::class, $method);
 

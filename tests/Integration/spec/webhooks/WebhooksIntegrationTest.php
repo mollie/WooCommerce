@@ -118,14 +118,26 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $order = wc_get_order($orderId);
         $this->assertEquals('processing', $order->get_status());
+        $notesAfterFirstDelivery = $this->orderNoteContents($orderId);
+        $this->assertNotEmpty($notesAfterFirstDelivery, 'The first delivery must leave its notes on the order.');
 
-        // Verify that subsequent webhook calls with the same payment ID are handled gracefully
-        // (This simulates the race condition scenario)
+        // The same payment is delivered again.
         $this->webhookService->onWebhookAction();
 
-        // Order status should remain the same, not be processed again
+        // The order is not processed again: same status, and no note is written a second time.
         $order = wc_get_order($orderId);
         $this->assertEquals('processing', $order->get_status());
+        $this->assertSame($notesAfterFirstDelivery, $this->orderNoteContents($orderId));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function orderNoteContents(int $orderId): array
+    {
+        return array_map(static function ($note): string {
+            return (string) $note->content;
+        }, wc_get_order_notes(['order_id' => $orderId, 'orderby' => 'date_created_gmt', 'order' => 'ASC']));
     }
 
     /**
@@ -175,6 +187,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
         $this->webhookService->onWebhookAction();
+        $this->assertMollieWasAskedAbout($transactionId);
 
         $order = wc_get_order($orderId);
         $this->assertEquals(
@@ -350,6 +363,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
         $this->webhookService->onWebhookAction();
+        $this->assertMollieWasAskedAbout($transactionId);
 
         $order = wc_get_order($orderId);
         $this->assertEquals(
@@ -388,6 +402,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
         $this->webhookService->onWebhookAction();
+        $this->assertMollieWasAskedAbout($transactionId);
 
         $order = wc_get_order($orderId);
         $this->assertEquals(
@@ -395,6 +410,16 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
             $order->get_status(),
             'A late failed webhook must not move a refunded order to failed.'
         );
+    }
+
+    /**
+     * "Nothing changed" only means something when the webhook got as far as reading the payment.
+     */
+    private function assertMollieWasAskedAbout(string $paymentId): void
+    {
+        $this->apiMock()->getMockedApiClient()->payments
+            ->shouldHaveReceived('get')
+            ->with($paymentId);
     }
 
     /**

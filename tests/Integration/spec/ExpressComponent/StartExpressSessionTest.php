@@ -513,30 +513,32 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: a guest cannot buy a fresh budget by sending a forwarded-IP header
-     *   Given a guest whose connection comes from one address
+     * Scenario: a caller cannot buy a fresh address ceiling by sending a forwarded-IP header
+     *   Given callers whose connection comes from one address
      *   And the shop has not enabled the Store API's proxy support
-     *   When each session request carries a different X-Real-IP or X-Forwarded-For header
-     *   Then the requests share one budget and the one over it is answered 429
+     *   When every session request comes from a new guest and carries a different X-Real-IP and X-Forwarded-For header
+     *   Then the requests share the ceiling of the connection's address and the one over it is answered 429
+     *
+     * A new guest per request, so the shopper's own budget never refuses: only the address can.
      *
      * @test
      */
-    public function it_keeps_one_budget_for_a_guest_who_varies_forwarded_ip_headers(): void
+    public function it_keeps_one_address_ceiling_for_a_caller_who_varies_forwarded_ip_headers(): void
     {
-        $budget = $this->configuredBudget();
-        $this->readyGuestCheckout();
+        $ceiling = 3;
+        $this->bootExpress($this->withAddressCeiling($ceiling));
 
-        $this->fromAddress('203.0.113.7', function () use ($budget): void {
-            for ($attempt = 0; $attempt <= $budget; $attempt++) {
-                $_SERVER['HTTP_X_REAL_IP'] = '198.51.100.' . ($attempt + 1);
-                $_SERVER['HTTP_X_FORWARDED_FOR'] = '192.0.2.' . ($attempt + 1);
-                $this->chooseRate($attempt % 2 === 0 ? 'express' : 'standard');
+        $this->fromAddress('203.0.113.7', function () use ($ceiling): void {
+            for ($guest = 0; $guest <= $ceiling; $guest++) {
+                $_SERVER['HTTP_X_REAL_IP'] = '198.51.100.' . ($guest + 1);
+                $_SERVER['HTTP_X_FORWARDED_FOR'] = '192.0.2.' . ($guest + 1);
+                $this->nextGuestAtTheCheckout();
                 $status = $this->startSession()->get_status();
 
-                $this->assertSame($attempt < $budget ? 200 : 429, $status, "Attempt {$attempt} with a new forwarded address.");
+                $this->assertSame($guest < $ceiling ? 200 : 429, $status, "Guest {$guest} with a new forwarded address.");
             }
         });
-        $this->assertCount($budget, $this->fakeMollie()->requests('POST', 'sessions'));
+        $this->assertCount($ceiling, $this->fakeMollie()->requests('POST', 'sessions'));
     }
 
     /**

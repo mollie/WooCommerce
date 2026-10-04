@@ -1,42 +1,30 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Rules\Values;
 
 use InvalidArgumentException;
-
 /**
  * What only the plugin knows about an order; never what Mollie knows.
  */
 final class ProcessRecord
 {
     public const VERSION = 1;
-
     private const CANCELLERS = ['cleanup', 'merchant', 'webhook'];
-
     private const SECTIONS = ['version', 'attempts', 'processed', 'inFlight', 'open', 'cancelledBy'];
-
     /**
      * @param list<array{id: string, origin: string, supersededBy: ?string}> $attempts
      * @param list<string> $processed "<mollie id>[:<status>]"
      * @param list<array{kind: string, idempotencyKey: string, amount: array{value: string, currency: string}, by: string}> $inFlight
      * @param list<array{question: string, mollieId: string}> $open
      */
-    private function __construct(
-        private array $attempts,
-        private array $processed,
-        private array $inFlight,
-        private array $open,
-        private ?string $cancelledBy
-    ) {
+    private function __construct(private array $attempts, private array $processed, private array $inFlight, private array $open, private ?string $cancelledBy)
+    {
     }
-
     public static function empty(): self
     {
         return new self([], [], [], [], null);
     }
-
     /**
      * A missing or older version reads as empty.
      *
@@ -58,36 +46,19 @@ final class ProcessRecord
         if ($version > self::VERSION) {
             throw new InvalidArgumentException(sprintf('Process record version %d is newer than this code knows.', $version));
         }
-
         $unknown = array_diff(array_keys($stored), self::SECTIONS);
         if ($unknown !== []) {
             throw new InvalidArgumentException(sprintf('The process record has no section "%s".', implode('", "', $unknown)));
         }
-
-        return new self(
-            self::attemptsFrom($stored),
-            self::processedFrom($stored),
-            self::inFlightFrom($stored),
-            self::openFrom($stored),
-            self::cancelledByFrom($stored)
-        );
+        return new self(self::attemptsFrom($stored), self::processedFrom($stored), self::inFlightFrom($stored), self::openFrom($stored), self::cancelledByFrom($stored));
     }
-
     /**
      * @return array{version: int, attempts: list<array<string, mixed>>, processed: list<string>, inFlight: list<array<string, mixed>>, open: list<array<string, string>>, cancelledBy: ?string}
      */
     public function toArray(): array
     {
-        return [
-            'version' => self::VERSION,
-            'attempts' => $this->attempts,
-            'processed' => $this->processed,
-            'inFlight' => $this->inFlight,
-            'open' => $this->open,
-            'cancelledBy' => $this->cancelledBy,
-        ];
+        return ['version' => self::VERSION, 'attempts' => $this->attempts, 'processed' => $this->processed, 'inFlight' => $this->inFlight, 'open' => $this->open, 'cancelledBy' => $this->cancelledBy];
     }
-
     /**
      * @throws InvalidArgumentException
      */
@@ -96,10 +67,8 @@ final class ProcessRecord
         self::assertCanceller($cancelledBy);
         $copy = clone $this;
         $copy->cancelledBy = $cancelledBy;
-
         return $copy;
     }
-
     /**
      * @throws InvalidArgumentException
      */
@@ -109,18 +78,15 @@ final class ProcessRecord
             throw new InvalidArgumentException('A processed entry is a non-empty Mollie event id.');
         }
         $copy = clone $this;
-        if (!in_array($event, $copy->processed, true)) {
+        if (!in_array($event, $copy->processed, \true)) {
             $copy->processed[] = $event;
         }
-
         return $copy;
     }
-
     public function cancelledBy(): ?string
     {
         return $this->cancelledBy;
     }
-
     /**
      * @return list<string>
      */
@@ -128,7 +94,6 @@ final class ProcessRecord
     {
         return $this->processed;
     }
-
     /**
      * @param array<mixed> $stored
      * @return list<array{id: string, origin: string, supersededBy: ?string}>
@@ -144,10 +109,8 @@ final class ProcessRecord
             }
             $attempts[] = ['id' => $entry['id'], 'origin' => $entry['origin'], 'supersededBy' => $supersededBy];
         }
-
         return $attempts;
     }
-
     /**
      * @param array<mixed> $stored
      * @return list<string>
@@ -161,10 +124,8 @@ final class ProcessRecord
             }
             $processed[] = $event;
         }
-
         return $processed;
     }
-
     /**
      * @param array<mixed> $stored
      * @return list<array{kind: string, idempotencyKey: string, amount: array{value: string, currency: string}, by: string}>
@@ -174,17 +135,10 @@ final class ProcessRecord
         $inFlight = [];
         foreach (self::listOf($stored, 'inFlight') as $entry) {
             $entry = self::entry($entry, 'inFlight', ['kind', 'idempotencyKey', 'by'], [], ['amount']);
-            $inFlight[] = [
-                'kind' => $entry['kind'],
-                'idempotencyKey' => $entry['idempotencyKey'],
-                'amount' => self::commandAmount($entry['amount']),
-                'by' => $entry['by'],
-            ];
+            $inFlight[] = ['kind' => $entry['kind'], 'idempotencyKey' => $entry['idempotencyKey'], 'amount' => self::commandAmount($entry['amount']), 'by' => $entry['by']];
         }
-
         return $inFlight;
     }
-
     /**
      * @param array<mixed> $stored
      * @return list<array{question: string, mollieId: string}>
@@ -196,10 +150,8 @@ final class ProcessRecord
             $entry = self::entry($entry, 'open', ['question', 'mollieId']);
             $open[] = ['question' => $entry['question'], 'mollieId' => $entry['mollieId']];
         }
-
         return $open;
     }
-
     /**
      * @param array<mixed> $stored
      */
@@ -209,10 +161,8 @@ final class ProcessRecord
         if ($cancelledBy !== null) {
             self::assertCanceller($cancelledBy);
         }
-
         return $cancelledBy;
     }
-
     /**
      * @param array<mixed> $stored
      * @return list<mixed>
@@ -223,24 +173,16 @@ final class ProcessRecord
         if (!is_array($list) || array_values($list) !== $list) {
             throw new InvalidArgumentException(sprintf('The process record section "%s" is not a list.', $section));
         }
-
         return $list;
     }
-
     /**
      * @param list<string> $requiredText
      * @param list<string> $optional
      * @param list<string> $requiredNested
      * @return array<string, mixed>
      */
-    private static function entry(
-        mixed $entry,
-        string $section,
-        array $requiredText,
-        array $optional = [],
-        array $requiredNested = []
-    ): array {
-
+    private static function entry(mixed $entry, string $section, array $requiredText, array $optional = [], array $requiredNested = []): array
+    {
         if (!is_array($entry)) {
             throw new InvalidArgumentException(sprintf('An entry of "%s" is not a map.', $section));
         }
@@ -258,10 +200,8 @@ final class ProcessRecord
                 throw new InvalidArgumentException(sprintf('"%s.%s" is missing.', $section, $field));
             }
         }
-
         return $entry;
     }
-
     /**
      * @return array{value: string, currency: string}
      */
@@ -278,17 +218,14 @@ final class ProcessRecord
         if (!is_string($currency) || preg_match('/^[A-Z]{3}$/', $currency) !== 1) {
             throw new InvalidArgumentException('A command amount currency is an ISO 4217 code.');
         }
-
         return ['value' => $value, 'currency' => $currency];
     }
-
     private static function assertCanceller(mixed $cancelledBy): void
     {
-        if (!in_array($cancelledBy, self::CANCELLERS, true)) {
+        if (!in_array($cancelledBy, self::CANCELLERS, \true)) {
             throw new InvalidArgumentException('An order is cancelled by cleanup, the merchant or a webhook.');
         }
     }
-
     private static function isText(mixed $value): bool
     {
         return is_string($value) && $value !== '';

@@ -7,7 +7,7 @@ namespace Mollie;
  * Plugin Name: ddev-wordpress-plugin-example
  * Plugin URI:  https://inpsyde.com
  * Description: {DESCRIPTION}
- * Version: 8.1.10+piwoo-945-reconsider-pending-payment-order-status-semantics-for-mollie-payments-e-g-pay-by-bank.f33ca34
+ * Version: 8.2.0-beta2
  * SHA: f33ca348759731d75aa03ddd7ce57d43ba0df6ef
  * Requires at least: 5.8
  * Requires PHP: 7.2

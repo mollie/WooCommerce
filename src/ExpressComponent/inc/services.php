@@ -17,6 +17,7 @@ use Mollie\WooCommerce\ExpressComponent\Entry\ExpressReturnHandler;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
 use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\Shared\SystemClock;
 use Mollie\WooCommerce\Shared\Clock;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
@@ -59,6 +60,9 @@ return static function (): array {
 
             return new OrderLock($wpdb, $log);
         },
+        ProcessRecordStore::class => static function (): ProcessRecordStore {
+            return new ProcessRecordStore();
+        },
         // WooCommerce's log, whatever the merchant's debug switch says.
         'express.event_log.always_on' => static function (ContainerInterface $container): LoggerInterface {
             return new WcPsrLoggerAdapter(wc_get_logger(), $container->get('shared.plugin_id') . '-');
@@ -83,7 +87,7 @@ return static function (): array {
             $log = $container->get(EventLog::class);
             assert($log instanceof EventLog);
 
-            return new ExpressOrderWriter($log);
+            return new ExpressOrderWriter($log, $container->get(ProcessRecordStore::class));
         },
         ExpressFactsBuilder::class => static function (ContainerInterface $container): ExpressFactsBuilder {
             $settings = $container->get('settings.settings_helper');
@@ -138,7 +142,10 @@ return static function (): array {
             };
         },
         ExpressOrderFactsBuilder::class => static function (ContainerInterface $container): ExpressOrderFactsBuilder {
-            return new ExpressOrderFactsBuilder($container->get(ExpressSessionStore::class));
+            return new ExpressOrderFactsBuilder(
+                $container->get(ExpressSessionStore::class),
+                $container->get(ProcessRecordStore::class)
+            );
         },
         ExpressOrderFactory::class => static function (): ExpressOrderFactory {
             return new ExpressOrderFactory();

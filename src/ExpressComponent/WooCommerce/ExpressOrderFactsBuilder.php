@@ -9,6 +9,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\Payment\MolliePaymentAttempt;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\Shared\Values\Money;
 use WC_Customer;
 use WC_Order;
@@ -24,7 +25,7 @@ class ExpressOrderFactsBuilder
         'first_name', 'last_name', 'company', 'phone', 'address_1', 'address_2', 'postcode', 'city', 'state', 'country',
     ];
 
-    public function __construct(private ExpressSessionStore $store)
+    public function __construct(private ExpressSessionStore $store, private ProcessRecordStore $records)
     {
     }
 
@@ -70,6 +71,8 @@ class ExpressOrderFactsBuilder
             $tracked = (string) $order->get_transaction_id();
         }
 
+        $record = $this->records->read($order);
+
         return new ExpressOrderFacts(
             orderId: $order->get_id(),
             expressRef: (string) $order->get_meta('_mollie_express_ref'),
@@ -78,7 +81,9 @@ class ExpressOrderFactsBuilder
             trackedPaymentId: $tracked !== '' ? $tracked : null,
             needsPayment: $order->needs_payment(),
             holdsShipping: $this->holdsShipping($order),
-            needsShipping: $order->needs_shipping_address()
+            needsShipping: $order->needs_shipping_address(),
+            cancelledBy: $record->cancelledBy(),
+            processed: $record->processed()
         );
     }
 

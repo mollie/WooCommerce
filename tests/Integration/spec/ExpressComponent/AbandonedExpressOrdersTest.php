@@ -5,11 +5,16 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
 use Automattic\WooCommerce\Utilities\OrderUtil;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
+use Mollie\WooCommerce\Payment\Rules\Values\ProcessRecord;
 use Mollie\WooCommerce\Shared\Clock;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\SettableClock;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
+use Psr\Container\ContainerInterface;
 use WC_Order;
 
 /**
@@ -32,6 +37,8 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
     private int $graceSeconds = 0;
 
     private int $requestsBeforeCleanup = 0;
+
+    private ?ContainerInterface $container = null;
 
     public function setUp(): void
     {
@@ -350,6 +357,175 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         $this->assertSame([], $this->eventsFor('express.abandoned.cancelled', $order['id']));
     }
 
+    /**
+     * Scenario: a missing or unreadable record reads as empty
+     *   Given HPOS or posts storage, and an express order with no or an unreadable _mollie_process
+     *   When the store reads it
+     *   Then it gets the empty record, and the facts carry no canceller and nothing processed
+     *
+     * @test
+     * @dataProvider unreadableRecords
+     */
+    public function it_reads_an_empty_process_record_for_an_order_without_a_readable_one(bool $hpos, $stored): void
+    {
+        $this->useOrderStorage($hpos);
+        $order = $this->expressOrder();
+        if ($stored !== null) {
+            $subject = wc_get_order($order['id']);
+            $subject->update_meta_data('_mollie_process', $stored);
+            $subject->save();
+        }
+        $this->assertSame($hpos, OrderUtil::custom_orders_table_usage_is_enabled(), 'The order storage did not switch, so this row proves nothing.');
+
+        $record = $this->processRecordStore()->read(wc_get_order($order['id']));
+
+        $this->assertSame(ProcessRecord::empty()->toArray(), $record->toArray());
+        $facts = $this->expressFacts()->fromOrder(wc_get_order($order['id']));
+        $this->assertNull($facts->cancelledBy());
+        $this->assertSame([], $facts->processed());
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: mixed}>
+     */
+    public function unreadableRecords(): array
+    {
+        $values = [
+            'no record' => null,
+            'a string' => 'not a record',
+            'a number' => 42,
+            'an unknown section' => ['version' => 1, 'attempts' => [], 'processed' => [], 'inFlight' => [], 'open' => [], 'cancelledBy' => null, 'status' => 'paid'],
+            'a newer version' => ['version' => 99, 'attempts' => [], 'processed' => [], 'inFlight' => [], 'open' => [], 'cancelledBy' => null],
+        ];
+        $rows = [];
+        foreach (['HPOS' => true, 'posts' => false] as $storage => $hpos) {
+            foreach ($values as $name => $value) {
+                $rows["{$storage}, {$name}"] = [$hpos, $value];
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Scenario: cleanup writes the record in the same save as the cancel
+     *   Given an abandoned express order whose session expired or whose payment failed
+     *   When cleanup runs
+     *   Then every save stores the record exactly when the status is cancelled
+     *   And the record reads cancelledBy = cleanup and the handled "<id>:<status>"
+     *
+     * @test
+     * @dataProvider whatCleanupActedOn
+     */
+    public function it_records_cancelled_by_cleanup_in_the_same_save_as_the_cancel(string $case): void
+    {
+        $order = $this->expressOrder();
+        if ($case === 'session') {
+            $this->fakeMollie()->expireSession($order['session']);
+            $expected = $order['session'] . ':expired';
+        } else {
+            $payment = $this->fakeMollie()->completeSession($order['session'], ['status' => 'failed', 'method' => 'paypal']);
+            $known = wc_get_order($order['id']);
+            $known->update_meta_data('_mollie_payment_id', $payment['id']);
+            $known->save();
+            $expected = $payment['id'] . ':failed';
+        }
+        $this->clock->set($order['expiresAt'] + $this->graceSeconds + 1);
+        $saves = [];
+        $this->addTestFilter('woocommerce_update_order', function ($orderId) use ($order, &$saves) {
+            if ((int) $orderId === $order['id']) {
+                $saves[] = [$this->storedStatus($order['id']), $this->storedRecord($order['id']) !== null];
+            }
+
+            return $orderId;
+        }, PHP_INT_MAX);
+        $recordAtCancel = null;
+        $this->addTestFilter('woocommerce_order_status_cancelled', function ($orderId) use ($order, &$recordAtCancel) {
+            if ((int) $orderId === $order['id']) {
+                $recordAtCancel = $this->storedRecord($order['id']);
+            }
+
+            return $orderId;
+        }, 0);
+
+        $this->runCleanup();
+
+        $this->assertSame('cancelled', wc_get_order($order['id'])->get_status(), 'Cleanup must cancel the order, or this scenario proves nothing.');
+        $this->assertNotEmpty($saves, 'The order was never saved during cleanup.');
+        foreach ($saves as [$status, $hasRecord]) {
+            $this->assertSame(
+                $status === 'wc-cancelled',
+                $hasRecord,
+                "A save left the status {$status} and the record " . ($hasRecord ? 'stored' : 'absent') . ': they were not written together.'
+            );
+        }
+        $this->assertIsArray($recordAtCancel, 'The record was not stored when the order became cancelled.');
+        $record = $this->processRecordStore()->read(wc_get_order($order['id']));
+        $this->assertSame('cleanup', $record->cancelledBy());
+        $this->assertSame([$expected], $record->processed());
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public function whatCleanupActedOn(): array
+    {
+        return [
+            'the session Mollie reports expired' => ['session'],
+            'the known payment Mollie reports failed' => ['payment'],
+        ];
+    }
+
+    /**
+     * Scenario: the facts carry the record
+     *   Given an order cleanup cancelled for an expired session
+     *   When the facts are built
+     *   Then they carry cancelledBy = cleanup and "<session>:expired"
+     *
+     * @test
+     */
+    public function it_hands_the_record_to_the_express_facts(): void
+    {
+        $order = $this->expressOrder();
+        $this->fakeMollie()->expireSession($order['session']);
+        $this->clock->set($order['expiresAt'] + $this->graceSeconds + 1);
+
+        $this->runCleanup();
+
+        $this->assertSame('cancelled', wc_get_order($order['id'])->get_status(), 'Cleanup must cancel the order, or this scenario proves nothing.');
+        $facts = $this->expressFacts()->fromOrder(wc_get_order($order['id']));
+        $this->assertSame('cleanup', $facts->cancelledBy());
+        $this->assertSame([$order['session'] . ':expired'], $facts->processed());
+    }
+
+    /**
+     * Scenario: no existing _mollie_* key changes
+     *   Given an abandoned express order whose payment failed
+     *   When cleanup cancels it
+     *   Then every _mollie_* key keeps its value and only _mollie_process is added
+     *
+     * @test
+     */
+    public function it_leaves_every_existing_mollie_key_as_it_was(): void
+    {
+        $order = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($order['session'], ['status' => 'failed', 'method' => 'paypal']);
+        $known = wc_get_order($order['id']);
+        $known->update_meta_data('_mollie_payment_id', $payment['id']);
+        $known->save();
+        $this->clock->set($order['expiresAt'] + $this->graceSeconds + 1);
+        $before = $this->mollieMeta($order['id']);
+        $this->assertArrayNotHasKey('_mollie_process', $before);
+
+        $this->runCleanup();
+
+        $this->assertSame('cancelled', wc_get_order($order['id'])->get_status(), 'Cleanup must cancel the order, or this scenario proves nothing.');
+        $after = $this->mollieMeta($order['id']);
+        $this->assertSame(['_mollie_process'], array_values(array_diff(array_keys($after), array_keys($before))));
+        unset($after['_mollie_process']);
+        $this->assertSame($before, $after);
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
@@ -398,6 +574,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
                 return $clock;
             },
         ]);
+        $this->container = $container;
         $this->graceSeconds = (int) ($container->get('express.config')['abandonGraceSeconds'] ?? 0);
         $this->actAsGuest();
         $this->cartWith(['simple'], 2);
@@ -455,6 +632,76 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         return array_values(array_map(static function (array $request): string {
             return (string) $request['path'];
         }, $lookups));
+    }
+
+    private function processRecordStore(): ProcessRecordStore
+    {
+        $this->assertNotNull($this->container, 'Create an express order first: it boots the module.');
+
+        return $this->container->get(ProcessRecordStore::class);
+    }
+
+    private function expressFacts(): ExpressOrderFactsBuilder
+    {
+        $this->assertNotNull($this->container, 'Create an express order first: it boots the module.');
+
+        return $this->container->get(ExpressOrderFactsBuilder::class);
+    }
+
+    /**
+     * Filters, not the option: WooCommerce refuses to switch the option while orders are unsynced.
+     */
+    private function useOrderStorage(bool $hpos): void
+    {
+        if ($hpos) {
+            $sync = wc_get_container()->get(DataSynchronizer::class);
+            if (!$sync->check_orders_table_exists()) {
+                $sync->create_database_tables();
+            }
+        }
+        $value = static function () use ($hpos): string {
+            return $hpos ? 'yes' : 'no';
+        };
+        $this->addTestFilter('pre_option_woocommerce_custom_orders_table_enabled', $value);
+        $this->addTestFilter('pre_option_woocommerce_feature_custom_order_tables_enabled', $value);
+        $this->assertSame($hpos, OrderUtil::custom_orders_table_usage_is_enabled(), 'The order storage did not switch.');
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function storedRecord(int $orderId): ?array
+    {
+        global $wpdb;
+        $hpos = OrderUtil::custom_orders_table_usage_is_enabled();
+        $table = OrderUtil::get_table_for_order_meta();
+        $idColumn = $hpos ? 'order_id' : 'post_id';
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table and column names from WooCommerce.
+        $value = $wpdb->get_var($wpdb->prepare("SELECT meta_value FROM {$table} WHERE {$idColumn} = %d AND meta_key = %s", $orderId, '_mollie_process'));
+        if ($value === null) {
+            return null;
+        }
+        $record = maybe_unserialize($value);
+
+        return is_array($record) ? $record : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function mollieMeta(int $orderId): array
+    {
+        $meta = [];
+        foreach (wc_get_order($orderId)->get_meta_data() as $entry) {
+            $data = $entry->get_data();
+            if (strpos((string) $data['key'], '_mollie_') === 0) {
+                $meta[(string) $data['key']] = $data['value'];
+            }
+        }
+        ksort($meta);
+
+        return $meta;
     }
 
     private function runCleanup(): void

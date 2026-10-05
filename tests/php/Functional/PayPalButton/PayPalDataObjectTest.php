@@ -2,7 +2,6 @@
 
 namespace Mollie\WooCommerceTests\Functional\PayPalButton;
 
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalDataObjectHttp;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
@@ -14,7 +13,6 @@ use function Brain\Monkey\Functions\expect;
 
 class PayPalDataObjectTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
     /** @var HelperMocks */
     private $helperMocks;
 

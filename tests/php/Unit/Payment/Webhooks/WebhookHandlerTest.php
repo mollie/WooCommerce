@@ -6,7 +6,6 @@ namespace Mollie\WooCommerceTests\Unit\Payment\Webhooks;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
 use Mockery;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\MolliePayment;
@@ -25,7 +24,6 @@ use function Brain\Monkey\Functions\when;
  */
 class WebhookHandlerTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
     /** @var LoggerInterface&\Mockery\MockInterface */
     private $logger;
 

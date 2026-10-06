@@ -135,8 +135,8 @@ return static function (): array {
                 $container->get(Clock::class),
                 $container->get(EventLog::class),
                 $container->get(PendingExpressOrders::class),
-                (int) $container->get('express.config')['abandonGraceSeconds'],
-                (int) $container->get('express.config')['abandonGiveUpSeconds']
+                $container->get(ExpressFactsBuilder::class),
+                (int) $container->get('express.config')['abandonGraceSeconds']
             );
         },
         OrphanedExpressPayments::class => static function (): OrphanedExpressPayments {

@@ -43,7 +43,7 @@ class ExpressFactsBuilder
         [$registered, $enabled, $expressOnCheckout, $surcharged] = $this->merchantSettings();
 
         return new ShopFacts(
-            mode: $this->settings->isTestModeEnabled() ? 'test' : 'live',
+            mode: $this->mode(),
             isHttps: wc_site_is_https(),
             registeredGatewayIds: $registered,
             enabledGatewayIds: $enabled,
@@ -51,6 +51,14 @@ class ExpressFactsBuilder
             expressCheckoutGatewayIds: $expressOnCheckout,
             surchargedGatewayIds: $surcharged
         );
+    }
+
+    /**
+     * @return 'test'|'live' The mode whose key asks Mollie.
+     */
+    public function mode(): string
+    {
+        return $this->settings->isTestModeEnabled() ? 'test' : 'live';
     }
 
     /** Options only, no Mollie call: cheap enough to run on every request. */

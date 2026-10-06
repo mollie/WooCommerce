@@ -276,38 +276,33 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: an order Mollie could not be asked about is given up on after the give-up time, not before
-     *   Given a pending express order and a Mollie that answers every lookup with an outage
-     *   When the cleanup action runs one second before the give-up time after its expiry, and one second after
-     *   Then the first run keeps it, with the reason mollie_unreachable
-     *   And the second cancels it, by cleanup, with the reason unanswered
+     * Scenario: an order Mollie could not be asked about is kept, however long ago its session expired
+     *   Given a pending express order whose session expired a month ago
+     *   And a Mollie that answers the lookup with an outage
+     *   When the cleanup action runs
+     *   Then the order is still pending and carries no abandon note
+     *   And express.abandoned.kept is logged with the reason mollie_unreachable
      *
      * @test
      */
-    public function it_gives_up_on_an_order_mollie_could_not_be_asked_about_for_the_give_up_time(): void
+    public function it_keeps_an_order_mollie_could_not_be_asked_about_however_old_it_is(): void
     {
         $order = $this->expressOrder();
-        $giveUp = (int) $this->container->get('express.config')['abandonGiveUpSeconds'];
-
-        $this->clock->set($order['expiresAt'] + $giveUp - 1);
+        $this->clock->set($order['expiresAt'] + MONTH_IN_SECONDS);
         $this->fakeMollie()->failNext('GET', 'sessions', 503);
+
         $this->runCleanup();
-        $this->assertSame('pending', wc_get_order($order['id'])->get_status());
+
+        $kept = wc_get_order($order['id']);
+        $this->assertSame('pending', $kept->get_status());
+        $this->assertNoAbandonNote($kept);
         $this->assertSame('mollie_unreachable', $this->eventsFor('express.abandoned.kept', $order['id'])[0]['context']['reason'] ?? null);
-
-        $this->clock->set($order['expiresAt'] + $giveUp + 1);
-        $this->fakeMollie()->failNext('GET', 'sessions', 503);
-        $this->runCleanup();
-
-        $this->assertSame('cancelled', wc_get_order($order['id'])->get_status());
-        $this->assertSame('unanswered', $this->eventsFor('express.abandoned.cancelled', $order['id'])[0]['context']['reason'] ?? null);
-        $this->assertSame('cleanup', $this->storedRecord($order['id'])['cancelledBy'] ?? null);
     }
 
     /**
-     * Scenario: an answer that the order may still be paid is never overruled by its age
+     * Scenario: an answer that the order may still be paid holds however old the order is
      *   Given a pending express order whose session Mollie reports open
-     *   When the cleanup action runs long after the give-up time
+     *   When the cleanup action runs a month after its expiry
      *   Then the order is still pending
      *
      * @test
@@ -315,13 +310,39 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
     public function it_keeps_an_order_mollie_says_is_payable_however_old_it_is(): void
     {
         $order = $this->expressOrder();
-        $giveUp = (int) $this->container->get('express.config')['abandonGiveUpSeconds'];
-        $this->clock->set($order['expiresAt'] + 2 * $giveUp);
+        $this->clock->set($order['expiresAt'] + MONTH_IN_SECONDS);
 
         $this->runCleanup();
 
         $this->assertSame('pending', wc_get_order($order['id'])->get_status());
         $this->assertSame('open', $this->eventsFor('express.abandoned.kept', $order['id'])[0]['context']['reason'] ?? null);
+    }
+
+    /**
+     * Scenario: a "not found" asked with the key of another mode is not an answer about the order
+     *   Given a pending express order created in live mode, past its expiry and grace
+     *   And the shop has been switched to test mode since
+     *   And Mollie answers 404 for the order's session, as it does to a key of the other mode
+     *   When the cleanup action runs
+     *   Then the order is still pending and carries no abandon note
+     *   And express.abandoned.kept is logged with the reason asked_in_other_mode
+     *
+     * @test
+     */
+    public function it_keeps_a_live_order_mollie_does_not_know_in_test_mode(): void
+    {
+        $order = $this->expressOrder();
+        $this->assertSame('live', wc_get_order($order['id'])->get_meta('_mollie_payment_mode'));
+        $this->useTestMode();
+        $this->fakeMollie()->failNext('GET', 'sessions', 404);
+        $this->clock->set($order['expiresAt'] + $this->graceSeconds + 1);
+
+        $this->runCleanup();
+
+        $kept = wc_get_order($order['id']);
+        $this->assertSame('pending', $kept->get_status());
+        $this->assertNoAbandonNote($kept);
+        $this->assertSame('asked_in_other_mode', $this->eventsFor('express.abandoned.kept', $order['id'])[0]['context']['reason'] ?? null);
     }
 
     /**
@@ -796,6 +817,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         $order->update_meta_data('_mollie_express_ref', 'exr_' . str_pad((string) $n, 32, '0', STR_PAD_LEFT));
         $order->update_meta_data('_mollie_express_session_id', 'sess_gone' . $n);
         $order->update_meta_data('_mollie_express_expires_at', (string) $expiredAt);
+        $order->update_meta_data('_mollie_payment_mode', 'live');
         $order->save();
 
         return $order->get_id();

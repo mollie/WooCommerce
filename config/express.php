@@ -15,7 +15,6 @@ declare(strict_types=1);
  *     maxNewSessionsPerAddress: int,
  *     windowSeconds: int,
  *     abandonGraceSeconds: int,
- *     abandonGiveUpSeconds: int,
  * } $express
  */
 $express = [
@@ -60,8 +59,6 @@ $express = [
     'windowSeconds' => 600,
     // Cleanup waits this long after a session expired, so a late payment can still arrive.
     'abandonGraceSeconds' => 3600,
-    // An order Mollie could not be asked about is cancelled this long after its session expired.
-    'abandonGiveUpSeconds' => 7 * 86400,
 ];
 
 return $express;

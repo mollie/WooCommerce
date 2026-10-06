@@ -197,6 +197,63 @@ class ExpressOrderStockHoldTest extends ExpressFlowTestCase
         $this->assertSame(0, $this->unexpiredHeldQuantity($earlier));
     }
 
+    /**
+     * Scenario: an express order that does not come to be gives the hold back
+     *   Given the shopper's pending order holds the last stock
+     *   And the express order will be refused after WooCommerce created it
+     *   When they submit express
+     *   Then no express order is left
+     *   And the pending order holds its stock again
+     *
+     * @test
+     * @dataProvider ordersThatDoNotComeToBe
+     */
+    public function it_gives_the_hold_back_when_the_express_order_does_not_come_to_be(string $hook, callable $failure): void
+    {
+        $this->lastItemsInStock(2);
+        $this->readyGuestCheckout();
+        $this->startedSession();
+        $earlier = $this->placeBlockCheckoutOrderThatRedirects();
+        $this->reloadCartAsTheNextRequestWould();
+        $this->addTestFilter($hook, $failure, 10, 1);
+
+        $response = $this->startOrder();
+
+        $this->assertFalse(((array) $response->get_data())['ok'] ?? null);
+        $this->assertSame([$earlier], array_values(array_diff($this->allOrderIds(), $this->ordersBefore)), 'No express order may be left.');
+        $this->assertSame('pending', wc_get_order($earlier)->get_status());
+        $this->assertSame(2, $this->unexpiredHeldQuantity($earlier));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: callable}>
+     */
+    public function ordersThatDoNotComeToBe(): array
+    {
+        return [
+            'its total is not the amount of the session' => [
+                'woocommerce_checkout_create_order',
+                static function (WC_Order $order): void {
+                    $order->set_total((string) ((float) $order->get_total() + 0.01));
+                },
+            ],
+            'WooCommerce throws after saving it' => [
+                'woocommerce_checkout_order_created',
+                static function (): void {
+                    throw new \RuntimeException('Simulated failure after the order was saved.');
+                },
+            ],
+            'stamping it fails' => [
+                'woocommerce_before_order_object_save',
+                static function (WC_Order $order): void {
+                    if ($order->get_created_via() === 'mollie_express') {
+                        throw new \RuntimeException('Simulated failure while stamping the order.');
+                    }
+                },
+            ],
+        ];
+    }
+
     private function placeBlockCheckoutOrderThatRedirects(): int
     {
         $this->registerStoreApiRoutesClearedByBootExpress();

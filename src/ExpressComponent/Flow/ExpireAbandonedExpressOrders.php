@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\ExpressComponent\Flow;
 use InvalidArgumentException;
 use Mollie\WooCommerce\ExpressComponent\Rules\AbandonDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\AbandonVerdict;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderWriter;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\PendingExpressOrders;
@@ -26,7 +27,7 @@ final class ExpireAbandonedExpressOrders
 {
     private const FLOW = 'express.abandoned.expire';
     private const BATCH = 50;
-    public function __construct(private ExpressOrderFactsBuilder $orderFacts, private MollieApi $mollie, private OrderLock $lock, private ExpressOrderWriter $writer, private Clock $clock, private EventLog $log, private PendingExpressOrders $pending, private int $graceSeconds, private int $giveUpSeconds)
+    public function __construct(private ExpressOrderFactsBuilder $orderFacts, private MollieApi $mollie, private OrderLock $lock, private ExpressOrderWriter $writer, private Clock $clock, private EventLog $log, private PendingExpressOrders $pending, private ExpressFactsBuilder $expressFacts, private int $graceSeconds)
     {
     }
     public function run(): void
@@ -55,13 +56,14 @@ final class ExpireAbandonedExpressOrders
     {
         $sessionId = (string) $order->get_meta('_mollie_express_session_id');
         $paymentId = (string) $order->get_meta('_mollie_payment_id');
-        $sinceExpiry = $this->clock->now() - (int) $order->get_meta('_mollie_express_expires_at');
+        $orderMode = (string) $order->get_meta('_mollie_payment_mode');
+        $askedInMode = $this->expressFacts->mode();
         [$session, $payment, $unknownAtMollie] = $this->askMollie($sessionId, $paymentId);
         try {
-            $verdict = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($session, $payment, $unknownAtMollie, $sinceExpiry): AbandonVerdict {
+            $verdict = $this->lock->withFreshOrder($order->get_id(), function (WC_Order $fresh) use ($session, $payment, $unknownAtMollie, $orderMode, $askedInMode): AbandonVerdict {
                 // The webhook may have paid the order while Mollie was being asked.
-                $verdict = AbandonDecision::decide($fresh->has_status('pending'), $session, $payment, $unknownAtMollie, $sinceExpiry, $this->giveUpSeconds);
-                $this->log->info('rule.decided', ['order' => $fresh->get_id(), 'rule' => 'AbandonDecision', 'verdict' => $verdict->cancels() ? 'cancel' : 'keep', 'inputs' => sprintf('pending=%d payment_status=%s session_status=%s unknown=%d reason=%s', $fresh->has_status('pending') ? 1 : 0, $payment !== null ? $payment->status() : '', $session !== null ? $session->status() : '', $unknownAtMollie ? 1 : 0, $verdict->reason())]);
+                $verdict = AbandonDecision::decide($fresh->has_status('pending'), $session, $payment, $unknownAtMollie, $orderMode, $askedInMode);
+                $this->log->info('rule.decided', ['order' => $fresh->get_id(), 'rule' => 'AbandonDecision', 'verdict' => $verdict->cancels() ? 'cancel' : 'keep', 'inputs' => sprintf('pending=%d payment_status=%s session_status=%s unknown=%d mode=%s asked_in=%s reason=%s', $fresh->has_status('pending') ? 1 : 0, $payment !== null ? $payment->status() : '', $session !== null ? $session->status() : '', $unknownAtMollie ? 1 : 0, $orderMode, $askedInMode, $verdict->reason())]);
                 if ($verdict->cancels()) {
                     $this->writer->cancelAbandoned($fresh, $this->handledEvent($session, $payment));
                 }

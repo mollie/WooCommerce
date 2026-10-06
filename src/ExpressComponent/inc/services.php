@@ -88,7 +88,7 @@ return static function (): array {
             return new ExpressReturnHandler($container->get(ExpressOrderFactsBuilder::class), $container->get(EventLog::class));
         },
         ExpireAbandonedExpressOrders::class => static function (ContainerInterface $container): ExpireAbandonedExpressOrders {
-            return new ExpireAbandonedExpressOrders($container->get(ExpressOrderFactsBuilder::class), $container->get(MollieApi::class), $container->get(OrderLock::class), $container->get(ExpressOrderWriter::class), $container->get(Clock::class), $container->get(EventLog::class), $container->get(PendingExpressOrders::class), (int) $container->get('express.config')['abandonGraceSeconds'], (int) $container->get('express.config')['abandonGiveUpSeconds']);
+            return new ExpireAbandonedExpressOrders($container->get(ExpressOrderFactsBuilder::class), $container->get(MollieApi::class), $container->get(OrderLock::class), $container->get(ExpressOrderWriter::class), $container->get(Clock::class), $container->get(EventLog::class), $container->get(PendingExpressOrders::class), $container->get(ExpressFactsBuilder::class), (int) $container->get('express.config')['abandonGraceSeconds']);
         },
         OrphanedExpressPayments::class => static function (): OrphanedExpressPayments {
             return new OrphanedExpressPayments();

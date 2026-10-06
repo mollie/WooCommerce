@@ -55,17 +55,20 @@ class ExpressOrderFactory
         $order = is_int($orderId) && $orderId > 0 ? wc_get_order($orderId) : null;
         if (!$order instanceof WC_Order) {
             if ($created instanceof WC_Order && $created->get_id() > 0) {
-                $this->delete($created);
+                $created->delete(\true);
             }
+            $this->holdStockForShoppersPendingOrderAgain();
             throw new RuntimeException('WooCommerce did not create the express order.');
         }
         // Keeps cleanup scheduled.
         $this->pending->remember();
         return $order;
     }
+    /** The shopper's pending order gets back the stock hold create() took from it. */
     public function delete(WC_Order $order): void
     {
         $order->delete(\true);
+        $this->holdStockForShoppersPendingOrderAgain();
     }
     private function releaseStockHeldByShoppersPendingOrder(\WC_Session $session): void
     {
@@ -75,6 +78,23 @@ class ExpressOrderFactory
         $order = $this->shoppersOwnOrder($session);
         if ($order !== null && $order->has_status('pending')) {
             wc_release_stock_for_order($order);
+        }
+    }
+    private function holdStockForShoppersPendingOrderAgain(): void
+    {
+        $session = WC()->session;
+        if (!$session instanceof \WC_Session || !function_exists('wc_reserve_stock_for_order')) {
+            return;
+        }
+        $order = $this->shoppersOwnOrder($session);
+        if ($order === null || !$order->has_status('pending')) {
+            return;
+        }
+        try {
+            wc_reserve_stock_for_order($order);
+        } catch (\Throwable $taken) {
+            // Another shopper holds the stock by now.
+            return;
         }
     }
     /** As WC_Cart::check_cart_item_stock() reads it. */

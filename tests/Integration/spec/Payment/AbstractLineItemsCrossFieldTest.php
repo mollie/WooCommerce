@@ -18,10 +18,11 @@ use WC_Tax;
  * buildLines() to one builder, so every scenario below runs against BOTH — a bug in the shared trait
  * is a bug in both APIs (PIWOO-931).
  *
- * Every emitted line must satisfy the two cross-field rules Mollie validates server-side (no documented
- * tolerance — "any deviations will result in an error"):
- *   Rule 1: vatAmount   == round(totalAmount * vatRate/(100+vatRate), prec)
+ * Every emitted line must satisfy the rules Mollie validates server-side (no documented tolerance — "any
+ * deviations will result in an error"; rule 1 and 3 confirmed against the test API for PIWOO-842):
+ *   Rule 1: vatAmount   == round(totalAmount * vatRate/(100+vatRate), prec), discount lines included
  *   Rule 2: totalAmount == round(unitPrice * quantity - discountAmount, prec)
+ *   Rule 3: unitPrice   <= 0 for type discount, store_credit and gift_card
  * plus the order-level identity sum(line totalAmount) == round(order->get_total(), prec) that
  * process_mismatch() reconciles. prec = 0 for JPY/ISK, else 2.
  *
@@ -266,6 +267,89 @@ abstract class AbstractLineItemsCrossFieldTest extends IntegrationMockedTestCase
         $this->assertOrderReconciles($lines, $order, 'EUR');
     }
 
+    /**
+     * Scenario: a line pushed below zero is sent as a discount line Mollie accepts (PIWOO-842).
+     *   Given an item whose discount pushes its gross line total below zero
+     *   When the builder produces the Mollie line items
+     *   Then the line is type 'discount' and every rule Mollie validates holds on it.
+     *
+     * Before the fix the line kept its positive unitPrice and its product vatRate; Mollie rejected both with
+     * HTTP 422 on the Payments and Orders API:
+     *   - "The 'unitPrice' field must be zero or less, if the 'type' is one of the following: 'discount',
+     *     'store_credit', and 'gift_card'";
+     *   - "The 'vatAmount' field is off. Expected to be -€0.80 (-€5.00 × (19.00 / 119.00)), got €0.00".
+     *
+     * @test
+     * @dataProvider linesBelowZero
+     */
+    public function test_line_below_zero_is_sent_as_discount_line(
+        string $netPrice,
+        int $quantity,
+        string $taxStatus,
+        float $netDiscount,
+        ?string $expectedUnitPrice
+    ): void {
+
+        update_option('woocommerce_price_num_decimals', 2);
+        $order = $this->createTaxedOrder($netPrice, $quantity, 'EUR', $taxStatus, $netDiscount);
+        $lines = $this->buildLines($order);
+
+        self::assertSame('discount', $lines[0]['type']);
+        if ($expectedUnitPrice !== null) {
+            self::assertSame($expectedUnitPrice, (string) $lines[0]['unitPrice']['value']);
+        }
+        // Order-level reconciliation of a negative order total is WooCommerce behaviour outside this fix.
+        $this->assertMollieCrossFieldRules($lines, 'EUR');
+    }
+
+    /**
+     * Net price, quantity, tax status, net discount and expected unitPrice. The unitPrice is left null where
+     * it depends on the store's configured tax rate; the Mollie rules still cover it.
+     *
+     * @return array<string, array{string, int, string, float, ?string}>
+     */
+    public function linesBelowZero(): array
+    {
+        return [
+            // The only case where Mollie's VAT rule itself fails if vatRate is not zeroed.
+            'taxed line well below zero' => ['10.00', 1, 'taxable', 20.0, null],
+            // Just below zero; paired with test_fully_discounted_line_keeps_product_shape at exactly zero.
+            'one cent below zero' => ['10.00', 1, 'taxable', 10.01, '-0.01'],
+            // -10.00 over 3 does not divide evenly: the total is derived from the rounded unit (PIWOO-931).
+            'uneven split over quantity' => ['10.00', 3, 'none', 40.0, '-3.33'],
+        ];
+    }
+
+    /**
+     * Scenario: a line at exactly 100% off keeps its product shape (PIWOO-842).
+     *   Given a taxable net-10.00 item at quantity 2, fully discounted so line_total is 0.00
+     *   When the builder produces the Mollie line items
+     *   Then the line stays physical/digital with discountAmount equal to unitPrice * quantity, a 0.00
+     *        totalAmount and a 0.00 vatAmount.
+     *
+     * Mollie accepted this shape on both APIs (HTTP 201, real block checkout and direct Orders API call),
+     * so it must not be reshaped into a discount line.
+     *
+     * @test
+     */
+    public function test_fully_discounted_line_keeps_product_shape(): void
+    {
+        update_option('woocommerce_price_num_decimals', 2);
+        $order = $this->createTaxedOrder('10.00', 2, 'EUR', 'taxable', 20.0);
+        $lines = $this->buildLines($order);
+
+        self::assertContains($lines[0]['type'], ['physical', 'digital']);
+        self::assertSame('0.00', (string) $lines[0]['totalAmount']['value']);
+        self::assertSame('0.00', (string) $lines[0]['vatAmount']['value']);
+        self::assertSame(
+            (string) $lines[0]['discountAmount']['value'],
+            number_format((float) $lines[0]['unitPrice']['value'] * 2, 2, '.', ''),
+            'The whole line value must be carried by discountAmount.'
+        );
+        $this->assertMollieCrossFieldRules($lines, 'EUR');
+        $this->assertOrderReconciles($lines, $order, 'EUR');
+    }
+
     // --- helpers -----------------------------------------------------------------------------------
 
     /**
@@ -276,7 +360,6 @@ abstract class AbstractLineItemsCrossFieldTest extends IntegrationMockedTestCase
         $prec = in_array($currency, ['JPY', 'ISK'], true) ? 0 : 2;
 
         foreach ($lines as $index => $line) {
-            $type = (string) ($line['type'] ?? '');
             $rate = (float) $line['vatRate'];
             $unit = (float) $line['unitPrice']['value'];
             $total = (float) $line['totalAmount']['value'];
@@ -284,13 +367,20 @@ abstract class AbstractLineItemsCrossFieldTest extends IntegrationMockedTestCase
             $qty = (float) ($line['quantity'] ?? 1);
             $discount = isset($line['discountAmount']) ? (float) $line['discountAmount']['value'] : 0.0;
 
-            // Rule 1 — skip pure-discount lines, which intentionally force vatAmount to 0.
-            if ($rate > 0 && $type !== 'discount') {
-                self::assertEqualsWithDelta(
-                    round($total * $rate / (100 + $rate), $prec),
-                    $vat,
-                    1e-9,
-                    sprintf('Line %d violates Mollie rule 1 (vatAmount == totalAmount*rate/(100+rate)).', (int) $index)
+            // Rule 1 — applies to every line, discount lines and zero rates included.
+            self::assertEqualsWithDelta(
+                round($total * $rate / (100 + $rate), $prec),
+                $vat,
+                1e-9,
+                sprintf('Line %d violates Mollie rule 1 (vatAmount == totalAmount*rate/(100+rate)).', (int) $index)
+            );
+
+            // Rule 3 — discount-like lines must not carry a positive unitPrice (HTTP 422 on lines.N.unitPrice).
+            if (in_array((string) ($line['type'] ?? ''), ['discount', 'store_credit', 'gift_card'], true)) {
+                self::assertLessThanOrEqual(
+                    0.0,
+                    $unit,
+                    sprintf('Line %d violates Mollie rule 3 (discount unitPrice must be zero or less).', (int) $index)
                 );
             }
 

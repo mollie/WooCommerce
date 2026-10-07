@@ -129,6 +129,14 @@ class SessionLinesTest extends TestCase
                 [$this->line('Pen', 3, '9.99', '21.00'), $this->line('Cup', 1, '5.00', '21.00')],
                 '14.98'
             )],
+            'the cart total is far below the lines' => [$this->cart(
+                [$this->line('Pen', 3, '9.99', '21.00'), $this->line('Cup', 1, '5.00', '21.00')],
+                '4.99'
+            )],
+            'the cart total is far above the lines' => [$this->cart(
+                [$this->line('Pen', 3, '9.99', '21.00'), $this->line('Cup', 1, '5.00', '21.00')],
+                '24.99'
+            )],
         ];
     }
 
@@ -152,6 +160,48 @@ class SessionLinesTest extends TestCase
 
         self::assertSame('10.00', $lines[0]['totalAmount']['value']);
         self::assertSame('5.00', $lines[1]['totalAmount']['value']);
+    }
+
+    /**
+     * Scenario: a difference that is more than rounding gets a line of its own
+     *   Given a cart of two lines whose total differs from the sum of their subtotals
+     *   When the session lines are built
+     *   Then up to a cent per line is rounding, and the largest line absorbs it
+     *   And anything more leaves every line as it was and is added as one discount or surcharge line
+     *
+     * @dataProvider differencesWithTheTotal
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\SessionLines::fromCart
+     *
+     * @param list<array{0: string, 1: string}> $expected Type and totalAmount of every line.
+     */
+    public function testGivesADifferenceBeyondRoundingALineOfItsOwn(string $total, array $expected): void
+    {
+        $cart = $this->cart(
+            [$this->line('Pen', 3, '9.99', '21.00'), $this->line('Cup', 1, '5.00', '21.00')],
+            $total
+        );
+
+        $lines = SessionLines::fromCart($cart);
+
+        self::assertSame($expected, array_map(
+            static fn (array $line): array => [$line['type'], $line['totalAmount']['value']],
+            $lines
+        ));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: list<array{0: string, 1: string}>}>
+     */
+    public function differencesWithTheTotal(): array
+    {
+        return [
+            'a cent per line above' => ['15.01', [['physical', '10.01'], ['physical', '5.00']]],
+            'a cent per line below' => ['14.97', [['physical', '9.97'], ['physical', '5.00']]],
+            'one cent more than that, above' => ['15.02', [['physical', '9.99'], ['physical', '5.00'], ['surcharge', '0.03']]],
+            'one cent more than that, below' => ['14.96', [['physical', '9.99'], ['physical', '5.00'], ['discount', '-0.03']]],
+            'far below, as a balance paid outside the lines' => ['4.99', [['physical', '9.99'], ['physical', '5.00'], ['discount', '-10.00']]],
+            'below by more than the largest line' => ['2.99', [['physical', '9.99'], ['physical', '5.00'], ['discount', '-12.00']]],
+        ];
     }
 
     private function money(string $value): Money

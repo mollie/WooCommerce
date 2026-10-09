@@ -112,6 +112,7 @@ class MollieOrderService
             if (! $orders) {
                 $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
                 $this->onWebhookActionFallback($order_id, $key, $transactionID);
+                return;
             }
         }
 
@@ -272,16 +273,21 @@ class MollieOrderService
         $method_name = 'onWebhook' . ucfirst($payment->status);
         $payment_method_title = $this->getPaymentMethodTitle($payment);
 
-        // A superseded payment attempt (e.g. the method the customer abandoned before paying
-        // with another one) must not terminate an order that is linked to a different attempt.
-        // onWebhookExpired already guards this case itself (and records an order note), so we only
-        // shortcut the terminal statuses whose handlers have no such guard: failed and canceled.
+        // A payment that is not the attempt the order is linked to may only act on the order when
+        // Mollie's own record of that payment names this order (metadata.order_id, written by the
+        // plugin at creation, so a caller cannot forge it).
+        // A superseded attempt that does name the order (e.g. the method the customer abandoned
+        // before paying with another one) must still not terminate it: onWebhookExpired guards that
+        // case itself (and records an order note), failed and canceled are shortcut here.
         if (
             !MolliePaymentAttempt::isCurrentAttempt($order, (string) $payment->id)
-            && $this->isTerminalPaymentStatus($payment)
+            && (
+                !MolliePaymentAttempt::wasCreatedForOrder($order, $payment)
+                || $this->isTerminalPaymentStatus($payment)
+            )
         ) {
             $this->logger->debug(
-                __METHOD__ . ": webhook for superseded payment {$payment->id} (status {$payment->status}) ignored — "
+                __METHOD__ . ": webhook for payment {$payment->id} (status {$payment->status}) ignored — "
                 . "order {$order->get_id()} is linked to a different attempt."
             );
             return true;

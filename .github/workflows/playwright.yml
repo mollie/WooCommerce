@@ -68,7 +68,7 @@ concurrency:
 jobs:
   build:
     name: Build tested plugin package
-    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@f414e0b4da6c51adeee419cdd5fbbf299ae0167e # pinning PR #290
+    uses: inpsyde/reusable-workflows/.github/workflows/build-and-distribute.yml@f414e0b4da6c51adeee419cdd5fbbf299ae0167e # PR #290
     secrets:
       GITHUB_USER_EMAIL: ${{ secrets.DEPLOYBOT_EMAIL }}
       GITHUB_USER_NAME: ${{ secrets.DEPLOYBOT_USER }}
@@ -163,7 +163,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.resolve-playwright-matrix.outputs.matrix) }}
-    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@236c6b5a7fea73b5058b6f11bd17ff4b80994e54 # pinning PR #292
+    uses: inpsyde/reusable-workflows/.github/workflows/test-playwright.yml@236c6b5a7fea73b5058b6f11bd17ff4b80994e54 # PR #292
     with:
       PLAYWRIGHT_SCRIPT: ${{ matrix.script }}
       PLAYWRIGHT_ARTIFACT_NAME: ${{ matrix.artifact_name }}

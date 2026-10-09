@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Inpsyde\PaymentGateway;
+declare (strict_types=1);
+namespace Mollie\Inpsyde\PaymentGateway;
 
 use Closure;
-use Inpsyde\PaymentGateway\Method\PaymentMethodDefinition;
-
+use Mollie\Inpsyde\PaymentGateway\Method\PaymentMethodDefinition;
 /**
  * Trait providing functionality to register services for payment methods.
  *
@@ -37,46 +35,18 @@ trait PaymentMethodServiceProviderTrait
         $services = [];
         foreach ($paymentMethods as $paymentMethod) {
             $id = $paymentMethod->id();
-            $interfaceMethods = [
-                'title' => 'title',
-                'isEnabled' => 'is_enabled',
-                'description' => 'description',
-                'availabilityCallback' => 'availability_callback',
-                'methodTitle' => 'method_title',
-                'methodDescription' => 'method_description',
-                'paymentProcessor' => 'payment_processor',
-                'paymentRequestValidator' => 'payment_request_validator',
-                'supports' => 'supports',
-                'hasFields' => 'has_fields',
-                'refundProcessor' => 'refund_processor',
-                'gatewayIconsRenderer' => 'gateway_icons_renderer',
-                'paymentMethodIconProvider' => 'method_icon_provider',
-                'paymentFieldsRenderer' => 'payment_fields_renderer',
-                'formFields' => 'form_fields',
-                'optionKey' => 'option_key',
-                'orderButtonText' => 'order_button_text',
-                'registerBlocks' => 'register_blocks',
-                'icon' => 'icon',
-            ];
-
+            $interfaceMethods = ['title' => 'title', 'isEnabled' => 'is_enabled', 'description' => 'description', 'availabilityCallback' => 'availability_callback', 'methodTitle' => 'method_title', 'methodDescription' => 'method_description', 'paymentProcessor' => 'payment_processor', 'paymentRequestValidator' => 'payment_request_validator', 'supports' => 'supports', 'hasFields' => 'has_fields', 'refundProcessor' => 'refund_processor', 'gatewayIconsRenderer' => 'gateway_icons_renderer', 'paymentMethodIconProvider' => 'method_icon_provider', 'paymentFieldsRenderer' => 'payment_fields_renderer', 'formFields' => 'form_fields', 'optionKey' => 'option_key', 'orderButtonText' => 'order_button_text', 'registerBlocks' => 'register_blocks', 'icon' => 'icon'];
             foreach ($interfaceMethods as $method => $serviceKey) {
-                $services["payment_gateway.$id.$serviceKey"] =
-                    Closure::fromCallable([$paymentMethod, $method]);
+                $services["payment_gateway.{$id}.{$serviceKey}"] = Closure::fromCallable([$paymentMethod, $method]);
             }
-
             $settingsCustomization = $paymentMethod->customSettings();
-
             foreach ($settingsCustomization->renderers() as $fieldType => $renderer) {
-                $services["payment_gateway.$id.settings_field_renderer.$fieldType"] =
-                    Closure::fromCallable($renderer);
+                $services["payment_gateway.{$id}.settings_field_renderer.{$fieldType}"] = Closure::fromCallable($renderer);
             }
-
             foreach ($settingsCustomization->sanitizers() as $fieldType => $sanitizer) {
-                $services["payment_gateway.$id.settings_field_sanitizer.$fieldType"] =
-                    Closure::fromCallable($sanitizer);
+                $services["payment_gateway.{$id}.settings_field_sanitizer.{$fieldType}"] = Closure::fromCallable($sanitizer);
             }
         }
-
         return $services;
     }
 }

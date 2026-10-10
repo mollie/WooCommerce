@@ -14,6 +14,7 @@ import {
 	updateCurrencyIfNeeded,
 	assertOrderNotes,
 	assertSubscriptionNotes,
+	assertPaymentBelongsToOrder,
 } from '../../../utils';
 
 export const testSubscriptionOrderOnClassicCheckout = (
@@ -38,6 +39,7 @@ export const testSubscriptionOrderOnClassicCheckout = (
 				orderReceived,
 				customerSubscriptions,
 				wooCommerceApi,
+				mollieClientApi,
 				mollieHostedCheckout,
 				payForOrder,
 				wooCommerceOrderEdit,
@@ -73,6 +75,10 @@ export const testSubscriptionOrderOnClassicCheckout = (
 					transactionId,
 					`Assert Transaction ID ${ transactionId } is defined`
 				).toBeDefined();
+				await assertPaymentBelongsToOrder(
+					{ mollieClientApi, wooCommerceApi },
+					Number( orderId )
+				);
 
 				const subscriptions =
 					await wooCommerceApi.getSubscriptionByParentId( orderId );

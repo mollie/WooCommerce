@@ -3,3 +3,4 @@ export * from './general.helper';
 export * from './mollie.helper';
 export * from './order-notes.helper';
 export * from './woocommerce.helper';
+export * from './payment-ownership.helper';

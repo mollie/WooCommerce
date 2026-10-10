@@ -12,6 +12,7 @@ import {
 	updateCurrencyIfNeeded,
 	getOrderStatusFromMollieStatus,
 	assertOrderNotes,
+	assertPaymentBelongsToOrder,
 } from '../../../utils';
 import { MollieTestData, guests } from '../../../resources';
 
@@ -29,6 +30,7 @@ export const testPaymentStatusOnPayForOrder = (
 
 	test( `${ testId } | Transaction - Pay for order - ${ gatewayLabel } - Payment status ${ payment.status } creates order with expected status${ label }`, async ( {
 		wooCommerceApi,
+		mollieClientApi,
 		wooCommerceUtils,
 		mollieHostedCheckout,
 		orderReceived,
@@ -77,6 +79,10 @@ export const testPaymentStatusOnPayForOrder = (
 			transactionId,
 			`Assert transaction ID ${ transactionId } is defined`
 		).toBeDefined();
+		await assertPaymentBelongsToOrder(
+			{ mollieClientApi, wooCommerceApi },
+			Number( orderId )
+		);
 
 		await wooCommerceOrderEdit.visit( orderId );
 		await wooCommerceOrderEdit.assertOrderDetails(

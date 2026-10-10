@@ -145,6 +145,12 @@ export class Utils {
 
 		if ( enableSubscriptionsPlugin === true ) {
 			await this.requestUtils.activatePlugin( woocommerceSubscriptionsPlugin.slug );
+
+			// Without these, the REST API rejects product type "subscription" (400)
+			await this.wooCommerceApi.updateSubscriptionsSettings( {
+				woocommerce_subscriptions_enable_simple_subscription: 'yes',
+				woocommerce_subscriptions_enable_variable_subscription: 'yes',
+			} );
 		}
 
 		if ( enableSubscriptionsPlugin === false ) {

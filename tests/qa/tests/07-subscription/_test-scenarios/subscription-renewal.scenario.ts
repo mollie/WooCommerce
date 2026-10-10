@@ -45,7 +45,7 @@ export const testSubscriptionRenewal = (
 				wooCommerceSubscriptionEdit,
 				customerSubscriptions,
 			} ) => {
-				test.setTimeout( 2.5 * 60_000 );
+				test.setTimeout( 4 * 60_000 );
 				// Precondition: Create the initial subscription order
 				await updateCurrencyIfNeeded(
 					wooCommerceApi,
@@ -170,6 +170,23 @@ export const testSubscriptionRenewal = (
 						renewalTransactionId,
 						`${ assertionPrefix }Assert Transaction ID ${ renewalTransactionId } is defined`
 					).toBeDefined();
+
+					// Renewal is paid via webhook; until then the subscription stays on hold
+					await expect( async () => {
+						const renewalOrder = await wooCommerceApi.getOrder(
+							renewalOrderId
+						);
+						await expect(
+							renewalOrder.status,
+							`${ assertionPrefix }Assert renewal order settles to "${ renewalOrderStatus }"`
+						).toEqual( renewalOrderStatus );
+						const renewedSubscription =
+							await wooCommerceApi.getSubscription( subscription.id );
+						await expect(
+							renewedSubscription.status,
+							`${ assertionPrefix }Assert subscription is active again`
+						).toEqual( 'active' );
+					} ).toPass( { intervals: [ 5_000 ], timeout: 60_000 } );
 
 					// Assert current renewal order
 					await wooCommerceOrderEdit.visit( renewalOrderId );

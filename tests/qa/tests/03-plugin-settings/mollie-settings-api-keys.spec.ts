@@ -3,10 +3,6 @@
  */
 import { expect, test } from '../../utils';
 
-test.beforeAll( async ( { utils } ) => {
-	await utils.installAndActivateMollie();
-} );
-
 test( 'C420150 | Validate that Mollie API Keys section is displayed per UI design @Critical', async ( {
 	mollieSettingsApiKeys,
 } ) => {

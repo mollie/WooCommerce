@@ -59,7 +59,6 @@ import {
 	gateways,
 	orders,
 	products,
-	shopConfigDefault,
 	MollieTestData,
 } from '../../resources';
 
@@ -73,11 +72,7 @@ const testOrder: MollieTestData.ShopOrder = {
 
 let testProductId: number;
 
-test.beforeAll( async ( { utils, wooCommerceApi } ) => {
-	await utils.configureStore( shopConfigDefault );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-
+test.beforeAll( async ( { wooCommerceApi } ) => {
 	const product = await wooCommerceApi.getProductBySlug(
 		products.mollieSimple100.slug
 	);

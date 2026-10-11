@@ -9,6 +9,7 @@ type MollieResource = {
 	status?: string;
 	metadata?: { order_id?: string | number };
 	amount?: { value: string; currency: string };
+	amountRefunded?: { value: string; currency: string };
 };
 
 /**

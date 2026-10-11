@@ -231,7 +231,7 @@ test.describe( () => {
 		] );
 	} );
 
-	test( 'C4567663 | Transaction - Classic checkout - Payment method switch - First attempt paid late after order is paid - Order stays paid with the second attempt', async ( {
+	test( 'C4567663 | Transaction - Classic checkout - Payment method switch - First attempt paid late after order is paid - Customer is not charged twice', async ( {
 		utils,
 		classicCheckout,
 		mollieHostedCheckout,
@@ -276,24 +276,15 @@ test.describe( () => {
 			'processing'
 		);
 
-		// Shopper also pays the card attempt: the same order is paid twice
-		await mollieHostedCheckout.page.goto( cardAttempt.checkoutUrl );
-		await mollieHostedCheckout.payForOrder( cardOrder.payment );
-		await expect
-			.poll(
-				async () =>
-					(
-						await getMollieResource(
-							mollieClientApi,
-							cardAttempt.transactionId
-						)
-					).status,
-				{
-					message: `Assert Mollie reports ${ cardAttempt.transactionId } as paid`,
-					timeout: 30_000,
-				}
-			)
-			.toBe( 'paid' );
+		// Shopper also pays the card attempt, if it is still open
+		const cardAttemptAtMollie = await getMollieResource(
+			mollieClientApi,
+			cardAttempt.transactionId
+		);
+		if ( cardAttemptAtMollie.status === 'open' ) {
+			await mollieHostedCheckout.page.goto( cardAttempt.checkoutUrl );
+			await mollieHostedCheckout.payForOrder( cardOrder.payment );
+		}
 
 		const order = await wooCommerceApi.getOrder( payPalAttempt.orderId );
 		await expect( order.status, 'Assert order is still processing' ).toBe(
@@ -310,8 +301,31 @@ test.describe( () => {
 		await assertOrderNotes( wooCommerceApi, payPalAttempt.orderId, [
 			{ note: /Order completed using /, count: 1 },
 		] );
-		// TODO: expected handling of the second payment is an open dev question
-		// (order note, automatic refund or admin notice). Today only a debug log is written.
+
+		// The card attempt must not charge the customer: not paid, or fully refunded.
+		// Fails on 8.1.11: the card payment stays paid and only a debug log is written.
+		// TODO: add the dev ticket key
+		await expect
+			.poll(
+				async () => {
+					const payment = await getMollieResource(
+						mollieClientApi,
+						cardAttempt.transactionId
+					);
+					if ( payment.status !== 'paid' ) {
+						return 0;
+					}
+					return (
+						Number( payment.amount?.value ) -
+						Number( payment.amountRefunded?.value ?? 0 )
+					);
+				},
+				{
+					message: `Assert customer is not charged by card attempt ${ cardAttempt.transactionId } (net charged amount)`,
+					timeout: 60_000,
+				}
+			)
+			.toBe( 0 );
 	} );
 } );
 

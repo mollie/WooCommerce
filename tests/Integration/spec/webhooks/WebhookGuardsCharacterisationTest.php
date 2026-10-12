@@ -323,9 +323,9 @@ class WebhookGuardsCharacterisationTest extends ExpressFlowTestCase
     {
         return [
             'REQ-346 not ours' => ['not_ours', 'not_ours', 'mollie=0'],
-            'REQ-343 superseded' => ['superseded', 'superseded', 'mollie=1 tracks=0 status=failed'],
-            'REQ-387 settled' => ['settled', 'settled', 'mollie=1 tracks=1 status=paid needsPayment=0'],
-            'REQ-341 process' => ['process', 'process', 'mollie=1 tracks=1 status=paid needsPayment=1'],
+            'REQ-343 superseded' => ['superseded', 'superseded', 'mollie=1 tracks=0 created=1 status=failed'],
+            'REQ-387 settled' => ['settled', 'settled', 'mollie=1 tracks=1 created=1 status=paid needsPayment=0'],
+            'REQ-341 process' => ['process', 'process', 'mollie=1 tracks=1 created=1 status=paid needsPayment=1'],
         ];
     }
 

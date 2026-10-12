@@ -29,14 +29,23 @@ final class WebhookGuards
         return !$paidAndProcessed || $authorized || $wcNeedsPayment || $onHoldAsInitialStatus;
     }
 
-    public static function superseded(bool $tracksThisPayment, string $paymentStatus): bool
+    /**
+     * An untracked payment acts on the order only when Mollie's record of it names this order,
+     * and even then never with a terminal status.
+     */
+    public static function superseded(bool $tracksThisPayment, bool $createdForOrder, string $paymentStatus): bool
     {
-        return !$tracksThisPayment && in_array($paymentStatus, self::TERMINAL_STATUSES, true);
+        if ($tracksThisPayment) {
+            return false;
+        }
+
+        return !$createdForOrder || in_array($paymentStatus, self::TERMINAL_STATUSES, true);
     }
 
     public static function decide(
         bool $isMollieGateway,
         bool $tracksThisPayment,
+        bool $createdForOrder,
         string $paymentStatus,
         bool $needsPayment
     ): string {
@@ -44,7 +53,7 @@ final class WebhookGuards
         if (!$isMollieGateway) {
             return self::NOT_OURS;
         }
-        if (self::superseded($tracksThisPayment, $paymentStatus)) {
+        if (self::superseded($tracksThisPayment, $createdForOrder, $paymentStatus)) {
             return self::SUPERSEDED;
         }
         if (!$needsPayment) {

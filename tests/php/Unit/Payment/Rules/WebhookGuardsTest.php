@@ -61,43 +61,50 @@ class WebhookGuardsTest extends TestCase
     }
 
     /**
-     * Scenario: only a terminal status for an untracked payment is superseded
-     *   Given whether the payment is tracked, and its status
+     * Scenario: an untracked payment is superseded unless Mollie created it for the order
+     *   Given whether the payment is tracked, whether Mollie created it for the order, and its status
      *   When superseded() is asked
-     *   Then only failed, canceled or cancelled and untracked is true
+     *   Then an untracked payment created for another order is always superseded, and one created
+     *   for this order only with failed, canceled or cancelled
      *
      * @dataProvider supersededCases
      * @covers \Mollie\WooCommerce\Payment\Rules\WebhookGuards::superseded
      */
-    public function testSupersededOnlyForATerminalStatusOfAnUntrackedPayment(
+    public function testSupersededForAForeignOrTerminalUntrackedPayment(
         bool $tracksThisPayment,
+        bool $createdForOrder,
         string $paymentStatus,
         bool $expected
     ): void {
 
-        self::assertSame($expected, WebhookGuards::superseded($tracksThisPayment, $paymentStatus));
+        self::assertSame($expected, WebhookGuards::superseded($tracksThisPayment, $createdForOrder, $paymentStatus));
     }
 
     /**
-     * @return array<string, array{0: bool, 1: string, 2: bool}>
+     * @return array<string, array{0: bool, 1: bool, 2: string, 3: bool}>
      */
     public function supersededCases(): array
     {
         return [
-            'REQ-343 failed for an untracked payment' => [false, 'failed', true],
-            'REQ-356 canceled for an untracked payment' => [false, 'canceled', true],
-            'REQ-343 the cancelled spelling for an untracked payment' => [false, 'cancelled', true],
-            'REQ-357 expired for an untracked payment is left to its handler' => [false, 'expired', false],
-            'REQ-341 paid for an untracked payment' => [false, 'paid', false],
-            'REQ-341 an empty status for an untracked payment' => [false, '', false],
-            'REQ-341 failed for the tracked payment' => [true, 'failed', false],
-            'REQ-341 canceled for the tracked payment' => [true, 'canceled', false],
+            'REQ-343 failed for an untracked payment' => [false, true, 'failed', true],
+            'REQ-356 canceled for an untracked payment' => [false, true, 'canceled', true],
+            'REQ-343 the cancelled spelling for an untracked payment' => [false, true, 'cancelled', true],
+            'REQ-357 expired for an untracked payment is left to its handler' => [false, true, 'expired', false],
+            'REQ-341 paid for an untracked payment created for the order' => [false, true, 'paid', false],
+            'REQ-341 an empty status for an untracked payment' => [false, true, '', false],
+            'REQ-341 failed for the tracked payment' => [true, true, 'failed', false],
+            'REQ-341 canceled for the tracked payment' => [true, true, 'canceled', false],
+            'foreign paid payment' => [false, false, 'paid', true],
+            'foreign authorized payment' => [false, false, 'authorized', true],
+            'foreign expired payment' => [false, false, 'expired', true],
+            'foreign failed payment' => [false, false, 'failed', true],
+            'the tracked payment needs no metadata' => [true, false, 'paid', false],
         ];
     }
 
     /**
      * Scenario: the first matching guard gives the verdict
-     *   Given gateway, tracking, status and needs-payment
+     *   Given gateway, tracking, created-for-order, status and needs-payment
      *   When decide() runs
      *   Then not ours, superseded, settled and process win in that order
      *
@@ -107,37 +114,47 @@ class WebhookGuardsTest extends TestCase
     public function testDecideReturnsTheVerdictOfTheFirstGuardThatMatches(
         bool $isMollieGateway,
         bool $tracksThisPayment,
+        bool $createdForOrder,
         string $paymentStatus,
         bool $needsPayment,
         string $expected
     ): void {
 
-        $verdict = WebhookGuards::decide($isMollieGateway, $tracksThisPayment, $paymentStatus, $needsPayment);
+        $verdict = WebhookGuards::decide(
+            $isMollieGateway,
+            $tracksThisPayment,
+            $createdForOrder,
+            $paymentStatus,
+            $needsPayment
+        );
 
         self::assertSame($expected, $verdict);
     }
 
     /**
-     * @return array<string, array{0: bool, 1: bool, 2: string, 3: bool, 4: string}>
+     * @return array<string, array{0: bool, 1: bool, 2: bool, 3: string, 4: bool, 5: string}>
      */
     public function decideCases(): array
     {
         return [
-            'REQ-346 not a Mollie gateway' => [false, true, 'paid', true, WebhookGuards::NOT_OURS],
-            'REQ-346 not ours outranks superseded' => [false, false, 'failed', true, WebhookGuards::NOT_OURS],
-            'REQ-346 not ours outranks settled' => [false, true, 'paid', false, WebhookGuards::NOT_OURS],
-            'REQ-346 not ours before the payment is known' => [false, false, '', false, WebhookGuards::NOT_OURS],
-            'REQ-343 failed for an untracked payment' => [true, false, 'failed', true, WebhookGuards::SUPERSEDED],
-            'REQ-356 canceled for an untracked payment' => [true, false, 'canceled', true, WebhookGuards::SUPERSEDED],
-            'REQ-345 superseded outranks settled' => [true, false, 'failed', false, WebhookGuards::SUPERSEDED],
-            'REQ-387 duplicate paid delivery on a processed order' => [true, true, 'paid', false, WebhookGuards::SETTLED],
-            'REQ-129 any status for an order that needs no payment' => [true, true, 'pending', false, WebhookGuards::SETTLED],
-            'REQ-357 expired for an untracked payment of a settled order' => [true, false, 'expired', false, WebhookGuards::SETTLED],
-            'REQ-341 paid for the tracked payment' => [true, true, 'paid', true, WebhookGuards::PROCESS],
-            'REQ-341 failed for the tracked payment' => [true, true, 'failed', true, WebhookGuards::PROCESS],
-            'REQ-357 expired for an untracked payment is left to its handler' => [true, false, 'expired', true, WebhookGuards::PROCESS],
-            'REQ-341 paid for an untracked payment' => [true, false, 'paid', true, WebhookGuards::PROCESS],
-            'REQ-342 a status without a handler is still dispatched' => [true, true, 'open', true, WebhookGuards::PROCESS],
+            'REQ-346 not a Mollie gateway' => [false, true, true, 'paid', true, WebhookGuards::NOT_OURS],
+            'REQ-346 not ours outranks superseded' => [false, false, true, 'failed', true, WebhookGuards::NOT_OURS],
+            'REQ-346 not ours outranks settled' => [false, true, true, 'paid', false, WebhookGuards::NOT_OURS],
+            'REQ-346 not ours before the payment is known' => [false, false, false, '', false, WebhookGuards::NOT_OURS],
+            'REQ-343 failed for an untracked payment' => [true, false, true, 'failed', true, WebhookGuards::SUPERSEDED],
+            'REQ-356 canceled for an untracked payment' => [true, false, true, 'canceled', true, WebhookGuards::SUPERSEDED],
+            'REQ-345 superseded outranks settled' => [true, false, true, 'failed', false, WebhookGuards::SUPERSEDED],
+            'REQ-387 duplicate paid delivery on a processed order' => [true, true, true, 'paid', false, WebhookGuards::SETTLED],
+            'REQ-129 any status for an order that needs no payment' => [true, true, true, 'pending', false, WebhookGuards::SETTLED],
+            'REQ-357 expired for an untracked payment of a settled order' => [true, false, true, 'expired', false, WebhookGuards::SETTLED],
+            'REQ-341 paid for the tracked payment' => [true, true, true, 'paid', true, WebhookGuards::PROCESS],
+            'REQ-341 failed for the tracked payment' => [true, true, true, 'failed', true, WebhookGuards::PROCESS],
+            'REQ-357 expired for an untracked payment is left to its handler' => [true, false, true, 'expired', true, WebhookGuards::PROCESS],
+            'REQ-341 paid for an untracked payment created for the order' => [true, false, true, 'paid', true, WebhookGuards::PROCESS],
+            'foreign paid payment' => [true, false, false, 'paid', true, WebhookGuards::SUPERSEDED],
+            'foreign authorized payment' => [true, false, false, 'authorized', true, WebhookGuards::SUPERSEDED],
+            'foreign payment outranks settled' => [true, false, false, 'paid', false, WebhookGuards::SUPERSEDED],
+            'REQ-342 a status without a handler is still dispatched' => [true, true, true, 'open', true, WebhookGuards::PROCESS],
         ];
     }
 

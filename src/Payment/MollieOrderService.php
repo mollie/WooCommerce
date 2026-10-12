@@ -267,7 +267,7 @@ class MollieOrderService
         $gateway = wc_get_payment_gateway_by_order($order);
         $isMollieGateway = $gateway && mollieWooCommerceIsMollieGateway($gateway->id);
         // Before the fetch: a foreign order costs no Mollie call.
-        if (WebhookGuards::decide($isMollieGateway, false, '', false) === WebhookGuards::NOT_OURS) {
+        if (WebhookGuards::decide($isMollieGateway, false, false, '', false) === WebhookGuards::NOT_OURS) {
             $this->logWebhookGuards($order, WebhookGuards::NOT_OURS, 'mollie=0');
             return false;
         }
@@ -313,23 +313,30 @@ class MollieOrderService
             $order->get_id(),
             function (WC_Order $order) use ($payment, $payment_object, $method_name, $payment_method_title, $logMethod): bool {
                 $tracksThisPayment = MolliePaymentAttempt::isCurrentAttempt($order, (string) $payment->id);
+                // Mollie's metadata.order_id, written by the plugin at creation: the caller cannot set it.
+                $createdForOrder = MolliePaymentAttempt::wasCreatedForOrder($order, $payment);
                 $status = isset($payment->status) ? (string) $payment->status : '';
 
                 // Before orderNeedsPayment(), which must not log for a superseded payment.
-                if (WebhookGuards::superseded($tracksThisPayment, $status)) {
+                if (WebhookGuards::superseded($tracksThisPayment, $createdForOrder, $status)) {
                     $this->logger->debug(
                         $logMethod . ": webhook for superseded payment {$payment->id} (status {$payment->status}) ignored — "
                         . "order {$order->get_id()} is linked to a different attempt."
                     );
-                    $this->logWebhookGuards($order, WebhookGuards::SUPERSEDED, "mollie=1 tracks=0 status={$status}");
+                    $this->logWebhookGuards($order, WebhookGuards::SUPERSEDED, sprintf(
+                        'mollie=1 tracks=0 created=%d status=%s',
+                        (int) $createdForOrder,
+                        $status
+                    ));
                     return true;
                 }
 
                 $needsPayment = $this->orderNeedsPayment($order);
-                $verdict = WebhookGuards::decide(true, $tracksThisPayment, $status, $needsPayment);
+                $verdict = WebhookGuards::decide(true, $tracksThisPayment, $createdForOrder, $status, $needsPayment);
                 $this->logWebhookGuards($order, $verdict, sprintf(
-                    'mollie=1 tracks=%d status=%s needsPayment=%d',
+                    'mollie=1 tracks=%d created=%d status=%s needsPayment=%d',
                     (int) $tracksThisPayment,
+                    (int) $createdForOrder,
                     $status,
                     (int) $needsPayment
                 ));

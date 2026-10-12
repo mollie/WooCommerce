@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Integration\Common\Doubles;
 
 /**
- * Marked secrets and personal data for the leak checks (blueprint FF-16, REQ-G1, REQ-G6).
+ * Marked values that the log and browser checks look for.
  *
  * Every value carries the marker, so one search over a log or over a browser-bound response
  * finds any of them. The values are still valid for their field — the API key matches the

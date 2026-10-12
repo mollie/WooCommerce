@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -56,7 +55,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *   When the browser posts a valid nonce to the session route
      *   Then it is answered 200 with exactly clientAccessToken and expiresAt
      *   And the token is the one of the session the fake Mollie created
-     *   And nothing marked secret or personal is in the response
+     *   And no marked value is in the response
      *   And the token is in no option or transient and in no log line
      *
      * @test
@@ -214,7 +213,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     /**
      * Scenario: a start request that did not come from the shop's own page is refused
      *   Given a guest ready to check out
-     *   When the request carries no nonce, a forged one, or a nonce for another action
+     *   When the request carries no nonce, an invalid one, or a nonce for another action
      *   Then it is answered 403
      *   And nothing is sent to Mollie
      *

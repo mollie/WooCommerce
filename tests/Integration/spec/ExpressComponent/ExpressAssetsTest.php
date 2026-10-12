@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -206,7 +205,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *   And a guest with a cart and marked shopper details in the checkout form
      *   When the owned block checkout enqueues its scripts
      *   Then mollieExpressData holds exactly restUrl, nonce, locale, buttons and messages
-     *   And none of the marked secrets or shopper details, and no profile id, is in it
+     *   And no marked value and no profile id is in it
      *   And the nonce is one the express routes admit
      *   And restUrl is the plugin's REST base
      *   And the messages include the one telling the shopper to fill in the shipping details

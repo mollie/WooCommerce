@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -47,7 +46,7 @@ class ProcessRecordSchemaTest extends TestCase
             'an unknown section' => [['notes' => []] + $full],
             'a payment status, which Mollie knows' => [['status' => 'paid'] + $full],
             'an order amount, which is no command\'s intent' => [['amount' => ['value' => '49.90', 'currency' => 'EUR']] + $full],
-            // Sections of practice P5 that nothing writes yet: they join the allowlist with their first writer.
+            // Sections that nothing writes yet: they join the allowlist with their first writer.
             'attempts, which nothing writes yet' => [['attempts' => []] + $full],
             'commands in flight, which nothing writes yet' => [['inFlight' => []] + $full],
             'an open question carrying an unknown field' => [self::withEntry($full, 'open', ['email' => 'a@example.com'])],

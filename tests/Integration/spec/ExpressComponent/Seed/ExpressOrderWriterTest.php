@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -89,7 +88,7 @@ class ExpressOrderWriterTest extends ExpressFlowTestCase
      *   And the payment method is the wallet's gateway, with its title
      *   And the billing address is the wallet's
      *   And the order was saved exactly once, with no note added
-     *   And nothing marked secret or personal reached the log
+     *   And no marked value reached the log
      *
      * @test
      */
@@ -313,7 +312,7 @@ class ExpressOrderWriterTest extends ExpressFlowTestCase
     }
 
     /**
-     * A first-sight verdict with the canary billing address in WooCommerce field names, no shipping.
+     * A first-sight verdict with the marked billing address in WooCommerce field names, no shipping.
      */
     private function firstSight(?string $gatewayId, ?string $unmatchedMethod): FirstSightData
     {

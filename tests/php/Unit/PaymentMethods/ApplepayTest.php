@@ -11,7 +11,7 @@ use function Brain\Monkey\Functions\expect;
 use function Brain\Monkey\Functions\when;
 
 /**
- * Apple Pay's block-checkout express button and the Express Component's mutual exclusion (REQ-A3, A4, A6).
+ * Apple Pay's block-checkout express button and the Express Component's mutual exclusion.
  *
  * The characterisation test pins today's behaviour before the guard is added: one
  * mollie_apple_pay_button_enabled_express_checkout flag decides the cart block and the checkout
@@ -49,7 +49,7 @@ class ApplepayTest extends TestCase
 
     /**
      * The checkout setting tells the merchant that express checkout shows the button where it can
-     * run, and the classic button otherwise (REQ-A5, AC-6).
+     * run, and the classic button otherwise.
      */
     public function test_checkout_setting_says_express_checkout_shows_the_button_where_it_can_run(): void
     {

@@ -83,7 +83,7 @@ class PaymentCreationIntegrationTest extends PaymentFlowTestCase
     }
 
     /**
-     * Scenario: A shop that never chose an API creates a Mollie payment the webhook can tie back (REQ-285, REQ-291, REQ-297)
+     * Scenario: A shop that never chose an API creates a Mollie payment the webhook can tie back
      *   Given a pending iDEAL order and no API choice saved, the plugin's default
      *   When the customer starts the payment
      *   Then one Mollie payment is created for the order total and method, never a Mollie order

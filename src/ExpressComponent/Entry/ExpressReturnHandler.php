@@ -45,7 +45,7 @@ class ExpressReturnHandler
 
     private function refFromRequest(): string
     {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a return from Mollie carries no nonce; the ref is the capability, checked below.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a return from Mollie carries no nonce; the order is found by its ref below.
         $ref = isset($_GET['ref']) ? sanitize_text_field(wp_unslash((string) $_GET['ref'])) : '';
 
         return preg_match(self::REF_SHAPE, $ref) === 1 ? $ref : '';

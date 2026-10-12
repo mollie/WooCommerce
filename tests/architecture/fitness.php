@@ -1,9 +1,9 @@
 <?php
 
 /**
- * The architecture scoreboard: `composer fitness`.
+ * Legacy code patterns counted against a baseline: `composer fitness`.
  *
- * Counts the legacy patterns of docs/architecture/RULES.md section 2 with regular expressions over
+ * Counts legacy code patterns with regular expressions over
  * src/ (and lib/payment-gateway/src for library-mollie-symbols), compares each number with
  * baseline.json next to this file, and prints one table. A ratchet number may only go down, and
  * going down needs the baseline updated in the same PR; a blocking number must be on its target.
@@ -21,7 +21,7 @@ const BLOCKING = 'blocking';
 const MANUAL = 'manual';
 
 /**
- * The three classes the library's keys resolve back into (cut C3).
+ * The three classes the library's keys resolve back into.
  */
 const DEPRECATED_HANDLERS = [
     'MolliePaymentGatewayHandler',
@@ -31,7 +31,7 @@ const DEPRECATED_HANDLERS = [
 
 /**
  * The _mollie_* keys legacy code writes today; they are public contract and keep their writers.
- * Measured on dev/PIWOO-944-refactor-01 on 2026-10-01. A key that is not here is a new one.
+ * A key that is not here is a new one.
  */
 const COMPATIBLE_META_KEYS = [
     '_mollie_authorized',
@@ -52,8 +52,7 @@ const COMPATIBLE_META_KEYS = [
 
 /**
  * The keys an express order is found by: its reference, its session and that session's expiry. They
- * are queried (meta_key, meta_query), which a field of the process record cannot be. Recorded as an
- * exception in RULES.md section 3.
+ * are queried (meta_key, meta_query), which a field of the process record cannot be.
  */
 const EXPRESS_LOOKUP_META_KEYS = [
     '_mollie_express_expires_at',
@@ -62,7 +61,7 @@ const EXPRESS_LOOKUP_META_KEYS = [
 ];
 
 /**
- * Every metric of RULES.md section 2, in its order.
+ * Every metric, in the order it is printed.
  *
  * scope: where the files are. count: 'hits' counts lines, 'files' counts files with a hit.
  * match: path relative to the root, file content => line numbers of the hits.

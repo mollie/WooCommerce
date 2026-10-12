@@ -12,7 +12,7 @@ use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\SessionRules;
 
 /**
- * The Express Component harness itself: fake Mollie, strict Sessions rules, webhook route, leak detector.
+ * The Express Component harness itself: fake Mollie, strict Sessions rules, webhook route, log check.
  *
  * @group integration
  * @group ExpressComponent
@@ -269,7 +269,7 @@ class ExpressHarnessTest extends ExpressFlowTestCase
      *   And Mollie holds that payment as paid
      *   When Mollie calls the webhook with the secret
      *   Then the order is paid and Mollie is answered 200
-     *   And nothing marked secret or personal reached the log
+     *   And no marked value reached the log
      *
      * @test
      */
@@ -352,9 +352,9 @@ class ExpressHarnessTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the leak detector detects
+     * Scenario: the log check finds marked values
      *   Given a log line carrying a marked email and one carrying the webhook secret
-     *   Then the detector reports a leak
+     *   Then the check reports them
      *   And it reports none for a line carrying ids only
      *
      * @test

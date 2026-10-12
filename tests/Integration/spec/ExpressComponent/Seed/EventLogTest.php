@@ -25,7 +25,7 @@ class EventLogTest extends ExpressFlowTestCase
     public function setUp(): void
     {
         parent::setUp();
-        // The strictest case for a leak check: the merchant's debug switch is on.
+        // The strictest case for the log check: the merchant's debug switch is on.
         $this->setOptionForTest('mollie-payments-for-woocommerce_debug', 'yes');
     }
 
@@ -64,7 +64,7 @@ class EventLogTest extends ExpressFlowTestCase
      *   Given an event logged with an email and a checkout URL alongside its real fields
      *   When it is written
      *   Then those fields are absent from the record entirely
-     *   And no marked secret or personal detail can be found anywhere in the log
+     *   And no marked value can be found anywhere in the log
      *
      * @test
      */

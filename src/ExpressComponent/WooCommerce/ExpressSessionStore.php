@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 /**
- * The token is a shopper credential: it lives only in the WC session.
+ * The token lives only in the WC session.
  * The seed is lost with the attempt counter, so a counter that restarts never repeats a key.
  */
 class ExpressSessionStore

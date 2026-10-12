@@ -32,7 +32,7 @@ class SdkMollieApiTest extends ExpressFlowTestCase
      *   When the adapter creates the session
      *   Then Mollie received exactly that payload with that key in the Idempotency-Key header
      *   And the session it returns still carries its clientAccessToken
-     *   And nothing marked secret or personal reached the log
+     *   And no marked value reached the log
      *
      * @test
      */

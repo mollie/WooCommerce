@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -621,7 +620,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   Then the order is still cancelled and unpaid, as for an order found cancelled
      *   And the payment is remembered as paid_after_cancel
      *
-     * The outside write for this entry point (R-04): written straight to the table, so only the read
+     * The outside write for this entry point: written straight to the table, so only the read
      * under the lock can see it.
      *
      * @test

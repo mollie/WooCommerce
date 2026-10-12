@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -433,10 +432,10 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: cleanup logs no secret and no shopper detail
-     *   Given canary API keys and webhook secret, and an express order placed with canary shopper data
+     * Scenario: cleanup logs no marked value
+     *   Given marked API keys and webhook secret, and an express order placed with marked shopper data
      *   When cleanup looks the order up at Mollie and cancels it
-     *   Then nothing marked secret or personal reached the log
+     *   Then no marked value reached the log
      *
      * @test
      */

@@ -66,7 +66,7 @@ class PaypalTest extends TestCase
         );
     }
 
-    /** @scenario The checkout setting tells the merchant that express checkout shows the button where it can run, and the classic button otherwise (REQ-A5, AC-6). */
+    /** @scenario The checkout setting tells the merchant that express checkout shows the button where it can run, and the classic button otherwise. */
     public function test_checkout_setting_says_express_checkout_shows_the_button_where_it_can_run(): void
     {
         $fields = $this->makeSut([])->getFormFields([]);

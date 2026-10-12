@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -10,7 +9,7 @@ use Mollie\WooCommerceTests\TestCase;
 /**
  * PHP 8.0 is the floor, and it is the floor in every place that declares one.
  *
- * The blueprint and every express spec assume 8.0: declare(strict_types=1), constructor
+ * The code assumes 8.0: declare(strict_types=1), constructor
  * promotion, match, union types, named arguments. The first match expression would be a parse
  * error on a 7.4 box, so the floor is not a preference — it is what makes the new code loadable.
  *
@@ -27,7 +26,7 @@ class PlatformFloorTest extends TestCase
 
     /**
      * Scenario: every file that declares a PHP floor declares 8.0
-     *   Given the seven declaration sites named by the core-seed spec
+     *   Given the seven places that declare the PHP floor
      *   When each is read
      *   Then it names 8.0, and none of them still names 7.4
      *

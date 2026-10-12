@@ -21,7 +21,7 @@ class ExpressUrls
     }
 
     /**
-     * Contains the webhook secret: never log it or send it to the browser.
+     * The REST webhook URL, with the webhook secret query argument.
      */
     public function webhookUrl(): string
     {

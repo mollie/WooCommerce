@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -12,7 +11,7 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
- * R-02: every class under a Rules/ folder whose name ends in Decision or Guards has a unit test
+ * Every class under a Rules/ folder whose name ends in Decision or Guards has a unit test
  * that declares a data provider. src/<Module>/Rules/FooDecision.php is tested by
  * tests/php/Unit/<Module>/Rules/FooDecisionTest.php. The detector is shown failing against
  * temporary trees.

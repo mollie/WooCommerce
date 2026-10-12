@@ -29,7 +29,7 @@ use WP_REST_Response;
  * double; here the plugin runs its real Api helper, the real SDK and the real HTTP adapter, and a
  * FakeMollieApi answers at the WordPress HTTP layer. The Sessions flow needs that: the call is a
  * raw performHttpCall(), the payment is one the plugin never created, the idempotency key is a
- * header, and the error text that must not leak is assembled by the adapter.
+ * header, and the error text is assembled by the adapter.
  *
  * No Mollie API key is involved. The keys, the webhook secret and the shopper data the harness
  * installs are CanaryData values, so assertNothingLeaked*() can prove none of them reaches a log
@@ -313,7 +313,7 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
 
     /**
      * Live mode with a fake live key. The default, because the Sessions beta may have no test mode
-     * and the feature may therefore be gated on it (REQ-H4). Safe only because the transport
+     * and the feature may therefore be gated on it. Safe only because the transport
      * answers every call to api.mollie.com itself.
      */
     protected function useLiveMode(): void
@@ -497,7 +497,7 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
-     * REQ-G6 / FF-16: no API key, webhook secret or shopper detail in anything that was logged,
+     * No API key, webhook secret or shopper detail in anything that was logged,
      * at any level, with debug logging on.
      */
     protected function assertNothingLeakedToLog(): void
@@ -509,7 +509,7 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
     }
 
     /**
-     * REQ-G1: nothing identifying the Mollie account, and no shopper data, in what the browser gets.
+     * Nothing identifying the Mollie account, and no shopper data, in what the browser gets.
      *
      * @param mixed $browserBound Response data about to cross the wire.
      */

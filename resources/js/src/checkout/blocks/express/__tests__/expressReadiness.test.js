@@ -1,8 +1,6 @@
-// kb-active
 /* eslint-env jest */
 /**
- * expressReadiness — which of its three states the Express Component shows (REQ-B2, H1, H2; AC-9,
- * AC-13, AC-14).
+ * expressReadiness — which of its three states the Express Component shows.
  *
  * A pure function over what the block checkout already knows. It is a convenience, not a control:
  * every rule here is enforced again by POST express/session and POST express/order.

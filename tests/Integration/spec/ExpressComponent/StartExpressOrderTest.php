@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -475,7 +474,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     /**
      * Scenario: an order request that did not come from the shop's own page is refused
      *   Given a guest whose session was started
-     *   When the order request carries no nonce, a forged one, or a nonce for another action
+     *   When the order request carries no nonce, an invalid one, or a nonce for another action
      *   Then it is answered 403
      *   And no order is created and nothing is asked of Mollie
      *
@@ -693,10 +692,10 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: starting an order logs no secret and no shopper detail
-     *   Given canary API keys and webhook secret, and a checkout form full of canary shopper data
+     * Scenario: starting an order logs no marked value
+     *   Given marked API keys and webhook secret, and a checkout form full of marked shopper data
      *   When a session is started and the order is requested, twice
-     *   Then nothing marked secret or personal reached the log
+     *   Then no marked value reached the log
      *
      * @test
      */

@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -12,7 +11,7 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
- * `composer fitness` counts the legacy patterns of RULES.md section 2 and holds them to a one-way
+ * `composer fitness` counts legacy code patterns and holds them to a one-way
  * ratchet. The script is run as a black box: copied with the fixtures tree into a temporary
  * directory, so the root and the baseline it finds next to itself are the fixture's.
  *
@@ -25,7 +24,7 @@ class FitnessScoreboardTest extends TestCase
     private const BASELINE = 'tests/architecture/baseline.json';
 
     /**
-     * Every metric of RULES.md section 2, in its order.
+     * Every metric, in the order the script prints them.
      */
     private const METRICS = [
         'handler-lookups',
@@ -63,7 +62,7 @@ class FitnessScoreboardTest extends TestCase
      *   Given the repository as committed, with its baseline
      *   When `fitness.php` runs
      *   Then it exits 0
-     *   And it prints one table in which every metric of RULES.md section 2 has exactly one row
+     *   And it prints one table in which every metric has exactly one row
      */
     public function testPrintsOneTableWithEveryMetricAndExitsZeroOnTheCommittedTree(): void
     {
@@ -318,7 +317,7 @@ class FitnessScoreboardTest extends TestCase
             array_map(function (string $row): string {
                 return $this->cells($row)[0];
             }, array_slice($lines, 2)),
-            'One row per metric, in the order of RULES.md section 2.'
+            'One row per metric, in order.'
         );
     }
 

@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -99,7 +98,7 @@ class StepTraceTest extends ExpressFlowTestCase
             [
                 self::FLOW . '.started',
                 'mollie.called',
-                // The match is decided on the order as read under the lock (R-04).
+                // The match is decided on the order as read under the lock.
                 'lock.taken',
                 'rule.decided',
                 'rule.decided',
@@ -345,10 +344,10 @@ class StepTraceTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: a traced webhook logs scalars only and leaks nothing
-     *   Given trace is on and canary addresses
+     * Scenario: a traced webhook logs scalars only
+     *   Given trace is on and marked addresses
      *   When Mollie calls the webhook
-     *   Then rules carry name, verdict and key=value inputs, the path carries only the id, and nothing leaked
+     *   Then rules carry name, verdict and key=value inputs, and the path carries only the id
      *
      * @test
      */

@@ -137,7 +137,7 @@ class MollieOrderServiceWebhookAuthTest extends TestCase
 
     /**
      * @scenario A caller that supplies an order_id but an invalid key (and no secret) is
-     * rejected with HTTP 401 - the order key is a real per-order secret, not a free pass.
+     * rejected with HTTP 401.
      */
     public function testInvalidOrderKeyIsRejected(): void
     {

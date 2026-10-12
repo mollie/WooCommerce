@@ -257,7 +257,7 @@ function metrics(): array
             'match' => static function (string $path, string $code): array {
                 return linesOf($code, '/\bwc_create_order\s*\(|->create_order\s*\(/');
             },
-            'instead' => 'create the order through WC()->checkout()->create_order() or the Store API checkout (cut C4).',
+            'instead' => 'reuse an existing order-creation path instead of adding one (cut C4).',
         ],
         'library-mollie-symbols' => [
             'rule' => '',

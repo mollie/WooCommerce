@@ -81,6 +81,15 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
      */
     private array $ordersBefore = [];
 
+    /**
+     * Every row of the HPOS orders table when the test started. A test that switches to HPOS
+     * creates its orders there, and by tearDown() the storage is switched back, so they are found
+     * by table rather than through wc_get_orders().
+     *
+     * @var array<int, true>
+     */
+    private array $hposOrdersBefore = [];
+
     public function setUp(): void
     {
         parent::setUp();
@@ -97,6 +106,7 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
         $this->recordingLogger = new RecordingLogger();
         $this->userBackup = get_current_user_id();
         $this->ordersBefore = array_fill_keys($this->everyOrderId(), true);
+        $this->hposOrdersBefore = array_fill_keys($this->everyHposOrderId(), true);
 
         foreach ([
             'mollie_webhook_secret' => CanaryData::WEBHOOK_SECRET,
@@ -198,6 +208,54 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
             }
         }
         $this->ordersBefore = [];
+
+        $leftInHpos = array_filter($this->everyHposOrderId(), function (int $orderId): bool {
+            return !isset($this->hposOrdersBefore[$orderId]);
+        });
+        if ($leftInHpos !== []) {
+            $this->withHposStorage(static function () use ($leftInHpos): void {
+                foreach ($leftInHpos as $orderId) {
+                    $order = wc_get_order($orderId);
+                    if ($order instanceof \WC_Order) {
+                        $order->delete(true);
+                    }
+                }
+            });
+        }
+        $this->hposOrdersBefore = [];
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function everyHposOrderId(): array
+    {
+        global $wpdb;
+        $table = $wpdb->prefix . 'wc_orders';
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) !== $table) {
+            return [];
+        }
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the table name is WooCommerce's.
+        return array_map('intval', $wpdb->get_col("SELECT id FROM {$table} WHERE type = 'shop_order'"));
+    }
+
+    private function withHposStorage(callable $run): void
+    {
+        $yes = static function (): string {
+            return 'yes';
+        };
+        $hooks = ['pre_option_woocommerce_custom_orders_table_enabled', 'pre_option_woocommerce_feature_custom_order_tables_enabled'];
+        foreach ($hooks as $hook) {
+            add_filter($hook, $yes);
+        }
+        try {
+            $run();
+        } finally {
+            foreach ($hooks as $hook) {
+                remove_filter($hook, $yes);
+            }
+        }
     }
 
     /**

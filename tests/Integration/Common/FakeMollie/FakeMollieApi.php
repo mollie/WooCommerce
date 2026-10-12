@@ -150,6 +150,86 @@ final class FakeMollieApi
                 ? ['status' => 200, 'body' => $this->paymentResource($state, $state['payments'][$m[1]])]
                 : $this->problem(404, 'Not Found', 'No payment exists with token ' . $m[1] . '.');
         }
+        if ($method === 'POST' && $path === 'payments') {
+            return $this->createPayment($state, $request);
+        }
+        if ($method === 'DELETE' && preg_match('#^payments/(tr_[^/]+)$#', $path, $m)) {
+            if (!isset($state['payments'][$m[1]])) {
+                return $this->problem(404, 'Not Found', 'No payment exists with token ' . $m[1] . '.');
+            }
+            // Only an authorisation that was not captured can be released.
+            if ($state['payments'][$m[1]]['status'] !== 'authorized') {
+                return $this->problem(422, 'Unprocessable Entity', 'The payment cannot be canceled.');
+            }
+            $state['payments'][$m[1]]['status'] = 'canceled';
+
+            return ['status' => 200, 'body' => $this->paymentResource($state, $state['payments'][$m[1]])];
+        }
+        if ($method === 'POST' && preg_match('#^payments/(tr_[^/]+)/captures$#', $path, $m)) {
+            return isset($state['payments'][$m[1]])
+                ? $this->createCapture($state, $m[1], $request)
+                : $this->problem(404, 'Not Found', 'No payment exists with token ' . $m[1] . '.');
+        }
+        if ($method === 'DELETE' && preg_match('#^orders/(ord_[^/]+)$#', $path, $m)) {
+            if (!isset($state['orders'][$m[1]])) {
+                return $this->problem(404, 'Not Found', 'No order exists with token ' . $m[1] . '.');
+            }
+            if (!in_array($state['orders'][$m[1]]['status'], ['created', 'authorized', 'shipping'], true)) {
+                return $this->problem(422, 'Unprocessable Entity', 'The order cannot be canceled from state: ' . $state['orders'][$m[1]]['status']);
+            }
+            $state['orders'][$m[1]]['status'] = 'canceled';
+
+            return ['status' => 200, 'body' => $this->orderResource($state, $state['orders'][$m[1]], '')];
+        }
+        if ($method === 'POST' && preg_match('#^orders/(ord_[^/]+)/shipments$#', $path, $m)) {
+            if (!isset($state['orders'][$m[1]])) {
+                return $this->problem(404, 'Not Found', 'No order exists with token ' . $m[1] . '.');
+            }
+            if (!in_array($state['orders'][$m[1]]['status'], ['paid', 'authorized', 'shipping'], true)) {
+                return $this->problem(422, 'Unprocessable Entity', 'The order cannot be shipped from state: ' . $state['orders'][$m[1]]['status']);
+            }
+            // Every line at once, which is all the plugin asks for.
+            $state['orders'][$m[1]]['status'] = 'completed';
+            $id = 'shp_fake' . $this->nextSequence($state);
+            $state['shipments'][$id] = ['resource' => 'shipment', 'id' => $id, 'orderId' => $m[1], 'lines' => $request['body']['lines'] ?? []];
+
+            return ['status' => 201, 'body' => $state['shipments'][$id]];
+        }
+        if ($method === 'GET' && preg_match('#^customers/(cst_[^/]+)$#', $path, $m)) {
+            return isset($state['customers'][$m[1]])
+                ? ['status' => 200, 'body' => $this->customerResource($state['customers'][$m[1]])]
+                : $this->problem(404, 'Not Found', 'No customer exists with token ' . $m[1] . '.');
+        }
+        if (preg_match('#^customers/(cst_[^/]+)/mandates$#', $path, $m)) {
+            if (!isset($state['customers'][$m[1]])) {
+                return $this->problem(404, 'Not Found', 'No customer exists with token ' . $m[1] . '.');
+            }
+            if ($method === 'POST') {
+                $mandate = $this->storeMandate($state, $m[1], (string) ($request['body']['method'] ?? 'directdebit'), 'valid');
+
+                return ['status' => 201, 'body' => $mandate];
+            }
+
+            return ['status' => 200, 'body' => $this->collection('mandates', $this->mandatesOf($state, $m[1]))];
+        }
+        if ($method === 'GET' && preg_match('#^customers/(cst_[^/]+)/mandates/(mdt_[^/]+)$#', $path, $m)) {
+            return isset($state['mandates'][$m[2]]) && $state['mandates'][$m[2]]['customerId'] === $m[1]
+                ? ['status' => 200, 'body' => $state['mandates'][$m[2]]]
+                : $this->problem(404, 'Not Found', 'No mandate exists with token ' . $m[2] . '.');
+        }
+        if ($method === 'PATCH' && preg_match('#^payments/(tr_[^/]+)$#', $path, $m)) {
+            if (!isset($state['payments'][$m[1]])) {
+                return $this->problem(404, 'Not Found', 'No payment exists with token ' . $m[1] . '.');
+            }
+            // The fields Mollie lets a merchant change on an existing payment.
+            $changes = array_intersect_key(
+                $request['body'],
+                array_flip(['description', 'redirectUrl', 'cancelUrl', 'webhookUrl', 'metadata', 'restrictPaymentMethodsToCountry'])
+            );
+            $state['payments'][$m[1]] = array_merge($state['payments'][$m[1]], $changes);
+
+            return ['status' => 200, 'body' => $this->paymentResource($state, $state['payments'][$m[1]])];
+        }
         if (preg_match('#^payments/(tr_[^/]+)/refunds$#', $path, $m)) {
             if (!isset($state['payments'][$m[1]])) {
                 return $this->problem(404, 'Not Found', 'No payment exists with token ' . $m[1] . '.');
@@ -160,10 +240,22 @@ final class FakeMollieApi
                 : ['status' => 200, 'body' => $this->collection('refunds', $this->refundsOf($state, $m[1]))];
         }
         if ($method === 'GET' && preg_match('#^payments/(tr_[^/]+)/chargebacks$#', $path, $m)) {
-            return ['status' => 200, 'body' => $this->collection('chargebacks', [])];
+            return ['status' => 200, 'body' => $this->collection('chargebacks', $this->chargebacksOf($state, $m[1]))];
         }
-        if ($method === 'GET' && ($path === 'methods' || $path === 'methods/all')) {
+        if ($method === 'GET' && preg_match('#^orders/(ord_[^/]+)$#', $path, $m)) {
+            return isset($state['orders'][$m[1]])
+                ? ['status' => 200, 'body' => $this->orderResource($state, $state['orders'][$m[1]], (string) ($request['query']['embed'] ?? ''))]
+                : $this->problem(404, 'Not Found', 'No order exists with token ' . $m[1] . '.');
+        }
+        if ($method === 'GET' && $path === 'methods/all') {
             return ['status' => 200, 'body' => $this->collection('methods', array_map([$this, 'methodResource'], $state['methods']))];
+        }
+        if ($method === 'GET' && $path === 'methods') {
+            $offered = array_values(array_filter($state['methods'], function (string $id) use ($state, $request): bool {
+                return $this->methodIsOfferedFor($state['methodRules'][$id] ?? [], $request['query']);
+            }));
+
+            return ['status' => 200, 'body' => $this->collection('methods', array_map([$this, 'methodResource'], $offered))];
         }
         if ($method === 'GET' && preg_match('#^methods/([a-z0-9]+)$#', $path, $m)) {
             return in_array($m[1], $state['methods'], true)
@@ -209,6 +301,104 @@ final class FakeMollieApi
         $state['sessions'][$id] = $session;
 
         return ['status' => 201, 'body' => $this->sessionResource($session)];
+    }
+
+    /**
+     * POST /v2/payments. A recurring payment needs the customer and a valid mandate of theirs; it
+     * is charged without the shopper, so it starts pending (direct debit) or paid (anything else).
+     *
+     * @param array<string, mixed> $state
+     * @param array<string, mixed> $request
+     * @return array{status: int, body: array<string, mixed>|null}
+     */
+    private function createPayment(array &$state, array $request): array
+    {
+        $body = $request['body'];
+        if (!isset($body['amount']['value'], $body['amount']['currency'])) {
+            return $this->problem(422, 'Unprocessable Entity', 'The amount is required.', 'amount');
+        }
+        if (!isset($body['description']) || $body['description'] === '') {
+            return $this->problem(422, 'Unprocessable Entity', 'The description is required.', 'description');
+        }
+        $sequenceType = (string) ($body['sequenceType'] ?? 'oneoff');
+        $status = 'open';
+        if ($sequenceType === 'recurring') {
+            $customerId = (string) ($body['customerId'] ?? '');
+            if (!isset($state['customers'][$customerId])) {
+                return $this->problem(422, 'Unprocessable Entity', 'The customer id is invalid.', 'customerId');
+            }
+            $usable = array_filter($this->mandatesOf($state, $customerId), static function (array $mandate) use ($body): bool {
+                return $mandate['status'] === 'valid'
+                    && (!isset($body['mandateId']) || $mandate['id'] === $body['mandateId'])
+                    && (!isset($body['method']) || $mandate['method'] === $body['method']);
+            });
+            if ($usable === []) {
+                return $this->problem(422, 'Unprocessable Entity', 'No suitable mandates found for customer.', 'customerId');
+            }
+            $mandate = array_values($usable)[0];
+            $body['mandateId'] = $mandate['id'];
+            $body['method'] = $mandate['method'];
+            $status = $mandate['method'] === 'directdebit' ? 'pending' : 'paid';
+        }
+
+        $now = $this->now($state);
+        $id = 'tr_fake' . $this->nextSequence($state);
+        $state['payments'][$id] = array_merge($body, [
+            'id' => $id,
+            'mode' => $request['authorizedAs'],
+            'status' => $status,
+            'sequenceType' => $sequenceType,
+            'createdAt' => gmdate('c', $now),
+            'paidAt' => $status === 'paid' ? gmdate('c', $now) : null,
+        ]);
+
+        return ['status' => 201, 'body' => $this->paymentResource($state, $state['payments'][$id])];
+    }
+
+    /**
+     * POST /v2/payments/{id}/captures. The capture is accepted; the payment turns paid when the
+     * test says Mollie settled it (setPaymentStatus), as the webhook that follows would tell.
+     *
+     * @param array<string, mixed> $state
+     * @param array<string, mixed> $request
+     * @return array{status: int, body: array<string, mixed>|null}
+     */
+    private function createCapture(array &$state, string $paymentId, array $request): array
+    {
+        if ($state['payments'][$paymentId]['status'] !== 'authorized') {
+            return $this->problem(422, 'Unprocessable Entity', 'The payment cannot be captured in its current state.');
+        }
+        $id = 'cpt_fake' . $this->nextSequence($state);
+        $state['captures'][$id] = [
+            'resource' => 'capture',
+            'id' => $id,
+            'paymentId' => $paymentId,
+            'amount' => $request['body']['amount'] ?? $state['payments'][$paymentId]['amount'],
+            'status' => 'pending',
+            'createdAt' => gmdate('c', $this->now($state)),
+        ];
+
+        return ['status' => 201, 'body' => $state['captures'][$id]];
+    }
+
+    /**
+     * @param array<string, mixed> $state
+     * @return array<string, mixed>
+     */
+    private function storeMandate(array &$state, string $customerId, string $method, string $status): array
+    {
+        $id = 'mdt_fake' . $this->nextSequence($state);
+        $state['mandates'][$id] = [
+            'resource' => 'mandate',
+            'id' => $id,
+            'customerId' => $customerId,
+            'mode' => $state['customers'][$customerId]['mode'],
+            'method' => $method,
+            'status' => $status,
+            'createdAt' => gmdate('c', $this->now($state)),
+        ];
+
+        return $state['mandates'][$id];
     }
 
     /**
@@ -312,16 +502,218 @@ final class FakeMollieApi
             throw new \InvalidArgumentException("The fake Mollie has no payment {$paymentId}.");
         }
         $state['payments'][$paymentId] = array_merge($state['payments'][$paymentId], $extra, ['status' => $status]);
+        // The SDK reads "paid" off paidAt, not off the status.
+        if ($status === 'paid' && empty($state['payments'][$paymentId]['paidAt'])) {
+            $state['payments'][$paymentId]['paidAt'] = gmdate('c', $this->now($state));
+        }
         $this->store->save($state);
     }
 
-    public function expireSession(string $sessionId): void
+    /**
+     * A payment the plugin created at checkout, in a run that is not this test: Payments API.
+     *
+     * @param array<string, mixed> $fields amount is required; id, mode (live), status (open),
+     *                                     method (ideal), metadata and the rest have defaults.
+     * @return array<string, mixed> The payment as stored.
+     */
+    public function seedPayment(array $fields): array
+    {
+        if (!isset($fields['amount']['value'], $fields['amount']['currency'])) {
+            throw new \InvalidArgumentException('A seeded payment needs an amount.');
+        }
+        $state = $this->state();
+        $now = $this->now($state);
+        $status = (string) ($fields['status'] ?? 'open');
+        $payment = array_merge([
+            'id' => 'tr_fake' . $this->nextSequence($state),
+            'mode' => 'live',
+            'method' => 'ideal',
+            'description' => 'Seeded payment',
+            'metadata' => null,
+            'redirectUrl' => 'https://shop.example/checkout/order-received/',
+            'webhookUrl' => 'https://shop.example/wp-json/mollie/v1/webhook',
+            'createdAt' => gmdate('c', $now),
+            'paidAt' => $status === 'paid' ? gmdate('c', $now) : null,
+        ], $fields, ['status' => $status]);
+        $state['payments'][$payment['id']] = $payment;
+        $this->store->save($state);
+
+        return $payment;
+    }
+
+    /**
+     * An order the plugin created at checkout through the Orders API, with its one payment.
+     *
+     * @param array<string, mixed> $fields amount is required; id, mode (live), status (created),
+     *                                     method (klarna), metadata have defaults. paymentStatus
+     *                                     is the status of the embedded payment (open).
+     * @return array<string, mixed> The order as stored, with paymentId.
+     */
+    public function seedOrder(array $fields): array
+    {
+        if (!isset($fields['amount']['value'], $fields['amount']['currency'])) {
+            throw new \InvalidArgumentException('A seeded order needs an amount.');
+        }
+        $paymentStatus = (string) ($fields['paymentStatus'] ?? 'open');
+        unset($fields['paymentStatus']);
+
+        $state = $this->state();
+        $now = $this->now($state);
+        $order = array_merge([
+            'id' => 'ord_fake' . $this->nextSequence($state),
+            'mode' => 'live',
+            'status' => 'created',
+            'method' => 'klarna',
+            'metadata' => null,
+            'orderNumber' => '1',
+            'lines' => [],
+            'redirectUrl' => 'https://shop.example/checkout/order-received/',
+            'webhookUrl' => 'https://shop.example/wp-json/mollie/v1/webhook',
+            'createdAt' => gmdate('c', $now),
+        ], $fields);
+        $paymentId = 'tr_fake' . $this->nextSequence($state);
+        $order['paymentId'] = $paymentId;
+        $state['orders'][$order['id']] = $order;
+        $state['payments'][$paymentId] = [
+            'id' => $paymentId,
+            'orderId' => $order['id'],
+            'mode' => $order['mode'],
+            'status' => $paymentStatus,
+            'method' => $order['method'],
+            'amount' => $order['amount'],
+            'description' => 'Order ' . $order['orderNumber'],
+            'metadata' => $order['metadata'],
+            'redirectUrl' => $order['redirectUrl'],
+            'webhookUrl' => $order['webhookUrl'],
+            'createdAt' => gmdate('c', $now),
+        ];
+        $this->store->save($state);
+
+        return $order;
+    }
+
+    /**
+     * @param array<string, mixed> $extra Fields to overwrite on the stored order.
+     */
+    public function setOrderStatus(string $orderId, string $status, array $extra = []): void
+    {
+        $state = $this->state();
+        if (!isset($state['orders'][$orderId])) {
+            throw new \InvalidArgumentException("The fake Mollie has no order {$orderId}.");
+        }
+        $state['orders'][$orderId] = array_merge($state['orders'][$orderId], $extra, ['status' => $status]);
+        $this->store->save($state);
+    }
+
+    /**
+     * A shopper Mollie knows, as after a first payment at the checkout.
+     *
+     * @param array<string, string> $mandates Method => status of each mandate the customer has.
+     * @return array{id: string, mandates: array<string, string>} The customer id and, per method, the mandate id.
+     */
+    public function seedCustomer(array $mandates = [], string $mode = 'live'): array
+    {
+        $state = $this->state();
+        $id = 'cst_fake' . $this->nextSequence($state);
+        $state['customers'][$id] = ['id' => $id, 'mode' => $mode, 'name' => 'Seeded customer', 'email' => 'shopper@example.org'];
+        $mandateIds = [];
+        foreach ($mandates as $method => $status) {
+            $mandateIds[$method] = $this->storeMandate($state, $id, $method, $status)['id'];
+        }
+        $this->store->save($state);
+
+        return ['id' => $id, 'mandates' => $mandateIds];
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function captures(): array
+    {
+        return $this->state()['captures'];
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function shipments(): array
+    {
+        return $this->state()['shipments'];
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function orders(): array
+    {
+        return $this->state()['orders'];
+    }
+
+    /**
+     * A refund made in the Mollie dashboard: the plugin never asked for it.
+     *
+     * @return array<string, mixed> The refund as stored.
+     */
+    public function refundFromDashboard(string $paymentId, string $value): array
+    {
+        $state = $this->state();
+        if (!isset($state['payments'][$paymentId])) {
+            throw new \InvalidArgumentException("The fake Mollie has no payment {$paymentId}.");
+        }
+        $id = 're_fake' . $this->nextSequence($state);
+        $state['refunds'][$id] = [
+            'resource' => 'refund',
+            'id' => $id,
+            'paymentId' => $paymentId,
+            'amount' => ['value' => $value, 'currency' => $state['payments'][$paymentId]['amount']['currency']],
+            'status' => 'refunded',
+            'description' => '',
+            'metadata' => null,
+            'createdAt' => gmdate('c', $this->now($state)),
+        ];
+        $this->store->save($state);
+
+        return $state['refunds'][$id];
+    }
+
+    /**
+     * The shopper's bank took the money back.
+     *
+     * @return array<string, mixed> The chargeback as stored.
+     */
+    public function chargeBack(string $paymentId, string $value): array
+    {
+        $state = $this->state();
+        if (!isset($state['payments'][$paymentId])) {
+            throw new \InvalidArgumentException("The fake Mollie has no payment {$paymentId}.");
+        }
+        $id = 'chb_fake' . $this->nextSequence($state);
+        $state['chargebacks'][$id] = [
+            'resource' => 'chargeback',
+            'id' => $id,
+            'paymentId' => $paymentId,
+            'amount' => ['value' => $value, 'currency' => $state['payments'][$paymentId]['amount']['currency']],
+            'createdAt' => gmdate('c', $this->now($state)),
+        ];
+        $this->store->save($state);
+
+        return $state['chargebacks'][$id];
+    }
+
+    /**
+     * @param int|null $expiredAt When Mollie says the session expired; by default a lifetime after
+     *                            it was created.
+     */
+    public function expireSession(string $sessionId, ?int $expiredAt = null): void
     {
         $state = $this->state();
         if (!isset($state['sessions'][$sessionId])) {
             throw new \InvalidArgumentException("The fake Mollie has no session {$sessionId}.");
         }
         $state['sessions'][$sessionId]['status'] = 'expired';
+        if ($expiredAt !== null) {
+            $state['sessions'][$sessionId]['expiresAt'] = gmdate('c', $expiredAt);
+        }
         $this->store->save($state);
     }
 
@@ -350,6 +742,18 @@ final class FakeMollieApi
     {
         $state = $this->state();
         $state['methods'] = array_values($methodIds);
+        $this->store->save($state);
+    }
+
+    /**
+     * What Mollie offers a method for. Without a rule a method is offered for every request, as before.
+     *
+     * @param array{min?: string, max?: string, currencies?: array<int, string>, countries?: array<int, string>, sequenceTypes?: array<int, string>} $rule
+     */
+    public function offerMethodOnlyFor(string $methodId, array $rule): void
+    {
+        $state = $this->state();
+        $state['methodRules'][$methodId] = $rule;
         $this->store->save($state);
     }
 
@@ -470,12 +874,19 @@ final class FakeMollieApi
             return ['value' => number_format($value, 2, '.', ''), 'currency' => $currency];
         };
         $base = 'https://api.mollie.com/v2/payments/' . $payment['id'];
+        $chargebacks = $this->chargebacksOf($state, $payment['id']);
 
-        $resource = array_merge($payment, [
+        $captured = array_sum(array_map(static function (array $capture): float {
+            return (float) $capture['amount']['value'];
+        }, array_filter($state['captures'], static function (array $capture) use ($payment): bool {
+            return $capture['paymentId'] === $payment['id'];
+        })));
+
+        $resource = array_merge(['sequenceType' => 'oneoff', 'locale' => 'en_US'], $payment, [
             'resource' => 'payment',
             'profileId' => 'pfl_fake',
-            'sequenceType' => 'oneoff',
-            'locale' => 'en_US',
+            'isCancelable' => $payment['status'] === 'authorized',
+            'amountCaptured' => $money($payment['status'] === 'paid' ? (float) $payment['amount']['value'] : $captured),
             'amountRefunded' => $money($refunded),
             'amountRemaining' => $money(max(0.0, (float) $payment['amount']['value'] - $refunded)),
             '_links' => [
@@ -483,13 +894,139 @@ final class FakeMollieApi
                 'dashboard' => ['href' => 'https://www.mollie.com/dashboard/payments/' . $payment['id'], 'type' => 'text/html'],
             ],
         ]);
+        if ($payment['status'] === 'open') {
+            $resource['_links']['checkout'] = ['href' => 'https://www.mollie.com/checkout/select-method/' . $payment['id'], 'type' => 'text/html'];
+        }
         if ($refunds) {
             $resource['_links']['refunds'] = ['href' => $base . '/refunds', 'type' => 'application/hal+json'];
+        }
+        if ($chargebacks) {
+            $resource['amountChargedBack'] = $money(array_sum(array_map(static function (array $chargeback): float {
+                return (float) $chargeback['amount']['value'];
+            }, $chargebacks)));
+            $resource['_links']['chargebacks'] = ['href' => $base . '/chargebacks', 'type' => 'application/hal+json'];
         }
 
         return array_filter($resource, static function ($value): bool {
             return $value !== null;
         });
+    }
+
+    /**
+     * @param array<string, mixed> $state
+     * @param array<string, mixed> $order
+     * @return array<string, mixed>
+     */
+    private function orderResource(array $state, array $order, string $embed): array
+    {
+        $payment = $state['payments'][$order['paymentId']];
+        $refunds = $this->refundsOf($state, $order['paymentId']);
+        $refunded = array_sum(array_map(static function (array $refund): float {
+            return (float) $refund['amount']['value'];
+        }, $refunds));
+        $base = 'https://api.mollie.com/v2/orders/' . $order['id'];
+
+        $resource = array_merge($order, [
+            'resource' => 'order',
+            'profileId' => 'pfl_fake',
+            'locale' => 'en_US',
+            'isCancelable' => in_array($order['status'], ['created', 'authorized', 'shipping'], true),
+            '_links' => [
+                'self' => ['href' => $base, 'type' => 'application/hal+json'],
+                'dashboard' => ['href' => 'https://www.mollie.com/dashboard/orders/' . $order['id'], 'type' => 'text/html'],
+            ],
+        ]);
+        unset($resource['paymentId']);
+        if ($refunded > 0) {
+            $resource['amountRefunded'] = [
+                'value' => number_format($refunded, 2, '.', ''),
+                'currency' => $order['amount']['currency'],
+            ];
+        }
+        $embeds = array_filter(explode(',', $embed));
+        if (in_array('payments', $embeds, true)) {
+            $resource['_embedded']['payments'] = [$this->paymentResource($state, $payment)];
+        }
+        if (in_array('refunds', $embeds, true) && $refunds) {
+            $resource['_embedded']['refunds'] = array_map(static function (array $refund) use ($order): array {
+                return array_merge($refund, ['orderId' => $order['id']]);
+            }, $refunds);
+        }
+
+        return array_filter($resource, static function ($value): bool {
+            return $value !== null;
+        });
+    }
+
+    /**
+     * @param array<string, mixed> $customer
+     * @return array<string, mixed>
+     */
+    private function customerResource(array $customer): array
+    {
+        $base = 'https://api.mollie.com/v2/customers/' . $customer['id'];
+
+        return array_merge($customer, [
+            'resource' => 'customer',
+            'locale' => 'en_US',
+            'metadata' => null,
+            'createdAt' => gmdate('c', 1790000000),
+            '_links' => [
+                'self' => ['href' => $base, 'type' => 'application/hal+json'],
+                'mandates' => ['href' => $base . '/mandates', 'type' => 'application/hal+json'],
+            ],
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $state
+     * @return array<int, array<string, mixed>>
+     */
+    private function mandatesOf(array $state, string $customerId): array
+    {
+        return array_values(array_filter($state['mandates'], static function (array $mandate) use ($customerId): bool {
+            return $mandate['customerId'] === $customerId;
+        }));
+    }
+
+    /**
+     * @param array<string, mixed> $state
+     * @return array<int, array<string, mixed>>
+     */
+    private function chargebacksOf(array $state, string $paymentId): array
+    {
+        return array_values(array_filter($state['chargebacks'], static function (array $chargeback) use ($paymentId): bool {
+            return $chargeback['paymentId'] === $paymentId;
+        }));
+    }
+
+    /**
+     * GET /v2/methods answers for the amount, currency, billing country and sequence type asked about.
+     *
+     * @param array<string, mixed> $rule
+     * @param array<string, mixed> $query
+     */
+    private function methodIsOfferedFor(array $rule, array $query): bool
+    {
+        $amount = isset($query['amount']['value']) ? (float) $query['amount']['value'] : null;
+        $currency = isset($query['amount']['currency']) ? (string) $query['amount']['currency'] : null;
+        $country = isset($query['billingCountry']) ? (string) $query['billingCountry'] : null;
+        $sequenceType = (string) ($query['sequenceType'] ?? 'oneoff');
+
+        if ($amount !== null && isset($rule['min']) && $amount < (float) $rule['min']) {
+            return false;
+        }
+        if ($amount !== null && isset($rule['max']) && $amount > (float) $rule['max']) {
+            return false;
+        }
+        if ($currency !== null && isset($rule['currencies']) && !in_array($currency, $rule['currencies'], true)) {
+            return false;
+        }
+        if ($country !== null && isset($rule['countries']) && !in_array($country, $rule['countries'], true)) {
+            return false;
+        }
+
+        return !isset($rule['sequenceTypes']) || in_array($sequenceType, $rule['sequenceTypes'], true);
     }
 
     /**
@@ -571,11 +1108,18 @@ final class FakeMollieApi
         return array_merge([
             'sessions' => [],
             'payments' => [],
+            'orders' => [],
             'refunds' => [],
+            'chargebacks' => [],
+            'captures' => [],
+            'shipments' => [],
+            'customers' => [],
+            'mandates' => [],
             'requests' => [],
             'idempotency' => [],
             'failures' => [],
             'methods' => ['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay'],
+            'methodRules' => [],
             'now' => null,
             'sequence' => 0,
         ], $this->store->load());

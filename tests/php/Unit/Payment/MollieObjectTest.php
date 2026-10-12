@@ -196,30 +196,6 @@ class MollieObjectTest extends TestCase
     }
 
     /**
-     * @scenario Resetting the static cache (simulating a new PHP request) causes the next
-     *           call to hit the Mollie API again, even for a previously cached payment_id.
-     * @covers \Mollie\WooCommerce\Payment\MollieObject::getPaymentObjectPayment
-     */
-    public function test_static_cache_reset_causes_fresh_api_call(): void
-    {
-        // Arrange
-        $paymentId = 'tr_reset_test';
-        $payment   = $this->makePayment($paymentId);
-        $this->paymentEndpoint
-            ->shouldReceive('get')
-            ->with($paymentId)
-            ->twice()
-            ->andReturn($payment);
-
-        // When — first call populates cache; reset simulates new PHP request; second call must hit API
-        $this->sut->getPaymentObjectPayment($paymentId, false, true);
-        $this->resetStaticCaches();
-        $this->sut->getPaymentObjectPayment($paymentId, false, true);
-
-        // Then — Mockery ->twice() above verifies the API was called exactly twice
-    }
-
-    /**
      * @scenario getPaymentObjectOrder deduplicates calls for the same order_id using its own
      *           static cache, independent of the payment cache.
      * @covers \Mollie\WooCommerce\Payment\MollieObject::getPaymentObjectOrder

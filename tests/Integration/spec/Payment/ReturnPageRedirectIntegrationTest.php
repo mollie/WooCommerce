@@ -210,8 +210,8 @@ class ReturnPageRedirectIntegrationTest extends PaymentFlowTestCase
      */
     public function it_announces_a_failed_return_when_the_payment_cannot_be_resolved()
     {
-        // No stub for this id: MockedApi answers an unknown payment with the 404 the real API gives,
-        // which is what makes the active payment unresolvable.
+        // Mollie answers 404 for this id, which is what makes the active payment unresolvable.
+        $this->mockFailedPaymentGet('tr_vanished');
         $order = $this->unpaidOrderWithPayment('mollie_wc_gateway_ideal', 'tr_vanished');
 
         $redirectUrl = $this->returnRedirectUrlFor($order, 'mollie_wc_gateway_ideal');

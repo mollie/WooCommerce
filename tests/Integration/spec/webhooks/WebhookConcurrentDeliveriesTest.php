@@ -364,32 +364,6 @@ class WebhookConcurrentDeliveriesTest extends ExpressFlowTestCase
     }
 
     /**
-     * filter_input(INPUT_POST) is empty on the CLI.
-     *
-     * @return MollieOrderService&Mockery\MockInterface
-     */
-    private function legacyWebhookService(string $paymentId, HttpResponse $httpResponse): MollieOrderService
-    {
-        $real = $this->boot()->get(MollieOrderService::class);
-        $service = Mockery::mock(MollieOrderService::class)->makePartial()->shouldAllowMockingProtectedMethods();
-        foreach ((new \ReflectionClass(MollieOrderService::class))->getProperties() as $property) {
-            if ($property->isStatic()) {
-                continue;
-            }
-            $property->setAccessible(true);
-            if ($property->isInitialized($real)) {
-                $property->setValue($service, $property->getValue($real));
-            }
-        }
-        $response = new \ReflectionProperty(MollieOrderService::class, 'httpResponse');
-        $response->setAccessible(true);
-        $response->setValue($service, $httpResponse);
-        $service->shouldReceive('getPaymentIdFromRequest')->andReturn($paymentId);
-
-        return $service;
-    }
-
-    /**
      * A pending PayPal order the cancel-unpaid action selects, whose payment is paid at Mollie.
      */
     private function orderPastItsExpirySetting(): WC_Order

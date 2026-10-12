@@ -244,6 +244,15 @@ export type MolliePayment = {
 	amount?: number;
 };
 
+export type CheckoutType = 'classic' | 'block';
+
+// One Mollie payment attempt of a WooCommerce order
+export type MolliePaymentAttempt = {
+	orderId: number;
+	transactionId: string;
+	checkoutUrl: string;
+};
+
 export namespace MollieTestData {
 	export type SurchargeTest = {
 		testId: string;
@@ -279,5 +288,13 @@ export namespace MollieTestData {
 
 	export type ShopOrderTransition = ShopOrder & {
 		transition: OrderTransition;
+	};
+
+	export type PaymentMethodSwitch = {
+		testId: string;
+		testLabel?: string;
+		checkoutType: CheckoutType;
+		firstPayment: MolliePayment;
+		secondPayment: MolliePayment;
 	};
 }

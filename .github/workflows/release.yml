@@ -37,3 +37,4 @@ jobs:
     with:
       PACKAGE_NAME: mollie-payments-for-woocommerce
       PACKAGE_VERSION: ${{ inputs.PACKAGE_VERSION }}
+      NODE_VERSION: 22

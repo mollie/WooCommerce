@@ -66,4 +66,24 @@ class MolliePaymentAttempt
             || $attemptId === self::paymentId($order)
             || $attemptId === self::orderId($order);
     }
+
+    /**
+     * Whether the payment was created for this order according to Mollie's own record of it: the
+     * plugin writes metadata.order_id when it creates a payment or order at Mollie, so a webhook
+     * caller cannot set that value.
+     *
+     * @param object $payment Mollie payment or order resource (anything exposing ->metadata)
+     */
+    public static function wasCreatedForOrder(WC_Order $order, $payment): bool
+    {
+        $metadata = is_object($payment) && isset($payment->metadata) ? $payment->metadata : null;
+        if (is_array($metadata)) {
+            $metadata = (object) $metadata;
+        }
+        if (!is_object($metadata) || !isset($metadata->order_id) || is_scalar($metadata->order_id) === false) {
+            return false;
+        }
+
+        return (string) $metadata->order_id === (string) $order->get_id();
+    }
 }

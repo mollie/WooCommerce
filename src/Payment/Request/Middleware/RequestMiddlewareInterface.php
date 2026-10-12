@@ -3,7 +3,6 @@
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
-
 interface RequestMiddlewareInterface
 {
     /**

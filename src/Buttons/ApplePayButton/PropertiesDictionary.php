@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 class PropertiesDictionary
@@ -9,11 +8,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const VALIDATION_REQUIRED_FIELDS =
-        [
-            PropertiesDictionary::WCNONCE,
-            PropertiesDictionary::VALIDATION_URL,
-        ];
+    public const VALIDATION_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::WCNONCE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::VALIDATION_URL];
     /**
      * @var string
      */
@@ -21,46 +16,19 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS =
-        [
-            PropertiesDictionary::WCNONCE,
-            PropertiesDictionary::PRODUCT_ID,
-            self::PRODUCT_QUANTITY,
-            self::BILLING_CONTACT,
-            PropertiesDictionary::SHIPPING_CONTACT,
-        ];
+    public const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::WCNONCE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::PRODUCT_ID, self::PRODUCT_QUANTITY, self::BILLING_CONTACT, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT];
     /**
      * @var string[]
      */
-    public const UPDATE_METHOD_CART_REQUIRED_FIELDS =
-        [
-            PropertiesDictionary::WCNONCE,
-            PropertiesDictionary::SHIPPING_METHOD,
-            self::CALLER_PAGE,
-            PropertiesDictionary::SIMPLIFIED_CONTACT,
-        ];
+    public const UPDATE_METHOD_CART_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::WCNONCE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_METHOD, self::CALLER_PAGE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SIMPLIFIED_CONTACT];
     /**
      * @var string[]
      */
-    public const UPDATE_CONTACT_CART_REQUIRED_FIELDS =
-        [
-            PropertiesDictionary::WCNONCE,
-            self::CALLER_PAGE,
-            PropertiesDictionary::SIMPLIFIED_CONTACT,
-            self::NEED_SHIPPING,
-        ];
+    public const UPDATE_CONTACT_CART_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::WCNONCE, self::CALLER_PAGE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SIMPLIFIED_CONTACT, self::NEED_SHIPPING];
     /**
      * @var string[]
      */
-    public const UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS =
-        [
-            PropertiesDictionary::WCNONCE,
-            PropertiesDictionary::PRODUCT_ID,
-            self::PRODUCT_QUANTITY,
-            self::CALLER_PAGE,
-            PropertiesDictionary::SIMPLIFIED_CONTACT,
-            self::NEED_SHIPPING,
-        ];
+    public const UPDATE_CONTACT_SINGLE_PROD_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::WCNONCE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::PRODUCT_ID, self::PRODUCT_QUANTITY, self::CALLER_PAGE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SIMPLIFIED_CONTACT, self::NEED_SHIPPING];
     /**
      * @var string
      */
@@ -68,15 +36,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS =
-        [
-            PropertiesDictionary::WCNONCE,
-            PropertiesDictionary::PRODUCT_ID,
-            self::PRODUCT_QUANTITY,
-            PropertiesDictionary::SHIPPING_METHOD,
-            self::CALLER_PAGE,
-            PropertiesDictionary::SIMPLIFIED_CONTACT,
-        ];
+    public const UPDATE_METHOD_SINGLE_PROD_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::WCNONCE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::PRODUCT_ID, self::PRODUCT_QUANTITY, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_METHOD, self::CALLER_PAGE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SIMPLIFIED_CONTACT];
     /**
      * @var string
      */
@@ -108,12 +68,7 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const CREATE_ORDER_CART_REQUIRED_FIELDS =
-        [
-            PropertiesDictionary::WCNONCE,
-            PropertiesDictionary::BILLING_CONTACT,
-            PropertiesDictionary::SHIPPING_CONTACT,
-        ];
+    public const CREATE_ORDER_CART_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::WCNONCE, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::BILLING_CONTACT, \Mollie\WooCommerce\Buttons\ApplePayButton\PropertiesDictionary::SHIPPING_CONTACT];
     /**
      * @var string
      */

@@ -45,7 +45,14 @@ class PaymentGatewayBlocks extends AbstractPaymentMethodType
 
     public function is_active()
     {
-        $gateway = $this->gateway();
+        try {
+            $gateway = $this->gateway();
+        } catch (\RuntimeException $exception) {
+            // The gateway can be filtered out of WC()->payment_gateways() after this
+            // block integration was registered (e.g. the Klarna gateways on AJAX
+            // requests when the Payments API is used). A missing gateway is not active.
+            return false;
+        }
         return filter_var($gateway->enabled, FILTER_VALIDATE_BOOLEAN);
     }
 

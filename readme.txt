@@ -3,7 +3,7 @@ Contributors: daanvm, danielhuesken, davdebcom, dinamiko, syde, l.vangunst, ndij
 Tags: mollie, woocommerce, payments, ecommerce, credit card
 Requires at least: 5.0
 Tested up to: 7.1
-Stable tag: 8.1.10
+Stable tag: 8.1.11
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -229,6 +229,11 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 
 == Changelog ==
+
+= 8.1.11 - 12-10-2026 =
+* Fixed - Improved webhook validation.
+* Fixed - Bank transfer instructions shown for expired, canceled or failed payments
+* Fixed - Broken link in settings
 
 = 8.1.10 - 08-09-2026 =
 * Fixed - Voucher payment method missing for translated variable products (WPML)

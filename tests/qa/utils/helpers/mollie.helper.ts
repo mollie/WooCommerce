@@ -1,7 +1,11 @@
 /**
  * External dependencies
  */
-import { OrderReceived, PayForOrder } from '@inpsyde/playwright-utils/build';
+import {
+	OrderReceived,
+	PayForOrder,
+	WooCommerceApi,
+} from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
@@ -10,6 +14,7 @@ import {
 	MolliePaymentStatus,
 	MollieSettings,
 	MollieGateway,
+	MolliePaymentAttempt,
 } from '../../resources';
 
 export const getOrderStatusFromMollieStatus = (
@@ -100,4 +105,39 @@ export const processMolliePaymentStatus = async (
 			).toHaveURL( mollieHostedCheckout.expiredUrlRegex );
 			break;
 	}
+};
+
+/**
+ * On the Mollie hosted page: returns the order and the payment attempt it shows.
+ *
+ * @param mollieHostedCheckout
+ * @param wooCommerceApi
+ */
+export const captureMolliePaymentAttempt = async (
+	mollieHostedCheckout: MollieHostedCheckout,
+	wooCommerceApi: WooCommerceApi
+): Promise< MolliePaymentAttempt > => {
+	await mollieHostedCheckout.assertUrl();
+	const orderId = await mollieHostedCheckout.captureOrderNumber();
+	const { transaction_id: transactionId } = await wooCommerceApi.getOrder(
+		orderId
+	);
+	await expect(
+		transactionId,
+		`Assert order ${ orderId } is linked to a Mollie payment`
+	).toBeTruthy();
+
+	const checkoutUrl = mollieHostedCheckout.page.url();
+	// Only the card session URL carries the payment id (without "tr_")
+	if (
+		mollieHostedCheckout.creditCardUrlRegex.test( checkoutUrl ) &&
+		transactionId.startsWith( 'tr_' )
+	) {
+		await expect(
+			checkoutUrl,
+			`Assert Mollie page shows payment ${ transactionId } of order ${ orderId }`
+		).toContain( transactionId.replace( 'tr_', '' ) );
+	}
+
+	return { orderId, transactionId, checkoutUrl };
 };

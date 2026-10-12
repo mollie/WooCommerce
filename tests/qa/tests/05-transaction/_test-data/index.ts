@@ -10,3 +10,4 @@ export * from './non-eur-checkout-classic.data';
 export * from './non-eur-checkout.data';
 export * from './non-eur-pay-for-order.data';
 export * from './paypal-express.data';
+export * from './payment-method-switch.data';

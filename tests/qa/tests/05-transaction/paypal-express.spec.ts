@@ -35,7 +35,9 @@ test.describe( () => {
 
 // Cart page (Block cart Express Payment area)
 test.describe( () => {
-	test.beforeAll( async ( { mollieApi } ) => {
+	test.beforeAll( async ( { utils, mollieApi } ) => {
+		// Express button is tested in the block area; do not depend on the previous spec
+		await utils.configureStore( { enableClassicPages: false } );
 		await mollieApi.updateMollieGateway( 'paypal', {
 			mollie_paypal_button_enabled_cart: 'yes',
 			mollie_paypal_button_enabled_product: 'no',
@@ -51,7 +53,9 @@ test.describe( () => {
 
 // Checkout page (Block checkout Express Payment area)
 test.describe( () => {
-	test.beforeAll( async ( { mollieApi } ) => {
+	test.beforeAll( async ( { utils, mollieApi } ) => {
+		// Express button is tested in the block area; do not depend on the previous spec
+		await utils.configureStore( { enableClassicPages: false } );
 		await mollieApi.updateMollieGateway( 'paypal', {
 			mollie_paypal_button_enabled_checkout: 'yes',
 			mollie_paypal_button_enabled_cart: 'no',

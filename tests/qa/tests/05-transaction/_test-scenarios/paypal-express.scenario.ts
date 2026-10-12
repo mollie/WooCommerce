@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import { countTotals, expect } from '@inpsyde/playwright-utils/build';
+import { Client as MollieClientApi } from 'mollie-api-typescript';
+import {
+	countTotals,
+	expect,
+	OrderReceived,
+	WooCommerceApi,
+} from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
@@ -11,9 +17,12 @@ import {
 	updateCurrencyIfNeeded,
 	getOrderStatusFromMollieStatus,
 	assertOrderNotes,
-	TestBaseExtend,
+	assertPaymentBelongsToOrder,
+	MollieHostedCheckout,
+	PayForOrder,
+	WooCommerceOrderEdit,
 } from '../../../utils';
-import { MollieTestData, guests } from '../../../resources';
+import { MollieTestData, MollieSettings, guests } from '../../../resources';
 
 /**
  * Shared setup: resolves order status/currency/totals and skips the test if
@@ -22,8 +31,8 @@ import { MollieTestData, guests } from '../../../resources';
  */
 const preparePayPalExpressOrder = async (
 	testData: MollieTestData.ShopOrder,
-	wooCommerceApi: TestBaseExtend[ 'wooCommerceApi' ],
-	mollieApiMethod: TestBaseExtend[ 'mollieApiMethod' ]
+	wooCommerceApi: WooCommerceApi,
+	mollieApiMethod: MollieSettings.ApiMethod
 ) => {
 	const { payment } = testData;
 	const { gateway } = payment;
@@ -58,18 +67,19 @@ const preparePayPalExpressOrder = async (
 const completePayPalExpressOrder = async (
 	{
 		wooCommerceApi,
+		mollieClientApi,
 		mollieHostedCheckout,
 		orderReceived,
 		payForOrder,
 		wooCommerceOrderEdit,
-	}: Pick<
-		TestBaseExtend,
-		| 'wooCommerceApi'
-		| 'mollieHostedCheckout'
-		| 'orderReceived'
-		| 'payForOrder'
-		| 'wooCommerceOrderEdit'
-	>,
+	}: {
+		wooCommerceApi: WooCommerceApi;
+		mollieClientApi: MollieClientApi;
+		mollieHostedCheckout: MollieHostedCheckout;
+		orderReceived: OrderReceived;
+		payForOrder: PayForOrder;
+		wooCommerceOrderEdit: WooCommerceOrderEdit;
+	},
 	testData: MollieTestData.ShopOrder
 ) => {
 	const { payment } = testData;
@@ -91,6 +101,10 @@ const completePayPalExpressOrder = async (
 		transactionId,
 		`Assert transaction ID ${ transactionId } is defined`
 	).toBeDefined();
+	await assertPaymentBelongsToOrder(
+		{ mollieClientApi, wooCommerceApi },
+		Number( orderId )
+	);
 
 	await wooCommerceOrderEdit.visit( orderId );
 	await wooCommerceOrderEdit.assertOrderDetails( testData, transactionId );
@@ -113,6 +127,7 @@ export const testPayPalExpressProduct = (
 
 	test( `${ testId } | Transaction - Product - PayPal Express - Payment status ${ payment.status } creates order with expected status${ label }`, async ( {
 		wooCommerceApi,
+		mollieClientApi,
 		product,
 		mollieHostedCheckout,
 		orderReceived,
@@ -136,6 +151,7 @@ export const testPayPalExpressProduct = (
 		await completePayPalExpressOrder(
 			{
 				wooCommerceApi,
+				mollieClientApi,
 				mollieHostedCheckout,
 				orderReceived,
 				payForOrder,
@@ -152,6 +168,7 @@ export const testPayPalExpressCart = ( testData: MollieTestData.ShopOrder ) => {
 
 	test( `${ testId } | Transaction - Cart - PayPal Express - Payment status ${ payment.status } creates order with expected status${ label }`, async ( {
 		wooCommerceApi,
+		mollieClientApi,
 		utils,
 		cart,
 		mollieHostedCheckout,
@@ -177,6 +194,7 @@ export const testPayPalExpressCart = ( testData: MollieTestData.ShopOrder ) => {
 		await completePayPalExpressOrder(
 			{
 				wooCommerceApi,
+				mollieClientApi,
 				mollieHostedCheckout,
 				orderReceived,
 				payForOrder,
@@ -195,6 +213,7 @@ export const testPayPalExpressCheckout = (
 
 	test( `${ testId } | Transaction - Checkout - PayPal Express - Payment status ${ payment.status } creates order with expected status${ label }`, async ( {
 		wooCommerceApi,
+		mollieClientApi,
 		utils,
 		checkout,
 		mollieHostedCheckout,
@@ -220,6 +239,7 @@ export const testPayPalExpressCheckout = (
 		await completePayPalExpressOrder(
 			{
 				wooCommerceApi,
+				mollieClientApi,
 				mollieHostedCheckout,
 				orderReceived,
 				payForOrder,

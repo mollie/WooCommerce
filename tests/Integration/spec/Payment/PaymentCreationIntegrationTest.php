@@ -83,6 +83,55 @@ class PaymentCreationIntegrationTest extends PaymentFlowTestCase
     }
 
     /**
+     * Scenario: A shop that never chose an API creates a Mollie payment the webhook can tie back (REQ-285, REQ-291, REQ-297)
+     *   Given a pending iDEAL order and no API choice saved, the plugin's default
+     *   When the customer starts the payment
+     *   Then one Mollie payment is created for the order total and method, never a Mollie order
+     *   And its metadata names the order, which the webhook guard needs to accept the payment
+     *   And its webhook URL carries the webhook secret
+     *   And the order records the 'tr_' id and the customer goes to its checkout URL
+     *
+     * @test
+     * @group integration
+     * @group PaymentCreation
+     * @covers \Mollie\WooCommerce\Payment\PaymentProcessor::paymentTypeBasedOnGateway
+     * @covers \Mollie\WooCommerce\Payment\PaymentProcessor::processPaymentForMollie
+     */
+    public function it_creates_a_mollie_payment_naming_the_order_when_no_api_was_chosen()
+    {
+        $this->setOptionForTest('mollie-payments-for-woocommerce_api_switch', '');
+        $order = $this->pendingOrder('mollie_wc_gateway_ideal');
+
+        $this->recordOrdersCreate(function (): object {
+            return $this->createdMollieOrder('ord_unexpected', 'ideal');
+        });
+        $this->recordPaymentsCreate(function (): object {
+            return $this->createdMolliePayment('tr_default', 'ideal');
+        });
+
+        $result = $this->processPayment($order, 'mollie_wc_gateway_ideal');
+
+        $this->assertSame('success', $result['result']);
+        $this->assertSame('https://www.mollie.com/checkout/tr_default', $result['redirect']);
+        $this->assertCount(0, $this->ordersCreateCalls, 'The default is the Payments API, so no Mollie order may be created.');
+        $this->assertCount(1, $this->paymentsCreateCalls, 'Exactly one Mollie payment must be created.');
+
+        $request = $this->paymentsCreateCalls[0];
+        $this->assertSame($this->formattedTotal($order), $request['amount']['value']);
+        $this->assertSame('ideal', $request['method']);
+        $this->assertSame(
+            (string) $order->get_id(),
+            (string) ((array) $request['metadata'])['order_id'],
+            'Without the order id in the metadata the webhook ignores a paid payment the order does not track.'
+        );
+        $this->assertStringContainsString('mollie_webhook_secret=', (string) $request['webhookUrl']);
+
+        $order = wc_get_order($order->get_id());
+        $this->assertSame('tr_default', $order->get_meta('_mollie_payment_id'));
+        $this->assertSame('tr_default', $order->get_transaction_id());
+    }
+
+    /**
      * Scenario: A rejected Mollie order falls back to the Payments API
      *   Given a pending iDEAL order and the plugin configured to use the Orders API
      *   When orders->create fails with a validation error Mollie does not classify

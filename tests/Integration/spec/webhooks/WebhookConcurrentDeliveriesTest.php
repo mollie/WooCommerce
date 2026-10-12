@@ -232,6 +232,36 @@ class WebhookConcurrentDeliveriesTest extends ExpressFlowTestCase
     }
 
     /**
+     * Given a database that offers no user locks (GET_LOCK answers NULL: a proxy or a db.php drop-in)
+     * When Mollie calls the REST webhook for a paid payment
+     * Then 200 and paid, as before the lock existed, and order.lock_unavailable is logged
+     *
+     * @test
+     * @covers \Mollie\WooCommerce\Payment\OrderLock::withLock
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::callback
+     */
+    public function it_pays_the_order_unlocked_and_warns_when_the_database_offers_no_user_locks(): void
+    {
+        [$order, $payment] = $this->orderWithPayment('paid');
+        $noUserLocks = static function (string $query): string {
+            return stripos($query, 'SELECT GET_LOCK(') === 0 ? 'SELECT NULL' : $query;
+        };
+
+        add_filter('query', $noUserLocks);
+        try {
+            $status = $this->deliverWebhook($payment['id']);
+        } finally {
+            remove_filter('query', $noUserLocks);
+        }
+
+        $this->assertSame(200, $status, 'A database without user locks must not turn every webhook into a 503.');
+        $this->assertTrue($this->fresh($order)->is_paid());
+        $this->assertSame(1, $this->fired('woocommerce_payment_complete'));
+        $this->assertNotSame([], $this->loggedEvents('order.lock_unavailable'));
+        $this->assertSame([], $this->loggedEvents('order.lock_timeout'));
+    }
+
+    /**
      * Given the order lock is held elsewhere
      * When Mollie calls the WC-API webhook
      * Then 503 with the order untouched
@@ -303,6 +333,43 @@ class WebhookConcurrentDeliveriesTest extends ExpressFlowTestCase
     }
 
     /**
+     * Given a pending Orders API order past its gateway's expiry setting, still unpaid at Mollie
+     * When the cancel-unpaid action runs
+     * Then the order is cancelled in WooCommerce and the Mollie order is cancelled at Mollie
+     *
+     * @test
+     * @covers \Mollie\WooCommerce\Payment\PaymentModule::cancelOrderOnExpiryDate
+     * @covers \Mollie\WooCommerce\Payment\PaymentModule::cancelOrderAtMollie
+     */
+    public function it_cancels_an_unpaid_order_past_its_expiry_setting_also_at_mollie(): void
+    {
+        $this->cancelUnpaidWasScheduled = as_next_scheduled_action(self::CANCEL_UNPAID_ACTION) !== false;
+        $this->container = $this->bootExpressOwning(['init', self::CANCEL_UNPAID_ACTION]);
+        $order = $this->pendingOrder('mollie_wc_gateway_ideal');
+        $mollieOrder = $this->fakeMollie()->seedOrder([
+            'amount' => ['currency' => 'EUR', 'value' => $this->formattedTotal($order)],
+            'method' => 'ideal',
+            'status' => 'created',
+            'paymentStatus' => 'open',
+            'orderNumber' => (string) $order->get_id(),
+            'metadata' => ['order_id' => $order->get_id()],
+        ]);
+        $order->set_transaction_id($mollieOrder['id']);
+        $order->update_meta_data('_mollie_order_id', $mollieOrder['id']);
+        $order->update_meta_data('_mollie_payment_id', $mollieOrder['paymentId']);
+        $order->save();
+        $this->setGatewaySettingsForTest('ideal', ['activate_expiry_days_setting' => 'yes', 'order_dueDate' => '10']);
+        $this->lastModifiedAt($order, time() - 3600);
+        do_action('init');
+
+        do_action(self::CANCEL_UNPAID_ACTION);
+
+        $this->assertSame('cancelled', $this->fresh($order)->get_status());
+        $this->assertCount(1, $this->fakeMollie()->requests('DELETE', 'orders/' . $mollieOrder['id']));
+        $this->assertNotSame([], $this->notesContaining($order, 'Order also cancelled at Mollie.'));
+    }
+
+    /**
      * Given the order lock is held elsewhere
      * When checkPaymentForUnpaidOrder() runs
      * Then it returns true with the order untouched
@@ -361,6 +428,24 @@ class WebhookConcurrentDeliveriesTest extends ExpressFlowTestCase
         $this->assertSame($requestsBefore, count($this->fakeMollie()->requests('GET', 'payments')));
         $this->assertSame([], $this->loggedEvents('order.lock_timeout'));
         $this->assertSame($before, $this->freshState($order));
+    }
+
+    /**
+     * Given an order whose payment was created before the webhook secret existed
+     * When Mollie calls the REST webhook with that payment id and no secret
+     * Then 200 and the order is paid, so in-flight payments survive the upgrade
+     *
+     * @test
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::registerRoutes
+     * @covers \Mollie\WooCommerce\Payment\Webhooks\RestApi::callback
+     */
+    public function it_pays_an_order_from_a_secretless_rest_webhook_for_a_payment_it_tracks(): void
+    {
+        [$order, $payment] = $this->orderWithPayment('paid');
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id'], false));
+        $this->assertTrue($this->fresh($order)->is_paid());
+        $this->assertSame(1, $this->fired('woocommerce_payment_complete'));
     }
 
     /**

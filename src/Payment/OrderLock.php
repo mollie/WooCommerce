@@ -61,6 +61,11 @@ final class OrderLock
         $name = self::lockName($orderKey);
         $taken = $this->db->get_var($this->db->prepare('SELECT GET_LOCK(%s, %d)', $name, self::TIMEOUT_SECONDS));
 
+        // NULL: this database offers no user locks (a proxy, a db.php drop-in), so the work runs unlocked, as before 8.2.0.
+        if ($taken === null) {
+            $this->log?->warning('order.lock_unavailable');
+            return $this->run($work);
+        }
         if ((string) $taken !== '1') {
             throw new OrderLockTimeout('The order is being processed by another request.');
         }

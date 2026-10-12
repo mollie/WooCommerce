@@ -148,10 +148,10 @@ Additional actions for local execution:
 
 	```bash
 	# Setup multistep checkout with env reset:
-	npm run env:reset:multistep
+	npm run e2e:env:reset:multistep
 
 	# Setup multistep checkout:
-	npm run env:setup:multistep
+	npm run e2e:env:setup:multistep
 
 	# Run smoke tests for multistep checkout:
 	npm run e2e:test:payment-api:multistep:smoke
@@ -245,22 +245,22 @@ Can be combined with Mollie and multistep checkout setup:
 
 ```bash
 # Reset env only
-npm run env:reset
+npm run e2e:env:reset
 
 # Reset env, WooCommerce
-npm run env:reset:wc
+npm run e2e:env:reset:wc
 
 # Reset env, WooCommerce, install and connect Mollie
-npm run env:reset:mollie
+npm run e2e:env:reset:mollie
 
 # Reset env, WooCommerce, install and connect Mollie, setup Multistep checkout
-npm run env:reset:mollie:multistep
+npm run e2e:env:reset:mollie:multistep
 ```
 
 ### Setup store
 
 ```bash
-npm run env:setup:wc
+npm run e2e:env:setup:wc
 ```
 
 ### Setup Mollie plugin
@@ -270,33 +270,33 @@ npm run env:setup:wc
 - Payment API
 
 ```bash
-npm run env:setup:mollie
+npm run e2e:env:setup:mollie
 ```
 
 ### Setup Mollie API method
 
 ```bash
-npm run env:setup:payment-api
-npm run env:setup:order-api
+npm run e2e:env:setup:payment-api
+npm run e2e:env:setup:order-api
 ```
 
 ### Other setup scripts
 
 ```bash
 # Multistep checkout
-npm run env:setup:multistep
+npm run e2e:env:setup:multistep
 
 # Block checkout pages
-npm run env:setup:checkout:block
+npm run e2e:env:setup:checkout:block
 
 # Classic checkout pages
-npm run env:setup:checkout:classic
+npm run e2e:env:setup:checkout:classic
 
 # Taxes included
-npm run env:setup:tax:inc
+npm run e2e:env:setup:tax:inc
 
 # Taxes excluded
-npm run env:setup:tax:exc
+npm run e2e:env:setup:tax:exc
 ```
 
 

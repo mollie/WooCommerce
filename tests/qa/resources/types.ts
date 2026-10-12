@@ -179,6 +179,7 @@ export namespace MollieSettings {
 
 		mollie_paypal_button_enabled_cart?: 'yes' | 'no'; // paypal
 		mollie_paypal_button_enabled_product?: 'yes' | 'no'; // paypal
+		mollie_paypal_button_enabled_checkout?: 'yes' | 'no'; // paypal
 		paypal_color?: PaypalButtonTextLanguageAndColor; // paypal
 		mollie_paypal_button_minimum_amount?: string; // paypal
 
@@ -204,6 +205,7 @@ export type MollieGateway = {
 	maxAmount?: string;
 	availableForApiMethods?: MollieSettings.ApiMethod[];
 	settings?: MollieSettings.Gateway;
+	isCaptureRequired?: boolean; // Mirrors `paymentCaptureMode: 'manual'` in the gateway's PHP config
 };
 
 export type MolliePaymentStatus =
@@ -271,5 +273,11 @@ export namespace MollieTestData {
 		refundPercentage?: number; // how much of order price to refund 0.01...100.00%
 		refundOrderStatus?: WooCommerce.OrderStatus; // WooCommerce refunded order status
 		refundPaymentStatus?: string; // Payment status obtained from PayPal Payment
+	};
+	
+	export type OrderTransition = 'onHoldToFinal' | 'authorizedToVoided';
+
+	export type ShopOrderTransition = ShopOrder & {
+		transition: OrderTransition;
 	};
 }

@@ -99,5 +99,35 @@ setup(
 				).toBeOK();
 			}
 		);
+
+		await setup.step(
+			'Disable Germanized Legal Checkboxes (terms)',
+			async () => {
+				const url = urls.germanized.admin.checkboxes.legal;
+				const wpnonce = await requestUtils.getPageNonce( url );
+				const response = await requestUtils.request.post( url, {
+					form: {
+						woocommerce_gzd_checkboxes_terms_admin_name: 'Legal',
+						woocommerce_gzd_checkboxes_terms_admin_desc:
+							'General legal checkbox which shall include terms and cancellation policy.',
+						woocommerce_gzd_checkboxes_terms_label:
+							'With your order, you agree to have read and understood our {term_link}Terms and Conditions{/term_link} and {revocation_link}Cancellation Policy{/revocation_link}.',
+						woocommerce_gzd_checkboxes_terms_error_message:
+							'To complete the order you have to accept to our {term_link}Terms and Conditions{/term_link} and {revocation_link}Cancellation Policy{/revocation_link}.',
+						woocommerce_gzd_checkboxes_terms_is_mandatory: '1',
+						woocommerce_gzd_checkboxes_terms_template_name:
+							'checkout/terms.php',
+						woocommerce_gzd_checkboxes_terms_html_id: 'legal',
+						woocommerce_gzd_checkboxes_terms_html_name: 'legal',
+						save: 'Save changes',
+						_wpnonce: wpnonce,
+					},
+				} );
+				await expect(
+					response,
+					'Assert Germanized Legal Checkboxes (terms) is disabled successfully'
+				).toBeOK();
+			}
+		);
 	}
 );

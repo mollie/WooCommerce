@@ -36,6 +36,9 @@ jobs:
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit
 
+      - name: Run fitness scoreboard
+        run: composer fitness
+
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyze --error-format=github
 

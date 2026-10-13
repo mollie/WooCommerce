@@ -41,6 +41,7 @@
     "start": "wp-scripts start",
     "lint:md": "wp-scripts lint-md-docs *.md",
     "lint:js": "wp-scripts lint-js resources/js/src/*",
+    "test:unit:js": "wp-scripts test-unit-js resources/js/src",
     "lint:style": "wp-scripts lint-style resources/scss/*.scss",
     "lint:js:fix": "wp-scripts lint-js resources/js/src/* --fix",
     "lint:style:fix": "wp-scripts lint-style resources/scss/*.scss --fix",
@@ -82,7 +83,11 @@
     "e2e:test:order-api:smoke": "npx playwright test --project=order-api --workers=1 --grep \"@Critical\"",
     "e2e:test:order-api:refund": "npx playwright test --project=refund-order-api --workers=4",
     "e2e:test:order-api:multistep": "npx playwright test --project=multistep-order-api --workers=1",
-    "e2e:test:order-api:multistep:smoke": "npx playwright test --project=multistep-order-api --workers=1 --grep \"@Critical\""
+    "e2e:test:order-api:multistep:smoke": "npx playwright test --project=multistep-order-api --workers=1 --grep \"@Critical\"",
+
+    "e2e:express:install": "node tests/qa/express/bin/install.mjs",
+    "e2e:express:uninstall": "node tests/qa/express/bin/install.mjs --uninstall",
+    "e2e:express": "npx playwright test --config=playwright.express.config.ts"
   },
   "eslintConfig": {
     "extends": [

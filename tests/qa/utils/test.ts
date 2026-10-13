@@ -34,6 +34,8 @@ import {
 	ClassicCheckout,
 	PayForOrder,
 	MollieHostedCheckout,
+	Product,
+	Cart,
 } from './frontend';
 import { MollieApi, Utils } from '.';
 import { MollieSettings } from '../resources';
@@ -63,6 +65,8 @@ type TestBaseExtend = BaseExtend & {
 	payForOrder: PayForOrder;
 	orderReceived: OrderReceived;
 	mollieHostedCheckout: MollieHostedCheckout;
+	product: Product;
+	cart: Cart;
 
 	// Complex fixtures
 	utils: Utils;
@@ -172,6 +176,12 @@ const test = base.extend< TestBaseExtend >( {
 	},
 	mollieHostedCheckout: async ( { visitorPage }, use ) => {
 		await use( new MollieHostedCheckout( { page: visitorPage } ) );
+	},
+	product: async ( { visitorPage }, use ) => {
+		await use( new Product( { page: visitorPage } ) );
+	},
+	cart: async ( { visitorPage }, use ) => {
+		await use( new Cart( { page: visitorPage } ) );
 	},
 
 	// Complex fixtures

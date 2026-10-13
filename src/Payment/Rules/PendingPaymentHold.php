@@ -9,8 +9,8 @@ final class PendingPaymentHold
     private const PENDING = 'pending';
     private const ON_HOLD = 'on-hold';
 
-    // Methods Mollie documents as staying 'pending' after the shopper has done their part.
-    private const HELD_METHODS = ['paybybank'];
+    // Methods whose payment stays 'pending' after the shopper has done their part.
+    private const HELD_METHODS = ['paybybank', 'wero'];
 
     public static function holds(
         string $mollieStatus,

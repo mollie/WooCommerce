@@ -5,11 +5,6 @@ import { expect, test } from '../../utils';
 import { gateways } from '../../resources';
 
 test.describe.serial( () => {
-	test.beforeAll( async ( { utils } ) => {
-		await utils.installAndActivateMollie();
-		await utils.cleanReconnectMollie();
-	} );
-
 	test( 'C3511 | Validate an error message is returned when the test key is not valid/empty @Critical', async ( {
 		mollieSettingsApiKeys,
 		mollieSettingsAdvanced,

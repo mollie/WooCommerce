@@ -57,10 +57,16 @@ const assertNotes = async (
 			note instanceof RegExp ? note.test( n ) : n.includes( note )
 		);
 
+		// On mismatch, list the real notes to show wording differences
+		const actualList =
+			matches.length === count
+				? ''
+				: `\nActual notes:\n- ${ actualNotes.join( '\n- ' ) }`;
+
 		const expectFn = isSoftAssertion ? expect.soft : expect;
 		await expectFn(
 			matches,
-			`${ assertionPrefix }Assert note "${ note }" is present ${ count } time(s)`
+			`${ assertionPrefix }Assert note "${ note }" is present ${ count } time(s)${ actualList }`
 		).toHaveLength( count );
 	}
 };

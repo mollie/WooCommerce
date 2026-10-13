@@ -2,6 +2,7 @@
  * External dependencies
  */
 import fs from 'fs';
+import { execSync } from 'child_process';
 import { Client as MollieClientApi } from 'mollie-api-typescript';
 import {
 	APIRequestContext,
@@ -38,7 +39,7 @@ import {
 	Cart,
 } from './frontend';
 import { MollieApi, Utils } from '.';
-import { MollieSettings } from '../resources';
+import { MollieSettings, mollieApiKeys } from '../resources';
 
 type TestBaseExtend = BaseExtend & {
 	recordVideoOptions: {
@@ -54,6 +55,8 @@ type TestBaseExtend = BaseExtend & {
 	mollieSettingsGateway: MollieSettingsGateway;
 	mollieApiMethod?: MollieSettings.ApiMethod;
 	isMultistepCheckout?: boolean;
+	// Mollie merchant profile whose API key the shard uses (see mollieApiKeys)
+	mollieProfile: 'default' | 'nl';
 
 	// Frontend fixtures
 	visitorPage: Page;
@@ -70,19 +73,53 @@ type TestBaseExtend = BaseExtend & {
 
 	// Complex fixtures
 	utils: Utils;
+
+	// Auto fixtures
+	mollieLogOnFailure: void;
 };
 
 const test = base.extend< TestBaseExtend >( {
 	recordVideoOptions: [ null, { option: true } ],
+	// Mollie API errors only reach the plugin's WC log, so attach it to failed tests
+	mollieLogOnFailure: [
+		async ( {}, use, testInfo ) => {
+			await use();
+			if ( testInfo.status === testInfo.expectedStatus ) {
+				return;
+			}
+			let log = '';
+			try {
+				log = execSync(
+					'npx wp-env run tests-cli bash -c "tail -n 200 wp-content/uploads/wc-logs/mollie-payments-for-woocommerce-*.log"',
+					{
+						encoding: 'utf8',
+						stdio: [ 'ignore', 'pipe', 'ignore' ],
+						timeout: 30_000,
+					}
+				);
+			} catch {
+				return; // no log yet or wp-env not reachable
+			}
+			await testInfo.attach( 'mollie-log', {
+				body: log,
+				contentType: 'text/plain',
+			} );
+			if ( process.env.CI ) {
+				console.log( `--- Mollie log (${ testInfo.title }) ---\n${ log }` );
+			}
+		},
+		{ auto: true },
+	],
 	// Dashboard pages operated by Admin
 	mollieApi: async ( { request, requestUtils }, use ) => {
 		await use( new MollieApi( { request, requestUtils } ) );
 	},
-	mollieClientApi: async ( {}, use ) => {
+	mollieProfile: [ 'default', { option: true } ],
+	mollieClientApi: async ( { mollieProfile }, use ) => {
 		await use(
 			new MollieClientApi( {
 				security: {
-					apiKey: process.env.MOLLIE_TEST_API_KEY,
+					apiKey: mollieApiKeys[ mollieProfile ].testApiKey,
 				},
 			} )
 		);

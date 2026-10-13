@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
 final class FirstSightData
@@ -12,36 +11,25 @@ final class FirstSightData
      * @param array<string, string> $billing
      * @param array<string, string>|null $shipping Null when not written.
      */
-    public function __construct(
-        private string $paymentId,
-        private string $mode,
-        private ?string $gatewayId,
-        private ?string $unmatchedMethod,
-        private array $billing,
-        private ?array $shipping
-    ) {
+    public function __construct(private string $paymentId, private string $mode, private ?string $gatewayId, private ?string $unmatchedMethod, private array $billing, private ?array $shipping)
+    {
     }
-
     public function paymentId(): string
     {
         return $this->paymentId;
     }
-
     public function mode(): string
     {
         return $this->mode;
     }
-
     public function gatewayId(): ?string
     {
         return $this->gatewayId;
     }
-
     public function unmatchedMethod(): ?string
     {
         return $this->unmatchedMethod;
     }
-
     /**
      * @return array<string, string>
      */
@@ -49,7 +37,6 @@ final class FirstSightData
     {
         return $this->billing;
     }
-
     /**
      * @return array<string, string>|null
      */

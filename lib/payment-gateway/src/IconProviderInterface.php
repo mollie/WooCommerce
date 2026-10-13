@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Inpsyde\PaymentGateway;
+declare (strict_types=1);
+namespace Mollie\Inpsyde\PaymentGateway;
 
 /**
  * Interface for providing icons to the payment gateway system.

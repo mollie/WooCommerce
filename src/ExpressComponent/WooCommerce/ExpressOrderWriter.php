@@ -11,6 +11,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 use WC_Order;
 /**
  * Writes only what differs and notes only once, so a retried webhook changes nothing.
+ * Callers pass the order as OrderLock::withFreshOrder() read it.
  */
 final class ExpressOrderWriter
 {

@@ -4,7 +4,7 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Flow;
 
 /**
- * Never carries the order id, its key or shopper data.
+ * What the order route answers the browser.
  */
 final class ExpressOrderResult
 {

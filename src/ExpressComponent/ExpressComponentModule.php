@@ -57,7 +57,10 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         add_action('shutdown', static function () use ($container): void {
             $log = $container->get(EventLog::class);
             assert($log instanceof EventLog);
-            $log->flush();
+            // A fatal error skips the flows' finally.
+            $error = error_get_last();
+            $fatal = \E_ERROR | \E_PARSE | \E_CORE_ERROR | \E_COMPILE_ERROR | \E_USER_ERROR | \E_RECOVERABLE_ERROR;
+            $log->flush(is_array($error) && ($error['type'] & $fatal) !== 0);
         });
         // PaymentModule schedules this action.
         add_action('mollie_woocommerce_cancel_unpaid_orders', static function () use ($container): void {

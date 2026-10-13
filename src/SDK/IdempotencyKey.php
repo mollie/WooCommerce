@@ -5,7 +5,7 @@ namespace Mollie\WooCommerce\SDK;
 
 use InvalidArgumentException;
 /**
- * Parts must be ids and amounts, never personal data.
+ * Parts are ids and amounts.
  */
 final class IdempotencyKey
 {

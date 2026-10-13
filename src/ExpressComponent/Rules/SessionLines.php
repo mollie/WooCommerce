@@ -22,7 +22,7 @@ final class SessionLines
             return [];
         }
         $lines = self::rawLines($cart);
-        $lines = self::putRoundingResidueOnLargestLine($lines, $cart->total());
+        $lines = self::matchTotal($lines, $cart->total());
         return array_map(static fn(array $line): array => self::render($line, $currency), $lines);
     }
     /**
@@ -60,16 +60,22 @@ final class SessionLines
         return ['type' => $type, 'description' => $description, 'quantity' => $quantity, 'total' => $total, 'vatRate' => $vatRate];
     }
     /**
+     * Up to a minor unit per line is rounding and goes on the largest line; more gets a line of its own.
+     *
      * @param list<array{type: string, description: string, quantity: int, total: int, vatRate: ?string}> $lines
      * @return list<array{type: string, description: string, quantity: int, total: int, vatRate: ?string}>
      */
-    private static function putRoundingResidueOnLargestLine(array $lines, ?Money $total): array
+    private static function matchTotal(array $lines, ?Money $total): array
     {
         if ($total === null || $lines === []) {
             return $lines;
         }
         $residual = $total->minorUnits() - array_sum(array_column($lines, 'total'));
         if ($residual === 0) {
+            return $lines;
+        }
+        if (abs($residual) > count($lines)) {
+            $lines[] = $residual < 0 ? self::raw('discount', 'Discount', 1, $residual, null) : self::raw('surcharge', 'Fee', 1, $residual, null);
             return $lines;
         }
         $largest = 0;

@@ -10,7 +10,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 /**
- * Sent to the browser: no keys, secrets or amounts.
+ * What the block checkout script receives.
  */
 class ExpressBlocksData
 {

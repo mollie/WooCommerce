@@ -4,7 +4,7 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
 /**
- * The client access token is deliberately not kept: only the session route needs it.
+ * The client access token is not kept: only the session route needs it.
  */
 final class RememberedSession
 {

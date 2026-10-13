@@ -3,9 +3,6 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\Shared\Values;
 
-/**
- * Personal data: never a log field.
- */
 final class MollieAddress
 {
     /**

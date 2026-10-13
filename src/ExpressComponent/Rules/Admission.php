@@ -12,7 +12,7 @@ final class Admission
 {
     public const EXPRESS_SESSION = 'express.session';
     public const EXPRESS_ORDER = 'express.order';
-    // The express routes are anonymous: a valid nonce is the whole admission.
+    // An express route is admitted with a verified nonce.
     private const RULES = [self::EXPRESS_SESSION => ['nonce' => \true], self::EXPRESS_ORDER => ['nonce' => \true]];
     /**
      * @return Admit|Refuse

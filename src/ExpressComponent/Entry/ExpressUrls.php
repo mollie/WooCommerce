@@ -16,7 +16,7 @@ class ExpressUrls
         return add_query_arg('ref', rawurlencode($expressRef), WC()->api_request_url(self::RETURN_API));
     }
     /**
-     * Contains the webhook secret: never log it or send it to the browser.
+     * The REST webhook URL, with the webhook secret query argument.
      */
     public function webhookUrl(): string
     {

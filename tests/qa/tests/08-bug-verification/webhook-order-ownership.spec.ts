@@ -17,12 +17,7 @@ import {
 	captureMolliePaymentAttempt,
 	getMollieResource,
 } from '../../utils';
-import {
-	guests,
-	products,
-	shopConfigClassic,
-	MollieTestData,
-} from '../../resources';
+import { guests, products, MollieTestData } from '../../resources';
 import {
 	baseOrder,
 	cardPayment,
@@ -31,19 +26,10 @@ import {
 
 const customer = guests[ cardPayment.gateway.country ];
 
-test.beforeAll( async ( { utils, mollieApi } ) => {
-	await utils.configureStore( shopConfigClassic );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-	await mollieApi.updateMollieGateway( 'creditcard', {
-		mollie_components_enabled: 'no',
-	} );
-} );
-
-test.afterAll( async ( { mollieApi } ) => {
-	await mollieApi.updateMollieGateway( 'creditcard', {
-		mollie_components_enabled: 'yes',
-	} );
+// Card components are disabled by the `transaction:payment-ownership` shard
+// setup (tests/qa/project-shards.ts); this spec only needs classic checkout.
+test.beforeAll( async ( { utils } ) => {
+	await utils.configureStore( { enableClassicPages: true } );
 } );
 
 test( 'C4567658 | Webhook - Payment created for another order does not change the order @Critical', async ( {

@@ -18,7 +18,7 @@ import {
 	getMollieResource,
 	getOrderStatusFromMollieStatus,
 } from '../../utils';
-import { guests, shopConfigDefault, MollieTestData } from '../../resources';
+import { guests, MollieTestData } from '../../resources';
 import {
 	baseOrder,
 	cardPayment,
@@ -26,22 +26,9 @@ import {
 	paymentMethodSwitch,
 } from './_test-data';
 
+// Card components are disabled by the `transaction:payment-ownership` shard
+// setup (tests/qa/project-shards.ts); each describe sets the checkout layout.
 const customer = guests[ cardPayment.gateway.country ];
-
-test.beforeAll( async ( { utils, mollieApi } ) => {
-	await utils.configureStore( shopConfigDefault );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-	await mollieApi.updateMollieGateway( 'creditcard', {
-		mollie_components_enabled: 'no',
-	} );
-} );
-
-test.afterAll( async ( { mollieApi } ) => {
-	await mollieApi.updateMollieGateway( 'creditcard', {
-		mollie_components_enabled: 'yes',
-	} );
-} );
 
 for ( const {
 	testId,

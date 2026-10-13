@@ -44,6 +44,7 @@ on:
           - transaction:card-disabled
           - transaction:paypal-express
           - transaction:nl
+          - transaction:payment-ownership
           - refund
           - subscription
           - bug-verification

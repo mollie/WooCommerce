@@ -86,6 +86,7 @@
     "e2e:test:payment-api:transaction:card-disabled": "npx playwright test --project \"shard:payment-api:transaction:card-disabled\" --workers=1",
     "e2e:test:payment-api:transaction:paypal-express": "npx playwright test --project \"shard:payment-api:transaction:paypal-express\" --workers=1",
     "e2e:test:payment-api:transaction:nl": "npx playwright test --project \"shard:payment-api:transaction:nl\" --workers=1",
+    "e2e:test:payment-api:transaction:payment-ownership": "npx playwright test --project \"shard:payment-api:transaction:payment-ownership\" --workers=1",
     "e2e:test:payment-api:refund": "npx playwright test --project \"shard:payment-api:refund\" --workers=4",
     "e2e:test:payment-api:subscription": "npx playwright test --project \"shard:payment-api:subscription\" --workers=1",
     "e2e:test:payment-api:bug-verification": "npx playwright test --project \"shard:payment-api:bug-verification\" --workers=1",
@@ -95,6 +96,7 @@
     "e2e:test:payment-api:multistep:non-eur-classic": "npx playwright test --project \"shard:payment-api:multistep:non-eur-classic\" --workers=1",
     "e2e:test:payment-api:multistep:card-disabled": "npx playwright test --project \"shard:payment-api:multistep:card-disabled\" --workers=1",
     "e2e:test:payment-api:multistep:paypal-express": "npx playwright test --project \"shard:payment-api:multistep:paypal-express\" --workers=1",
+    "e2e:test:payment-api:multistep:payment-ownership": "npx playwright test --project \"shard:payment-api:multistep:payment-ownership\" --workers=1",
 
     "e2e:test:order-api:frontend-ui": "npx playwright test --project \"shard:order-api:frontend-ui\" --workers=1",
     "e2e:test:order-api:phone-validation": "npx playwright test --project \"shard:order-api:phone-validation\" --workers=4",
@@ -104,6 +106,7 @@
     "e2e:test:order-api:transaction:non-eur-classic": "npx playwright test --project \"shard:order-api:transaction:non-eur-classic\" --workers=1",
     "e2e:test:order-api:transaction:card-disabled": "npx playwright test --project \"shard:order-api:transaction:card-disabled\" --workers=1",
     "e2e:test:order-api:transaction:paypal-express": "npx playwright test --project \"shard:order-api:transaction:paypal-express\" --workers=1",
+    "e2e:test:order-api:transaction:payment-ownership": "npx playwright test --project \"shard:order-api:transaction:payment-ownership\" --workers=1",
     "e2e:test:order-api:refund": "npx playwright test --project \"shard:order-api:refund\" --workers=4",
     "e2e:test:order-api:subscription": "npx playwright test --project \"shard:order-api:subscription\" --workers=1",
     "e2e:test:order-api:bug-verification": "npx playwright test --project \"shard:order-api:bug-verification\" --workers=1",
@@ -112,7 +115,8 @@
     "e2e:test:order-api:multistep:non-eur-block": "npx playwright test --project \"shard:order-api:multistep:non-eur-block\" --workers=1",
     "e2e:test:order-api:multistep:non-eur-classic": "npx playwright test --project \"shard:order-api:multistep:non-eur-classic\" --workers=1",
     "e2e:test:order-api:multistep:card-disabled": "npx playwright test --project \"shard:order-api:multistep:card-disabled\" --workers=1",
-    "e2e:test:order-api:multistep:paypal-express": "npx playwright test --project \"shard:order-api:multistep:paypal-express\" --workers=1"
+    "e2e:test:order-api:multistep:paypal-express": "npx playwright test --project \"shard:order-api:multistep:paypal-express\" --workers=1",
+    "e2e:test:order-api:multistep:payment-ownership": "npx playwright test --project \"shard:order-api:multistep:payment-ownership\" --workers=1"
   },
   "eslintConfig": {
     "extends": [

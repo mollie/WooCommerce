@@ -6,7 +6,9 @@ namespace Mollie;
 use Mollie\WooCommerce\Gateway\Refund\OrderItemsRefunder;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrder;
+use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerce\Payment\MolliePayment;
 use Mollie\WooCommerce\Payment\LineItems\LineItemProvider;
 use Mollie\WooCommerce\Payment\LineItems\OrderLines;
@@ -33,13 +35,27 @@ use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\Api;
+use Mollie\WooCommerce\SDK\SdkMollieApi;
+use Mollie\WooCommerce\SDK\MollieApi;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
+use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerce\Settings\Webhooks\WebhookTestService;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\Psr\Container\ContainerInterface;
 use Mollie\Psr\Log\LoggerInterface as Logger;
 return static function (): array {
-    return [MollieObject::class => static function (ContainerInterface $container): MollieObject {
+    return [OrderLock::class => static function (ContainerInterface $container): OrderLock {
+        global $wpdb;
+        $log = $container->get(EventLog::class);
+        \assert($log instanceof EventLog);
+        return new OrderLock($wpdb, $log, countMollieCalls: static function () use ($container): int {
+            $mollie = $container->get(MollieApi::class);
+            return $mollie instanceof SdkMollieApi ? $mollie->callsMade() : 0;
+        });
+    }, ProcessRecordStore::class => static function (): ProcessRecordStore {
+        return new ProcessRecordStore();
+    }, MollieObject::class => static function (ContainerInterface $container): MollieObject {
         $logger = $container->get(Logger::class);
         \assert($logger instanceof Logger);
         $data = $container->get('settings.data_helper');
@@ -127,7 +143,7 @@ return static function (): array {
     }, RestApi::class => static function (ContainerInterface $container): RestApi {
         $webhookTestService = $container->get(WebhookTestService::class);
         \assert($webhookTestService instanceof WebhookTestService);
-        return new RestApi($container->get(MollieOrderService::class), $container->get(Logger::class), $webhookTestService, $container->get(WebhookSecret::class));
+        return new RestApi($container->get(MollieOrderService::class), $container->get(Logger::class), $webhookTestService, $container->get(WebhookSecret::class), $container->get(EventLog::class), $container->get(ResolveExpressPayment::class));
     }, WebhookHandler::class => static function (ContainerInterface $c): WebhookHandler {
         return new WebhookHandler($c->get(Logger::class), $c->get('settings.settings_helper'), $c->get('shared.plugin_id'), $c->get('settings.data_helper'));
     }];

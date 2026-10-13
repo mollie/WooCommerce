@@ -8,6 +8,7 @@ use Mollie\Inpsyde\PaymentGateway\PaymentGatewayModule;
 use Mollie\WooCommerce\Activation\ActivationModule;
 use Mollie\WooCommerce\Assets\AssetsModule;
 use Mollie\WooCommerce\Components\ComponentsModule;
+use Mollie\WooCommerce\ExpressComponent\ExpressComponentModule;
 use Mollie\WooCommerce\Gateway\GatewayModule;
 use Mollie\WooCommerce\Gateway\Voucher\VoucherModule;
 use Mollie\WooCommerce\Log\LogModule;
@@ -22,5 +23,5 @@ use Mollie\WooCommerce\Subscription\SubscriptionModule;
 use Mollie\WooCommerce\Tracks\TracksModule;
 use Mollie\WooCommerce\Uninstall\UninstallModule;
 return static function (): iterable {
-    return [new ActivationModule(), new NoticeModule(), new SharedModule(), new PaymentGatewayModule(), new SDKModule(), new SettingsModule(), new LogModule('mollie-payments-for-woocommerce-'), new AssetsModule(), new GatewayModule(), new VoucherModule(), new PaymentModule(), new SubscriptionModule(), new MerchantCaptureModule(), new ComponentsModule(), new TracksModule(), new UninstallModule(), new PrivacyModule()];
+    return [new ActivationModule(), new NoticeModule(), new SharedModule(), new PaymentGatewayModule(), new SDKModule(), new SettingsModule(), new LogModule('mollie-payments-for-woocommerce-'), new AssetsModule(), new GatewayModule(), new VoucherModule(), new PaymentModule(), new SubscriptionModule(), new MerchantCaptureModule(), new ComponentsModule(), new ExpressComponentModule(), new TracksModule(), new UninstallModule(), new PrivacyModule()];
 };

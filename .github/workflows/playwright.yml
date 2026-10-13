@@ -43,7 +43,8 @@ on:
           - transaction:non-eur-classic
           - transaction:card-disabled
           - transaction:paypal-express
-          - transaction:nl
+          - transaction:nl-block
+          - transaction:nl-classic
           - transaction:payment-ownership
           - refund
           - subscription

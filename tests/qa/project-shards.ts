@@ -57,10 +57,13 @@ const SETUP_STATES = {
 		testMatch: /03-mollie\.setup\.ts/,
 		grep: /setup:mollie:card-disabled;/,
 	},
-	// Layout is toggled by the spec itself (nl-classic-checkout)
 	'mollie:nl': {
 		testMatch: /(02-woocommerce|03-mollie)\.setup\.ts/,
 		grep: /setup:checkout:block;|setup:mollie:nl;/,
+	},
+	'mollie:nl:classic': {
+		testMatch: /(02-woocommerce|03-mollie)\.setup\.ts/,
+		grep: /setup:checkout:classic;|setup:mollie:nl;/,
 	},
 	'mollie:classic:subscription': {
 		testMatch: /(02-woocommerce|03-mollie)\.setup\.ts/,
@@ -176,11 +179,18 @@ const shards: Shard[] = [
 		state: 'mollie:block',
 		testMatch: /05-transaction\/paypal-express\.spec\.ts/,
 	},
-	// Billink needs an NL merchant profile
+	// Billink needs an NL merchant profile. Split by layout: pay-for-order
+	// uses /checkout/order-pay/, which 404s once classic pages are active.
 	{
-		shard: 'transaction:nl',
+		shard: 'transaction:nl-block',
 		state: 'mollie:nl',
-		testMatch: /05-transaction\/nl-.*\.spec\.ts/,
+		testMatch: /05-transaction\/nl-block\.spec\.ts/,
+		paymentOnly: true,
+	},
+	{
+		shard: 'transaction:nl-classic',
+		state: 'mollie:nl:classic',
+		testMatch: /05-transaction\/nl-classic\.spec\.ts/,
 		paymentOnly: true,
 	},
 	// Payment attempts vs. order ownership; layout is toggled by each describe
@@ -325,7 +335,7 @@ export function buildShards( api: ApiMethod ): ShardProject[] {
 			};
 
 			// NL shards query Mollie with the NL profile's API key
-			const isNl = state === 'mollie:nl';
+			const isNl = state.startsWith( 'mollie:nl' );
 			if ( api === 'order' || multistep || isNl ) {
 				project.use = {
 					...( api === 'order' ? { mollieApiMethod: 'order' } : {} ),

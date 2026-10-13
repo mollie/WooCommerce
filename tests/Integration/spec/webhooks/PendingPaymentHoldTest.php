@@ -1,5 +1,4 @@
 <?php
-// kb-active
 
 declare(strict_types=1);
 
@@ -36,7 +35,7 @@ class PendingPaymentHoldTest extends ExpressFlowTestCase
         $this->setUpExpressCheckout();
         $this->recordWebhookHooks();
         // Every method of these scenarios is active at Mollie, so its gateway registers.
-        $this->fakeMollie()->setMethods(['paybybank', 'ideal', 'banktransfer']);
+        $this->fakeMollie()->setMethods(['paybybank', 'wero', 'ideal', 'banktransfer']);
     }
 
     public function tearDown(): void
@@ -50,18 +49,19 @@ class PendingPaymentHoldTest extends ExpressFlowTestCase
 
     /**
      * Scenario: the order waits on-hold once Mollie reports the payment as pending
-     *   Given a Pay by Bank order waiting for its payment
+     *   Given a Pay by Bank or Wero order waiting for its payment
      *   And the payment is pending at Mollie
      *   When Mollie calls the webhook
      *   Then the order is on-hold, with the note of a payment awaiting confirmation
      *   And WooCommerce no longer offers the customer to pay it
      *
      * @test
+     * @dataProvider heldMethods
      * @covers \Mollie\WooCommerce\Payment\MollieOrderService::doPaymentForOrder
      */
-    public function it_puts_the_order_on_hold_when_the_payment_is_pending(): void
+    public function it_puts_the_order_on_hold_when_the_payment_is_pending(string $method): void
     {
-        [$order, $payment] = $this->orderWithSeededPayment('paybybank', 'pending');
+        [$order, $payment] = $this->orderWithSeededPayment($method, 'pending');
 
         $this->assertSame(200, $this->deliverWebhook($payment['id']));
 
@@ -71,6 +71,17 @@ class PendingPaymentHoldTest extends ExpressFlowTestCase
         $this->assertCount(1, $this->notesContaining($after, 'payment pending'));
         $this->assertFalse($after->needs_payment());
         $this->assertArrayNotHasKey('pay', wc_get_account_orders_actions($after));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public function heldMethods(): array
+    {
+        return [
+            'Pay by Bank' => ['paybybank'],
+            'Wero' => ['wero'],
+        ];
     }
 
     /**

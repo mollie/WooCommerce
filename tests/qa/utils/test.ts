@@ -39,7 +39,7 @@ import {
 	Cart,
 } from './frontend';
 import { MollieApi, Utils } from '.';
-import { MollieSettings } from '../resources';
+import { MollieSettings, mollieApiKeys } from '../resources';
 
 type TestBaseExtend = BaseExtend & {
 	recordVideoOptions: {
@@ -55,6 +55,8 @@ type TestBaseExtend = BaseExtend & {
 	mollieSettingsGateway: MollieSettingsGateway;
 	mollieApiMethod?: MollieSettings.ApiMethod;
 	isMultistepCheckout?: boolean;
+	// Mollie merchant profile whose API key the shard uses (see mollieApiKeys)
+	mollieProfile: 'default' | 'nl';
 
 	// Frontend fixtures
 	visitorPage: Page;
@@ -112,11 +114,12 @@ const test = base.extend< TestBaseExtend >( {
 	mollieApi: async ( { request, requestUtils }, use ) => {
 		await use( new MollieApi( { request, requestUtils } ) );
 	},
-	mollieClientApi: async ( {}, use ) => {
+	mollieProfile: [ 'default', { option: true } ],
+	mollieClientApi: async ( { mollieProfile }, use ) => {
 		await use(
 			new MollieClientApi( {
 				security: {
-					apiKey: process.env.MOLLIE_TEST_API_KEY,
+					apiKey: mollieApiKeys[ mollieProfile ].testApiKey,
 				},
 			} )
 		);

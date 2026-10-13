@@ -183,6 +183,13 @@ const shards: Shard[] = [
 		testMatch: /05-transaction\/nl-.*\.spec\.ts/,
 		paymentOnly: true,
 	},
+	// Payment attempts vs. order ownership; layout is toggled by each describe
+	{
+		shard: 'transaction:payment-ownership',
+		state: 'mollie:card-disabled',
+		testMatch:
+			/(05-transaction\/payment-method-switch|08-bug-verification\/webhook-order-ownership)\.spec\.ts/,
+	},
 
 	// --- Refund ---
 	{
@@ -200,10 +207,11 @@ const shards: Shard[] = [
 	},
 
 	// --- Bug verification (probe plugin, shared product stock) ---
+	// webhook-order-ownership runs in transaction:payment-ownership
 	{
 		shard: 'bug-verification',
 		state: 'mollie:block',
-		testMatch: /08-bug-verification\/.*\.spec\.ts/,
+		testMatch: /08-bug-verification\/piwoo-.*\.spec\.ts/,
 	},
 
 	// --- Multistep ---
@@ -245,6 +253,12 @@ const shards: Shard[] = [
 		shard: 'multistep:paypal-express',
 		state: 'mollie:block:multistep',
 		testMatch: /05-transaction\/paypal-express\.spec\.ts/,
+		...multistepFilter,
+	},
+	{
+		shard: 'multistep:payment-ownership',
+		state: 'mollie:card-disabled:multistep',
+		testMatch: /05-transaction\/payment-method-switch\.spec\.ts/,
 		...multistepFilter,
 	},
 ];
@@ -310,10 +324,13 @@ export function buildShards( api: ApiMethod ): ShardProject[] {
 				...rest,
 			};
 
-			if ( api === 'order' || multistep ) {
+			// NL shards query Mollie with the NL profile's API key
+			const isNl = state === 'mollie:nl';
+			if ( api === 'order' || multistep || isNl ) {
 				project.use = {
 					...( api === 'order' ? { mollieApiMethod: 'order' } : {} ),
 					...( multistep ? { isMultistepCheckout: true } : {} ),
+					...( isNl ? { mollieProfile: 'nl' } : {} ),
 				};
 			}
 

@@ -46,6 +46,7 @@ class SharedDataDictionary
         'Mollie_WC_Gateway_Wero',
         'Mollie_WC_Gateway_Googlepay',
         'Mollie_WC_Gateway_Billink',
+        'Mollie_WC_Gateway_Expresscheckout',
     ];
 
     public const MOLLIE_OPTIONS_NAMES = [

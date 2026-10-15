@@ -10,6 +10,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\CartFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\CheckoutForm;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactory;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
@@ -33,6 +34,8 @@ final class StartExpressOrder
 
     private const HTTP_CONFLICT = 409;
 
+    private const HTTP_BAD_REQUEST = 400;
+
     private const REFUSALS_THAT_SPEND_SESSION = ['cart_changed', 'order_not_payable'];
 
     public function __construct(
@@ -48,14 +51,18 @@ final class StartExpressOrder
     ) {
     }
 
-    public function start(): ExpressOrderResult
+    /**
+     * @param CheckoutForm|null $form The checkout form beside the wallet; checked before an order is created.
+     */
+    public function start(?CheckoutForm $form = null): ExpressOrderResult
     {
+        $form = $form ?? CheckoutForm::empty();
         $started = microtime(true);
         $this->log->step(self::FLOW . '.started', ['entry' => 'submit']);
         $result = null;
         $endedBadly = true;
         try {
-            $result = $this->startOrRefuse($endedBadly);
+            $result = $this->startOrRefuse($form, $endedBadly);
 
             return $result;
         } finally {
@@ -70,7 +77,7 @@ final class StartExpressOrder
     /**
      * @param-out bool $endedBadly
      */
-    private function startOrRefuse(bool &$endedBadly): ExpressOrderResult
+    private function startOrRefuse(CheckoutForm $form, bool &$endedBadly): ExpressOrderResult
     {
         $session = $this->orderFacts->rememberedSession();
         if ($session === null) {
@@ -80,8 +87,8 @@ final class StartExpressOrder
         }
 
         try {
-            $result = $this->lock->withLock($session->expressRef(), function () use ($session): ExpressOrderResult {
-                return $this->startLocked($session);
+            $result = $this->lock->withLock($session->expressRef(), function () use ($session, $form): ExpressOrderResult {
+                return $this->startLocked($session, $form);
             });
             $endedBadly = false;
 
@@ -91,7 +98,7 @@ final class StartExpressOrder
         }
     }
 
-    private function startLocked(RememberedSession $session): ExpressOrderResult
+    private function startLocked(RememberedSession $session, CheckoutForm $form): ExpressOrderResult
     {
         $order = $this->orderFacts->orderByRef($session->expressRef());
         $existing = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
@@ -112,7 +119,7 @@ final class StartExpressOrder
             return ExpressOrderResult::ok();
         }
 
-        return $this->create($session, $cart);
+        return $this->create($session, $cart, $form);
     }
 
     /**
@@ -136,11 +143,15 @@ final class StartExpressOrder
         ]);
     }
 
-    private function create(RememberedSession $session, CartFacts $cart): ExpressOrderResult
+    private function create(RememberedSession $session, CartFacts $cart, CheckoutForm $form): ExpressOrderResult
     {
         $reason = $this->factory->invalidCartReason();
         if ($reason !== null) {
             return $this->refuse($session, 'cart_invalid', self::HTTP_CONFLICT, $reason);
+        }
+        $reason = $form->invalidReason();
+        if ($reason !== null) {
+            return $this->refuse($session, 'checkout_invalid', self::HTTP_BAD_REQUEST, $reason);
         }
 
         $total = $cart->total();
@@ -151,7 +162,7 @@ final class StartExpressOrder
             }
             $mode = $this->expressFacts->shopFacts()->mode();
             [$wallet, $gatewayId] = $this->provisionalWallet();
-            $order = $this->factory->create($this->orderFacts->shopperDetails());
+            $order = $this->factory->create($this->orderFacts->shopperDetails(), $form);
             $priced = StartOrderDecision::admitCreatedOrder($this->orderFacts->total($order), $total);
             if ($priced instanceof Refuse) {
                 $this->factory->delete($order);

@@ -1,7 +1,7 @@
 /**
  * While ready it remounts with a new session when the price settles on a new value. A session
  * about to expire is replaced once; after that the component is idle until the shopper is back.
- * A failure shows nothing and leaves the normal payment methods alone.
+ * A failure shows a message in the payment method's box; the other payment methods still work.
  */
 /**
  * WordPress dependencies
@@ -15,15 +15,30 @@ import { getSetting } from '@woocommerce/settings';
 /**
  * Internal dependencies
  */
+import {
+	formData,
+	formIsValid,
+	showFormErrors,
+	useFormIsValid,
+} from './checkoutForm';
 import { expressReadiness } from './expressReadiness';
 import { MollieCheckoutManager } from './MollieCheckoutManager';
 import { ORDER_ROUTE, SESSION_ROUTE, postToStore } from './expressTransport';
+import {
+	usePlaceOrderButtonHidden,
+	useRefusePlaceOrder,
+} from './placeOrderButton';
 
 const CART_STORE = 'wc/store/cart';
 const SETTLE_MS = 1000;
 /** A session is replaced this long before it expires. */
 const EXPIRY_MARGIN_MS = 30000;
 const SHOPPER_IS_BACK = [ 'pointermove', 'pointerdown', 'keydown', 'focus' ];
+/**
+ * The cart store has the address before the store has saved it: a session asked for in between is
+ * refused as shipping_incomplete. Asked again after these delays, then given up.
+ */
+const SERVER_CATCH_UP_MS = [ 1000, 2000, 4000 ];
 /** Refusals after which one fresh session is tried. */
 const REMOUNT_AFTER = [ 'cart_changed', 'session_expired', 'session_missing' ];
 const ADDRESS_FIELDS = [
@@ -64,7 +79,7 @@ const isSubscription = ( item ) =>
 	Boolean( item?.extensions?.subscriptions?.billing_period );
 
 /**
- * Whether the cart can be paid this way at all; Blocks hides the express area otherwise.
+ * Whether the cart can be paid this way at all; Blocks does not list the method otherwise.
  *
  * @param {Object} args Blocks' canMakePayment argument.
  * @return {boolean} Whether to offer the method.
@@ -109,7 +124,9 @@ function readCart( select ) {
 				( pack.shipping_rates ?? [] ).some( ( rate ) => rate.selected )
 			),
 		// A cost the store has actually worked out for this address, free shipping included.
-		hasShippingAmount: totals.total_shipping !== undefined && totals.total_shipping !== null,
+		hasShippingAmount:
+			totals.total_shipping !== undefined &&
+			totals.total_shipping !== null,
 		isCalculating:
 			store.isCustomerDataUpdating() ||
 			store.isShippingRateBeingSelected() ||
@@ -177,11 +194,18 @@ function focusShippingAddress() {
 
 export default function MollieExpressComponent( {
 	data,
-	onClick,
-	onClose,
-	onError,
+	eventRegistration,
+	emitResponse,
 } ) {
+	usePlaceOrderButtonHidden();
+	useRefusePlaceOrder(
+		eventRegistration,
+		emitResponse,
+		data.messages.useExpressButtons
+	);
+
 	const live = useSelect( ( select ) => readCart( select ), [] );
+	const formValid = useFormIsValid();
 	const settled = useSettled( live.status, live.fingerprint );
 
 	const [ failedAt, setFailedAt ] = useState( null );
@@ -190,15 +214,12 @@ export default function MollieExpressComponent( {
 	const [ idle, setIdle ] = useState( false );
 	const [ notice, setNotice ] = useState( '' );
 	const mountRef = useRef( null );
-	const interacted = useRef( false );
 	const sessionIsAReplacement = useRef( false );
+	const catchUps = useRef( 0 );
 	// The submit handler outlives renders: it reads the latest props and price from here.
 	const latest = useRef( {} );
 	latest.current = {
 		data,
-		onClick,
-		onClose,
-		onError,
 		fingerprint: settled.fingerprint,
 	};
 
@@ -221,11 +242,20 @@ export default function MollieExpressComponent( {
 		event.defer();
 
 		const current = latest.current;
-		interacted.current = true;
 		setNotice( '' );
-		current.onClick?.();
 
-		const answer = await postToStore( current.data, ORDER_ROUTE );
+		// The buttons are covered while the form is invalid; this catches a form that just became so.
+		if ( ! formIsValid() ) {
+			event.reject( current.data.messages.checkForm );
+			showFormErrors();
+			return;
+		}
+
+		const answer = await postToStore(
+			current.data,
+			ORDER_ROUTE,
+			formData()
+		);
 		if ( answer.ok ) {
 			// Nothing is passed: details given to resolve() would override the wallet's.
 			event.resolve();
@@ -234,10 +264,6 @@ export default function MollieExpressComponent( {
 
 		const message = answer.message || current.data.messages.unavailable;
 		event.reject( message );
-		current.onClose?.();
-		if ( answer.code === 'network' ) {
-			current.onError?.( message );
-		}
 		if ( answer.code === 'shipping_incomplete' ) {
 			setRefusedShippingAt( current.fingerprint );
 			return;
@@ -257,6 +283,7 @@ export default function MollieExpressComponent( {
 
 		let cancelled = false;
 		let expiry = null;
+		let catchUp = null;
 		const fingerprint = settled.fingerprint;
 		const fail = () => {
 			if ( cancelled ) {
@@ -264,11 +291,6 @@ export default function MollieExpressComponent( {
 			}
 			manager.unmount();
 			setFailedAt( fingerprint );
-			if ( interacted.current ) {
-				latest.current.onError?.(
-					latest.current.data.messages.unavailable
-				);
-			}
 		};
 
 		( async () => {
@@ -283,10 +305,24 @@ export default function MollieExpressComponent( {
 			if ( cancelled ) {
 				return;
 			}
+			const delay = SERVER_CATCH_UP_MS[ catchUps.current ];
+			if (
+				! session.ok &&
+				session.code === 'shipping_incomplete' &&
+				delay !== undefined
+			) {
+				catchUps.current += 1;
+				catchUp = setTimeout(
+					() => setAttempt( ( value ) => value + 1 ),
+					delay
+				);
+				return;
+			}
 			if ( ! session.ok || ! session.data.clientAccessToken ) {
 				fail();
 				return;
 			}
+			catchUps.current = 0;
 			try {
 				const mounted = await manager.mount(
 					session.data.clientAccessToken,
@@ -318,12 +354,14 @@ export default function MollieExpressComponent( {
 		return () => {
 			cancelled = true;
 			clearTimeout( expiry );
+			clearTimeout( catchUp );
 			manager.unmount();
 		};
 	}, [ ready, settled.fingerprint, attempt ] );
 
 	useEffect( () => {
 		sessionIsAReplacement.current = false;
+		catchUps.current = 0;
 		setIdle( false );
 	}, [ settled.fingerprint ] );
 
@@ -346,8 +384,18 @@ export default function MollieExpressComponent( {
 
 	useEffect( () => () => managerRef.current.unmount(), [] );
 
-	if ( settled.status === 'hidden' || ( failed && ! blocked ) ) {
+	if ( settled.status === 'hidden' ) {
 		return null;
+	}
+
+	if ( failed && ! blocked ) {
+		return (
+			<div className="mollie-express-component">
+				<p className="mollie-express-component__notice" role="alert">
+					{ data.messages.unavailable }
+				</p>
+			</div>
+		);
 	}
 
 	if ( blocked ) {
@@ -384,11 +432,33 @@ export default function MollieExpressComponent( {
 					{ notice }
 				</p>
 			) }
-			<div
-				ref={ mountRef }
-				className="mollie-express-component__mount"
-				style={ { minHeight: HEIGHT } }
-			/>
+			<div style={ { position: 'relative' } }>
+				<div
+					ref={ mountRef }
+					className="mollie-express-component__mount"
+					style={ { minHeight: HEIGHT } }
+				/>
+				{ ! formValid && (
+					// Covers the wallet buttons, which stay mounted: a click shows the form's errors, as Place order would.
+					<button
+						type="button"
+						className="mollie-express-component__form-gate"
+						aria-label={ data.messages.checkForm }
+						onClick={ showFormErrors }
+						style={ {
+							position: 'absolute',
+							inset: 0,
+							width: '100%',
+							height: '100%',
+							zIndex: 1,
+							padding: 0,
+							border: 0,
+							background: 'transparent',
+							cursor: 'pointer',
+						} }
+					/>
+				) }
+			</div>
 		</div>
 	);
 }

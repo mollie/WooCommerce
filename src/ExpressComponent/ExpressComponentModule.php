@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent;
 
 use Inpsyde\Modularity\Module\ExecutableModule;
+use Inpsyde\Modularity\Module\ExtendingModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
@@ -18,7 +19,7 @@ use Mollie\WooCommerce\ExpressComponent\Flow\ExpireAbandonedExpressOrders;
 use Mollie\WooCommerce\Log\EventLog;
 use Psr\Container\ContainerInterface;
 
-class ExpressComponentModule implements ServiceModule, ExecutableModule
+class ExpressComponentModule implements ServiceModule, ExecutableModule, ExtendingModule
 {
     use ModuleClassNameIdTrait;
 
@@ -31,6 +32,17 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         }
 
         return $services();
+    }
+
+    public function extensions(): array
+    {
+        static $extensions;
+
+        if ($extensions === null) {
+            $extensions = require_once __DIR__ . '/inc/extensions.php';
+        }
+
+        return $extensions();
     }
 
     public function run(ContainerInterface $container): bool

@@ -30,7 +30,7 @@ class ExpressAssets
 
     public function enqueue(): void
     {
-        if (!$this->isBlockCheckout()) {
+        if (!self::isBlockCheckoutPage()) {
             return;
         }
         $settings = $this->facts->settings();
@@ -54,7 +54,7 @@ class ExpressAssets
         wp_enqueue_script(self::HANDLE);
     }
 
-    private function isBlockCheckout(): bool
+    public static function isBlockCheckoutPage(): bool
     {
         return is_checkout()
             && !is_wc_endpoint_url()

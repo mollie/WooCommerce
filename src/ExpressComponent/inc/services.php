@@ -11,6 +11,7 @@ use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionBudget;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressAssets;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressCheckoutGate;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressReturnHandler;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
@@ -166,6 +167,12 @@ return static function (): array {
             assert($blocksData instanceof ExpressBlocksData);
 
             return new ExpressAssets($facts, $blocksData);
+        },
+        ExpressCheckoutGate::class => static function (ContainerInterface $container): ExpressCheckoutGate {
+            $facts = $container->get(ExpressFactsBuilder::class);
+            assert($facts instanceof ExpressFactsBuilder);
+
+            return new ExpressCheckoutGate($facts);
         },
         ExpressRoutes::class => static function (ContainerInterface $container): ExpressRoutes {
             return new ExpressRoutes(

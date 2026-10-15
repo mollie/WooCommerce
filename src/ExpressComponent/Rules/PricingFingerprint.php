@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules;
 
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
-
 /**
  * A session's amount is fixed at creation, so any change here needs a new session.
  */
@@ -15,7 +13,6 @@ final class PricingFingerprint
     {
         $total = $cart->total();
         $shipping = $cart->shipping();
-
         $parts = [
             'cart' => $cart->cartHash(),
             'total' => $total === null ? null : $total->minorUnits(),

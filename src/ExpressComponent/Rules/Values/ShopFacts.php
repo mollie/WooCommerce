@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
 final class ShopFacts
@@ -14,27 +13,17 @@ final class ShopFacts
      * @param list<string> $expressCheckoutGatewayIds Express button on the checkout turned on.
      * @param list<string> $surchargedGatewayIds The merchant set a surcharge on the payment method.
      */
-    public function __construct(
-        private string $mode,
-        private bool $isHttps,
-        private array $registeredGatewayIds,
-        private array $enabledGatewayIds,
-        private array $activeMollieMethods,
-        private array $expressCheckoutGatewayIds,
-        private array $surchargedGatewayIds = []
-    ) {
+    public function __construct(private string $mode, private bool $isHttps, private array $registeredGatewayIds, private array $enabledGatewayIds, private array $activeMollieMethods, private array $expressCheckoutGatewayIds, private array $surchargedGatewayIds = [])
+    {
     }
-
     public function mode(): string
     {
         return $this->mode;
     }
-
     public function isHttps(): bool
     {
         return $this->isHttps;
     }
-
     /**
      * @return list<string>
      */
@@ -42,7 +31,6 @@ final class ShopFacts
     {
         return $this->registeredGatewayIds;
     }
-
     /**
      * @return list<string>
      */
@@ -50,7 +38,6 @@ final class ShopFacts
     {
         return $this->enabledGatewayIds;
     }
-
     /**
      * @return list<string>
      */
@@ -58,7 +45,6 @@ final class ShopFacts
     {
         return $this->activeMollieMethods;
     }
-
     /**
      * @return list<string>
      */
@@ -66,7 +52,6 @@ final class ShopFacts
     {
         return $this->expressCheckoutGatewayIds;
     }
-
     /**
      * @return list<string>
      */

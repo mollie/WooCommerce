@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Rules;
 
 final class WebhookGuards
@@ -10,25 +9,15 @@ final class WebhookGuards
     public const SUPERSEDED = 'superseded';
     public const SETTLED = 'settled';
     public const PROCESS = 'process';
-
     // Not 'expired': onWebhookExpired handles an untracked payment itself.
     private const TERMINAL_STATUSES = ['failed', 'canceled', 'cancelled'];
-
-    public static function needsPayment(
-        bool $paidByOtherGateway,
-        bool $paidAndProcessed,
-        bool $authorized,
-        bool $wcNeedsPayment,
-        bool $onHoldAsInitialStatus
-    ): bool {
-
+    public static function needsPayment(bool $paidByOtherGateway, bool $paidAndProcessed, bool $authorized, bool $wcNeedsPayment, bool $onHoldAsInitialStatus): bool
+    {
         if ($paidByOtherGateway) {
-            return false;
+            return \false;
         }
-
         return !$paidAndProcessed || $authorized || $wcNeedsPayment || $onHoldAsInitialStatus;
     }
-
     /**
      * An untracked payment acts on the order only when Mollie's record of it names this order,
      * and even then never with a terminal status.
@@ -36,20 +25,12 @@ final class WebhookGuards
     public static function superseded(bool $tracksThisPayment, bool $createdForOrder, string $paymentStatus): bool
     {
         if ($tracksThisPayment) {
-            return false;
+            return \false;
         }
-
-        return !$createdForOrder || in_array($paymentStatus, self::TERMINAL_STATUSES, true);
+        return !$createdForOrder || in_array($paymentStatus, self::TERMINAL_STATUSES, \true);
     }
-
-    public static function decide(
-        bool $isMollieGateway,
-        bool $tracksThisPayment,
-        bool $createdForOrder,
-        string $paymentStatus,
-        bool $needsPayment
-    ): string {
-
+    public static function decide(bool $isMollieGateway, bool $tracksThisPayment, bool $createdForOrder, string $paymentStatus, bool $needsPayment): string
+    {
         if (!$isMollieGateway) {
             return self::NOT_OURS;
         }
@@ -59,7 +40,6 @@ final class WebhookGuards
         if (!$needsPayment) {
             return self::SETTLED;
         }
-
         return self::PROCESS;
     }
 }

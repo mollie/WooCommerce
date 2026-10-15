@@ -36,9 +36,10 @@ class ExpressOrderFactory
 
     /**
      * @param array{billing: array<string, string>, shipping: array<string, string>} $details
+     * @param CheckoutForm|null $form The order note and additional fields the shopper entered.
      * @throws RuntimeException When WooCommerce did not create the order; nothing is left behind.
      */
-    public function create(array $details): WC_Order
+    public function create(array $details, ?CheckoutForm $form = null): WC_Order
     {
         $session = WC()->session;
         $this->releaseStockHeldByShoppersPendingOrder($session);
@@ -70,6 +71,10 @@ class ExpressOrderFactory
             }
             $this->holdStockForShoppersPendingOrderAgain();
             throw new RuntimeException('WooCommerce did not create the express order.');
+        }
+        if ($form !== null) {
+            $form->writeTo($order);
+            $order->save();
         }
         // Keeps cleanup scheduled.
         $this->pending->remember();

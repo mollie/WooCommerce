@@ -21,4 +21,5 @@ class Constants
     public const BIZUM = 'bizum';
     public const WERO = 'wero';
     public const BILLINK = 'billink';
+    public const EXPRESSCHECKOUT = 'expresscheckout';
 }

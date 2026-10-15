@@ -10,6 +10,7 @@ use Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult;
 use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressOrder;
 use Mollie\WooCommerce\ExpressComponent\Flow\StartExpressSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Admission;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\CheckoutForm;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\FormPaymentMethod;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
@@ -68,6 +69,11 @@ class ExpressRoutes
                         'required' => false,
                         'sanitize_callback' => 'sanitize_text_field',
                     ],
+                    // The rest of the checkout form, as Place order would send it to the Store API.
+                    'customer_note' => ['type' => 'string', 'required' => false],
+                    'additional_fields' => ['type' => 'object', 'required' => false],
+                    'billing_address' => ['type' => 'object', 'required' => false],
+                    'shipping_address' => ['type' => 'object', 'required' => false],
                 ],
             ],
         ]);
@@ -112,7 +118,7 @@ class ExpressRoutes
 
     public function startOrder(WP_REST_Request $request): WP_REST_Response
     {
-        $result = FormPaymentMethod::setAsideDuring(fn (): ExpressOrderResult => $this->startOrder->start());
+        $result = FormPaymentMethod::setAsideDuring(fn (): ExpressOrderResult => $this->startOrder->start(CheckoutForm::fromRequest($request)));
         if ($result->isOk()) {
             $data = ['ok' => true];
         } else {
@@ -185,6 +191,10 @@ class ExpressRoutes
             ),
             'budget_exhausted' => __(
                 'Express checkout was started too often. Please wait a few minutes, or use the regular checkout.',
+                'mollie-payments-for-woocommerce'
+            ),
+            'checkout_invalid' => __(
+                'Please check the checkout form before paying.',
                 'mollie-payments-for-woocommerce'
             ),
             'order_not_payable' => __(

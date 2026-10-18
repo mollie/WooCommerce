@@ -1081,6 +1081,6 @@ class MollieOrderService
             $this->logger->debug(__METHOD__ . ": payment $transactionID not found.", [true]);
             return '';
         }
-        return $payment->redirectUrl;
+        return $payment->redirectUrl ?? '';
     }
 }

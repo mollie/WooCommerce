@@ -724,6 +724,43 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
         $this->assertSame($before, $after);
     }
 
+    /**
+     * Scenario: one cleanup run keeps up with the orders one address may start in a window
+     *   Given one caller address
+     *   And as many shoppers behind it as its budget of new sessions allows, each leaving a pending express order
+     *   And every session expired, and expiry and grace have passed
+     *   When the cleanup action runs once
+     *   Then no order is still pending
+     *
+     * @test
+     */
+    public function it_cancels_in_one_run_every_order_one_address_may_start_in_a_window(): void
+    {
+        $_SERVER['REMOTE_ADDR'] = '203.0.113.7';
+        try {
+            $orders = [$this->expressOrder()];
+            $perAddress = (int) $this->container->get('express.config')['maxNewSessionsPerAddress'];
+            while (count($orders) < $perAddress) {
+                $orders[] = $this->expressOrderOfAnotherShopper();
+            }
+        } finally {
+            unset($_SERVER['REMOTE_ADDR']);
+        }
+        $latestExpiry = 0;
+        foreach ($orders as $order) {
+            $this->fakeMollie()->expireSession($order['session']);
+            $latestExpiry = max($latestExpiry, $order['expiresAt']);
+        }
+        $this->clock->set($latestExpiry + $this->graceSeconds + 1);
+
+        $this->runCleanup();
+
+        $pending = array_filter($orders, static function (array $order): bool {
+            return wc_get_order($order['id'])->get_status() === 'pending';
+        });
+        $this->assertCount(0, $pending, sprintf('%d of %d orders from one address are still pending.', count($pending), count($orders)));
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────

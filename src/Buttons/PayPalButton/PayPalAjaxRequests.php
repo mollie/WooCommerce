@@ -14,6 +14,11 @@ use WC_Data_Exception;
 class PayPalAjaxRequests
 {
     /**
+     * Product types of WooCommerce Subscriptions
+     */
+    private const SUBSCRIPTION_PRODUCT_TYPES = ['subscription', 'variable-subscription', 'subscription_variation'];
+
+    /**
      * @var mixed
      */
     protected $gateway;
@@ -80,10 +85,16 @@ class PayPalAjaxRequests
         }
         $payPalRequestDataObject->orderData('productDetail');
 
+        $product = $this->purchasableProduct($payPalRequestDataObject);
+        if (!$product) {
+            // wp_send_json_error() ends the request
+            wp_send_json_error($this->paymentNotCreatedMessage());
+        }
+
         $order = wc_create_order();
         $order->add_product(
-            wc_get_product($payPalRequestDataObject->productId()),
-            $payPalRequestDataObject->productQuantity()
+            $product,
+            (int) $payPalRequestDataObject->productQuantity()
         );
 
         $surcharge = new Surcharge();
@@ -129,6 +140,9 @@ class PayPalAjaxRequests
     {
         if (!$this->isNonceValid()) {
             return;
+        }
+        if (!$this->cartHasOnlyVirtualProducts()) {
+            wp_send_json_error($this->paymentNotCreatedMessage());
         }
 
         $lockKey = 'mollie_paypal_cart_order_lock';
@@ -180,17 +194,103 @@ class PayPalAjaxRequests
         }
         $payPalRequestDataObject = $this->payPalDataObjectHttp();
         $payPalRequestDataObject->orderData('productDetail');
+        $product = $this->purchasableProduct($payPalRequestDataObject);
+        if (!$product) {
+            wp_send_json_error('product not purchasable');
+        }
         $order = new WCOrderCalculator();
         $order->set_currency(get_woocommerce_currency());
         $order->set_prices_include_tax('yes' === get_option('woocommerce_prices_include_tax'));
         $order->add_product(
-            wc_get_product($payPalRequestDataObject->productId()),
-            $payPalRequestDataObject->productQuantity()
+            $product,
+            (int) $payPalRequestDataObject->productQuantity()
         );
 
         $updatedAmount = $order->calculate_totals();
 
         wp_send_json_success($updatedAmount);
+    }
+
+    /**
+     * Applies the purchasability rules of WC_Cart::add_to_cart() to the requested
+     * product (publication status, stock, quantity, rules of other plugins), and
+     * accepts only the products the product page button is shown for
+     * (PayPalExpressButton): products without shipping that are not subscriptions.
+     */
+    protected function purchasableProduct(PayPalDataObjectHttp $payPalRequestDataObject): ?\WC_Product
+    {
+        if ($payPalRequestDataObject->hasErrors()) {
+            return null;
+        }
+
+        $productId = absint($payPalRequestDataObject->productId());
+        $quantity = (int) $payPalRequestDataObject->productQuantity();
+        if ($productId <= 0 || $quantity < 1) {
+            return null;
+        }
+
+        $product = wc_get_product($productId);
+        if (!$product instanceof \WC_Product || $product->is_type('variable')) {
+            return null;
+        }
+
+        if (!$product->is_virtual() || $product->is_type(self::SUBSCRIPTION_PRODUCT_TYPES)) {
+            return null;
+        }
+
+        // For variations this also covers the parent's publication status
+        if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->has_enough_stock($quantity)) {
+            return null;
+        }
+
+        if ($product->is_sold_individually() && $quantity > 1) {
+            return null;
+        }
+
+        $isVariation = $product->is_type('variation');
+        $passedValidation = apply_filters(
+            'woocommerce_add_to_cart_validation',
+            true,
+            $isVariation ? $product->get_parent_id() : $productId,
+            $quantity,
+            $isVariation ? $productId : 0,
+            $isVariation && $product instanceof \WC_Product_Variation ? $product->get_variation_attributes() : []
+        );
+
+        return $passedValidation ? $product : null;
+    }
+
+    /**
+     * The cart button is only shown for carts without products that need shipping
+     * (PayPalExpressButton, and the block express button)
+     */
+    protected function cartHasOnlyVirtualProducts(): bool
+    {
+        $cart = WC()->cart;
+        if (!$cart instanceof \WC_Cart || $cart->is_empty()) {
+            return false;
+        }
+
+        foreach ($cart->get_cart_contents() as $item) {
+            $product = $item['data'] ?? null;
+            if (!$product instanceof \WC_Product || !$product->is_virtual()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function paymentNotCreatedMessage(): string
+    {
+        return sprintf(
+        /* translators: Placeholder 1: Payment method title */
+            __(
+                'Could not create %s payment.',
+                'mollie-payments-for-woocommerce'
+            ),
+            'PayPal'
+        );
     }
 
     /**

@@ -55,7 +55,8 @@ $express = [
     // New Mollie sessions per shopper per window; each price change needs one.
     'maxNewSessions' => 10,
     // Per caller address per window, whoever asks: one address can be many shoppers.
-    'maxNewSessionsPerAddress' => 100,
+    // Kept below what one cleanup run cancels, so one address cannot leave more pending orders than cleanup removes.
+    'maxNewSessionsPerAddress' => 40,
     'windowSeconds' => 600,
     // Cleanup waits this long after a session expired, so a late payment can still arrive.
     'abandonGraceSeconds' => 3600,

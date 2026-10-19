@@ -24,6 +24,15 @@ class WC_Order
     {
     }
 
+    public function needs_payment()
+    {
+    }
+
+    public function get_fees()
+    {
+        return [];
+    }
+
     public function add_order_note($note)
     {
     }

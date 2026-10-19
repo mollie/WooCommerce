@@ -14,6 +14,7 @@ import PayPalButtonComponent from './components/expressPayments/PayPalButtonComp
 import PayPalButtonEditorComponent from './components/expressPayments/PayPalButtonEditorComponent';
 import {PayPalUtils} from '../../shared/utils/paypalUtils';
 import {buildRegistrationContext} from './registration/contextBuilder';
+import {registerExpressComponent} from './express/registerExpressComponent';
 
 /**
  * Initialization with mollieComponentsManager
@@ -43,6 +44,13 @@ if (!isOrderPayPage) {
 
     } catch (error) {
         console.error('Mollie: Initialization failed:', error);
+    }
+
+    // Apart, so a failing Express Component leaves the rest of the checkout working.
+    try {
+        registerExpressComponent();
+    } catch (error) {
+        console.error('Mollie: Express Component registration failed:', error);
     }
 }
 

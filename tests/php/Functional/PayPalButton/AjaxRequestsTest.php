@@ -3,7 +3,6 @@
 namespace Mollie\WooCommerceTests\Functional\PayPalButton;
 
 use AjaxRequests;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalAjaxRequests;
 use Mollie\WooCommerce\Buttons\PayPalButton\PayPalDataObjectHttp;
@@ -24,8 +23,6 @@ use function Brain\Monkey\Functions\when;
 
 class AjaxRequestsTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
     /**
      * @var PHPUnit_Framework_MockObject_MockObject|RefundLineItemsBuilder
      */

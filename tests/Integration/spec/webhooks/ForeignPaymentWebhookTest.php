@@ -3,7 +3,10 @@
 namespace Mollie\WooCommerceTests\Integration\spec\webhooks;
 
 use Mockery;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
+use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\Webhooks\RestApi;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
@@ -271,6 +274,9 @@ class ForeignPaymentWebhookTest extends IntegrationMockedTestCase
             $container->get('shared.plugin_id'),
             $container,
             $container->get(WebhookHandler::class),
+            $container->get(ResolveExpressPayment::class),
+            $container->get(OrderLock::class),
+            $container->get(EventLog::class),
         ])->makePartial()->shouldAllowMockingProtectedMethods();
         $service->shouldReceive('getPaymentIdFromRequest')->andReturn($postedPaymentId);
 

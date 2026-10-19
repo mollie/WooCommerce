@@ -16,6 +16,40 @@ trait APIMockTrait
     protected $apiMock;
 
     /**
+     * The plugin asks for a client only with a well-formed key. The mocked client never sends it,
+     * so the tests use these instead of whatever the site has stored.
+     *
+     * @var array<string, callable>
+     */
+    private array $pinnedApiKeyFilters = [];
+
+    /**
+     * @before
+     */
+    protected function pinApiKeysForMockedApi(): void
+    {
+        foreach (['test' => 'test_', 'live' => 'live_'] as $mode => $prefix) {
+            $key = $prefix . str_repeat('MockedApiKey', 3);
+            $hook = "pre_option_mollie-payments-for-woocommerce_{$mode}_api_key";
+            $this->pinnedApiKeyFilters[$hook] = static function () use ($key): string {
+                return $key;
+            };
+            add_filter($hook, $this->pinnedApiKeyFilters[$hook]);
+        }
+    }
+
+    /**
+     * @after
+     */
+    protected function unpinApiKeysForMockedApi(): void
+    {
+        foreach ($this->pinnedApiKeyFilters as $hook => $filter) {
+            remove_filter($hook, $filter);
+        }
+        $this->pinnedApiKeyFilters = [];
+    }
+
+    /**
      * Initialize the API mock
      */
     protected function initializeApiMock(): void
@@ -151,6 +185,29 @@ trait APIMockTrait
     ): void {
         $payment = $this->createPaymentResponse($paymentId, $status, '10.00', 'EUR', $additionalData);
         $this->apiMock()->mockPaymentGet($paymentId, $payment);
+    }
+
+    /**
+     * Mock a successful order retrieval
+     *
+     * @param string $orderId
+     * @param string $status
+     * @param array $additionalData
+     */
+    protected function mockSuccessfulOrderGet(
+        string $orderId,
+        string $status = 'created',
+        array $additionalData = []
+    ): void {
+        $order = (object) $this->createOrderResponse($orderId, $status, $additionalData);
+
+        // The plugin reads an order back with its embeds: orders->get($id, ['embed' => ...]).
+        $this->apiMock()->getMockedApiClient()->orders
+            ->shouldReceive('get')
+            ->withArgs(static function ($id) use ($orderId): bool {
+                return $id === $orderId;
+            })
+            ->andReturn($order);
     }
 
     /**

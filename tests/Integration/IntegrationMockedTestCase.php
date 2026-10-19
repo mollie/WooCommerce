@@ -21,11 +21,24 @@ class IntegrationMockedTestCase extends \PHPUnit\Framework\TestCase
     use MockeryPHPUnitIntegration, CreateTestOrders, CreateTestProducts;
 
     /**
+     * Every hook of the site as setUp() found it. Each bootstrapModule() adds hooks bound to that
+     * test's container (and its mocked API), so they are given back after the test.
+     *
+     * @var array<string, \WP_Hook>
+     */
+    private array $baseHookBackup = [];
+
+    /**
      * @throws \WC_Data_Exception
      */
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->baseHookBackup = [];
+        foreach ($GLOBALS['wp_filter'] as $name => $hook) {
+            $this->baseHookBackup[$name] = clone $hook;
+        }
 
         $this->customer_id = $this->createCustomerIfNotExists();
         $this->createTestProducts();
@@ -36,6 +49,10 @@ class IntegrationMockedTestCase extends \PHPUnit\Framework\TestCase
     {
         // This cleans up everything created during tests
         //$this->cleanupTestData();
+        if ($this->baseHookBackup !== []) {
+            $GLOBALS['wp_filter'] = $this->baseHookBackup;
+            $this->baseHookBackup = [];
+        }
         parent::tearDown();
     }
 

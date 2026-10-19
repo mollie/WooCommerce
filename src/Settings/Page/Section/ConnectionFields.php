@@ -16,7 +16,7 @@ class ConnectionFields extends AbstractSection
                 'title' => '',
                 'type' => 'title',
             ],
-            $this->connectionStatusField($this->settings, $this->connectionStatus),
+            $this->connectionStatusField($this->settings, $this->connectionResult),
             [
                 'id' => $this->settings->getSettingId('test_mode_enabled'),
                 'title' => __('Mollie Payment Mode', 'mollie-payments-for-woocommerce'),

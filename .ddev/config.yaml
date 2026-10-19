@@ -1,7 +1,7 @@
 name: mollie-payments-for-woocommerce
 type: php
 docroot: .ddev/wordpress
-php_version: "7.4"
+php_version: "8.0"
 webserver_type: apache-fpm
 xdebug_enabled: false
 additional_hostnames: []

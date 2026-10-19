@@ -69,7 +69,11 @@ class PaymentMethodSwitchWebhookTest extends IntegrationMockedTestCase
         // When — the stale, superseded payment's expiry webhook is processed for this order
         $webhookService->doPaymentForOrder($order, $stalePaymentId);
 
-        // Then
+        // Then — the handler got as far as asking Mollie about the stale payment
+        $this->apiMock()->getMockedApiClient()->payments
+            ->shouldHaveReceived('get')
+            ->with($stalePaymentId);
+
         $order = wc_get_order($orderId);
 
         // crit 4 — the stale attempt's failure must not fail the order the customer is still paying

@@ -41,6 +41,7 @@
     "start": "wp-scripts start",
     "lint:md": "wp-scripts lint-md-docs *.md",
     "lint:js": "wp-scripts lint-js resources/js/src/*",
+    "test:unit:js": "wp-scripts test-unit-js resources/js/src",
     "lint:style": "wp-scripts lint-style resources/scss/*.scss",
     "lint:js:fix": "wp-scripts lint-js resources/js/src/* --fix",
     "lint:style:fix": "wp-scripts lint-style resources/scss/*.scss --fix",
@@ -117,7 +118,11 @@
     "e2e:test:order-api:multistep:non-eur-classic": "npx playwright test --project \"shard:order-api:multistep:non-eur-classic\" --workers=1",
     "e2e:test:order-api:multistep:card-disabled": "npx playwright test --project \"shard:order-api:multistep:card-disabled\" --workers=1",
     "e2e:test:order-api:multistep:paypal-express": "npx playwright test --project \"shard:order-api:multistep:paypal-express\" --workers=1",
-    "e2e:test:order-api:multistep:payment-ownership": "npx playwright test --project \"shard:order-api:multistep:payment-ownership\" --workers=1"
+    "e2e:test:order-api:multistep:payment-ownership": "npx playwright test --project \"shard:order-api:multistep:payment-ownership\" --workers=1",
+
+    "e2e:express:install": "node tests/qa/express/bin/install.mjs",
+    "e2e:express:uninstall": "node tests/qa/express/bin/install.mjs --uninstall",
+    "e2e:express": "npx playwright test --config=playwright.express.config.ts"
   },
   "eslintConfig": {
     "extends": [

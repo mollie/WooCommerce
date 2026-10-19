@@ -4,6 +4,7 @@ namespace Mollie\WooCommerceTests\Functional\Tracks;
 
 use Mollie\WooCommerce\Tracks\TracksModule;
 use Mollie\WooCommerce\Tracks\TracksEventRecorder;
+use Mollie\WooCommerce\Settings\ConnectionResult;
 use Mollie\WooCommerce\Settings\Settings;
 use Mollie\WooCommerceTests\TestCase;
 use Mockery;
@@ -17,10 +18,14 @@ class TracksModuleTest extends TestCase
     /** @var \stdClass */
     private $hooks;
 
+    /** @var array<int, string> */
+    private $recordedEvents = [];
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->hooks = (object) ['callbacks' => []];
+        $this->recordedEvents = [];
         unset($_SERVER['REQUEST_METHOD']);
         $_GET = [];
 
@@ -113,17 +118,14 @@ class TracksModuleTest extends TestCase
         $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(true);
         $settingsHelper->shouldIgnoreMissing();
 
-        $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_plugin_activated');
-        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+        $recorder = $this->recorderKeepingEventNames();
 
         $container = $this->createMockContainer($recorder, $settingsHelper);
         $module = new TracksModule();
         $module->run($container);
 
         $this->runCallbacks('admin_init');
-        $this->addToAssertionCount(1);
+        $this->assertNotContains('mollie_plugin_activated', $this->recordedEvents);
     }
 
     /**
@@ -151,17 +153,14 @@ class TracksModuleTest extends TestCase
         $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldIgnoreMissing();
 
-        $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_plugin_activated');
-        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+        $recorder = $this->recorderKeepingEventNames();
 
         $container = $this->createMockContainer($recorder, $settingsHelper);
         $module = new TracksModule();
         $module->run($container);
 
         $this->runCallbacks('admin_init');
-        $this->addToAssertionCount(1);
+        $this->assertNotContains('mollie_plugin_activated', $this->recordedEvents);
     }
 
     /**
@@ -175,17 +174,14 @@ class TracksModuleTest extends TestCase
 
         when('get_option')->justReturn(false);
 
-        $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_plugin_activated');
-        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+        $recorder = $this->recorderKeepingEventNames();
 
         $container = $this->createMockContainer($recorder);
         $module = new TracksModule();
         $module->run($container);
 
         $this->runCallbacks('admin_init');
-        $this->addToAssertionCount(1);
+        $this->assertNotContains('mollie_plugin_activated', $this->recordedEvents);
     }
 
     /**
@@ -238,10 +234,7 @@ class TracksModuleTest extends TestCase
             return $default;
         });
 
-        $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_api_keys_viewed');
-        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+        $recorder = $this->recorderKeepingEventNames();
 
         $container = $this->createMockContainer($recorder);
         $module = new TracksModule();
@@ -250,7 +243,7 @@ class TracksModuleTest extends TestCase
         $cbs = $this->getCallbacks('woocommerce_settings_mollie_settings');
         $this->assertNotEmpty($cbs);
         $cbs[0]();
-        $this->addToAssertionCount(1);
+        $this->assertNotContains('mollie_api_keys_viewed', $this->recordedEvents);
     }
 
     /**
@@ -280,9 +273,7 @@ class TracksModuleTest extends TestCase
         $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldReceive('isTestModeEnabled')->andReturn(true);
         $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(true);
-        $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn([
-            'connected' => true,
-        ]);
+        $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn(ConnectionResult::connected());
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
@@ -327,15 +318,18 @@ class TracksModuleTest extends TestCase
         });
         when('sanitize_text_field')->returnArg();
         when('wp_unslash')->returnArg();
+        when('wp_strip_all_tags')->alias(static function ($text) {
+            return trim(strip_tags((string) $text));
+        });
 
         $settingsHelper = Mockery::mock(Settings::class);
         $settingsHelper->shouldReceive('isTestModeEnabled')->andReturn(true);
         $settingsHelper->shouldReceive('getConnectionStatus')->andReturn(false);
-        $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn([
-            'connected' => false,
-            'error_code' => 401,
-            'error_message' => '[2026-05-15T12:00:00+0000] Invalid API key',
-        ]);
+        $settingsHelper->shouldReceive('getConnectionStatusWithError')->andReturn(ConnectionResult::failed(
+            ConnectionResult::KIND_API,
+            401,
+            '[2026-05-15T12:00:00+0000] Invalid <a href="https://example.com">API key</a>'
+        ));
 
         $recorder = Mockery::mock(TracksEventRecorder::class);
         $recorder->shouldReceive('recordEvent')
@@ -345,7 +339,9 @@ class TracksModuleTest extends TestCase
             ->once()
             ->with('mollie_connection_failed', Mockery::on(function ($props) {
                 return $props['payment_mode'] === 'test'
+                    && $props['error_kind'] === ConnectionResult::KIND_API
                     && $props['error_code'] === 401
+                    // Timestamp prefix stripped, markup stripped: telemetry stays plain text.
                     && $props['error_message'] === 'Invalid API key';
             }));
 
@@ -374,10 +370,11 @@ class TracksModuleTest extends TestCase
         when('sanitize_text_field')->returnArg();
         when('wp_unslash')->returnArg();
 
+        $recorded = [];
         $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_api_key_saved', Mockery::any());
-        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+        $recorder->shouldReceive('recordEvent')->andReturnUsing(static function (string $event) use (&$recorded): void {
+            $recorded[] = $event;
+        });
 
         $container = $this->createMockContainer($recorder);
         $module = new TracksModule();
@@ -386,7 +383,7 @@ class TracksModuleTest extends TestCase
         $cbs = $this->getCallbacks('woocommerce_settings_saved');
         $this->assertNotEmpty($cbs);
         $cbs[0]();
-        $this->addToAssertionCount(1);
+        $this->assertNotContains('mollie_api_key_saved', $recorded);
     }
 
     /**
@@ -634,10 +631,7 @@ class TracksModuleTest extends TestCase
 
         when('get_option')->justReturn(false);
 
-        $recorder = Mockery::mock(TracksEventRecorder::class);
-        $recorder->shouldNotReceive('recordEvent')
-            ->with('mollie_first_test_payment_complete', Mockery::any());
-        $recorder->shouldReceive('recordEvent')->withAnyArgs()->zeroOrMoreTimes();
+        $recorder = $this->recorderKeepingEventNames();
 
         $container = $this->createMockContainer($recorder);
         $module = new TracksModule();
@@ -650,7 +644,7 @@ class TracksModuleTest extends TestCase
             $cb();
         }
 
-        $this->addToAssertionCount(1);
+        $this->assertNotContains('mollie_first_test_payment_complete', $this->recordedEvents);
     }
 
     /**
@@ -702,6 +696,20 @@ class TracksModuleTest extends TestCase
         TracksModule::onPluginDeactivation();
 
         $this->addToAssertionCount(1);
+    }
+
+    /**
+     * A recorder that accepts any event and keeps its name, so a test can say which event did
+     * not fire.
+     */
+    private function recorderKeepingEventNames(): TracksEventRecorder
+    {
+        $recorder = Mockery::mock(TracksEventRecorder::class);
+        $recorder->shouldReceive('recordEvent')->andReturnUsing(function (string $event): void {
+            $this->recordedEvents[] = $event;
+        });
+
+        return $recorder;
     }
 
     private function interceptAddAction(): void

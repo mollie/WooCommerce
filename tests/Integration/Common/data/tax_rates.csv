@@ -1,0 +1,4 @@
+Country code,State code,Postcode / ZIP,City,Rate %,Tax name,Priority,Compound,Shipping,Tax class
+AQ,,,CITY1,8.625,[PPCP TEST] Tax 1,1,0,1,
+AQ,,,CITY2,10,[PPCP TEST] Tax 2.1,1,0,1,
+AQ,,,CITY2,50,[PPCP TEST] Tax 2.2,2,0,1,

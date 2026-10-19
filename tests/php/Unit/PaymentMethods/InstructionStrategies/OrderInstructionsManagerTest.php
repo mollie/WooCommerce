@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\PaymentMethods\InstructionStrategies;
 
 use Mockery;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Resources\Payment as MollieApiPayment;
 use Mollie\WooCommerce\PaymentMethods\InstructionStrategies\OrderInstructionsManager;
 use Mollie\WooCommerceTests\TestCase;
@@ -19,8 +18,6 @@ use function Brain\Monkey\Functions\when;
  */
 class OrderInstructionsManagerTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
     protected function setUp(): void
     {
         parent::setUp();

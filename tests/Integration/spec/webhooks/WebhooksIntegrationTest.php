@@ -7,7 +7,10 @@ use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;
 use Mollie\WooCommerceTests\Integration\API\Traits\APIMockTrait;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\WooCommerce\Payment\MollieOrderService;
+use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface as Logger;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -59,7 +62,10 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
             $container->get('settings.data_helper'),
             $container->get('shared.plugin_id'),
             $container,
-            $container->get(WebhookHandler::class)
+            $container->get(WebhookHandler::class),
+            $container->get(ResolveExpressPayment::class),
+            $container->get(OrderLock::class),
+            $container->get(EventLog::class),
         ])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $webhookService->shouldReceive('getPaymentIdFromRequest')
@@ -112,75 +118,26 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $order = wc_get_order($orderId);
         $this->assertEquals('processing', $order->get_status());
+        $notesAfterFirstDelivery = $this->orderNoteContents($orderId);
+        $this->assertNotEmpty($notesAfterFirstDelivery, 'The first delivery must leave its notes on the order.');
 
-        // Verify that subsequent webhook calls with the same payment ID are handled gracefully
-        // (This simulates the race condition scenario)
+        // The same payment is delivered again.
         $this->webhookService->onWebhookAction();
 
-        // Order status should remain the same, not be processed again
+        // The order is not processed again: same status, and no note is written a second time.
         $order = wc_get_order($orderId);
         $this->assertEquals('processing', $order->get_status());
+        $this->assertSame($notesAfterFirstDelivery, $this->orderNoteContents($orderId));
     }
 
     /**
-     * Test concurrent webhook calls for the same payment (race condition simulation)
-     *
-     * @test
-     * @group integration
-     * @group Webhooks
+     * @return array<int, string>
      */
-    public function it_handles_concurrent_webhook_calls_gracefully()
+    private function orderNoteContents(int $orderId): array
     {
-        $order = $this->getConfiguredOrder(
-            1,
-            'mollie_wc_gateway_ideal',
-            ['simple'],
-            [],
-            false
-        );
-
-        $orderId = $order->get_id();
-        $orderKey = $order->get_order_key();
-        $transactionId = $order->get_transaction_id();
-
-        $this->mockSuccessfulPaymentGet($transactionId, 'paid', [
-            'metadata' => ['order_id' => $orderId],
-            'method' => 'ideal',
-            'mode' => 'test'
-        ]);
-
-        $mockedServices = $this->getMockedApiServices();
-        $container = $this->bootstrapModule($mockedServices);
-
-        // Set up the webhook request parameters
-        $this->setupWebhookRequest($orderId, $orderKey, $transactionId);
-
-        // Get two instances of the webhook service to simulate concurrent requests
-        $webhookService1 = $this->createMockedWebhookService($container, uniqid('ord_'));
-        $webhookService2 = $this->createMockedWebhookService($container, $transactionId);
-
-        // First webhook call should process successfully
-        $webhookService1->onWebhookAction();
-
-        $order = wc_get_order($orderId);
-        $this->assertEquals('pending', $order->get_status());
-
-        // Second webhook call should be handled gracefully (idempotency)
-        // This simulates a race condition where the same webhook arrives multiple times
-        $webhookService2->onWebhookAction();
-
-        // Order status should remain the same
-        $order = wc_get_order($orderId);
-        $this->assertEquals('processing', $order->get_status());
-
-        // Verify no duplicate processing occurred by checking order notes
-        $notes = wc_get_order_notes(['order_id' => $orderId]);
-        $paymentNotes = array_filter($notes, function ($note) {
-            return strpos($note->content, 'Order completed') !== false;
-        });
-
-        // Should only have one payment started note
-        $this->assertCount(1, $paymentNotes, 'Should only process payment once, even with concurrent webhooks');
+        return array_map(static function ($note): string {
+            return (string) $note->content;
+        }, wc_get_order_notes(['order_id' => $orderId, 'orderby' => 'date_created_gmt', 'order' => 'ASC']));
     }
 
     /**
@@ -230,6 +187,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
         $this->webhookService->onWebhookAction();
+        $this->assertMollieWasAskedAbout($transactionId);
 
         $order = wc_get_order($orderId);
         $this->assertEquals(
@@ -405,6 +363,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
         $this->webhookService->onWebhookAction();
+        $this->assertMollieWasAskedAbout($transactionId);
 
         $order = wc_get_order($orderId);
         $this->assertEquals(
@@ -443,6 +402,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
 
         $this->webhookService = $this->createMockedWebhookService($container, $transactionId);
         $this->webhookService->onWebhookAction();
+        $this->assertMollieWasAskedAbout($transactionId);
 
         $order = wc_get_order($orderId);
         $this->assertEquals(
@@ -450,6 +410,16 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
             $order->get_status(),
             'A late failed webhook must not move a refunded order to failed.'
         );
+    }
+
+    /**
+     * "Nothing changed" only means something when the webhook got as far as reading the payment.
+     */
+    private function assertMollieWasAskedAbout(string $paymentId): void
+    {
+        $this->apiMock()->getMockedApiClient()->payments
+            ->shouldHaveReceived('get')
+            ->with($paymentId);
     }
 
     /**

@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\SDK;
 
 use Mollie\Api\Exceptions\ApiException;
-
 /**
  * An error document from Mollie, raised as the SDK's ApiException.
  *

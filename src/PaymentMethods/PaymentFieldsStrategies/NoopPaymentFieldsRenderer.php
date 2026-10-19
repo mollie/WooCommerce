@@ -2,8 +2,7 @@
 
 namespace Mollie\WooCommerce\PaymentMethods\PaymentFieldsStrategies;
 
-use Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
-
+use Mollie\Inpsyde\PaymentGateway\PaymentFieldsRendererInterface;
 class NoopPaymentFieldsRenderer implements PaymentFieldsRendererInterface
 {
     /**

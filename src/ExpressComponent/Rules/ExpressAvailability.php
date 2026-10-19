@@ -1,45 +1,36 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules;
 
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressAvailabilityResult;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
-
 /**
  * The first failing check is the reason. Waiting for the shipping form is blocked, not unavailable.
  */
 final class ExpressAvailability
 {
-    public static function resolve(
-        ExpressSettings $settings,
-        ShopFacts $shop,
-        ?CartFacts $cart,
-        string $surface
-    ): ExpressAvailabilityResult {
-
-        if (!in_array($surface, $settings->supportedSurfaces(), true)) {
+    public static function resolve(ExpressSettings $settings, ShopFacts $shop, ?CartFacts $cart, string $surface): ExpressAvailabilityResult
+    {
+        if (!in_array($surface, $settings->supportedSurfaces(), \true)) {
             return ExpressAvailabilityResult::unavailable('surface_not_supported');
         }
-        if (!in_array($shop->mode(), $settings->allowedModes(), true)) {
+        if (!in_array($shop->mode(), $settings->allowedModes(), \true)) {
             return ExpressAvailabilityResult::unavailable('mode_not_allowed');
         }
         if (!$shop->isHttps()) {
             return ExpressAvailabilityResult::unavailable('not_https');
         }
-        if (!in_array(true, WalletVisibility::buttons($settings, $shop), true)) {
+        if (!in_array(\true, \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons($settings, $shop), \true)) {
             return ExpressAvailabilityResult::unavailable('no_wallet_visible');
         }
         if ($cart === null) {
             return ExpressAvailabilityResult::available();
         }
-
         return self::resolveCart($settings, $shop, $cart);
     }
-
     private static function resolveCart(ExpressSettings $settings, ShopFacts $shop, CartFacts $cart): ExpressAvailabilityResult
     {
         if ($cart->lines() === []) {
@@ -51,14 +42,10 @@ final class ExpressAvailability
             }
         }
         // Nothing ships, so no form gives the address the taxes wait for: the price is not known yet.
-        if (
-            !$cart->needsShipping()
-            && $cart->taxesFollowCustomerAddress()
-            && !$cart->customerAddressSaved()
-        ) {
+        if (!$cart->needsShipping() && $cart->taxesFollowCustomerAddress() && !$cart->customerAddressSaved()) {
             return ExpressAvailabilityResult::unavailable('tax_address_unknown');
         }
-        if (!in_array(true, WalletVisibility::buttons($settings, $shop, $cart), true)) {
+        if (!in_array(\true, \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons($settings, $shop, $cart), \true)) {
             return ExpressAvailabilityResult::blocked('shipping_incomplete');
         }
         // After the shipping check: until then the total is not final.
@@ -66,7 +53,6 @@ final class ExpressAvailability
         if ($total !== null && $total->minorUnits() <= 0) {
             return ExpressAvailabilityResult::unavailable('nothing_to_pay');
         }
-
         return ExpressAvailabilityResult::available();
     }
 }

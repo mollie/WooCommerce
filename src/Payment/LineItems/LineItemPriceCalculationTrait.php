@@ -60,4 +60,32 @@ trait LineItemPriceCalculationTrait
     {
         return ['grossPrice' => $grossPrice, 'vatAmount' => $grossPrice * ($vatRate / (100 + $vatRate))];
     }
+    /**
+     * Reshape a line whose gross total is below zero into a Mollie discount line.
+     *
+     * Mollie rejects discount lines with a positive unitPrice, and validates vatAmount against vatRate, so a
+     * zero vatAmount needs a zero vatRate. Lines at exactly zero are valid as they are and keep their
+     * product type. The total is derived from the rounded unit so unitPrice * quantity matches exactly;
+     * process_mismatch() absorbs the rounding residual.
+     *
+     * @param array<string, mixed> $mollie_order_item The line as built for a regular product.
+     * @param float $lineGrossTotal Gross line total (line_total + line_tax).
+     * @param int $quantity Quantity already transmitted on the line, at least 1.
+     * @param string $currency
+     * @return array<string, mixed> The discount line, or the input untouched when the total is not negative.
+     */
+    protected function toDiscountLine(array $mollie_order_item, float $lineGrossTotal, int $quantity, string $currency): array
+    {
+        if ($lineGrossTotal >= 0.0) {
+            return $mollie_order_item;
+        }
+        $unitValue = (float) $this->dataHelper->formatCurrencyValue($lineGrossTotal / $quantity, $currency);
+        $mollie_order_item['type'] = 'discount';
+        unset($mollie_order_item['discountAmount']);
+        $mollie_order_item['unitPrice']['value'] = $this->dataHelper->formatCurrencyValue($unitValue, $currency);
+        $mollie_order_item['totalAmount']['value'] = $this->dataHelper->formatCurrencyValue($unitValue * $quantity, $currency);
+        $mollie_order_item['vatRate'] = 0;
+        $mollie_order_item['vatAmount']['value'] = $this->dataHelper->formatCurrencyValue(0, $currency);
+        return $mollie_order_item;
+    }
 }

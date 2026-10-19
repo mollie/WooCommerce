@@ -133,11 +133,17 @@ class TracksModule implements ServiceModule, ExecutableModule
             $paymentMode = $settingsHelper->isTestModeEnabled() ? 'test' : 'live';
             $recorder->recordEvent('mollie_api_key_saved', ['payment_mode' => $paymentMode, 'has_test_key' => (bool) get_option($testKeyOption), 'has_live_key' => (bool) get_option($liveKeyOption)]);
             $result = $settingsHelper->getConnectionStatusWithError();
-            if ($result['connected']) {
+            if ($result->isConnected()) {
                 $recorder->recordEvent('mollie_connection_success', ['payment_mode' => $paymentMode]);
                 return;
             }
-            $recorder->recordEvent('mollie_connection_failed', ['payment_mode' => $paymentMode, 'error_code' => $result['error_code'] ?? 0, 'error_message' => preg_replace('/^(\[[\d\-T:+]+\]\s*)+/', '', $result['error_message'] ?? '')]);
+            $recorder->recordEvent('mollie_connection_failed', [
+                'payment_mode' => $paymentMode,
+                'error_kind' => (string) $result->errorKind(),
+                'error_code' => $result->errorCode(),
+                // Some failures are reported with markup the merchant is meant to see; telemetry is text only.
+                'error_message' => wp_strip_all_tags((string) preg_replace('/^(\[[\d\-T:+]+\]\s*)+/', '', $result->errorMessage())),
+            ]);
         });
     }
     /**

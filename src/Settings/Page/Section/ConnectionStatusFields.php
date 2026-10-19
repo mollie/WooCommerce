@@ -8,7 +8,7 @@ class ConnectionStatusFields extends \Mollie\WooCommerce\Settings\Page\Section\A
     use \Mollie\WooCommerce\Settings\Page\Section\ConnectionStatusTrait;
     public function config(): array
     {
-        return [['id' => $this->settings->getSettingId('title'), 'title' => '', 'type' => 'title'], $this->connectionStatusField($this->settings, $this->connectionStatus), $this->refreshStatusField(), ['id' => $this->settings->getSettingId('sectionend'), 'type' => 'sectionend']];
+        return [['id' => $this->settings->getSettingId('title'), 'title' => '', 'type' => 'title'], $this->connectionStatusField($this->settings, $this->connectionResult), $this->refreshStatusField(), ['id' => $this->settings->getSettingId('sectionend'), 'type' => 'sectionend']];
     }
     public function refreshStatusField(): array
     {

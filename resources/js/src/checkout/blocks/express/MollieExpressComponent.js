@@ -187,22 +187,35 @@ const SHIPPING_CARD_EDIT =
 	'#shipping-fields .wc-block-components-address-card__edit';
 const CARD_OPEN_FRAMES = 20;
 
-function focusShippingAddress( framesLeft = CARD_OPEN_FRAMES ) {
-	const field = document.querySelector( SHIPPING_FIELD );
-	if ( field ) {
-		field.scrollIntoView( { block: 'center' } );
-		field.focus();
+function focusField( field ) {
+	field.scrollIntoView( { block: 'center' } );
+	field.focus();
+}
+
+function focusShippingAddress() {
+	const edit = document.querySelector( SHIPPING_CARD_EDIT );
+	if ( ! edit ) {
+		const field = document.querySelector( SHIPPING_FIELD );
+		if ( field ) {
+			focusField( field );
+		}
 		return;
 	}
-	const edit = document.querySelector( SHIPPING_CARD_EDIT );
-	if ( edit && framesLeft === CARD_OPEN_FRAMES ) {
-		edit.click();
-	}
-	if ( edit && framesLeft > 0 ) {
-		window.requestAnimationFrame( () =>
-			focusShippingAddress( framesLeft - 1 )
-		);
-	}
+	// The card keeps its fields in the page, hidden, until it is opened.
+	edit.click();
+	let framesLeft = CARD_OPEN_FRAMES;
+	const focusOnceShown = () => {
+		const field = document.querySelector( SHIPPING_FIELD );
+		if ( field && field.getClientRects().length > 0 ) {
+			focusField( field );
+			return;
+		}
+		framesLeft -= 1;
+		if ( framesLeft > 0 ) {
+			window.requestAnimationFrame( focusOnceShown );
+		}
+	};
+	window.requestAnimationFrame( focusOnceShown );
 }
 
 export default function MollieExpressComponent( {

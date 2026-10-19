@@ -546,6 +546,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     /**
      * Scenario: a cart with nothing to ship asks the wallet for the contact and the billing address
      *   Given a guest with an empty checkout form and a cart with nothing to ship
+     *   And taxes on the shop's address, so the price is known without the guest's
      *   When a session is started and the order requested
      *   Then the session asked the wallet for the email and the billing address, and not where to ship
      *   And the order is answered with the fact only, so nothing overrides what the sheet collected
@@ -554,6 +555,8 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      */
     public function it_asks_the_wallet_for_contact_and_billing_when_nothing_ships(): void
     {
+        // Taxes on the shop's address, so the price is known without the customer's.
+        $this->setOptionForTest('woocommerce_tax_based_on', 'base');
         $this->changeProduct($this->simpleProduct()->get_id(), static function (\WC_Product $product): void {
             $product->set_virtual(true);
         });

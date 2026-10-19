@@ -117,8 +117,23 @@ function readCart( select ) {
 		nothingToPay: Number( totals.total_price ) === 0,
 	} );
 
+	const rateNames = packages
+		.map(
+			( pack ) =>
+				( pack.shipping_rates ?? [] ).find( ( rate ) => rate.selected )
+					?.name ?? ''
+		)
+		.filter( Boolean )
+		.join( ', ' );
+
 	return {
 		status,
+		// Where the order ships and how, as the shopper filled it in; empty when nothing ships.
+		shipsTo: store.getNeedsShipping()
+			? `${ address.address_1 ?? '' }, ${ address.postcode ?? '' } ${
+					address.city ?? ''
+			  } · ${ rateNames }`
+			: '',
 		// What PricingFingerprint::of() hashes server-side; the destination only while something ships.
 		fingerprint: [
 			totals.currency_code,
@@ -165,14 +180,42 @@ function useSettled( status, fingerprint ) {
 	return settled;
 }
 
+const SHIPPING_FIELD =
+	'#shipping-fields input, #shipping-fields select, .wc-block-checkout__shipping-fields input';
+// After a reload Blocks shows a saved address as a card, with its fields behind this button.
+const SHIPPING_CARD_EDIT =
+	'#shipping-fields .wc-block-components-address-card__edit';
+const CARD_OPEN_FRAMES = 20;
+
+function focusField( field ) {
+	field.scrollIntoView( { block: 'center' } );
+	field.focus();
+}
+
 function focusShippingAddress() {
-	const field = document.querySelector(
-		'#shipping-fields input, #shipping-fields select, .wc-block-checkout__shipping-fields input'
-	);
-	if ( field ) {
-		field.scrollIntoView( { block: 'center' } );
-		field.focus();
+	const edit = document.querySelector( SHIPPING_CARD_EDIT );
+	if ( ! edit ) {
+		const field = document.querySelector( SHIPPING_FIELD );
+		if ( field ) {
+			focusField( field );
+		}
+		return;
 	}
+	// The card keeps its fields in the page, hidden, until it is opened.
+	edit.click();
+	let framesLeft = CARD_OPEN_FRAMES;
+	const focusOnceShown = () => {
+		const field = document.querySelector( SHIPPING_FIELD );
+		if ( field && field.getClientRects().length > 0 ) {
+			focusField( field );
+			return;
+		}
+		framesLeft -= 1;
+		if ( framesLeft > 0 ) {
+			window.requestAnimationFrame( focusOnceShown );
+		}
+	};
+	window.requestAnimationFrame( focusOnceShown );
 }
 
 export default function MollieExpressComponent( {
@@ -351,30 +394,7 @@ export default function MollieExpressComponent( {
 	}
 
 	if ( blocked ) {
-		return (
-			<div className="mollie-express-component">
-				<p className="mollie-express-component__message">
-					{ data.messages.shippingIncomplete }
-				</p>
-				<button
-					type="button"
-					className="mollie-express-placeholder"
-					aria-disabled="true"
-					onClick={ focusShippingAddress }
-					style={ {
-						width: '100%',
-						minHeight: HEIGHT,
-						border: '1px dashed currentColor',
-						borderRadius: '4px',
-						background: 'transparent',
-						opacity: 0.6,
-						cursor: 'not-allowed',
-					} }
-				>
-					{ data.messages.waitingForShipping }
-				</button>
-			</div>
-		);
+		return null;
 	}
 
 	return (
@@ -382,6 +402,26 @@ export default function MollieExpressComponent( {
 			{ notice && (
 				<p className="mollie-express-component__notice" role="alert">
 					{ notice }
+				</p>
+			) }
+			{ live.shipsTo && (
+				<p className="mollie-express-component__ships-to">
+					{ `${ data.messages.shipsTo } ${ live.shipsTo } ` }
+					<button
+						type="button"
+						className="mollie-express-component__change"
+						onClick={ () => focusShippingAddress() }
+						style={ {
+							padding: 0,
+							border: 0,
+							background: 'none',
+							color: 'inherit',
+							textDecoration: 'underline',
+							cursor: 'pointer',
+						} }
+					>
+						{ data.messages.change }
+					</button>
 				</p>
 			) }
 			<div

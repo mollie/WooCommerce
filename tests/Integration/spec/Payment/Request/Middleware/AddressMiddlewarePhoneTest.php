@@ -14,6 +14,7 @@ class AddressMiddlewarePhoneTest extends IntegrationMockedTestCase
 
     public function setUp(): void
     {
+        parent::setUp();
         $this->middleware = new AddressMiddleware();
     }
 

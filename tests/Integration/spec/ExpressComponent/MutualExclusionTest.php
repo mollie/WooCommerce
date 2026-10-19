@@ -7,6 +7,7 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 use Mollie\WooCommerce\PaymentMethods\Applepay;
 use Mollie\WooCommerce\PaymentMethods\Paypal;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
+use Mollie\WooCommerceTests\Integration\Common\Fixtures\ProductPresets;
 
 /**
  * When Express owns the checkout, the legacy Apple Pay / PayPal express buttons step aside there;
@@ -46,8 +47,36 @@ class MutualExclusionTest extends ExpressFlowTestCase
      */
     private array $httpsFilters = [];
 
+    /**
+     * Whether the preset product was virtual before setUp() made it so.
+     */
+    private ?bool $wasVirtual = null;
+
+    /**
+     * Express owns the checkout only for a cart priced when the page loads: every scenario has one,
+     * with nothing to ship and no taxes, so only the shop and the wallets decide.
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->setOptionForTest('woocommerce_calc_taxes', 'no');
+        $product = $this->simpleProduct();
+        $this->wasVirtual = $product->get_virtual();
+        $product->set_virtual(true);
+        $product->save();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+    }
+
     public function tearDown(): void
     {
+        if ($this->wasVirtual !== null) {
+            $product = $this->simpleProduct();
+            $product->set_virtual($this->wasVirtual);
+            $product->save();
+            $this->wasVirtual = null;
+        }
+        $this->emptyCart();
         $this->removeFilters($this->pageFilters);
         $this->removeFilters($this->httpsFilters);
 
@@ -215,6 +244,8 @@ class MutualExclusionTest extends ExpressFlowTestCase
         } else {
             $this->useHttps(false);
         }
+        // Ownership is decided once per request: the change is seen by the next one.
+        $this->bootExpress();
 
         $this->assertFalse(mollieWooCommerceExpressOwnsSurface('checkout'), "Express must not run ({$reason}).");
         $this->assertSame(self::AS_CONFIGURED, $this->legacyValues());
@@ -246,6 +277,8 @@ class MutualExclusionTest extends ExpressFlowTestCase
         $this->useHttps(true);
         $this->bootExpress();
         $this->assertTrue(mollieWooCommerceExpressOwnsSurface('checkout'), 'Precondition: Express can run here.');
+        // Ownership is decided once per request: the failing read is met by the next one.
+        $this->bootExpress();
 
         $option = 'mollie_wc_gateway_applepay_settings';
         $fail = static function (): void {
@@ -319,6 +352,8 @@ class MutualExclusionTest extends ExpressFlowTestCase
 
         $this->setGatewaySettingsForTest('applepay', ['enabled' => 'no']);
         $this->setGatewaySettingsForTest('paypal', ['enabled' => 'no']);
+        // Ownership is decided once per request: the change is seen by the next one.
+        $this->bootExpress();
 
         $this->assertFalse(mollieWooCommerceExpressOwnsSurface('checkout'));
         $this->assertSame(self::AS_CONFIGURED, $this->legacyValues());
@@ -367,6 +402,14 @@ class MutualExclusionTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
+
+    private function simpleProduct(): \WC_Product
+    {
+        $product = wc_get_product((int) wc_get_product_id_by_sku(ProductPresets::get()['simple']['sku']));
+        $this->assertInstanceOf(\WC_Product::class, $product, "The 'simple' preset product does not exist.");
+
+        return $product;
+    }
 
     /**
      * Apple Pay and PayPal enabled, with every legacy express setting on.

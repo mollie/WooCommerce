@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\Entry;
 
-use Mollie\WooCommerce\ExpressComponent\Rules\SurfaceOwnership;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
 
 /**
@@ -20,7 +19,7 @@ class ExpressAssets
 
     private const BLOCK_SCRIPT = 'mollie_block_index';
 
-    private const SURFACE = 'checkout';
+    public const SURFACE = 'checkout';
 
     public function __construct(
         private ExpressFactsBuilder $facts,
@@ -28,16 +27,16 @@ class ExpressAssets
     ) {
     }
 
-    public function enqueue(): void
+    /**
+     * @param bool $owns Whether Express owns the checkout, decided once for the request.
+     */
+    public function enqueue(bool $owns): void
     {
-        if (!$this->isBlockCheckout()) {
+        if (!$owns || !$this->isBlockCheckout()) {
             return;
         }
         $settings = $this->facts->settings();
         $shop = $this->facts->shopFacts();
-        if (!SurfaceOwnership::owns($settings, $shop, self::SURFACE)) {
-            return;
-        }
 
         // Null version: a ?ver= would break the exact ?compatible URL.
         wp_register_script(self::HANDLE, self::SRC, [], null, true);

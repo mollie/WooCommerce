@@ -31,13 +31,11 @@ class ExpressBlocksData
             ),
             'buttons' => $this->buttons($settings, $shop),
             'messages' => [
-                'shippingIncomplete' => ExpressRoutes::messageFor('shipping_incomplete'),
                 'unavailable' => ExpressRoutes::messageFor('mollie_unavailable'),
                 'placeholder' => __('Express checkout', 'mollie-payments-for-woocommerce'),
-                'waitingForShipping' => __(
-                    'Waiting for the shipping cost…',
-                    'mollie-payments-for-woocommerce'
-                ),
+                /* translators: %1$s: the shipping address, %2$s: the chosen shipping rate. */
+                'shipsTo' => __('Ships to %1$s · %2$s', 'mollie-payments-for-woocommerce'),
+                'change' => __('Change', 'mollie-payments-for-woocommerce'),
             ],
         ];
     }

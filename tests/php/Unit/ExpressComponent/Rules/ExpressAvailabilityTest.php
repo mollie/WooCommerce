@@ -221,6 +221,69 @@ class ExpressAvailabilityTest extends TestCase
         ];
     }
 
+    /**
+     * Scenario: a cart with nothing to ship waits for no address unless its taxes follow one nobody gave yet
+     *   Given the checkout is otherwise available
+     *   And a cart whose taxes do or do not follow the customer's address, saved on the account or not
+     *   When availability is resolved
+     *   Then a cart with nothing to ship whose taxes follow an address that is not saved is unavailable
+     *        with tax_address_unknown, because its price is not known when the page loads
+     *   And a cart that ships keeps the shipping rule, which already waits for the whole address
+     *   And an empty cart or a subscription is reported first, and the tax rule before nothing_to_pay
+     *
+     * @dataProvider taxAddressCases
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @param array<int, bool> $lines One entry per line: whether it is a subscription.
+     */
+    public function testRefusesACartWhoseTaxesWaitForAnAddressNobodyGaveYet(
+        array $lines,
+        bool $needsShipping,
+        bool $shippingComplete,
+        bool $taxesFollowCustomerAddress,
+        bool $customerAddressSaved,
+        int $totalInCents,
+        string $expectedStatus,
+        ?string $expectedReason
+    ): void {
+
+        $cartLines = [];
+        foreach ($lines as $index => $isSubscription) {
+            $cartLines[] = new CartLine(productId: 100 + $index, quantity: 1, isSubscription: $isSubscription);
+        }
+        $cart = new CartFacts(
+            lines: $cartLines,
+            needsShipping: $needsShipping,
+            shippingDestinationComplete: $shippingComplete,
+            shippingRateChosen: $shippingComplete,
+            total: Money::fromMinorUnits($totalInCents, 'EUR'),
+            taxesFollowCustomerAddress: $taxesFollowCustomerAddress,
+            customerAddressSaved: $customerAddressSaved
+        );
+
+        $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
+
+        self::assertSame($expectedStatus, $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: array<int, bool>, 1: bool, 2: bool, 3: bool, 4: bool, 5: int, 6: string, 7: ?string}>
+     */
+    public function taxAddressCases(): array
+    {
+        return [
+            'nothing ships, taxes off or on the shop address' => [[false], false, false, false, false, 1000, 'available', null],
+            'nothing ships, taxes follow the address, guest' => [[false], false, false, true, false, 1000, 'unavailable', 'tax_address_unknown'],
+            'nothing ships, taxes follow the address, saved on the account' => [[false], false, false, true, true, 1000, 'available', null],
+            'nothing ships, taxes on the shop address, saved on the account' => [[false], false, false, false, true, 1000, 'available', null],
+            'ships, form complete, taxes follow an address not saved' => [[false], true, true, true, false, 1000, 'available', null],
+            'ships, form incomplete, taxes follow an address not saved' => [[false], true, false, true, false, 1000, 'blocked', 'shipping_incomplete'],
+            'an empty cart is reported first' => [[], false, false, true, false, 1000, 'unavailable', 'cart_empty'],
+            'a subscription is reported first' => [[true], false, false, true, false, 1000, 'unavailable', 'subscription_in_cart'],
+            'the tax rule before nothing to pay' => [[false], false, false, true, false, 0, 'unavailable', 'tax_address_unknown'],
+        ];
+    }
+
     private function settings(): ExpressSettings
     {
         $config = self::config();

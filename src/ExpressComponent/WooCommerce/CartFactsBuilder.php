@@ -46,8 +46,33 @@ class CartFactsBuilder
                 $customer->get_shipping_state(),
                 $customer->get_shipping_postcode(),
                 $customer->get_shipping_city(),
-            ])
+            ]),
+            taxesFollowCustomerAddress: $this->taxesFollowCustomerAddress(),
+            customerAddressSaved: $this->customerAddressSaved()
         );
+    }
+
+    private function taxesFollowCustomerAddress(): bool
+    {
+        return wc_tax_enabled() && get_option('woocommerce_tax_based_on') !== 'base';
+    }
+
+    /**
+     * The country the taxes are based on is saved on the logged-in customer's account.
+     */
+    private function customerAddressSaved(): bool
+    {
+        $userId = get_current_user_id();
+        if ($userId === 0) {
+            return false;
+        }
+        $basis = get_option('woocommerce_tax_based_on');
+        $metaKey = $basis === 'billing' ? 'billing_country' : ($basis === 'shipping' ? 'shipping_country' : '');
+        if ($metaKey === '') {
+            return false;
+        }
+
+        return (string) get_user_meta($userId, $metaKey, true) !== '';
     }
 
     /**

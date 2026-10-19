@@ -29,6 +29,14 @@ class IntegrationMockedTestCase extends \PHPUnit\Framework\TestCase
     private array $baseHookBackup = [];
 
     /**
+     * The newest post id when the test started. Orders get their id from the posts table in both
+     * storages (HPOS through a placeholder post), so every order above it is the test's own. Null
+     * when this setUp() did not run (a subclass that overrides it without calling it): then nothing
+     * is deleted, because nothing tells the test's orders from the site's.
+     */
+    private ?int $newestPostIdBefore = null;
+
+    /**
      * @throws \WC_Data_Exception
      */
     public function setUp(): void
@@ -42,6 +50,8 @@ class IntegrationMockedTestCase extends \PHPUnit\Framework\TestCase
 
         $this->customer_id = $this->createCustomerIfNotExists();
         $this->createTestProducts();
+        // After the shared fixtures, which are created once and reused by every test.
+        $this->newestPostIdBefore = $this->newestPostId();
         //$this->createTestCoupons();
     }
 
@@ -53,7 +63,97 @@ class IntegrationMockedTestCase extends \PHPUnit\Framework\TestCase
             $GLOBALS['wp_filter'] = $this->baseHookBackup;
             $this->baseHookBackup = [];
         }
+        $this->deleteOrdersCreatedByTheTest();
         parent::tearDown();
+    }
+
+    /**
+     * Every order, subscription and refund the test created, in any status and in either storage,
+     * notes and items with it, and every product it created, so the shared site does not fill up and
+     * a later scenario (cleanup above all, which selects orders by age) never finds another test's
+     * order. The preset products and the test customer are shared fixtures and stay.
+     */
+    private function deleteOrdersCreatedByTheTest(): void
+    {
+        $watermark = $this->newestPostIdBefore;
+        $this->newestPostIdBefore = null;
+        if ($watermark === null || $watermark <= 0) {
+            return;
+        }
+        global $wpdb;
+        $types = ['shop_order', 'shop_subscription', 'shop_order_refund'];
+        $in = implode(',', array_fill(0, count($types), '%s'));
+
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names are WordPress's and WooCommerce's.
+        $inPosts = array_map('intval', $wpdb->get_col($wpdb->prepare(
+            "SELECT ID FROM {$wpdb->posts} WHERE ID > %d AND post_type IN ({$in}) ORDER BY post_type = 'shop_order_refund' DESC, ID DESC",
+            array_merge([$watermark], $types)
+        )));
+        $hposTable = $wpdb->prefix . 'wc_orders';
+        $inHpos = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $hposTable)) === $hposTable
+            ? array_map('intval', $wpdb->get_col($wpdb->prepare(
+                "SELECT id FROM {$hposTable} WHERE id > %d AND type IN ({$in}) ORDER BY type = 'shop_order_refund' DESC, id DESC",
+                array_merge([$watermark], $types)
+            )))
+            : [];
+        // phpcs:enable
+
+        $this->deleteOrders($inPosts);
+        if ($inHpos !== []) {
+            $this->withHposStorage(function () use ($inHpos): void {
+                $this->deleteOrders($inHpos);
+            });
+        }
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the table name is WordPress's.
+        $products = array_map('intval', $wpdb->get_col($wpdb->prepare(
+            "SELECT ID FROM {$wpdb->posts} WHERE ID > %d AND post_type IN ('product_variation', 'product') ORDER BY post_type = 'product_variation' DESC, ID DESC",
+            $watermark
+        )));
+        foreach ($products as $productId) {
+            $product = wc_get_product($productId);
+            if ($product instanceof \WC_Product) {
+                $product->delete(true);
+            }
+        }
+    }
+
+    /**
+     * @param array<int, int> $orderIds Refunds first, so a parent's deletion finds nothing left.
+     */
+    private function deleteOrders(array $orderIds): void
+    {
+        foreach ($orderIds as $orderId) {
+            $order = wc_get_order($orderId);
+            if ($order instanceof \WC_Abstract_Order) {
+                $order->delete(true);
+            }
+        }
+    }
+
+    private function newestPostId(): int
+    {
+        global $wpdb;
+
+        return (int) $wpdb->get_var("SELECT MAX(ID) FROM {$wpdb->posts}");
+    }
+
+    protected function withHposStorage(callable $run): void
+    {
+        $yes = static function (): string {
+            return 'yes';
+        };
+        $hooks = ['pre_option_woocommerce_custom_orders_table_enabled', 'pre_option_woocommerce_feature_custom_order_tables_enabled'];
+        foreach ($hooks as $hook) {
+            add_filter($hook, $yes);
+        }
+        try {
+            $run();
+        } finally {
+            foreach ($hooks as $hook) {
+                remove_filter($hook, $yes);
+            }
+        }
     }
 
     /**

@@ -74,22 +74,6 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
      */
     private array $hookBackup = [];
 
-    /**
-     * Every order that existed when the test started; any other is the test's own and is deleted.
-     *
-     * @var array<int, true>
-     */
-    private array $ordersBefore = [];
-
-    /**
-     * Every row of the HPOS orders table when the test started. A test that switches to HPOS
-     * creates its orders there, and by tearDown() the storage is switched back, so they are found
-     * by table rather than through wc_get_orders().
-     *
-     * @var array<int, true>
-     */
-    private array $hposOrdersBefore = [];
-
     public function setUp(): void
     {
         parent::setUp();
@@ -105,8 +89,6 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
         $this->transport->install();
         $this->recordingLogger = new RecordingLogger();
         $this->userBackup = get_current_user_id();
-        $this->ordersBefore = array_fill_keys($this->everyOrderId(), true);
-        $this->hposOrdersBefore = array_fill_keys($this->everyHposOrderId(), true);
 
         foreach ([
             'mollie_webhook_secret' => CanaryData::WEBHOOK_SECRET,
@@ -134,7 +116,6 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
 
     public function tearDown(): void
     {
-        $this->deleteOrdersCreatedByTheTest();
         $this->transport->uninstall();
         $this->forgetApiClient();
         // Cached in the shared database, it would register this test's gateways in the next run.
@@ -188,87 +169,6 @@ abstract class ExpressFlowTestCase extends IntegrationMockedTestCase
                 $GLOBALS['wp_filter'][$hook] = $listeners;
             }
         }
-    }
-
-    /**
-     * The shared test site keeps no fixture cleanup of its own (IntegrationMockedTestCase leaves
-     * orders behind), so an express test removes every order it created, in any status, notes and
-     * refunds with it. A later scenario — cleanup above all, which selects orders by age — must never
-     * find another test's order.
-     */
-    private function deleteOrdersCreatedByTheTest(): void
-    {
-        foreach ($this->everyOrderId() as $orderId) {
-            if (isset($this->ordersBefore[$orderId])) {
-                continue;
-            }
-            $order = wc_get_order($orderId);
-            if ($order instanceof \WC_Order) {
-                $order->delete(true);
-            }
-        }
-        $this->ordersBefore = [];
-
-        $leftInHpos = array_filter($this->everyHposOrderId(), function (int $orderId): bool {
-            return !isset($this->hposOrdersBefore[$orderId]);
-        });
-        if ($leftInHpos !== []) {
-            $this->withHposStorage(static function () use ($leftInHpos): void {
-                foreach ($leftInHpos as $orderId) {
-                    $order = wc_get_order($orderId);
-                    if ($order instanceof \WC_Order) {
-                        $order->delete(true);
-                    }
-                }
-            });
-        }
-        $this->hposOrdersBefore = [];
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    private function everyHposOrderId(): array
-    {
-        global $wpdb;
-        $table = $wpdb->prefix . 'wc_orders';
-        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) !== $table) {
-            return [];
-        }
-
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the table name is WooCommerce's.
-        return array_map('intval', $wpdb->get_col("SELECT id FROM {$table} WHERE type = 'shop_order'"));
-    }
-
-    private function withHposStorage(callable $run): void
-    {
-        $yes = static function (): string {
-            return 'yes';
-        };
-        $hooks = ['pre_option_woocommerce_custom_orders_table_enabled', 'pre_option_woocommerce_feature_custom_order_tables_enabled'];
-        foreach ($hooks as $hook) {
-            add_filter($hook, $yes);
-        }
-        try {
-            $run();
-        } finally {
-            foreach ($hooks as $hook) {
-                remove_filter($hook, $yes);
-            }
-        }
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    private function everyOrderId(): array
-    {
-        return array_map('intval', wc_get_orders([
-            'limit' => -1,
-            'return' => 'ids',
-            'type' => 'shop_order',
-            'status' => array_merge(array_keys(wc_get_order_statuses()), ['trash', 'wc-checkout-draft', 'draft', 'auto-draft']),
-        ]));
     }
 
     // ──────────────────────────────────────────────────────────────────────────

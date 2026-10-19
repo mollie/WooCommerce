@@ -17,6 +17,8 @@ final class CartFacts
      * @param list<CartFee> $fees
      * @param list<CartCoupon> $coupons
      * @param string $destination The one the shipping rates were calculated for.
+     * @param bool $taxesFollowCustomerAddress Taxes are calculated on the customer's address, not the shop's.
+     * @param bool $customerAddressSaved The address the taxes follow is saved on the customer's account.
      */
     public function __construct(
         private array $lines,
@@ -28,7 +30,9 @@ final class CartFacts
         private array $coupons = [],
         private ?CartShipping $shipping = null,
         private string $cartHash = '',
-        private string $destination = ''
+        private string $destination = '',
+        private bool $taxesFollowCustomerAddress = false,
+        private bool $customerAddressSaved = false
     ) {
     }
 
@@ -89,5 +93,15 @@ final class CartFacts
     public function destination(): string
     {
         return $this->destination;
+    }
+
+    public function taxesFollowCustomerAddress(): bool
+    {
+        return $this->taxesFollowCustomerAddress;
+    }
+
+    public function customerAddressSaved(): bool
+    {
+        return $this->customerAddressSaved;
     }
 }

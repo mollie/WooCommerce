@@ -10,6 +10,7 @@ use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\RecordingLogger;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
+use Mollie\WooCommerceTests\Integration\Common\Fixtures\ProductPresets;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use Psr\Log\LoggerInterface;
 use WP_REST_Response;
@@ -360,6 +361,56 @@ class StartExpressSessionTest extends ExpressFlowTestCase
             'an empty cart' => [[], false, 'cart_empty'],
             'a subscription in the cart' => [['subscription'], false, 'subscription_in_cart'],
             'Express is unavailable in test mode' => [['simple'], true, 'mode_not_allowed'],
+        ];
+    }
+
+    /**
+     * Scenario: a cart whose taxes wait for an address nobody gave is refused before Mollie is asked
+     *   Given a guest with a cart with nothing to ship and an empty checkout form
+     *   And taxes based on the customer's billing (or shipping) address
+     *   When a session is requested
+     *   Then it is answered 409 as not available, with the reason tax_address_unknown
+     *   And nothing is sent to Mollie
+     *
+     * @test
+     * @dataProvider taxBasesOnTheCustomer
+     */
+    public function it_refuses_a_session_without_a_mollie_call_when_taxes_wait_for_the_address(string $taxBasedOn): void
+    {
+        $this->setOptionForTest('woocommerce_calc_taxes', 'yes');
+        $this->setOptionForTest('woocommerce_tax_based_on', $taxBasedOn);
+        $product = wc_get_product((int) wc_get_product_id_by_sku(ProductPresets::get()['simple']['sku']));
+        $this->assertInstanceOf(\WC_Product::class, $product);
+        $wasVirtual = $product->get_virtual();
+        $product->set_virtual(true);
+        $product->save();
+        try {
+            $this->bootExpress();
+            $this->actAsGuest();
+            $this->cartWith(['simple']);
+            $this->fillCheckoutForm([], []);
+            $this->recalculate();
+            $this->assertFalse(WC()->cart->needs_shipping(), 'The cart must ship nothing, or the scenario proves nothing.');
+
+            $response = $this->startSession();
+        } finally {
+            $product->set_virtual($wasVirtual);
+            $product->save();
+        }
+
+        $this->assertSame(409, $response->get_status());
+        $this->assertSame('tax_address_unknown', $this->loggedEvents('express.session.refused')[0]['context']['reason'] ?? null);
+        $this->assertSame([], $this->fakeMollie()->requests('POST'));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public function taxBasesOnTheCustomer(): array
+    {
+        return [
+            'taxes on the billing address' => ['billing'],
+            'taxes on the shipping address' => ['shipping'],
         ];
     }
 

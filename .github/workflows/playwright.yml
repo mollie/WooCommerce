@@ -64,7 +64,8 @@ on:
 #      - 'composer.json'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Payment/order API and single/multistep runs use different ngrok endpoints
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.API_METHOD }}-${{ inputs.CHECKOUT }}
   cancel-in-progress: true
 
 jobs:

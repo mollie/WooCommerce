@@ -2,7 +2,8 @@
  * External dependencies
  */
 import fs from 'fs';
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { Client as MollieClientApi } from 'mollie-api-typescript';
 import {
 	APIRequestContext,
@@ -40,6 +41,8 @@ import {
 } from './frontend';
 import { MollieApi, Utils } from '.';
 import { MollieSettings, mollieApiKeys } from '../resources';
+
+const execAsync = promisify( exec );
 
 type TestBaseExtend = BaseExtend & {
 	recordVideoOptions: {
@@ -89,24 +92,22 @@ const test = base.extend< TestBaseExtend >( {
 			}
 			let log = '';
 			try {
-				log = execSync(
+				// Async, so a slow wp-env call doesn't block the worker
+				( { stdout: log } = await execAsync(
 					'npx wp-env run tests-cli bash -c "tail -n 200 wp-content/uploads/wc-logs/mollie-payments-for-woocommerce-*.log"',
-					{
-						encoding: 'utf8',
-						stdio: [ 'ignore', 'pipe', 'ignore' ],
-						timeout: 30_000,
-					}
-				);
+					{ encoding: 'utf8', timeout: 30_000 }
+				) );
 			} catch {
 				return; // no log yet or wp-env not reachable
 			}
+			// Parallel shards share one site, so the log can hold other tests' entries
+			const note = testInfo.config.workers > 1
+				? 'Note: this shard runs tests in parallel, so the log can contain entries from other tests.\n\n'
+				: '';
 			await testInfo.attach( 'mollie-log', {
-				body: log,
+				body: note + log,
 				contentType: 'text/plain',
 			} );
-			if ( process.env.CI ) {
-				console.log( `--- Mollie log (${ testInfo.title }) ---\n${ log }` );
-			}
 		},
 		{ auto: true },
 	],

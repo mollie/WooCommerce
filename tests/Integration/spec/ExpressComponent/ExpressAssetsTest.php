@@ -226,6 +226,46 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         ];
     }
 
+    /**
+     * Scenario: the cart is totalled for ownership only on the block checkout
+     *   Given a guest with a cart priced at page load
+     *   When a page enqueues its scripts
+     *   Then WooCommerce totals the cart for that only on the store's block checkout page
+     *
+     * @test
+     * @dataProvider pagesThatTotalTheCart
+     */
+    public function it_totals_the_cart_for_ownership_only_on_the_block_checkout(string $page, bool $totals): void
+    {
+        $this->bootExpressOwning(['wp_enqueue_scripts', self::OWNS_SURFACE]);
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+        $this->chooseRate('standard');
+        $calculated = 0;
+        $this->addTestFilter('woocommerce_before_calculate_totals', static function () use (&$calculated): void {
+            $calculated++;
+        });
+
+        $this->openPage($page, false);
+
+        $this->assertSame($totals, $calculated > 0, $totals ? 'Ownership is decided from the totalled cart.' : 'Only the block checkout may total the cart.');
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    public function pagesThatTotalTheCart(): array
+    {
+        return [
+            'block checkout' => ['block checkout', true],
+            'block cart' => ['block cart', false],
+            'product page' => ['product', false],
+            'classic checkout' => ['classic checkout', false],
+            'a page with the checkout block that is not the checkout page' => ['stray checkout block', false],
+        ];
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // What is localized
     // ──────────────────────────────────────────────────────────────────────────
@@ -269,7 +309,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         $this->assertSame(rest_url('mollie/v1/'), $data['restUrl']);
 
         $this->assertIsArray($data['messages']);
-        $this->assertSame(__('Ships to', 'mollie-payments-for-woocommerce'), $data['messages']['shipsTo'] ?? null);
+        $this->assertSame(__('Ships to %1$s · %2$s', 'mollie-payments-for-woocommerce'), $data['messages']['shipsTo'] ?? null);
         $this->assertSame(__('Change', 'mollie-payments-for-woocommerce'), $data['messages']['change'] ?? null);
         foreach (['shippingIncomplete', 'waitingForShipping'] as $gone) {
             $this->assertArrayNotHasKey($gone, $data['messages'], "The blocked state renders nothing, so '{$gone}' is not sent.");
@@ -343,6 +383,47 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             $this->offered($data['buttons']),
             'Offered wallets are wrong in ' . wp_json_encode($data['buttons'])
         );
+    }
+
+    /**
+     * Scenario: Google Pay is offered once its payment method is turned on
+     *   Given Google Pay activated at Mollie
+     *   And PayPal enabled with its express button on the checkout, Apple Pay's express button off
+     *   And the Google Pay payment method's one setting on or off
+     *   When the owned block checkout enqueues its scripts
+     *   Then the buttons map offers Google Pay exactly when that setting is on
+     *   And offers PayPal and hides Apple Pay either way
+     *
+     * @test
+     * @dataProvider googlePaySetting
+     */
+    public function it_offers_google_pay_once_its_payment_method_is_turned_on(string $enabled, bool $offered): void
+    {
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        $this->setGatewaySettingsForTest('googlepay', ['enabled' => $enabled]);
+
+        $this->openPage('block checkout');
+        $data = $this->localizedExpressData();
+
+        $this->assertIsArray($data);
+        $this->assertIsArray($data['buttons']);
+        $this->assertSame(
+            ['applepay' => false, 'googlepay' => $offered, 'paypal' => true],
+            $this->offered($data['buttons']),
+            'Offered wallets are wrong in ' . wp_json_encode($data['buttons'])
+        );
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    public function googlePaySetting(): array
+    {
+        return [
+            'switched on' => ['yes', true],
+            'switched off' => ['no', false],
+        ];
     }
 
     // ──────────────────────────────────────────────────────────────────────────

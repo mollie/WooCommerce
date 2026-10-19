@@ -6,11 +6,13 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
 use Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
+use Mollie\WooCommerce\PaymentMethods\Constants;
 use Mollie\WooCommerce\Components\AcceptedLocaleValuesDictionary;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\Fixtures\ProductPresets;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
+use Psr\Container\ContainerInterface;
 use WP_Query;
 use WP_Scripts;
 
@@ -43,6 +45,8 @@ class ExpressAssetsTest extends ExpressFlowTestCase
 
     private const PAYPAL_CHECKOUT = 'mollie_paypal_button_enabled_checkout';
 
+    private const GATEWAY_ID = 'mollie_wc_gateway_' . Constants::EXPRESSCHECKOUT;
+
     /**
      * @var array<int, int>
      */
@@ -51,6 +55,10 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     private ?WP_Scripts $scriptsBackup = null;
 
     private ?int $wpActionBackup = null;
+
+    private ?ContainerInterface $container = null;
+
+    private ?string $requestUriBackup = null;
 
     /**
      * @var array<string, mixed>
@@ -62,6 +70,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         parent::setUp();
         $this->setUpExpressCheckout();
 
+        $this->requestUriBackup = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : null;
         $this->globalsBackup = [
             'wp_query' => $GLOBALS['wp_query'] ?? null,
             'wp_the_query' => $GLOBALS['wp_the_query'] ?? null,
@@ -89,6 +98,12 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         }
         $this->forgetPageType();
         unset($GLOBALS['wp']->query_vars['order-received']);
+        if ($this->requestUriBackup === null) {
+            unset($_SERVER['REQUEST_URI']);
+        } else {
+            $_SERVER['REQUEST_URI'] = $this->requestUriBackup;
+        }
+        $this->container = null;
         if ($this->scriptsBackup !== null) {
             $GLOBALS['wp_scripts'] = $this->scriptsBackup;
         }
@@ -193,6 +208,155 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             'block checkout, no wallet button on' => ['block checkout', 'no wallet button'],
             'block checkout on plain HTTP' => ['block checkout', 'plain HTTP'],
         ];
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // The gateway Blocks lists
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Scenario: the block checkout offers the Express Component as a payment method
+     *   Given a block checkout Express owns
+     *   When WooCommerce asks which gateways are available
+     *   Then the Express Component is one of them
+     *
+     * @test
+     */
+    public function it_offers_the_gateway_on_an_owned_block_checkout(): void
+    {
+        $this->openPage('block checkout');
+
+        $this->assertTrue($this->gateway()->is_available());
+    }
+
+    /**
+     * Scenario: the gateway is offered nowhere else
+     *   Given one of the pages, or shops, where Express does not own a block checkout
+     *   When WooCommerce asks which gateways are available
+     *   Then the Express Component is not one of them; the classic checkout never lists it
+     *
+     * @test
+     * @dataProvider pagesExpressDoesNotOwn
+     */
+    public function it_offers_the_gateway_nowhere_express_does_not_own(string $page, string $shop): void
+    {
+        switch ($shop) {
+            case 'test mode':
+                $this->useTestMode();
+                break;
+            case 'no wallet button':
+                $this->setGatewaySettingsForTest('paypal', [self::PAYPAL_CHECKOUT => 'no']);
+                $this->setGatewaySettingsForTest('applepay', [self::APPLE_PAY_EXPRESS => 'no']);
+                break;
+            case 'plain HTTP':
+                $http = static function (): string {
+                    return 'http://shop.example';
+                };
+                $this->addTestFilter('pre_option_home', $http, PHP_INT_MAX);
+                $this->addTestFilter('pre_option_siteurl', $http, PHP_INT_MAX);
+                break;
+        }
+
+        $this->openPage($page);
+
+        $this->assertFalse($this->gateway()->is_available());
+    }
+
+    /**
+     * Scenario: Store API requests see the gateway, so Blocks can list, save and validate it
+     *   Given Express owns the block checkout
+     *   When a Store API request asks which gateways are available
+     *   Then the Express Component is one of them
+     *
+     * @test
+     */
+    public function it_offers_the_gateway_to_store_api_requests(): void
+    {
+        $this->openPage('product');
+        $_SERVER['REQUEST_URI'] = '/' . rest_get_url_prefix() . '/wc/store/v1/cart';
+
+        $this->assertTrue($this->gateway()->is_available());
+    }
+
+    /**
+     * Scenario: the gateway stays offered once its settings were read
+     *   Given Express owns the block checkout
+     *   And something reads one of the gateway's options, as the checkout route's hooks do
+     *   When a Store API request asks which gateways are available
+     *   Then the Express Component is still one of them, although it has no saved settings
+     *
+     * @test
+     */
+    public function it_stays_available_after_its_settings_were_read(): void
+    {
+        $this->openPage('product');
+        $_SERVER['REQUEST_URI'] = '/' . rest_get_url_prefix() . '/wc/store/v1/checkout';
+        delete_option(self::GATEWAY_ID . '_settings');
+        $gateway = $this->gateway();
+        $gateway->settings = [];
+
+        $gateway->get_option('title');
+
+        $this->assertTrue($gateway->is_available());
+    }
+
+    /**
+     * Scenario: a checkout placed with the gateway is refused
+     *   Given the Express Component is the selected payment method
+     *   When the checkout is placed anyway
+     *   Then the payment fails with the message to pay with an express checkout button
+     *
+     * @test
+     */
+    public function it_refuses_a_checkout_placed_with_the_gateway(): void
+    {
+        $this->openPage('block checkout');
+        wc_clear_notices();
+        $order = wc_create_order();
+
+        $result = $this->gateway()->process_payment((string) $order->get_id());
+
+        $this->assertSame('failure', $result['result']);
+        $this->assertSame(
+            ['Please pay with one of the express checkout buttons.'],
+            array_column(wc_get_notices('error'), 'notice')
+        );
+        wc_clear_notices();
+    }
+
+    /**
+     * Scenario: wp-admin does not offer the gateway to configure
+     *   Given an admin opens the WooCommerce payment settings
+     *   When WooCommerce lists the gateways
+     *   Then the Express Component is not one of them
+     *
+     * @test
+     */
+    public function it_registers_no_gateway_in_wp_admin(): void
+    {
+        require_once ABSPATH . 'wp-admin/includes/class-wp-screen.php';
+        require_once ABSPATH . 'wp-admin/includes/screen.php';
+        set_current_screen('woocommerce_page_wc-settings');
+        try {
+            // Earlier boots' gateway filters would add theirs.
+            $this->bootExpressOwning(['wp_enqueue_scripts', 'woocommerce_payment_gateways']);
+
+            $this->assertArrayNotHasKey(
+                self::GATEWAY_ID,
+                WC()->payment_gateways()->payment_gateways()
+            );
+        } finally {
+            unset($GLOBALS['current_screen']);
+        }
+    }
+
+    private function gateway(): \WC_Payment_Gateway
+    {
+        $this->assertNotNull($this->container, 'openPage() boots the module.');
+        $gateways = WC()->payment_gateways()->payment_gateways();
+        $this->assertArrayHasKey(self::GATEWAY_ID, $gateways);
+
+        return $gateways[self::GATEWAY_ID];
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -364,7 +528,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     private function openPage(string $page, bool $boot = true): void
     {
         if ($boot) {
-            $this->bootExpressOwning(['wp_enqueue_scripts']);
+            $this->container = $this->bootExpressOwning(['wp_enqueue_scripts']);
         }
 
         switch ($page) {

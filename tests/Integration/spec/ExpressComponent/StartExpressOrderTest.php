@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
+use Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields;
+use Automattic\WooCommerce\Blocks\Package;
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Shared\Clock;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
@@ -28,6 +31,8 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     use ExpressCheckoutFixtures;
 
     private const PAYPAL_GATEWAY = 'mollie_wc_gateway_paypal';
+
+    private const ORDER_FIELD = 'mollie-test/purchase-order';
 
     private SettableClock $clock;
 
@@ -57,6 +62,9 @@ class StartExpressOrderTest extends ExpressFlowTestCase
             $product->save();
         }
         $this->changedProducts = [];
+        if (function_exists('__internal_woocommerce_blocks_deregister_checkout_field')) {
+            __internal_woocommerce_blocks_deregister_checkout_field(self::ORDER_FIELD);
+        }
         $this->tearDownExpressCheckout();
 
         parent::tearDown();
@@ -472,6 +480,89 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a required checkout field left empty is refused as Place order would refuse it
+     *   Given a shop with a required additional order field
+     *   And a guest whose session was started
+     *   When the order is requested without that field
+     *   Then it is answered ok=false, checkout_invalid, naming the field
+     *   And no order is created
+     *
+     * @test
+     */
+    public function it_refuses_an_order_while_a_required_checkout_field_is_empty(): void
+    {
+        $this->registerCheckoutField(true);
+        $this->readyGuestCheckout();
+        $this->startedSession();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrderWith(['additional_fields' => [self::ORDER_FIELD => '']]);
+
+        $this->assertRefused($response, 'checkout_invalid');
+        $this->assertSame(400, $response->get_status());
+        $this->assertStringContainsString('Purchase order', (string) $response->get_data()['message']);
+        $this->assertSame($before, $this->allOrderIds());
+    }
+
+    /**
+     * Scenario: another plugin's check of the checkout form refuses the order
+     *   Given a plugin that rejects the order fields, as it would at Place order
+     *   And a guest whose session was started
+     *   When the order is requested
+     *   Then it is answered ok=false with the plugin's message
+     *   And no order is created
+     *
+     * @test
+     */
+    public function it_refuses_with_another_plugins_reason_for_the_checkout_form(): void
+    {
+        $this->registerCheckoutField(false);
+        $this->addTestFilter(
+            'woocommerce_blocks_validate_location_order_fields',
+            static function (\WP_Error $errors): void {
+                $errors->add('po_closed', 'Purchase orders are closed today.');
+            }
+        );
+        $this->readyGuestCheckout();
+        $this->startedSession();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrderWith(['additional_fields' => [self::ORDER_FIELD => 'PO-7']]);
+
+        $this->assertRefused($response, 'checkout_invalid');
+        $this->assertStringContainsString('Purchase orders are closed today.', (string) $response->get_data()['message']);
+        $this->assertSame($before, $this->allOrderIds());
+    }
+
+    /**
+     * Scenario: what the shopper entered beside the wallet ends up on the order
+     *   Given a shop with an additional order field
+     *   And a guest whose session was started
+     *   When the order is requested with an order note and a value for the field
+     *   Then the order carries the note and the value, as Place order would have saved them
+     *
+     * @test
+     */
+    public function it_writes_the_order_note_and_the_additional_fields_to_the_order(): void
+    {
+        $fields = $this->registerCheckoutField(true);
+        $this->readyGuestCheckout();
+        $this->startedSession();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrderWith([
+            'customer_note' => 'Please ring twice.',
+            'additional_fields' => [self::ORDER_FIELD => 'PO-7'],
+        ]);
+
+        $this->assertAnsweredOk($response);
+        $created = array_values(array_diff($this->allOrderIds(), $before));
+        $order = wc_get_order($created[0]);
+        $this->assertSame('Please ring twice.', $order->get_customer_note());
+        $this->assertSame('PO-7', $fields->get_field_from_object(self::ORDER_FIELD, $order, 'other'));
+    }
+
+    /**
      * Scenario: an order request that did not come from the shop's own page is refused
      *   Given a guest whose session was started
      *   When the order request carries no nonce, an invalid one, or a nonce for another action
@@ -714,6 +805,31 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
+
+    private function registerCheckoutField(bool $required): CheckoutFields
+    {
+        woocommerce_register_additional_checkout_field([
+            'id' => self::ORDER_FIELD,
+            'label' => 'Purchase order',
+            'location' => 'order',
+            'type' => 'text',
+            'required' => $required,
+        ]);
+
+        return Package::container()->get(CheckoutFields::class);
+    }
+
+    /**
+     * @param array<string, mixed> $form
+     */
+    private function startOrderWith(array $form): WP_REST_Response
+    {
+        return $this->restRequest(
+            'POST',
+            '/mollie/v1/express/order',
+            ['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)] + $form
+        );
+    }
 
     private function clockService(): callable
     {

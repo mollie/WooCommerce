@@ -1,5 +1,6 @@
 /**
- * Posts to the store's express routes. Sends only the nonce: the store reads the cart itself.
+ * Posts to the store's express routes. Sends the nonce, and to the order route the checkout form:
+ * the store reads the cart itself.
  * apiFetch keeps a logged-in shopper logged in. Always answers an object, never throws:
  *   { ok: true, data }
  *   { ok: false, code, message }  code 'network' when the store was not reached
@@ -13,17 +14,18 @@ export const SESSION_ROUTE = 'express/session';
 export const ORDER_ROUTE = 'express/order';
 
 /**
- * @param {{restUrl: string, nonce: string}} data  The localized mollieExpressData.
- * @param {string}                           route SESSION_ROUTE or ORDER_ROUTE.
+ * @param {{restUrl: string, nonce: string}} data   The localized mollieExpressData.
+ * @param {string}                           route  SESSION_ROUTE or ORDER_ROUTE.
+ * @param {Object}                           fields Sent along with the nonce.
  * @return {Promise<Object>} The answer, as described above.
  */
-export async function postToStore( { restUrl, nonce }, route ) {
+export async function postToStore( { restUrl, nonce }, route, fields = {} ) {
 	let response;
 	try {
 		response = await apiFetch( {
 			url: restUrl + route,
 			method: 'POST',
-			data: { nonce },
+			data: { ...fields, nonce },
 			parse: false,
 		} );
 	} catch ( thrown ) {

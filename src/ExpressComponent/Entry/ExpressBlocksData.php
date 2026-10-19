@@ -33,9 +33,14 @@ class ExpressBlocksData
             'messages' => [
                 'shippingIncomplete' => ExpressRoutes::messageFor('shipping_incomplete'),
                 'unavailable' => ExpressRoutes::messageFor('mollie_unavailable'),
+                'checkForm' => ExpressRoutes::messageFor('checkout_invalid'),
                 'placeholder' => __('Express checkout', 'mollie-payments-for-woocommerce'),
                 'waitingForShipping' => __(
                     'Waiting for the shipping cost…',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'useExpressButtons' => __(
+                    'Please pay with one of the express checkout buttons.',
                     'mollie-payments-for-woocommerce'
                 ),
             ],

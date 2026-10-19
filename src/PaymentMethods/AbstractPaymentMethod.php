@@ -277,7 +277,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
 
     private function getApiTitle(ContainerInterface $container): string
     {
-        $apiMethod = $container->get('gateway.getPaymentMethodsAfterFeatureFlag')[$this->getIdFromConfig()];
+        $apiMethod = $container->get('gateway.getPaymentMethodsAfterFeatureFlag')[$this->getIdFromConfig()] ?? null;
         $apiTitle = $apiMethod['description'] ?? null;
         return $apiTitle ?: $this->config['defaultTitle'];
     }
@@ -287,7 +287,7 @@ abstract class AbstractPaymentMethod implements PaymentMethodI, PaymentMethodDef
      */
     private function getApiIcon(ContainerInterface $container): ?string
     {
-        $apiMethod = $container->get('gateway.getPaymentMethodsAfterFeatureFlag')[$this->getIdFromConfig()];
+        $apiMethod = $container->get('gateway.getPaymentMethodsAfterFeatureFlag')[$this->getIdFromConfig()] ?? null;
         $svg = $apiMethod['image']->svg ?? null;
 
         return is_string($svg) && $svg !== '' ? $svg : null;

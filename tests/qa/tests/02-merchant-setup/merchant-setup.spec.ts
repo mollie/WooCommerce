@@ -13,8 +13,8 @@ test.describe.serial( () => {
 		await mollieSettingsAdvanced.cleanDb();
 		await mollieSettingsApiKeys.visit();
 		await expect(
-			mollieSettingsApiKeys.failedToConnectToMollieApiText(),
-			'Assert failed to connect to Mollie API text is visible'
+			mollieSettingsApiKeys.noApiKeyProvidedText(),
+			'Assert no API key provided text is visible'
 		).toBeVisible();
 	} );
 

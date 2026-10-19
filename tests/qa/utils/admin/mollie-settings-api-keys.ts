@@ -13,9 +13,9 @@ export class MollieSettingsApiKeys extends MollieSettingsPage {
 	// Locators
 	successfullyConnectedWithTestApiText = () =>
 		this.page.getByText( 'Successfully connected with Test API' );
-	failedToConnectToMollieApiText = () =>
+	noApiKeyProvidedText = () =>
 		this.page.getByText(
-			'Failed to connect to Mollie API - check your API keys'
+			'No API key provided. Please set your Mollie API keys below.'
 		);
 	molliePaymentModeSelect = () =>
 		this.page.locator(

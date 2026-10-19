@@ -1,19 +1,12 @@
 /**
  * Internal dependencies
  */
-import { createStorageStates, resetEnvironment, test as setup } from '../../utils';
+import { test as setup } from '../../utils';
+import { setupWooCommerce } from '../../utils/helpers/';
 import { taxSettings } from '../../resources';
 
-// --- Reset env ---
-
-setup.describe( 'env:reset;', async () => {
-	setup( 'Setup: Reset Environment', async () => {
-		await resetEnvironment();
-	} );
-
-	setup( 'Setup: Create storage state', async () => {
-		await createStorageStates();
-	} );
+setup.describe( 'setup:wc;', async () => {
+	await setupWooCommerce();
 } );
 
 // --- Checkout layout ---

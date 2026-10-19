@@ -7,18 +7,7 @@ import {
 	gateways,
 	guests,
 	products,
-	shopConfigClassic,
 } from '../../resources';
-
-test.beforeAll( async ( { utils, wooCommerceUtils } ) => {
-	await utils.configureStore( {
-		...shopConfigClassic,
-		enableSubscriptionsPlugin: true,
-	} );
-	await wooCommerceUtils.createProduct( products.mollieSubscription100 );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-} );
 
 test( `C3348 | Validate that only the correct payment methods (that supports a first mandate) are displayed for recurring products `, async ( {
 	utils,

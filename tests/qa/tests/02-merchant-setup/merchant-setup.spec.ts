@@ -5,11 +5,6 @@ import { expect, test } from '../../utils';
 import { gateways } from '../../resources';
 
 test.describe.serial( () => {
-	test.beforeAll( async ( { utils } ) => {
-		await utils.installAndActivateMollie();
-		await utils.cleanReconnectMollie();
-	} );
-
 	test( 'C3511 | Validate an error message is returned when the test key is not valid/empty @Critical', async ( {
 		mollieSettingsApiKeys,
 		mollieSettingsAdvanced,
@@ -18,8 +13,8 @@ test.describe.serial( () => {
 		await mollieSettingsAdvanced.cleanDb();
 		await mollieSettingsApiKeys.visit();
 		await expect(
-			mollieSettingsApiKeys.failedToConnectToMollieApiText(),
-			'Assert failed to connect to Mollie API text is visible'
+			mollieSettingsApiKeys.noApiKeyProvidedText(),
+			'Assert no API key provided text is visible'
 		).toBeVisible();
 	} );
 

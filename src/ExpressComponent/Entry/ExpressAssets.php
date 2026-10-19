@@ -28,11 +28,12 @@ class ExpressAssets
     }
 
     /**
-     * @param bool $owns Whether Express owns the checkout, decided once for the request.
+     * @param callable(): bool $owns Whether Express owns the checkout, decided once for the request.
+     *        Asked only on the block checkout: it loads and totals the cart.
      */
-    public function enqueue(bool $owns): void
+    public function enqueue(callable $owns): void
     {
-        if (!$owns || !$this->isBlockCheckout()) {
+        if (!$this->isBlockCheckout() || !$owns()) {
             return;
         }
         $settings = $this->facts->settings();

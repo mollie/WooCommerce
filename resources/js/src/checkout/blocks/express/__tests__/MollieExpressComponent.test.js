@@ -24,9 +24,15 @@ import { postToStore, SESSION_ROUTE } from '../expressTransport';
 
 const SESSION_LIFETIME_MS = 15 * 60 * 1000;
 
-jest.mock( '@woocommerce/settings', () => ( { getSetting: () => ( {} ) } ), {
-	virtual: true,
-} );
+/** What the block checkout sends through getSetting(); nothing by default. */
+let mockSettings = {};
+jest.mock(
+	'@woocommerce/settings',
+	() => ( {
+		getSetting: ( name, fallback ) => mockSettings[ name ] ?? fallback,
+	} ),
+	{ virtual: true }
+);
 /**
  * The cart store as the checkout holds it. By default a cart with nothing to ship, ready to pay.
  *
@@ -209,7 +215,7 @@ describe( 'what the express area shows', () => {
 		buttons: {},
 		messages: {
 			unavailable: 'Unavailable',
-			shipsTo: 'Ships to',
+			shipsTo: 'Ships to %1$s · %2$s',
 			change: 'Change',
 		},
 	};
@@ -245,6 +251,8 @@ describe( 'what the express area shows', () => {
 		container.remove();
 		shippingFields.remove();
 		mockCart = mockCartStore();
+		mockSettings = {};
+		data.messages.shipsTo = 'Ships to %1$s · %2$s';
 		jest.useRealTimers();
 	} );
 
@@ -365,6 +373,97 @@ describe( 'what the express area shows', () => {
 			document.getElementById( 'shipping-address_1' )
 		);
 	} );
+
+	/**
+	 * Scenario: the address reads as its country writes it
+	 *   Given the block checkout sends the US address format
+	 *   And a cart that ships to a complete US address, with a chosen rate
+	 *   When the checkout renders the express area
+	 *   Then the line reads the address in US order, without the name or the country
+	 */
+	it( "writes the address in its country's format", async () => {
+		mockSettings = {
+			countryData: {
+				US: {
+					format: '{name}\n{company}\n{address_1}\n{address_2}\n{city}, {state_code} {postcode}\n{country}',
+					states: { IL: 'Illinois' },
+				},
+			},
+		};
+
+		await openTheCheckout( {
+			needsShipping: true,
+			address: {
+				first_name: 'Ada',
+				last_name: 'Lovelace',
+				address_1: '1 Main St',
+				city: 'Springfield',
+				state: 'IL',
+				postcode: '62701',
+				country: 'US',
+			},
+			rateSelected: true,
+		} );
+
+		expect( text( changeButton().parentElement ) ).toContain(
+			'Ships to 1 Main St, Springfield, IL 62701 · Flat rate'
+		);
+	} );
+
+	/**
+	 * Scenario: a translation puts the rate and the address in its own order
+	 *   Given a translated shipping line that names the rate before the address
+	 *   When the checkout renders the express area for a cart that ships
+	 *   Then the line follows the translation's order
+	 */
+	it( 'lets the translation order the shipping line', async () => {
+		data.messages.shipsTo = '%2$s naar %1$s';
+
+		await openTheCheckout( {
+			needsShipping: true,
+			address: ADDRESS,
+			rateSelected: true,
+		} );
+
+		expect( text( changeButton().parentElement ) ).toContain(
+			'Flat rate naar Rue du Fort 12, 1234 Luxembourg'
+		);
+	} );
+
+	/**
+	 * Scenario: an address being edited does not show half a line
+	 *   Given a checkout that loaded with a complete shipping address and a chosen rate
+	 *   When the shopper clears the street, or the rate is unselected, and the edit has not settled yet
+	 *   Then the line still reads the last complete address and rate
+	 */
+	it.each( [
+		[ 'the street is cleared', { address: { ...ADDRESS, address_1: '' } } ],
+		[ 'the rate is unselected', { rateSelected: false } ],
+	] )(
+		'keeps the last complete shipping line while %s',
+		async ( edit, change ) => {
+			mockSettings = {
+				defaultFields: {
+					address_1: { required: true },
+					postcode: { required: true },
+					city: { required: true },
+				},
+			};
+			const ready = {
+				needsShipping: true,
+				address: ADDRESS,
+				rateSelected: true,
+			};
+			await openTheCheckout( ready );
+
+			mockCart = mockCartStore( { ...ready, ...change } );
+			await render();
+
+			expect( text( changeButton().parentElement ) ).toContain(
+				'Ships to Rue du Fort 12, 1234 Luxembourg · Flat rate'
+			);
+		}
+	);
 
 	/**
 	 * Scenario: a cart with nothing to ship has no shipping line

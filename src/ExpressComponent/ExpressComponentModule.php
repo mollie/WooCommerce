@@ -59,8 +59,11 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         add_action('wp_enqueue_scripts', static function () use ($container, &$owned): void {
             $assets = $container->get(ExpressAssets::class);
             assert($assets instanceof ExpressAssets);
-            $owned[ExpressAssets::SURFACE] ??= self::owns($container, ExpressAssets::SURFACE);
-            $assets->enqueue($owned[ExpressAssets::SURFACE]);
+            $assets->enqueue(static function () use ($container, &$owned): bool {
+                $owned[ExpressAssets::SURFACE] ??= self::owns($container, ExpressAssets::SURFACE);
+
+                return $owned[ExpressAssets::SURFACE];
+            });
         });
 
         add_action('woocommerce_api_' . ExpressUrls::RETURN_API, static function () use ($container): void {

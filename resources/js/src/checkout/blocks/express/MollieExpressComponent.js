@@ -7,7 +7,7 @@
  * WordPress dependencies
  */
 import { useEffect, useRef, useState } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
+import { dispatch, select as selectStore, useSelect } from '@wordpress/data';
 /**
  * External dependencies
  */
@@ -20,6 +20,9 @@ import { MollieCheckoutManager } from './MollieCheckoutManager';
 import { ORDER_ROUTE, SESSION_ROUTE, postToStore } from './expressTransport';
 
 const CART_STORE = 'wc/store/cart';
+const PAYMENT_STORE = 'wc/store/payment';
+/** The price the store opened no session for: Blocks drops the express area until it changes. */
+let refusedFingerprint = null;
 const SETTLE_MS = 1000;
 /** A session is replaced this long before it expires. */
 const EXPIRY_MARGIN_MS = 30000;
@@ -118,7 +121,8 @@ const isSubscription = ( item ) =>
 	Boolean( item?.extensions?.subscriptions?.billing_period );
 
 /**
- * Whether the cart can be paid this way at all; Blocks hides the express area otherwise.
+ * Whether the cart can be paid this way at all; Blocks hides the express area otherwise. Not for
+ * the price the store opened no session for: Blocks asks again when the cart changes.
  *
  * @param {Object} args Blocks' canMakePayment argument.
  * @return {boolean} Whether to offer the method.
@@ -128,7 +132,9 @@ export function canMakePayment( args ) {
 	return (
 		MollieCheckoutManager.isAvailable() &&
 		items.length > 0 &&
-		! items.some( isSubscription )
+		! items.some( isSubscription ) &&
+		( refusedFingerprint === null ||
+			readCart( selectStore ).fingerprint !== refusedFingerprint )
 	);
 }
 
@@ -367,6 +373,11 @@ export default function MollieExpressComponent( {
 			}
 			manager.unmount();
 			setFailedAt( fingerprint );
+			// Blocks keeps its frame while canMakePayment holds and asks only when the cart changes.
+			refusedFingerprint = fingerprint;
+			dispatch(
+				PAYMENT_STORE
+			).__internalUpdateAvailablePaymentMethods?.();
 			if ( interacted.current ) {
 				latest.current.onError?.(
 					latest.current.data.messages.unavailable

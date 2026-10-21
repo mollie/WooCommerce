@@ -6,6 +6,7 @@
  * A session about to expire is replaced once. A replacement nobody used either is not replaced: the
  * component goes idle, and asks again only when the shopper moves, types or returns to the tab.
  * While the shipping form cannot price the cart the area shows nothing; a cart that ships says where.
+ * A cart the store opened no session for is not offered to Blocks, so its express frame goes too.
  */
 /**
  * WordPress dependencies
@@ -19,7 +20,9 @@ import { act } from 'react';
 /**
  * Internal dependencies
  */
-import MollieExpressComponent from '../MollieExpressComponent';
+import MollieExpressComponent, {
+	canMakePayment,
+} from '../MollieExpressComponent';
 import { postToStore, SESSION_ROUTE } from '../expressTransport';
 
 const SESSION_LIFETIME_MS = 15 * 60 * 1000;
@@ -41,6 +44,7 @@ jest.mock(
  * @param {Object}  cart.address       The shipping fields as the form holds them.
  * @param {boolean} cart.rateSelected  The shopper's rate is selected and priced.
  * @param {string}  cart.rateName      The selected rate's name.
+ * @param {number}  cart.quantity      How many of the one line.
  * @return {Object} What the component's select() reads.
  */
 const mockCartStore = ( {
@@ -48,8 +52,9 @@ const mockCartStore = ( {
 	address = {},
 	rateSelected = false,
 	rateName = 'Flat rate',
+	quantity = 1,
 } = {} ) => ( {
-	getCartData: () => ( { items: [ { key: 'line-1', quantity: 1 } ] } ),
+	getCartData: () => ( { items: [ { key: 'line-1', quantity } ] } ),
 	getCartTotals: () => ( {
 		currency_code: 'EUR',
 		total_price: '1000',
@@ -76,11 +81,18 @@ const mockCartStore = ( {
 	isShippingRateBeingSelected: () => false,
 } );
 let mockCart = mockCartStore();
+/** Blocks' payment store: asked to run canMakePayment again. */
+const mockPaymentStore = {
+	__internalUpdateAvailablePaymentMethods: jest.fn(),
+};
 
 jest.mock(
 	'@wordpress/data',
 	() => ( {
 		useSelect: ( mapSelect ) => mapSelect( () => mockCart ),
+		select: () => mockCart,
+		dispatch: ( store ) =>
+			store === 'wc/store/payment' ? mockPaymentStore : {},
 	} ),
 	{ virtual: true }
 );
@@ -477,5 +489,98 @@ describe( 'what the express area shows', () => {
 		expect( sessionRequests() ).toBe( 1 );
 		expect( container.textContent ).not.toContain( 'Ships to' );
 		expect( changeButton() ).toBeUndefined();
+	} );
+} );
+
+describe( 'a cart the store opened no session for', () => {
+	const SETTLE_MS = 1000;
+	const data = {
+		locale: 'en_US',
+		buttons: {},
+		messages: { unavailable: 'Unavailable' },
+	};
+	// A cart of its own: what the store refused here must not leak into the other scenarios.
+	const REFUSED = { quantity: 7 };
+	let container;
+	let root;
+
+	beforeEach( () => {
+		global.IS_REACT_ACT_ENVIRONMENT = true;
+		jest.useFakeTimers();
+		mockPaymentStore.__internalUpdateAvailablePaymentMethods.mockReset();
+		postToStore.mockReset();
+		postToStore.mockImplementation( async () => ( {
+			ok: false,
+			code: 'budget_exhausted',
+			message: '',
+		} ) );
+		container = document.createElement( 'div' );
+		document.body.appendChild( container );
+	} );
+
+	afterEach( async () => {
+		await act( async () => root.unmount() );
+		container.remove();
+		mockCart = mockCartStore();
+		jest.useRealTimers();
+	} );
+
+	const blocksArgs = () => ( {
+		cart: { cartItems: mockCart.getCartData().items },
+	} );
+
+	const render = async () => {
+		await act( async () => {
+			root = root ?? createRoot( container );
+			root.render( createElement( MollieExpressComponent, { data } ) );
+		} );
+		await flush();
+	};
+
+	/**
+	 * Scenario: the store refuses the session, so Blocks drops the express area
+	 *   Given a checkout whose cart Blocks offered to the express area
+	 *   When the store answers the session request with a refusal
+	 *   Then Blocks is asked to run canMakePayment again
+	 *   And canMakePayment says no for that cart
+	 */
+	it( 'is no longer offered to Blocks, and Blocks is asked again', async () => {
+		root = null;
+		mockCart = mockCartStore( REFUSED );
+		expect( canMakePayment( blocksArgs() ) ).toBe( true );
+
+		await render();
+
+		expect(
+			mockPaymentStore.__internalUpdateAvailablePaymentMethods
+		).toHaveBeenCalledTimes( 1 );
+		expect( canMakePayment( blocksArgs() ) ).toBe( false );
+	} );
+
+	/**
+	 * Scenario: a changed cart is offered again
+	 *   Given a cart the store opened no session for
+	 *   When the shopper changes the quantity
+	 *   Then canMakePayment says yes, and the store is asked for a session for the new cart
+	 */
+	it( 'is offered again once the cart changes', async () => {
+		root = null;
+		mockCart = mockCartStore( REFUSED );
+		await render();
+		expect( canMakePayment( blocksArgs() ) ).toBe( false );
+
+		mockCart = mockCartStore( { quantity: REFUSED.quantity + 1 } );
+		expect( canMakePayment( blocksArgs() ) ).toBe( true );
+		await render();
+		await act( async () => {
+			jest.advanceTimersByTime( SETTLE_MS );
+		} );
+		await flush();
+
+		expect(
+			postToStore.mock.calls.filter(
+				( [ , route ] ) => route === SESSION_ROUTE
+			)
+		).toHaveLength( 2 );
 	} );
 } );

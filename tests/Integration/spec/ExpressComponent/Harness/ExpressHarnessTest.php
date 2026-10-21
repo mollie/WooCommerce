@@ -127,6 +127,16 @@ class ExpressHarnessTest extends ExpressFlowTestCase
         ];
         $positiveDiscount['amount']['value'] = '25.00';
 
+        $negativeProduct = $valid;
+        $negativeProduct['lines'][] = [
+            'type' => 'physical',
+            'description' => 'Gift',
+            'quantity' => 1,
+            'unitPrice' => ['currency' => 'EUR', 'value' => '-0.02'],
+            'totalAmount' => ['currency' => 'EUR', 'value' => '-0.02'],
+        ];
+        $negativeProduct['amount']['value'] = '19.98';
+
         $withProfileId = $valid;
         $withProfileId['profileId'] = 'pfl_notallowed';
 
@@ -139,6 +149,7 @@ class ExpressHarnessTest extends ExpressFlowTestCase
             'vatAmount is off by a cent' => [$wrongVatAmount, 'lines.0.vatAmount'],
             'totalAmount is not unitPrice x quantity' => [$wrongLineTotal, 'lines.0.totalAmount'],
             'discount line with a positive unit price' => [$positiveDiscount, 'lines.1.unitPrice'],
+            'physical line with a negative unit price' => [$negativeProduct, 'lines.1.unitPrice'],
             'profileId sent with an API key' => [$withProfileId, 'profileId'],
             'lines are missing' => [$missingLines, 'lines'],
         ];

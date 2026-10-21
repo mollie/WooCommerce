@@ -207,6 +207,42 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         );
     }
 
+    /**
+     * Scenario: a product line another plugin priced below zero does not cost the shopper the wallets
+     *   Given a guest whose cart holds a product a plugin priced at -0.02 and a product above zero
+     *   When the session is requested
+     *   Then a session is created for the cart total
+     *   And the line below zero is a discount line named after its product
+     *
+     * @test
+     */
+    public function it_starts_a_session_when_a_product_line_is_below_zero(): void
+    {
+        $this->readyGuestCheckout();
+        $this->cartWith(['simple', 'simple_expensive']);
+        $belowZero = (int) wc_get_product_id_by_sku('DUMMY_SIMPLE_SKU_01');
+        $this->addTestFilter('woocommerce_before_calculate_totals', static function (\WC_Cart $cart) use ($belowZero): void {
+            foreach ($cart->get_cart() as $item) {
+                if ($item['data']->get_id() === $belowZero) {
+                    $item['data']->set_price(-0.02);
+                }
+            }
+        });
+        $this->recalculate();
+
+        $response = $this->startSession();
+
+        $this->assertSame(200, $response->get_status(), 'Expected a started session: ' . wp_json_encode($response->get_data()));
+        $payload = $this->onlySessionPayload();
+        $this->assertSame($this->cartTotal(), $payload['amount']['value']);
+        $discounts = array_values(array_filter($payload['lines'], static function (array $line) use ($belowZero): bool {
+            return $line['description'] === wc_get_product($belowZero)->get_name();
+        }));
+        $this->assertCount(1, $discounts);
+        $this->assertSame('discount', $discounts[0]['type']);
+        $this->assertStringStartsWith('-', $discounts[0]['totalAmount']['value']);
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Admission
     // ──────────────────────────────────────────────────────────────────────────

@@ -148,6 +148,9 @@ final class SessionRules
         if (in_array($type, self::NEGATIVE_TYPES, true) && $unitPrice >= 0) {
             $violations[] = self::violation("{$path}.unitPrice", "The unit price of a '{$type}' line must be negative.");
         }
+        if (!in_array($type, self::NEGATIVE_TYPES, true) && ($unitPrice < 0 || $total < 0)) {
+            $violations[] = self::violation("{$path}.unitPrice", "The amounts of a '{$type}' line must not be negative.");
+        }
         if ($discount < 0) {
             $violations[] = self::violation("{$path}.discountAmount", 'The discount amount must be positive.');
         }

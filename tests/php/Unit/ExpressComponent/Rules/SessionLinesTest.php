@@ -136,6 +136,50 @@ class SessionLinesTest extends TestCase
                 [$this->line('Pen', 3, '9.99', '21.00'), $this->line('Cup', 1, '5.00', '21.00')],
                 '24.99'
             )],
+            'a product line below zero' => [$this->cart(
+                [$this->line('Gift', 1, '-0.02', '21.00'), $this->line('Cup', 1, '1.00', '21.00')],
+                '0.98'
+            )],
+        ];
+    }
+
+    /**
+     * Scenario: a product line below zero is sent as a discount line
+     *   Given a cart where another plugin priced a product line below zero
+     *   When the session lines are built
+     *   Then that line is a discount of its whole subtotal, quantity 1, named after the product, without VAT
+     *   And the other lines keep their type and total
+     *
+     * @dataProvider productLinesBelowZero
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\SessionLines::fromCart
+     */
+    public function testSendsAProductLineBelowZeroAsADiscount(int $quantity, string $subtotal, string $total): void
+    {
+        $cart = $this->cart(
+            [$this->line('Gift', $quantity, $subtotal, '21.00'), $this->line('Cup', 1, '1.00', '21.00')],
+            $total
+        );
+
+        $lines = SessionLines::fromCart($cart);
+
+        self::assertSame([
+            'type' => 'discount',
+            'description' => 'Gift',
+            'quantity' => 1,
+            'unitPrice' => ['currency' => 'EUR', 'value' => $subtotal],
+            'totalAmount' => ['currency' => 'EUR', 'value' => $subtotal],
+        ], $lines[0]);
+        self::assertSame(['physical', '1.00'], [$lines[1]['type'], $lines[1]['totalAmount']['value']]);
+    }
+
+    /**
+     * @return array<string, array{0: int, 1: string, 2: string}>
+     */
+    public function productLinesBelowZero(): array
+    {
+        return [
+            'one unit' => [1, '-0.02', '0.98'],
+            'a quantity that does not divide the subtotal' => [3, '-0.05', '0.95'],
         ];
     }
 

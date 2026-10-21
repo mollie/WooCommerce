@@ -29,6 +29,8 @@ const EXPIRY_MARGIN_MS = 30000;
 const SHOPPER_IS_BACK = [ 'pointermove', 'pointerdown', 'keydown', 'focus' ];
 /** Refusals after which one fresh session is tried. */
 const REMOUNT_AFTER = [ 'cart_changed', 'session_expired', 'session_missing' ];
+/** WordPress's refusal when the shopper logged in in another tab: its own text is not for shoppers. */
+const LOGIN_CHANGED = 'rest_cookie_invalid_nonce';
 const ADDRESS_FIELDS = [
 	'first_name',
 	'last_name',
@@ -341,7 +343,10 @@ export default function MollieExpressComponent( {
 			return;
 		}
 
-		const message = answer.message || current.data.messages.unavailable;
+		const message =
+			answer.code === LOGIN_CHANGED
+				? current.data.messages.reload
+				: answer.message || current.data.messages.unavailable;
 		event.reject( message );
 		current.onClose?.();
 		if ( answer.code === 'network' ) {

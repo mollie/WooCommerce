@@ -281,6 +281,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *   And restUrl is the plugin's REST base
      *   And the messages hold the two labels of the "Ships to" line, and nothing for a waiting state,
      *       which is never shown
+     *   And they hold the routes' refusal text, for a refusal WordPress makes before the route runs
      *
      * @test
      */
@@ -311,6 +312,11 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         $this->assertIsArray($data['messages']);
         $this->assertSame(__('Ships to %1$s · %2$s', 'mollie-payments-for-woocommerce'), $data['messages']['shipsTo'] ?? null);
         $this->assertSame(__('Change', 'mollie-payments-for-woocommerce'), $data['messages']['change'] ?? null);
+        $this->assertSame(
+            'Express checkout could not be started. Please reload the page and try again.',
+            $data['messages']['reload'] ?? null,
+            'WordPress refuses a request whose login changed in another tab before the route runs: the script shows the route\'s own refusal text.'
+        );
         foreach (['shippingIncomplete', 'waitingForShipping'] as $gone) {
             $this->assertArrayNotHasKey($gone, $data['messages'], "The blocked state renders nothing, so '{$gone}' is not sent.");
         }

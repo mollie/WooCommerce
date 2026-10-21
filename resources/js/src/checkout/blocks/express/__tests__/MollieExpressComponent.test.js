@@ -23,7 +23,7 @@ import { act } from 'react';
 import MollieExpressComponent, {
 	canMakePayment,
 } from '../MollieExpressComponent';
-import { postToStore, SESSION_ROUTE } from '../expressTransport';
+import { ORDER_ROUTE, postToStore, SESSION_ROUTE } from '../expressTransport';
 
 const SESSION_LIFETIME_MS = 15 * 60 * 1000;
 
@@ -101,8 +101,14 @@ jest.mock( '../expressTransport', () => ( {
 	SESSION_ROUTE: 'express/session',
 	postToStore: jest.fn(),
 } ) );
+/** The component's submit handler, as the manager received it: the wallet calls it on approval. */
+let mockSubmit = null;
 jest.mock( '../MollieCheckoutManager', () => ( {
 	MollieCheckoutManager: class {
+		constructor( options, onSubmit ) {
+			mockSubmit = onSubmit;
+		}
+
 		static isAvailable() {
 			return true;
 		}
@@ -582,5 +588,113 @@ describe( 'a cart the store opened no session for', () => {
 				( [ , route ] ) => route === SESSION_ROUTE
 			)
 		).toHaveLength( 2 );
+	} );
+} );
+
+describe( 'a refused submit', () => {
+	const data = {
+		locale: 'en_US',
+		buttons: {},
+		messages: {
+			unavailable: 'Unavailable',
+			reload: 'Please reload the page and try again.',
+			shipsTo: 'Ships to %1$s · %2$s',
+			change: 'Change',
+		},
+	};
+	let container;
+	let root;
+
+	beforeEach( () => {
+		global.IS_REACT_ACT_ENVIRONMENT = true;
+		container = document.createElement( 'div' );
+		document.body.appendChild( container );
+	} );
+
+	afterEach( async () => {
+		await act( async () => root.unmount() );
+		container.remove();
+	} );
+
+	const theStoreAnswersTheOrderWith = ( answer ) => {
+		postToStore.mockReset();
+		postToStore.mockImplementation( async ( _data, route ) =>
+			route === ORDER_ROUTE
+				? answer
+				: {
+						ok: true,
+						data: {
+							clientAccessToken: 'token',
+							expiresAt: new Date(
+								Date.now() + SESSION_LIFETIME_MS
+							).toISOString(),
+						},
+				  }
+		);
+	};
+
+	const theShopperApprovesInTheWallet = async () => {
+		await act( async () => {
+			root = createRoot( container );
+			root.render( createElement( MollieExpressComponent, { data } ) );
+		} );
+		await flush();
+		const event = {
+			defer: jest.fn(),
+			resolve: jest.fn(),
+			reject: jest.fn(),
+		};
+		await act( async () => {
+			await mockSubmit( event );
+		} );
+		await flush();
+		return event;
+	};
+
+	const notice = () =>
+		container.querySelector( '.mollie-express-component__notice' )
+			?.textContent;
+
+	/**
+	 * Scenario: the shopper logged in in another tab
+	 *   Given a checkout opened as a guest
+	 *   When WordPress refuses the order request because the login changed (rest_cookie_invalid_nonce)
+	 *   Then the wallet is rejected with the reload message, and the area shows it
+	 *   And WordPress's own text is shown nowhere
+	 */
+	it( 'tells the shopper to reload when the login changed in another tab', async () => {
+		theStoreAnswersTheOrderWith( {
+			ok: false,
+			code: 'rest_cookie_invalid_nonce',
+			message: 'Cookie check failed',
+		} );
+
+		const event = await theShopperApprovesInTheWallet();
+
+		expect( event.reject ).toHaveBeenCalledWith(
+			'Please reload the page and try again.'
+		);
+		expect( notice() ).toBe( 'Please reload the page and try again.' );
+		expect( container.textContent ).not.toContain( 'Cookie check failed' );
+	} );
+
+	/**
+	 * Scenario: the store refuses with its own message
+	 *   When the order route refuses with a code and message of its own
+	 *   Then that message is the one the shopper sees
+	 */
+	it( 'shows the store’s own message for the store’s own refusals', async () => {
+		theStoreAnswersTheOrderWith( {
+			ok: false,
+			code: 'cart_invalid',
+			message: 'This item just sold out.',
+		} );
+
+		const event = await theShopperApprovesInTheWallet();
+
+		expect( event.reject ).toHaveBeenCalledWith(
+			'This item just sold out.'
+		);
+		expect( notice() ).toBe( 'This item just sold out.' );
 	} );
 } );

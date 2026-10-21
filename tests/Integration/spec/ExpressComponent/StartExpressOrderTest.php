@@ -497,6 +497,10 @@ class StartExpressOrderTest extends ExpressFlowTestCase
         $response = $this->restRequest('POST', '/mollie/v1/express/order', $params);
 
         $this->assertSame(403, $response->get_status());
+        $this->assertSame(
+            'Express checkout could not be started. Please reload the page and try again.',
+            $response->as_error()->get_error_message()
+        );
         $this->assertSame($before, $this->allOrderIds());
         $this->assertCount($mollieCalls, $this->fakeMollie()->requests());
     }

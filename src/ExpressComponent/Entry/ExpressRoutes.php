@@ -145,7 +145,7 @@ class ExpressRoutes
 
         return new WP_Error(
             'mollie_express_forbidden',
-            __('Express checkout could not be started. Please reload the page and try again.', 'mollie-payments-for-woocommerce'),
+            self::messageFor('mollie_express_forbidden'),
             ['status' => $decision->httpStatus()]
         );
     }
@@ -167,6 +167,10 @@ class ExpressRoutes
     public static function messageFor(string $code): string
     {
         return match ($code) {
+            'mollie_express_forbidden' => __(
+                'Express checkout could not be started. Please reload the page and try again.',
+                'mollie-payments-for-woocommerce'
+            ),
             'shipping_incomplete' => __(
                 'Your order contains items to ship. Please fill in the shipping details to use express checkout.',
                 'mollie-payments-for-woocommerce'

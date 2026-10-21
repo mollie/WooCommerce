@@ -1009,8 +1009,13 @@ class MollieOrderService
     protected function getPaymentMethodTitle($payment)
     {
         $payment_method_title = '';
+        // Mollie reports a wallet's payment under another method: Google Pay as creditcard.
+        $paidAs = array_column($this->container->get('express.config')['wallets'], 'paidAs', 'gatewayId');
 
-        if ('mollie_wc_gateway_' . $payment->method === $this->gateway->id) {
+        if (
+            'mollie_wc_gateway_' . $payment->method === $this->gateway->id
+            || ($paidAs[$this->gateway->id] ?? null) === $payment->method
+        ) {
             $payment_method_title = $this->gateway->method_title;
         }
         return $payment_method_title;

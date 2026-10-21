@@ -327,6 +327,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   Then the order's _mollie_payment_id and transaction id are the payment id
      *   And its _mollie_payment_mode is the payment's mode
      *   And its payment method is the plugin's method for that wallet, with that method's title
+     *   And its "Order completed" note names that method
      *
      * @test
      * @dataProvider wallets
@@ -349,6 +350,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             $paid->get_payment_method_title()
         );
         $this->assertTrue($paid->is_paid());
+        $this->assertCompletedNoteNamesTheMethod($paid, $expectedGateway, $payment['id']);
     }
 
     /**
@@ -410,7 +412,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   When Mollie calls the webhook
      *   Then the order's payment method is Google Pay, with that method's title
      *   And it has no note about an unknown wallet
-     *   And it is paid
+     *   And it is paid, with an "Order completed" note that names Google Pay
      *
      * @test
      */
@@ -433,6 +435,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         );
         $this->assertSame([], $this->notesContaining($paid, 'creditcard'), 'A Google Pay payment is not an unknown wallet.');
         $this->assertTrue($paid->is_paid());
+        $this->assertCompletedNoteNamesTheMethod($paid, 'mollie_wc_gateway_googlepay', $payment['id']);
     }
 
     /**
@@ -1620,5 +1623,19 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             $result->free();
         }
         $holder->close();
+    }
+
+    /**
+     * The note names the method as the payment method knows itself, whatever Mollie reports.
+     */
+    private function assertCompletedNoteNamesTheMethod(WC_Order $order, string $gatewayId, string $paymentId): void
+    {
+        $methodTitle = (string) WC()->payment_gateways()->payment_gateways()[$gatewayId]->method_title;
+        $this->assertNotSame('', $methodTitle);
+        $this->assertCount(
+            1,
+            $this->notesContaining($order, "Order completed using {$methodTitle} payment ({$paymentId}"),
+            'The paid note must name the method: ' . implode(' | ', $this->notesContaining($order, 'Order completed'))
+        );
     }
 }

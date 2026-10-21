@@ -39,6 +39,7 @@ class ExpressOrderFactsBuilder
 
         return new RememberedSession(
             $remembered['id'],
+            $remembered['token'],
             $remembered['ref'],
             $remembered['fingerprint'],
             $remembered['expiresAt']

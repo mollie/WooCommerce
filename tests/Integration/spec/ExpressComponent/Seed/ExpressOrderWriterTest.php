@@ -269,7 +269,7 @@ class ExpressOrderWriterTest extends ExpressFlowTestCase
     private function stamp(int $orderId): void
     {
         $writer = $this->writer();
-        $session = new RememberedSession(self::SESSION_ID, self::EXPRESS_REF, 'fingerprint', self::EXPIRES_AT);
+        $session = new RememberedSession(self::SESSION_ID, 'client-access-token', self::EXPRESS_REF, 'fingerprint', self::EXPIRES_AT);
         $this->lock()->withFreshOrder($orderId, static function (WC_Order $fresh) use ($writer, $session): void {
             $writer->stampNewOrder($fresh, $session, 'live', 'mollie_wc_gateway_applepay', 'applepay');
         });

@@ -591,7 +591,7 @@ describe( 'a cart the store opened no session for', () => {
 	} );
 } );
 
-describe( 'a refused submit', () => {
+describe( 'a submit', () => {
 	const data = {
 		locale: 'en_US',
 		buttons: {},
@@ -696,5 +696,48 @@ describe( 'a refused submit', () => {
 			'This item just sold out.'
 		);
 		expect( notice() ).toBe( 'This item just sold out.' );
+	} );
+
+	/**
+	 * Scenario: the submit names the session the wallet shows
+	 *   Given a component mounted with the session the store gave this tab
+	 *   When the shopper approves in the wallet
+	 *   Then the order request carries that session's token
+	 */
+	it( 'submits the token of the session it mounted', async () => {
+		theStoreAnswersTheOrderWith( { ok: true, data: { ok: true } } );
+
+		await theShopperApprovesInTheWallet();
+
+		const orderCalls = postToStore.mock.calls.filter(
+			( [ , route ] ) => route === ORDER_ROUTE
+		);
+		expect( orderCalls ).toHaveLength( 1 );
+		expect( orderCalls[ 0 ][ 2 ] ).toEqual( { token: 'token' } );
+	} );
+
+	/**
+	 * Scenario: another tab replaced the session this tab shows
+	 *   When the order route refuses with session_replaced
+	 *   Then the wallet is rejected with the store's message
+	 *   And the component asks the store for a session again
+	 */
+	it( 'asks for a session again when another tab replaced this one', async () => {
+		theStoreAnswersTheOrderWith( {
+			ok: false,
+			code: 'session_replaced',
+			message: 'Your order changed after express checkout was started.',
+		} );
+
+		const event = await theShopperApprovesInTheWallet();
+
+		expect( event.reject ).toHaveBeenCalledWith(
+			'Your order changed after express checkout was started.'
+		);
+		expect(
+			postToStore.mock.calls.filter(
+				( [ , route ] ) => route === SESSION_ROUTE
+			)
+		).toHaveLength( 2 );
 	} );
 } );

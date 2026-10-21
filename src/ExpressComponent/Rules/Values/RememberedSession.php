@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
-/**
- * The client access token is not kept: only the session route needs it.
- */
 final class RememberedSession
 {
     /**
@@ -14,6 +11,7 @@ final class RememberedSession
      */
     public function __construct(
         private string $sessionId,
+        private string $clientAccessToken,
         private string $expressRef,
         private string $fingerprint,
         private int $expiresAt
@@ -23,6 +21,11 @@ final class RememberedSession
     public function sessionId(): string
     {
         return $this->sessionId;
+    }
+
+    public function clientAccessToken(): string
+    {
+        return $this->clientAccessToken;
     }
 
     public function expressRef(): string

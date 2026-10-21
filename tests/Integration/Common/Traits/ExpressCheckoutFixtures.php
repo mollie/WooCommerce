@@ -29,6 +29,11 @@ trait ExpressCheckoutFixtures
     private array $filters = [];
 
     /**
+     * The token of the last session the browser was given; it submits that session.
+     */
+    private string $shownToken = '';
+
+    /**
      * @var array<int, int>
      */
     private array $zoneIds = [];
@@ -109,7 +114,10 @@ trait ExpressCheckoutFixtures
      */
     private function startSession(array $extra = []): WP_REST_Response
     {
-        return $this->restRequest('POST', '/mollie/v1/express/session', array_merge(['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)], $extra));
+        $response = $this->restRequest('POST', '/mollie/v1/express/session', array_merge(['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)], $extra));
+        $this->shownToken = (string) (((array) $response->get_data())['clientAccessToken'] ?? $this->shownToken);
+
+        return $response;
     }
 
     private function token(WP_REST_Response $response): string
@@ -333,9 +341,16 @@ trait ExpressCheckoutFixtures
         }
     }
 
-    private function startOrder(): WP_REST_Response
+    /**
+     * @param array<string, mixed> $extra
+     */
+    private function startOrder(array $extra = []): WP_REST_Response
     {
-        return $this->restRequest('POST', '/mollie/v1/express/order', ['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)]);
+        return $this->restRequest(
+            'POST',
+            '/mollie/v1/express/order',
+            array_merge(['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION), 'token' => $this->shownToken], $extra)
+        );
     }
 
     /**

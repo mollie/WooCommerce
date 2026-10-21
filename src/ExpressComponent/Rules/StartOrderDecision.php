@@ -17,8 +17,12 @@ final class StartOrderDecision
 
     private const REFUSED = 409;
 
+    /**
+     * @param string $submittedToken The client access token of the session the browser is paying.
+     */
     public static function admit(
         ?RememberedSession $session,
+        string $submittedToken,
         ?ExpressOrderFacts $existing,
         CartFacts $cart,
         int $now
@@ -26,6 +30,10 @@ final class StartOrderDecision
 
         if ($session === null) {
             return new Refuse('session_missing', self::REFUSED);
+        }
+        // Another tab started a newer session; the wallet would pay one no order is created for.
+        if (!hash_equals($session->clientAccessToken(), $submittedToken)) {
+            return new Refuse('session_replaced', self::REFUSED);
         }
         if ($now >= $session->expiresAt()) {
             return new Refuse('session_expired', self::REFUSED);

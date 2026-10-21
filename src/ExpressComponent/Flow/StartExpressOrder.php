@@ -48,14 +48,14 @@ final class StartExpressOrder
     ) {
     }
 
-    public function start(): ExpressOrderResult
+    public function start(string $submittedToken): ExpressOrderResult
     {
         $started = microtime(true);
         $this->log->step(self::FLOW . '.started', ['entry' => 'submit']);
         $result = null;
         $endedBadly = true;
         try {
-            $result = $this->startOrRefuse($endedBadly);
+            $result = $this->startOrRefuse($submittedToken, $endedBadly);
 
             return $result;
         } finally {
@@ -70,7 +70,7 @@ final class StartExpressOrder
     /**
      * @param-out bool $endedBadly
      */
-    private function startOrRefuse(bool &$endedBadly): ExpressOrderResult
+    private function startOrRefuse(string $submittedToken, bool &$endedBadly): ExpressOrderResult
     {
         $session = $this->orderFacts->rememberedSession();
         if ($session === null) {
@@ -80,8 +80,8 @@ final class StartExpressOrder
         }
 
         try {
-            $result = $this->lock->withLock($session->expressRef(), function () use ($session): ExpressOrderResult {
-                return $this->startLocked($session);
+            $result = $this->lock->withLock($session->expressRef(), function () use ($session, $submittedToken): ExpressOrderResult {
+                return $this->startLocked($session, $submittedToken);
             });
             $endedBadly = false;
 
@@ -91,12 +91,12 @@ final class StartExpressOrder
         }
     }
 
-    private function startLocked(RememberedSession $session): ExpressOrderResult
+    private function startLocked(RememberedSession $session, string $submittedToken): ExpressOrderResult
     {
         $order = $this->orderFacts->orderByRef($session->expressRef());
         $existing = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
         $cart = $this->cartFacts->fromCart() ?? new CartFacts([], false, false, false);
-        $decision = StartOrderDecision::admit($session, $existing, $cart, $this->clock->now());
+        $decision = StartOrderDecision::admit($session, $submittedToken, $existing, $cart, $this->clock->now());
         $this->logDecision($session, $existing, $cart, $decision);
 
         if ($decision instanceof Refuse) {

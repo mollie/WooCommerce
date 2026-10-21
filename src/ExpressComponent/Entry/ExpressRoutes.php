@@ -68,6 +68,11 @@ class ExpressRoutes
                         'required' => false,
                         'sanitize_callback' => 'sanitize_text_field',
                     ],
+                    'token' => [
+                        'type' => 'string',
+                        'required' => false,
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ],
                 ],
             ],
         ]);
@@ -112,7 +117,7 @@ class ExpressRoutes
 
     public function startOrder(WP_REST_Request $request): WP_REST_Response
     {
-        $result = FormPaymentMethod::setAsideDuring(fn (): ExpressOrderResult => $this->startOrder->start());
+        $result = FormPaymentMethod::setAsideDuring(fn (): ExpressOrderResult => $this->startOrder->start((string) $request->get_param('token')));
         if ($result->isOk()) {
             $data = ['ok' => true];
         } else {
@@ -179,7 +184,7 @@ class ExpressRoutes
                 'Express checkout has expired. Please try again.',
                 'mollie-payments-for-woocommerce'
             ),
-            'cart_changed' => __(
+            'cart_changed', 'session_replaced' => __(
                 'Your order changed after express checkout was started. Please try again.',
                 'mollie-payments-for-woocommerce'
             ),

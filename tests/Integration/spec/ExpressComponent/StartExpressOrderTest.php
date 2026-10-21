@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
+use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\Payment\OrderLock;
 use Mollie\WooCommerce\Shared\Clock;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\CanaryData;
@@ -423,6 +424,59 @@ class StartExpressOrderTest extends ExpressFlowTestCase
         $this->restoreCheckout($change);
         $this->assertSame(200, $this->startSession()->get_status());
         $this->assertCount(2, $this->fakeMollie()->sessions(), 'The refused session must have been discarded, not reused.');
+    }
+
+    /**
+     * Scenario: a tab that pays a session another tab replaced gets no order, and the other tab still can
+     *   Given a shopper whose checkout is open in two tabs, the second one started with the standard rate
+     *   And the first tab switched to the express rate, which started a new session for the new total
+     *   When the second tab submits the session it still shows
+     *   Then it is answered ok=false with code session_replaced and the cart_changed message
+     *   And no order is created, so the wallet takes no payment
+     *   And the first tab's session is still the shopper's: its submit creates the order for it
+     *
+     * @test
+     */
+    public function it_refuses_the_submit_of_a_session_another_tab_replaced(): void
+    {
+        $this->readyGuestCheckout();
+        $secondTab = $this->token($this->startSession());
+        $this->chooseRate('express');
+        $firstTab = $this->token($this->startSession());
+        $this->assertNotSame($secondTab, $firstTab, 'The new total must have started a new session.');
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrder(['token' => $secondTab]);
+
+        $this->assertRefused($response, 'session_replaced');
+        $this->assertSame(ExpressRoutes::messageFor('cart_changed'), ((array) $response->get_data())['message']);
+        $this->assertSame($before, $this->allOrderIds());
+
+        $this->assertAnsweredOk($this->startOrder(['token' => $firstTab]));
+        $created = array_values(array_diff($this->allOrderIds(), $before));
+        $this->assertCount(1, $created);
+        $this->assertSame((string) array_key_last($this->fakeMollie()->sessions()), wc_get_order($created[0])->get_meta('_mollie_express_session_id'));
+    }
+
+    /**
+     * Scenario: a submit that does not say which session it pays gets no order
+     *   Given a guest whose session was started
+     *   When the order is requested without the session's token
+     *   Then it is answered ok=false with code session_replaced
+     *   And no order is created
+     *
+     * @test
+     */
+    public function it_refuses_a_submit_without_the_token_of_the_session_it_pays(): void
+    {
+        $this->readyGuestCheckout();
+        $this->startedSession();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrder(['token' => '']);
+
+        $this->assertRefused($response, 'session_replaced');
+        $this->assertSame($before, $this->allOrderIds());
     }
 
     /**

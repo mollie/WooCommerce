@@ -28,6 +28,8 @@ class StartOrderDecisionTest extends TestCase
 
     private const EXPIRES_AT = self::NOW + 600;
 
+    private const TOKEN = 'token-of-the-remembered-session';
+
     /**
      * Scenario: the order WooCommerce built must cost what the session was priced for
      *   Given the total of the order just created and the cart total the session was priced from
@@ -86,16 +88,11 @@ class StartOrderDecisionTest extends TestCase
     ): void {
 
         $session = $hasSession
-            ? new RememberedSession(
-                'sess_abc',
-                'exr_abc',
-                $sameFingerprint ? PricingFingerprint::of($cart) : 'fingerprint-of-another-checkout',
-                $expiresAt
-            )
+            ? $this->session($sameFingerprint ? PricingFingerprint::of($cart) : 'fingerprint-of-another-checkout', $expiresAt)
             : null;
         $existing = $existingNeedsPayment === null ? null : $this->existingOrder($existingNeedsPayment);
 
-        $decision = StartOrderDecision::admit($session, $existing, $cart, self::NOW);
+        $decision = StartOrderDecision::admit($session, self::TOKEN, $existing, $cart, self::NOW);
 
         self::assertSame($expected, $decision instanceof Refuse ? 'refuse:' . $decision->code() : 'admit');
         if (!$decision instanceof Refuse) {
@@ -133,6 +130,53 @@ class StartOrderDecisionTest extends TestCase
             'repriced with an order: cart_changed' => [true, self::EXPIRES_AT, false, true, $shipsReady, 'refuse:cart_changed'],
             'repriced with a paid order: cart_changed' => [true, self::EXPIRES_AT, false, false, $shipsReady, 'refuse:cart_changed'],
         ];
+    }
+
+    /**
+     * Scenario: an order is started only for the session the browser shows
+     *   Given a remembered session and the token of the session the browser submits
+     *   When the decision is asked
+     *   Then a different or missing token is refused with session_replaced, before any other guard
+     *   And the same token goes on to the other guards
+     *
+     * @dataProvider submittedTokens
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision::admit
+     */
+    public function testStartsAnOrderOnlyForTheSessionTheBrowserShows(string $submittedToken, int $expiresAt, string $expected): void
+    {
+        $cart = $this->cart(true, true, true);
+
+        $decision = StartOrderDecision::admit(
+            $this->session(PricingFingerprint::of($cart), $expiresAt),
+            $submittedToken,
+            null,
+            $cart,
+            self::NOW
+        );
+
+        self::assertSame($expected, $decision instanceof Refuse ? 'refuse:' . $decision->code() : 'admit');
+        if ($decision instanceof Refuse) {
+            self::assertSame(409, $decision->httpStatus());
+        }
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: int, 2: string}>
+     */
+    public function submittedTokens(): array
+    {
+        return [
+            'the remembered session' => [self::TOKEN, self::EXPIRES_AT, 'admit'],
+            'a session another tab replaced' => ['token-of-an-earlier-session', self::EXPIRES_AT, 'refuse:session_replaced'],
+            'no token' => ['', self::EXPIRES_AT, 'refuse:session_replaced'],
+            'replaced and expired: replaced' => ['token-of-an-earlier-session', self::NOW - 1, 'refuse:session_replaced'],
+            'the remembered session, expired' => [self::TOKEN, self::NOW - 1, 'refuse:session_expired'],
+        ];
+    }
+
+    private function session(string $fingerprint, int $expiresAt): RememberedSession
+    {
+        return new RememberedSession('sess_abc', self::TOKEN, 'exr_abc', $fingerprint, $expiresAt);
     }
 
     private function existingOrder(bool $needsPayment): ExpressOrderFacts

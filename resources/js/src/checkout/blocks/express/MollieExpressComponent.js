@@ -28,7 +28,12 @@ const SETTLE_MS = 1000;
 const EXPIRY_MARGIN_MS = 30000;
 const SHOPPER_IS_BACK = [ 'pointermove', 'pointerdown', 'keydown', 'focus' ];
 /** Refusals after which one fresh session is tried. */
-const REMOUNT_AFTER = [ 'cart_changed', 'session_expired', 'session_missing' ];
+const REMOUNT_AFTER = [
+	'cart_changed',
+	'session_expired',
+	'session_missing',
+	'session_replaced',
+];
 /** WordPress's refusal when the shopper logged in in another tab: its own text is not for shoppers. */
 const LOGIN_CHANGED = 'rest_cookie_invalid_nonce';
 const ADDRESS_FIELDS = [
@@ -303,6 +308,7 @@ export default function MollieExpressComponent( {
 	const mountRef = useRef( null );
 	const interacted = useRef( false );
 	const sessionIsAReplacement = useRef( false );
+	const mountedToken = useRef( '' );
 	// The submit handler outlives renders: it reads the latest props and price from here.
 	const latest = useRef( {} );
 	latest.current = {
@@ -336,7 +342,9 @@ export default function MollieExpressComponent( {
 		setNotice( '' );
 		current.onClick?.();
 
-		const answer = await postToStore( current.data, ORDER_ROUTE );
+		const answer = await postToStore( current.data, ORDER_ROUTE, {
+			token: mountedToken.current,
+		} );
 		if ( answer.ok ) {
 			// Nothing is passed: details given to resolve() would override the wallet's.
 			event.resolve();
@@ -414,6 +422,7 @@ export default function MollieExpressComponent( {
 				if ( ! mounted || cancelled ) {
 					return;
 				}
+				mountedToken.current = session.data.clientAccessToken;
 			} catch ( e ) {
 				fail();
 				return;

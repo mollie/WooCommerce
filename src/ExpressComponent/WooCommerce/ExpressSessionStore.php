@@ -17,7 +17,7 @@ class ExpressSessionStore
     private const SEED_KEY = 'mollie_express_session_seed';
 
     /**
-     * @return array{id: string, token: string, expiresAt: int, fingerprint: string, ref: string, attempt: int}|null
+     * @return array{id: string, token: string, expiresAt: int, fingerprint: string, account: string, ref: string, attempt: int}|null
      */
     public function remembered(): ?array
     {
@@ -32,13 +32,23 @@ class ExpressSessionStore
             'token' => (string) $stored['token'],
             'expiresAt' => (int) $stored['expiresAt'],
             'fingerprint' => (string) $stored['fingerprint'],
+            // Absent in a session remembered before the account was; it then matches no account.
+            'account' => (string) ($stored['account'] ?? ''),
             'ref' => (string) $stored['ref'],
             'attempt' => (int) $stored['attempt'],
         ];
     }
 
-    public function remember(string $id, string $token, int $expiresAt, string $fingerprint, string $ref, int $attempt): void
-    {
+    public function remember(
+        string $id,
+        string $token,
+        int $expiresAt,
+        string $fingerprint,
+        string $account,
+        string $ref,
+        int $attempt
+    ): void {
+
         $session = $this->session();
         if (!$session) {
             return;
@@ -48,6 +58,7 @@ class ExpressSessionStore
             'token' => $token,
             'expiresAt' => $expiresAt,
             'fingerprint' => $fingerprint,
+            'account' => $account,
             'ref' => $ref,
             'attempt' => $attempt,
         ]);

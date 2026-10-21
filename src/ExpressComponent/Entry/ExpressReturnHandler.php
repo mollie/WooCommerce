@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Entry;
 
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
 use Mollie\WooCommerce\Log\EventLog;
 use WC_Order;
 
 /**
  * Only redirects the returning shopper; the webhook changes the order.
+ * The session the shopper returned from is over, so its token is not handed out again.
  */
 class ExpressReturnHandler
 {
@@ -17,13 +19,18 @@ class ExpressReturnHandler
 
     public function __construct(
         private ExpressOrderFactsBuilder $orderFacts,
+        private ExpressSessionStore $store,
         private EventLog $log
     ) {
     }
 
     public function handle(): void
     {
-        $order = $this->order($this->refFromRequest());
+        $ref = $this->refFromRequest();
+        $order = $this->order($ref);
+        if ($order instanceof WC_Order) {
+            $this->forgetSession($ref);
+        }
 
         if ($order instanceof WC_Order && !$order->has_status(['failed', 'cancelled'])) {
             $this->log->info('express.return.shown', ['order' => $order->get_id(), 'status' => $order->get_status()]);
@@ -49,6 +56,14 @@ class ExpressReturnHandler
         $ref = isset($_GET['ref']) ? sanitize_text_field(wp_unslash((string) $_GET['ref'])) : '';
 
         return preg_match(self::REF_SHAPE, $ref) === 1 ? $ref : '';
+    }
+
+    private function forgetSession(string $ref): void
+    {
+        $remembered = $this->store->remembered();
+        if ($remembered !== null && hash_equals($remembered['ref'], $ref)) {
+            $this->store->forget();
+        }
     }
 
     private function order(string $ref): ?WC_Order

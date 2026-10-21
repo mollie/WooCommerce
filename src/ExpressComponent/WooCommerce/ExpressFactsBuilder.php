@@ -61,6 +61,14 @@ class ExpressFactsBuilder
         return $this->settings->isTestModeEnabled() ? 'test' : 'live';
     }
 
+    /**
+     * The mode and the profile stored when its key was saved; options only, no Mollie call.
+     */
+    public function account(): string
+    {
+        return $this->mode() . ':' . (string) get_option($this->settings->getSettingId('profile_merchant_id'), '');
+    }
+
     /** Options only, no Mollie call: cheap enough to run on every request. */
     public function anyWalletTurnedOn(): bool
     {

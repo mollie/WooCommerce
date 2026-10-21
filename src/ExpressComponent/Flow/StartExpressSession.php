@@ -14,6 +14,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressAvailabilityResult;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\CartFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionBudget;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
 use Mollie\WooCommerce\Log\EventLog;
@@ -32,6 +33,7 @@ final class StartExpressSession
     public function __construct(
         private CartFactsBuilder $cartFacts,
         private ExpressFactsBuilder $expressFacts,
+        private ExpressOrderFactsBuilder $orderFacts,
         private ExpressSessionStore $store,
         private ExpressSessionBudget $budget,
         private ExpressUrls $urls,
@@ -53,14 +55,18 @@ final class StartExpressSession
         }
 
         $fingerprint = PricingFingerprint::of($cart);
+        $account = $this->expressFacts->account();
         $remembered = $this->store->remembered();
         if ($remembered !== null) {
             $fits = SessionReuse::fits(
                 $remembered['fingerprint'],
+                $remembered['account'],
                 $remembered['expiresAt'],
                 $fingerprint,
+                $account,
                 $this->clock->now(),
-                $this->reuseMarginSeconds
+                $this->reuseMarginSeconds,
+                $this->orderSettled($remembered['ref'])
             );
             if ($fits) {
                 $this->log->info('express.session.reused', ['session' => $remembered['id'], 'surface' => $surface]);
@@ -79,10 +85,10 @@ final class StartExpressSession
             return $this->refuse($surface, 'budget_exhausted', 429);
         }
 
-        return $this->create($cart, $fingerprint, $shop->mode(), $surface);
+        return $this->create($cart, $fingerprint, $account, $shop->mode(), $surface);
     }
 
-    private function create(CartFacts $cart, string $fingerprint, string $mode, string $surface): ExpressSessionResult
+    private function create(CartFacts $cart, string $fingerprint, string $account, string $mode, string $surface): ExpressSessionResult
     {
         $attempt = $this->store->nextAttempt();
         $customer = $this->store->customerKey();
@@ -121,7 +127,7 @@ final class StartExpressSession
                 : ExpressSessionResult::refused('mollie_unavailable', 503);
         }
 
-        $this->store->remember($session->id(), $session->clientAccessToken(), $expiresAt, $fingerprint, $ref, $attempt);
+        $this->store->remember($session->id(), $session->clientAccessToken(), $expiresAt, $fingerprint, $account, $ref, $attempt);
         $total = $cart->total();
         $this->log->info('express.session.created', [
             'session' => $session->id(),
@@ -133,6 +139,13 @@ final class StartExpressSession
         ]);
 
         return ExpressSessionResult::started($session->clientAccessToken(), $session->expiresAt());
+    }
+
+    private function orderSettled(string $ref): bool
+    {
+        $order = $this->orderFacts->orderByRef($ref);
+
+        return $order !== null && !$this->orderFacts->fromOrder($order)->needsPayment();
     }
 
     private function refuse(string $surface, string $reason, int $httpStatus): ExpressSessionResult

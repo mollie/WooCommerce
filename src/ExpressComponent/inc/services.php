@@ -75,6 +75,7 @@ return static function (): array {
             return new StartExpressSession(
                 $container->get(CartFactsBuilder::class),
                 $container->get(ExpressFactsBuilder::class),
+                $container->get(ExpressOrderFactsBuilder::class),
                 $container->get(ExpressSessionStore::class),
                 $container->get(ExpressSessionBudget::class),
                 $container->get(ExpressUrls::class),
@@ -123,6 +124,7 @@ return static function (): array {
         ExpressReturnHandler::class => static function (ContainerInterface $container): ExpressReturnHandler {
             return new ExpressReturnHandler(
                 $container->get(ExpressOrderFactsBuilder::class),
+                $container->get(ExpressSessionStore::class),
                 $container->get(EventLog::class)
             );
         },

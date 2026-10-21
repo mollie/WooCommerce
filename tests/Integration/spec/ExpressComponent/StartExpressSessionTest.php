@@ -463,6 +463,71 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a session whose order is settled is not handed out again
+     *   Given a guest who started a session and submitted the order for it
+     *   And the order was paid or cancelled, or still awaits payment
+     *   When the same cart asks for a session again
+     *   Then a settled order's session is dropped and a new one is created
+     *   And an order still awaiting payment keeps its session
+     *
+     * @test
+     * @dataProvider orderStates
+     */
+    public function it_creates_a_new_session_once_the_remembered_one_has_a_settled_order(string $state, bool $reused): void
+    {
+        $this->readyGuestCheckout();
+        $first = $this->startSession();
+        $this->assertAnsweredOk($this->startOrder());
+        $order = $this->onlyOrderFor((string) ($this->onlySessionPayload()['metadata']['express_ref'] ?? ''));
+        if ($state === 'paid') {
+            $order->payment_complete('tr_fakePaid');
+        } elseif ($state === 'cancelled') {
+            $order->update_status('cancelled');
+        }
+
+        $second = $this->startSession();
+
+        $this->assertSame(200, $second->get_status());
+        $this->assertSame($reused, $this->token($first) === $this->token($second));
+        $this->assertCount($reused ? 1 : 2, $this->fakeMollie()->sessions());
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    public function orderStates(): array
+    {
+        return [
+            'the order was paid' => ['paid', false],
+            'the order was cancelled' => ['cancelled', false],
+            'the order still awaits payment' => ['pending', true],
+        ];
+    }
+
+    /**
+     * Scenario: a session of another Mollie account is not handed out again
+     *   Given a guest who started a session
+     *   When the merchant connects a key of another profile
+     *   And the same cart asks for a session again
+     *   Then a new session is created and the first token is not handed out
+     *
+     * @test
+     */
+    public function it_creates_a_new_session_when_the_merchant_connects_another_profile(): void
+    {
+        $this->setOptionForTest(self::PLUGIN_ID . '_profile_merchant_id', 'pfl_ofTheFirstKey');
+        $this->readyGuestCheckout();
+        $first = $this->startSession();
+
+        $this->setOptionForTest(self::PLUGIN_ID . '_profile_merchant_id', 'pfl_ofAnotherKey');
+        $second = $this->startSession();
+
+        $this->assertSame(200, $second->get_status());
+        $this->assertNotSame($this->token($first), $this->token($second));
+        $this->assertCount(2, $this->fakeMollie()->sessions());
+    }
+
+    /**
      * Scenario: a session about to expire is not handed out again
      *   Given a guest whose remembered session expires now
      *   When the session is requested again with nothing changed

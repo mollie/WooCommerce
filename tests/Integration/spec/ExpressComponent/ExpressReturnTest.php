@@ -7,6 +7,7 @@ namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
 use Mollie\WooCommerceTests\Integration\Common\Doubles\RedirectCaptured;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
+use Mollie\WooCommerceTests\Integration\Common\FakeMollie\FakeMollieApi;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use WC_Order;
 
@@ -163,6 +164,66 @@ class ExpressReturnTest extends ExpressFlowTestCase
         $this->assertSame('pending', wc_get_order($order->get_id())->get_status());
         $this->assertSame($before, $this->state($order));
         $this->assertCount($mollieCalls, $this->fakeMollie()->requests());
+    }
+
+    /**
+     * Scenario: the session a shopper returned from is not handed out again, even before the webhook
+     *   Given an express order created at submit, still awaiting the webhook, or whose payment failed
+     *   When the shopper returns with the order's express_ref
+     *   And the same cart asks for a session again
+     *   Then a new session is created and the first token is not handed out
+     *   And the order's status is as before
+     *
+     * @test
+     * @dataProvider returnedOrders
+     */
+    public function it_drops_the_session_the_shopper_returned_from(bool $failed): void
+    {
+        [$order, $ref, $sessionId] = $this->expressOrder();
+        if ($failed) {
+            $order->update_status('failed');
+        }
+        $status = wc_get_order($order->get_id())->get_status();
+
+        $this->returnWith($ref);
+        $answer = $this->startSession();
+
+        $this->assertSame(200, $answer->get_status());
+        $this->assertNotSame($sessionId, FakeMollieApi::sessionIdFromClientAccessToken($this->token($answer)));
+        $this->assertCount(2, $this->fakeMollie()->sessions());
+        $this->assertSame($status, wc_get_order($order->get_id())->get_status());
+    }
+
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public function returnedOrders(): array
+    {
+        return [
+            'the webhook has not arrived yet' => [false],
+            'the payment failed' => [true],
+        ];
+    }
+
+    /**
+     * Scenario: a return for another ref leaves the shopper's open session alone
+     *   Given an express order created at submit
+     *   When a shopper returns with a ref no order carries
+     *   And the same cart asks for a session again
+     *   Then the open session is handed out again and no new one is created
+     *
+     * @test
+     */
+    public function it_keeps_the_open_session_when_the_return_is_for_another_ref(): void
+    {
+        [, , $sessionId] = $this->expressOrder();
+
+        $this->returnWith('exr_' . str_repeat('0', 32));
+        $answer = $this->startSession();
+
+        $this->assertSame(200, $answer->get_status());
+        $this->assertSame($sessionId, FakeMollieApi::sessionIdFromClientAccessToken($this->token($answer)));
+        $this->assertCount(1, $this->fakeMollie()->sessions());
     }
 
     // ──────────────────────────────────────────────────────────────────────────

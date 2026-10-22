@@ -1,0 +1,591 @@
+{
+  "cases": {
+    "EXP-01": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-02": {
+      "status": "blocked",
+      "date": "2026-10-20",
+      "notes": "Unable to access Mollie dashboard for the given live key."
+    },
+    "EXP-03": {
+      "status": "fail",
+      "date": "2026-10-22",
+      "notes": "#12 Apple Pay button settings don't show description text"
+    },
+    "EXP-04": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-05": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-06": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-07": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-08": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-09": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-10": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "tested also disabled PayPal on checkout"
+    },
+    "EXP-11": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-12": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-13": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-14": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-15": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-16": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-17": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-18": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). (a) percent 100 applied before page load: no express data, no component. (b) applied on the checkout page: component disappears; removed: component comes back. Evidence: docs/e2e/manual/evidence/2026-10-20-exp18a.png, Evidence: docs/e2e/manual/evidence/2026-10-20-exp18b-zero.png"
+    },
+    "EXP-19": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-20": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": "Beta 5: #5 Express session refused when a cart line is below zero \nBeta 6: PASS\n\nSteps to reproduce:\nLive mode, block checkout, Express wallets enabled.\nActivate the QA helper plugin Negative Line Item (attached), which sets the cart line of Simple Product 0.02 to -0.02.\nAdd Simple Product 0.02EUR and Simple Product 1.00EUR to the cart (total 0.99 EUR).\nOpen the checkout as a customer with a saved address.\n\nActual result: POST /wp-json/mollie/v1/express/session answers 502 session_refused, no wallets are shown and an empty \"Express Checkout\" frame stays. Log: mollie.called POST sessions refused, express.session.failed kind: validation.\n\nExpected result: the wallets are shown for a total of 0.99 EUR."
+    },
+    "EXP-21": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-55": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-51": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-22": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). Guest, virtual product: component (js.mollie.com express iframe) shown at once, no \"Ships to\" line, no old buttons, 1 express/session call (200). Evidence: docs/e2e/manual/evidence/2026-10-20-exp22.png"
+    },
+    "EXP-23": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). Guest, physical product, empty address: no express data, no component, no grey box, 0 express/session calls. No old buttons visible (old PayPal is virtual-only, old Apple Pay needs Safari), so this guest sees no express payment at all. Matches beta5 design and dev manual #6. Evidence: docs/e2e/manual/evidence/2026-10-20-exp23.png"
+    },
+    "EXP-24": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). Address and rate set without reload: component still not shown. After reload: component shown with line \"Ships to Teststr 1, 10115 Berlin · Very flat rate Change\". Evidence: docs/e2e/manual/evidence/2026-10-20-exp24.png"
+    },
+    "EXP-25": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). Click on \"Change\": shipping address card opens, focus in the shipping fields (country field first). Evidence: docs/e2e/manual/evidence/2026-10-20-exp25.png Note: focus lands in the Country field (first shipping field); dev manual #9 says \"the cursor is in the address field\". Check by eye if acceptable."
+    },
+    "EXP-26": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). Rate change: new express/session call (1 to 2), line shows \"Second flat rate\". City emptied: component disappears, no grey box. City refilled (Hamburg): component back, line updated. All session calls 200. Evidence: docs/e2e/manual/evidence/2026-10-20-exp26.png"
+    },
+    "EXP-27": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": ""
+    },
+    "EXP-28": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). Order count before and after about 10 checkout loads by 3 guests: 2 orders, newest #51, unchanged."
+    },
+    "EXP-29": {
+      "status": "fail",
+      "date": "2026-10-20",
+      "notes": "Beta 5: #6 Empty Express Checkout frame stays when the component cannot load\nBeta 6: still fails for some cases\n\nSteps to reproduce:\nLive mode, block checkout, Express wallets enabled.\nGuest, add Mollie Virtual Not Downloadable Test Product to the cart, open checkout.\nChange the quantity about 10 times in a short time (session limit).\n\nActual result: POST /wp-json/mollie/v1/express/session answers 429 budget_exhausted, the wallet buttons disappear, but an empty \"Express Checkout\" frame with \"Or continue below\" stays on the page. Same frame stays when the session is refused (502 session_refused, see the negative line issue).\n\nExpected result: the Express Checkout area is removed completely, as it is for a zero total or a physical cart without address.\n"
+    },
+    "EXP-30": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": "PASS (full idle cycle). Run by Claude (headless guest, live-mode site, taxes off, 1 x Mollie Virtual Not Downloadable Test Product). Session 16:01:58 UTC (200). Buttons visible at 5 to 25 min idle; at 16:16:29 (about 14.5 min) the component replaced the session once by itself (200). At 30 and 35 min idle the buttons are hidden (idle phase after the replacement session ran out), no error text. Interaction at 16:37:05 (mouse move, key, focus): new express/session call at 16:37:09 (200), buttons back (Apple Pay, Google Pay, PayPal), no JS errors. UI note: during the idle phase the empty \"Express Checkout\" frame with \"Or continue below\" stays (same UI issue as the session limit / session refused / empty required field). Earlier 20 min run 2026-10-20: buttons stayed visible after 20 min. Not covered: starting a payment after the long stay. Evidence: docs/e2e/manual/evidence/2026-10-21-exp30-idle35.png, 2026-10-21-exp30-after-idle.png."
+    },
+    "EXP-31": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": "Beta 5: Wrong or missing error message when the shopper logs-in in another tab during express checkout\nBeta 6: PASS\n\nSteps to reproduce:\nLive mode, block checkout, Express wallets enabled.\nGuest, add Mollie Virtual Not Downloadable Test Product to the cart, open checkout (tab 1).\nIn tab 2 log in as a customer.\nIn tab 1, without reload, click Google Pay or PayPal and approve.\n\nActual result: POST /wp-json/mollie/v1/express/order answers 403 rest_cookie_invalid_nonce \"Cookie check failed\". Google Pay shows the raw text \"Cookie check failed\" above the buttons and \"Payment failed\". PayPal shows no message at all. No payment is made.\n\nExpected result: the message \"Express checkout could not be started. Please reload the page and try again.\" for both wallets."
+    },
+    "EXP-52": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-53": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). Guest with physical product (no component): Google Pay not in the payment list and no Google Pay button anywhere on the page. Evidence: docs/e2e/manual/evidence/2026-10-20-exp23.png"
+    },
+    "EXP-32": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": "Run by Claude (headless Chromium, fresh guest sessions, live-mode site). No JS errors and no console errors from Mollie scripts in the guest runs. Note: a manual check in Chrome earlier showed \"InvalidStateError: Transition was aborted ... ViewTransition opt-in disabled\" on the block checkout, from view transitions (theme/WooCommerce), not Mollie. Admin notices part not checked by this run. Desktop width only, phone width not checked."
+    },
+    "EXP-33": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-34": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-35": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-36": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-37": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-38": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "EXP-39": {
+      "status": "fail",
+      "date": "2026-10-21",
+      "notes": "Beta 5 and 6: #10 Cleanup of unpaid orders is never scheduled in the built plugin (PIWOO-965)"
+    },
+    "EXP-40": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": "PASS. Run by Claude (headless guest, live-mode site, taxes off, Hold stock 10 min). Normal order #97: 1 x Mollie Virtual Not Downloadable Test Product, iDEAL | Wero from the payment list, Place order at 16:02:27 UTC, iDEAL page (pay.ideal.nl) left unpaid. At 16:15:08 WooCommerce cancelled #97 with \"Unpaid order cancelled - time limit reached.\" (plus Mollie notes \"Order could not be canceled at Mollie, because order status is open.\" and \"iDEAL | Wero payment open (tr_nwpcsHvNDd5ErxBbyuTYJ), not processed.\"). Express orders #68, #71, #80, #86 stayed Pending payment, not modified (excluded from this cancel as designed). Note: their own Express cleanup never runs, see the cleanup-not-scheduled bug. Evidence: docs/e2e/manual/evidence/2026-10-21-exp40-before-place.png, -mollie-page.png."
+    },
+    "EXP-41": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": "Beta 5: #9 Express payment taken without an order when two checkout tabs have different shipping\nBeta 6: PASS"
+    },
+    "EXP-42": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": ""
+    },
+    "EXP-43": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": ""
+    },
+    "EXP-44": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": ""
+    },
+    "EXP-45": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": ""
+    },
+    "EXP-46": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": "Beta 5: #5 Express session refused when a cart line is below zero\nBeta 6: PASS"
+    },
+    "EXP-47": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": "Beta 5: #11 Express \"payment taken without an order\" notice has no data-mollie-error attribute\nBeta 6: PASS"
+    },
+    "EXP-48": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": ""
+    },
+    "EXP-49": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": ""
+    },
+    "EXP-54": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": "Only PayPal"
+    },
+    "EXP-50": {
+      "status": "pass",
+      "date": "2026-10-21",
+      "notes": ""
+    },
+    "EXP-56": {
+      "status": "pass",
+      "date": "2026-10-20",
+      "notes": ""
+    },
+    "SEC-01": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-02": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-03": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-04": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-05": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-06": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-07": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-08": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-09": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-10": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-11": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-12": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-13": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-14": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-15": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-16": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "SEC-17": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "HOLD-01": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "HOLD-02": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "HOLD-03": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "HOLD-04": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "HOLD-05": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "HOLD-06": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "NOTE-01": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "NOTE-02": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "NOTE-03": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "NOTE-04": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "NOTE-05": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "NOTE-06": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "NOTE-07": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "P1-01": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "P1-02": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "P1-03": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "P1-04": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "P1-05": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "FIX-01": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "FIX-02": {
+      "status": "fail",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "FIX-03": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "FIX-04": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "FIX-05": {
+      "status": "fail",
+      "date": "2026-10-22",
+      "notes": "Still open when a required shipping field is empty"
+    },
+    "FIX-06": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "FIX-07": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "FIX-08": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "FIX-09": {
+      "status": "blocked",
+      "date": "2026-10-22",
+      "notes": "Not in this package, created PIWOO-965"
+    },
+    "FIX-10": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "FIX-11": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "REL-01": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "REL-02": {
+      "status": "",
+      "date": "",
+      "notes": ""
+    },
+    "AP-01": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "AP-02": {
+      "status": "fail",
+      "date": "2026-10-22",
+      "notes": "Beta 6: #13 Express Apple Pay payments are shown as Google Pay"
+    },
+    "AP-03": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "AP-04": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "AP-05": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "AP-06": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": "#15 Order note misses the payment method name for ApplePay express orders"
+    },
+    "AP-07": {
+      "status": "fail",
+      "date": "2026-10-22",
+      "notes": "Beta 6: #16 Old Apple Pay button does not complete the payment on the block cart and block checkout"
+    },
+    "AP-08": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "AP-09": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    },
+    "AP-10": {
+      "status": "pass",
+      "date": "2026-10-22",
+      "notes": ""
+    }
+  },
+  "tasks": {
+    "Apple Pay: a Mac or iPhone with Safari and a real card in Wallet.": true,
+    "Google Pay: Chrome with a Google account and a real card.": true,
+    "PayPal: a real PayPal account.": true,
+    "Budget for about 15 live payments of a few cents each (most orders cost 0.01 EUR": true,
+    "Google Pay active on the Mollie profile (otherwise the Google Pay tab does not e": true,
+    "Live-mode site set up as in 0.2 and 0.4. Site chosen: https://stg-tstpaypalpayme": true,
+    "Mollie: \"Enable test mode\" is still \"yes\". Set it to \"no\" (blocking: Express doe": true,
+    "Apple Pay: checkout, cart and product button settings are all \"no\". Turn on at l": true,
+    "PayPal: \"Display on checkout page\", cart and product button settings are all \"no": true,
+    "Google Pay: disabled. Turn on \"Show Google Pay in express checkout on the checko": true,
+    "Card: fee is \"no fee\". Set a fixed fee of 0.01 EUR (EXP-35).": true,
+    "Customer 2 with only a billing country (EXP-51b) does not exist yet.": true,
+    "Hold stock is 60 minutes. Set it to 10 minutes before EXP-40.": true,
+    "Customer 2 with only a billing country (EXP-51b) does not exist yet. Create it w": true,
+    "No unpaid order for luca.schmidt yet (EXP-43, order-pay in EXP-08).": true
+  }
+}

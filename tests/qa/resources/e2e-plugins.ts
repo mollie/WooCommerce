@@ -63,3 +63,27 @@ export const piwoo890OrderReceivedProbePlugin = {
 	slug: 'piwoo-890-order-received-probe',
 	zipFilePath: `${ filePath }/piwoo-890-order-received-probe.zip`,
 };
+
+// QA-only helpers for the manual 8.2.0 Express tests, installed inactive by setup:express-helper-plugins;
+
+// Puts one product line below zero (PIWOO-842 code path), EXP-20 and EXP-46
+export const negativeLineItemPlugin = {
+	name: 'Negative Line Item',
+	slug: 'negative-line-item',
+	zipFilePath: `${ filePath }/negative-line-item.zip`,
+};
+
+// Negative fee line in the Express session, EXP-56
+export const negative001FeePlugin = {
+	name: 'Negative 0.01 Fee',
+	// requestUtils derives the slug from the plugin name, not the folder
+	slug: 'negative-0-01-fee',
+	zipFilePath: `${ filePath }/negative-001-fee.zip`,
+};
+
+// Positive fee lines (5 and 1 EUR) in the Express session, EXP-55
+export const thirdPartyFeesPlugin = {
+	name: 'Third Party Fees',
+	slug: 'third-party-fees',
+	zipFilePath: `${ filePath }/third-party-fees.zip`,
+};

@@ -151,8 +151,10 @@ export const setupWooCommerce = async () => {
 		await wooCommerceUtils.configureShippingZone( shippingZones.worldwide );
 	} );
 
-	setup( 'Setup WooCommerce taxes (included)', async ( { wooCommerceUtils } ) => {
+	setup( 'Setup WooCommerce taxes (rates created, taxes disabled)', async ( { wooCommerceUtils } ) => {
 		await wooCommerceUtils.setTaxes( taxSettings.including );
+		// Manual Express tests: taxes on the customer address hide Express for guests, so taxes stay off until a tax case
+		await wooCommerceUtils.setTaxes();
 	} );
 
 	setup( 'Setup Registered Customer', async ( { wooCommerceUtils } ) => {

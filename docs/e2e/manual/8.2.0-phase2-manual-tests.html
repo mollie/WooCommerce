@@ -1,0 +1,1972 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mollie 8.2.0 Test Run</title>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--muted:#666;--line:#ddd;--card:#fafafa;--code:#f0f0f0;
+--pass:#1e7d32;--pass-bg:#e8f5e9;--fail:#c62828;--fail-bg:#fdecea;--block:#b26a00;--block-bg:#fff4e0;--none:#888;--accent:#2457c5}
+@media (prefers-color-scheme: dark){:root{--bg:#16181c;--fg:#e6e6e6;--muted:#9aa0a6;--line:#33363c;--card:#1e2126;--code:#2a2d33;
+--pass:#6fcf75;--pass-bg:#1d3320;--fail:#ff8a80;--fail-bg:#3a1f1f;--block:#ffb74d;--block-bg:#3a2d17;--none:#888;--accent:#8ab4f8}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 "Segoe UI",Arial,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:0 16px 80px}
+h1{font-size:24px;margin-top:20px}h2{font-size:20px;border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:32px}
+h3{font-size:17px;margin-top:24px}h4{font-size:15px;margin-top:18px}
+code{font-family:Consolas,monospace;font-size:13px;background:var(--code);padding:0 4px;border-radius:3px;word-break:break-word}
+table{border-collapse:collapse;width:100%;font-size:14px;display:block;overflow-x:auto}td,th{border:1px solid var(--line);padding:4px 8px;vertical-align:top}
+a{color:var(--accent)}
+#bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px}
+#bar .row{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stat{font-weight:600;padding:2px 8px;border-radius:10px;font-size:13px}
+.stat.pass{color:var(--pass);background:var(--pass-bg)}.stat.fail{color:var(--fail);background:var(--fail-bg)}
+.stat.blocked{color:var(--block);background:var(--block-bg)}.stat.none{color:var(--muted);background:var(--card)}
+#bar button,#bar select,#bar label.btn{font:inherit;font-size:13px;padding:3px 10px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;cursor:pointer}
+#bar .spacer{flex:1}
+li.case{list-style:none;margin:14px 0 14px -22px;padding:10px 12px;border:1px solid var(--line);border-left:5px solid var(--none);border-radius:6px;background:var(--card)}
+li.case.pass{border-left-color:var(--pass)}li.case.fail{border-left-color:var(--fail)}li.case.blocked{border-left-color:var(--block)}
+li.case.hidden{display:none}
+.res{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.res button{font:inherit;font-size:13px;padding:3px 12px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--fg);cursor:pointer}
+.res button.on.pass{background:var(--pass);color:#fff;border-color:var(--pass)}
+.res button.on.fail{background:var(--fail);color:#fff;border-color:var(--fail)}
+.res button.on.blocked{background:var(--block);color:#fff;border-color:var(--block)}
+.res .date{font-size:12px;color:var(--muted)}
+.res textarea{width:100%;min-height:38px;font:inherit;font-size:13px;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);resize:vertical}
+li.task{list-style:none;margin-left:-22px}
+li.task input{margin-right:6px}
+.meta{color:var(--muted);font-size:12px;margin-top:6px}
+</style>
+</head>
+<body>
+<div id="bar"><div class="row">
+<span class="stat pass" id="cPass">0 pass</span><span class="stat fail" id="cFail">0 fail</span>
+<span class="stat blocked" id="cBlocked">0 blocked</span><span class="stat none" id="cNone">0 not run</span>
+<select id="filter" aria-label="Filter cases"><option value="all">All cases</option><option value="none">Not run</option>
+<option value="pass">Pass</option><option value="fail">Fail</option><option value="blocked">Blocked</option></select>
+<span class="spacer"></span>
+<button id="expMd" title="Download results as a Markdown table">Export MD</button>
+<button id="expJson" title="Download results as JSON (backup)">Export JSON</button>
+<label class="btn" title="Load a JSON backup">Import JSON<input id="imp" type="file" accept="application/json" hidden></label>
+<button id="reset" title="Clear all results in this browser">Reset</button>
+</div></div>
+<main>
+<p class="meta">Page built 2026-10-22 15:00 from 8.2.0-phase2-manual-tests.md. Results are saved in this browser only. Use Export JSON as a backup.</p>
+<h1>Mollie 8.2.0 Phase 2: manual tests (beta5)</h1>
+<p>Status (2026-10-22): section 1 (Express) executed on beta5. Sections 2 to 7 (security, on-hold while pending, PIWOO-856 notices, Phase 1 re-check, fix verification for the reported bugs #1 to #11, release check) are ready to run on the new package. Results are tracked in the HTML page and exported to <code>docs/e2e/reports/mollie-8.2.0-phase2-results.json</code>.</p>
+<p>Tickets in Phase 2: PIWOO-944 (Express Component), PIWOO-945 (on-hold while the Mollie payment is pending), PIWOO-963 (security, .org reports #50065 and #50066). Phase 1 tickets (PIWOO-842, 908, 938, 772, 856) were tested on 8.2.0-beta. PIWOO-856 was not tested completely and gets a full test in section 4.</p>
+<h2>0. How to use this file</h2>
+<h3>0.1 Build under test</h3>
+<p>Package: <code>tests/qa/resources/files/mollie-payments-for-woocommerce.zip</code>, built 2026-10-19 19:40.</p>
+<p>What the package contains (checked in the zip, not only in git):</p>
+<ul>
+<li>Plugin header <code>Version: 8.2.0-beta5</code>, <code>Requires PHP: 8.0</code>.</li>
+<li><code>readme.txt</code> still has <code>Stable tag: 8.1.11</code> and no 8.2.0 changelog entry.</li>
+<li>Express is the &quot;express area at the top of the block checkout&quot; version. The block script registers it with <code>registerExpressPaymentMethod</code> (name <code>mollie_express_component</code>). There is no <code>Expresscheckout</code> payment method, so the &quot;Express as a regular payment method after address and shipping&quot; version (product owner comment of 13 Oct, WIP PR #1324) is NOT in this package.</li>
+<li>PIWOO-945: orders are held for <code>paybybank</code> and for <code>wero</code>. The ticket and the changelog say Pay by Bank only.</li>
+<li>PIWOO-963: the security fixes are in the package (surcharge endpoint checks, surcharge recalculation on pay, PayPal purchasability check). They are not on git <code>dev/release/8.2.0</code>, they came from the developer's patch files.</li>
+<li>Express shipping: the package also contains the branch <code>dev/944-remove-if-no-shipping</code> (3 commits of 19 Oct, not merged into <code>dev/release/8.2.0</code>): &quot;Show express checkout only when the price is known at page load&quot; and &quot;Open the saved shipping address card when Change is clicked&quot;. This removes the grey shipping box described in the ticket. See 1.0.</li>
+<li>So beta5 = <code>dev/release/8.2.0</code> + <code>dev/944-remove-if-no-shipping</code> + the security patches. It cannot be rebuilt from one git branch today.</li>
+</ul>
+<h3>0.2 Sites</h3>
+<p>One site is used for everything: <a href="https://stg-tstpaypalpaymentspaypal-mutkintst.kinsta.cloud">https://stg-tstpaypalpaymentspaypal-mutkintst.kinsta.cloud</a>, with the Mollie test mode switched as each section says. This file still uses the names below for the two modes.</p>
+<ul>
+<li><strong>Test-mode site</strong>: the site with Mollie test mode on (test API key), block checkout and classic checkout pages. Used for the &quot;no express area in test mode&quot; check in section 1 and for sections 2 to 5.</li>
+<li><strong>Live-mode site</strong>: a site on HTTPS that Mollie can reach from the internet, with a block checkout page and a live Mollie API key from an account where Sessions and the Express Component are enabled. Apple Pay, PayPal and Google Pay must be active on the Mollie profile. Used for all Express checks in section 1 and the live fix checks in section 6. Express does not run in test mode at all: with a test key the express area is never shown. Live transactions are always manual.</li>
+</ul>
+<h3>0.3 What to request before Express testing</h3>
+<p>Blocking for section 1.2 (payments). Section 1.1 needs only the live-mode site and the live key.</p>
+<ul>
+<li>[x] <s>Live API key with Sessions / Express enabled (the key shared in the PIWOO-944 comment of 16 Sep, or a new one).</s> Done 2026-10-20: available, set as <code>MOLLIE_LIVE_API_KEY</code> in <code>.env</code>.</li>
+<li>[ ] Live-mode site set up as in 0.2 and 0.4. Site chosen: <code>https://stg-tstpaypalpaymentspaypal-mutkintst.kinsta.cloud</code> (also <code>WP_BASE_URL</code> in <code>00-mollie/.env</code>). Setup: <code>npm run e2e:env:reset:mollie</code> on branch <code>dev/qa/manual-testing-8.2.0</code>, then the manual steps in 0.4.</li>
+<li>[ ] Apple Pay: a Mac or iPhone with Safari and a real card in Wallet.</li>
+<li>[ ] Google Pay: Chrome with a Google account and a real card.</li>
+<li>[ ] PayPal: a real PayPal account.</li>
+<li>[ ] Budget for about 15 live payments of a few cents each (most orders cost 0.01 EUR to 0.05 EUR, see 0.4), plus refunds of all of them. Total spend is well under 1 EUR.</li>
+<li>[ ] Google Pay active on the Mollie profile (otherwise the Google Pay tab does not exist in the plugin).</li>
+<li>[x] <s>The developer's <code>manual-qa-8.2.0.md</code> from PIWOO-944 (attached on 19 Oct).</s> Done 2026-10-20: received and compared, see the mapping in 1.6.</li>
+</ul>
+<h3>0.4 Test data on the live-mode site</h3>
+<p>Status on 2026-10-20 (checked on the site): the setup items are done and crossed out. Still open before Express testing (manual):</p>
+<ul>
+<li>[ ] Mollie: &quot;Enable test mode&quot; is still &quot;yes&quot;. Set it to &quot;no&quot; (blocking: Express does not run in test mode).</li>
+<li>[ ] Apple Pay: checkout, cart and product button settings are all &quot;no&quot;. Turn on at least the cart and product buttons (EXP-08, EXP-54) and the checkout setting.</li>
+<li>[ ] PayPal: &quot;Display on checkout page&quot;, cart and product button settings are all &quot;no&quot;. Turn them on.</li>
+<li>[ ] Google Pay: disabled. Turn on &quot;Show Google Pay in express checkout on the checkout page&quot;.</li>
+<li>[ ] Card: fee is &quot;no fee&quot;. Set a fixed fee of 0.01 EUR (EXP-35).</li>
+<li>[ ] Hold stock is 60 minutes. Set it to 10 minutes before EXP-40.</li>
+<li>[ ] Customer 2 with only a billing country (EXP-51b) does not exist yet. Create it with <code>npx playwright test --project &quot;setup&quot; --grep &quot;setup:customer:billing-country-only;&quot;</code> (branch <code>dev/qa/manual-testing-8.2.0</code>).</li>
+<li>[ ] No unpaid order for <code>luca.schmidt</code> yet (EXP-43, order-pay in EXP-08).</li>
+<li>[x] <s>No subscription product yet, Subscriptions plugin inactive (only needed for EXP-19).</s> Done 2026-10-20 with <code>npx playwright test --project &quot;setup&quot; --grep &quot;setup:subscription-product;&quot;</code>: Subscriptions active, &quot;Mollie Subscription Test Product 100&quot; at 0.01 EUR per month.</li>
+</ul>
+<p>Items marked <strong>[setup]</strong> are created by <code>npm run e2e:env:reset:mollie</code> on branch <code>dev/qa/manual-testing-8.2.0</code>. Cross them out after the setup run and check them on the site. All other items are manual.</p>
+<p>Where possible the data uses the same names as the shared E2E data in <code>00-playwright-utils</code> (<code>src/e2e/plugins/woocommerce/resources/</code>) and in <code>tests/qa/resources/</code>, so the setup is familiar. Prices are lower than in the E2E data on purpose, because these are real payments.</p>
+<p>Prices are kept at the minimum that Mollie accepts. Mollie's API examples show a minimum of 0.01 EUR for Card and PayPal. Apple Pay and Google Pay go through Card, but their minimums are not listed. The plugin hides a method when the order total is below its minimum at Mollie. So if a wallet is missing only for very small totals, check its minimum in the Mollie dashboard (or with the Methods API) and raise the prices a little. This is not a bug.</p>
+<h4>Plugins</h4>
+<ul>
+<li><s>WooCommerce (current version), Mollie 8.2.0-beta5 from <code>tests/qa/resources/files/mollie-payments-for-woocommerce.zip</code>.</s> Verified on the site 2026-10-20.</li>
+<li>WooCommerce Subscriptions from <code>tests/qa/resources/files/woocommerce-subscriptions.zip</code> (EXP-19). Active since 2026-10-20 (subscription product step). It can stay active: Express only hides when a subscription is in the cart.</li>
+<li>QA helper plugins in <code>tests/qa/resources/files/</code>, installed inactive by <code>npx playwright test --project &quot;setup&quot; --grep &quot;setup:express-helper-plugins;&quot;</code> (done 2026-10-20). Activate only for the named case and deactivate after (Plugins page):
+<ul>
+<li>&quot;Negative Line Item&quot; (<code>negative-line-item.zip</code>): the cart line of &quot;Mollie Simple Test Product 0.02&quot; gets the price -0.02, so that line is below zero (PIWOO-842 code path). With &quot;Mollie Simple Tax Test Product 1.00&quot; the total is 0.99 EUR incl. shipping (checked 2026-10-20). For EXP-20 and EXP-46.</li>
+<li>&quot;Negative 0.01 Fee&quot; (<code>negative-001-fee.zip</code>, copy of <code>negative-12-fee</code> from the PayPal Payments QA files with -0.01 instead of -12): adds a cart fee of -0.01. For EXP-56.</li>
+<li>&quot;Third Party Fees&quot; (<code>third-party-fees.zip</code>): adds &quot;Test Fee&quot; 5 EUR and &quot;Test Fee2&quot; 1 EUR. For EXP-55.</li>
+</ul>
+</li>
+<li>No other payment plugins active.</li>
+</ul>
+<h4>WooCommerce settings</h4>
+<ul>
+<li><s>General: same as <code>shopSettings.germany</code> in 00-playwright-utils (store country Germany, currency EUR).</s> Verified on the site 2026-10-20.</li>
+<li>Products &gt; Inventory: &quot;Hold stock&quot; = 10 minutes (EXP-40).</li>
+<li>Accounts: guest checkout on, account creation on.</li>
+<li>Tax: the setup (<code>npm run e2e:env:reset:mollie</code> on branch <code>dev/qa/manual-testing-8.2.0</code>) creates the 10% <code>worldwide10</code> rate and then turns taxes off. Keep &quot;Enable tax rates and calculations&quot; off for all cases, except the tax cases EXP-21, EXP-27 and EXP-51. Those cases say when to turn taxes on and off. Reason: with taxes on and based on the customer address, a guest with a virtual cart gets no express area, so other cases would look broken.
+<ul>
+<li>Standard rates: Germany 19% and Austria 20% (EXP-27). For EXP-21 the <code>worldwide10</code> rate (10%, all countries, shipping taxed) from <code>tax-settings.ts</code> can be used instead.</li>
+<li>&quot;Calculate tax based on&quot; is switched per case (shop base address, customer billing address, customer shipping address).</li>
+<li>&quot;Prices entered with tax&quot;: one run with &quot;yes&quot; (<code>taxSettings.including</code>) and one with &quot;no&quot; (<code>taxSettings.excluding</code>) in EXP-21.</li>
+</ul>
+</li>
+</ul>
+<h4>Pages</h4>
+<ul>
+<li><s>Checkout page with the Checkout block (main page for all Express cases).</s> Verified on the site 2026-10-20.</li>
+<li><s>Cart page with the Cart block.</s> Verified on the site 2026-10-20.</li>
+<li><s>A second checkout page with <code>[woocommerce_checkout]</code> and a second cart page with <code>[woocommerce_cart]</code> (EXP-08, EXP-06). Switch the WooCommerce page settings to them only for those cases. (the setup publishes both block and classic pages)</s> Verified on the site 2026-10-20.</li>
+<li>My account page (logged-in cases, Pay button checks).</li>
+</ul>
+<h4>Products</h4>
+<ul>
+<li><s>Physical product A (needs shipping), 0.01 EUR: &quot;Mollie Simple Test Product 100&quot; (name kept from E2E, price changed).</s> Verified on the site 2026-10-20.</li>
+<li><s>Physical product B (needs shipping), 0.02 EUR: &quot;Mollie Simple Test Product 0.02&quot; (two-item orders, partial refund EXP-49).</s> Verified on the site 2026-10-20.</li>
+<li><s>Virtual product, 0.01 EUR: &quot;Mollie Virtual Not Downloadable Test Product&quot; (not downloadable, so the order goes to Processing like a normal order).</s> Verified on the site 2026-10-20.</li>
+<li><s>Physical product with &quot;Manage stock&quot; on and stock 2, 0.01 EUR: &quot;Mollie Simple Stock 2 Test Product&quot; (EXP-42). Reset the stock to 2 before EXP-42.</s> Verified on the site 2026-10-20.</li>
+<li><s>Physical product C, 1.00 EUR, for tax and coupon cases (EXP-21, EXP-27). With cent prices, tax and a percent coupon round to zero, so these cases would test nothing. Name: &quot;Mollie Simple Tax Test Product 1.00&quot;.</s> Verified on the site 2026-10-20.</li>
+<li>~~Simple subscription product, 0.01 EUR every month (EXP-19). Same type as <code>mollieSubscription100</code> in <code>tests/qa/resources/products.ts</code>, with a lower price. ~~ Created 2026-10-20: &quot;Mollie Subscription Test Product 100&quot; (0.01 EUR per month) by <code>npx playwright test --project &quot;setup&quot; --grep &quot;setup:subscription-product;&quot;</code>. This step activates Subscriptions and keeps the Mollie settings.</li>
+</ul>
+<h4>Coupons (same codes as <code>coupons.ts</code> in 00-playwright-utils)</h4>
+<ul>
+<li><s><code>percent 10</code>: 10% off the cart (EXP-21 with product C).</s> Verified on the site 2026-10-20.</li>
+<li><s><code>percent 100</code>: 100% off the cart, total becomes 0 (EXP-18).</s> Verified on the site 2026-10-20.</li>
+<li><s><code>fixed 0.01</code>: 0.01 EUR off the cart. Not used by a case yet.</s> Verified on the site 2026-10-20.</li>
+<li>Below-zero line (EXP-20, EXP-46): WooCommerce core coupons never push a line below zero, so the &quot;Negative Line Item&quot; helper plugin does it (see Plugins above).</li>
+</ul>
+<h4>Shipping</h4>
+<ul>
+<li><s>Zone &quot;Worldwide&quot;: &quot;Very flat rate&quot; 0.01 EUR and &quot;Second flat rate&quot; 0.02 EUR (two rates for EXP-26, EXP-36). Check after the setup that both rates are offered for a DE address.</s> Verified on the site 2026-10-20.</li>
+<li><s>Austria for EXP-27: if the &quot;Worldwide&quot; zone already offers the rates for an AT address, nothing to do.</s> Verified 2026-10-20: the &quot;Worldwide&quot; zone offers both rates for DE and AT addresses, no Austria zone needed.</li>
+<li>No free shipping method (it would make the shipping rate change cases unclear).</li>
+</ul>
+<h4>Mollie settings</h4>
+<ul>
+<li>Live API key and test API key both saved (verified 2026-10-20). Test mode off for section 1 (still on, see the open list above).</li>
+<li><s>Debug log on (Advanced settings), so <code>express.*</code> events are written.</s> Verified on the site 2026-10-20.</li>
+<li>Apple Pay, PayPal, Google Pay: enabled, active at Mollie, checkout setting on, no fee.</li>
+<li>Apple Pay and PayPal cart page and product page button settings on (EXP-08, EXP-54: old buttons must show where Express does not).</li>
+<li>Card: enabled, fixed fee 0.01 EUR (EXP-35). PayPal fee only set during EXP-12, then removed.</li>
+<li>iDEAL enabled and active at Mollie (EXP-50).</li>
+</ul>
+<h4>Customers</h4>
+<ul>
+<li>Guest: a new private window with an empty cart. Address data as in <code>tests/qa/resources/guests.ts</code>, with a DE address.</li>
+<li><s>Customer 1: <code>luca.schmidt</code> from <code>customers.germany</code> in 00-playwright-utils, with the complete DE billing and shipping address saved (EXP-19b, EXP-43, EXP-52).</s> Verified on the site 2026-10-20.</li>
+<li>Customer 1 also has one unpaid order (Pending payment), for EXP-43 and the order-pay page in EXP-08. Create it in admin (Orders &gt; Add order, status Pending payment, product A) or with a payment that is cancelled at Mollie.</li>
+<li>Customer 2: <code>emma.weber</code> (password <code>emma.weber</code>), only the billing country saved (Germany), no other address data (EXP-51b). Created by <code>npx playwright test --project &quot;setup&quot; --grep &quot;setup:customer:billing-country-only;&quot;</code>. The step deletes and recreates the customer, so run it again before EXP-51b if this customer was used in a checkout before.</li>
+</ul>
+<h4>Wallet accounts and tools</h4>
+<ul>
+<li>Apple Pay, Google Pay and PayPal accounts whose billing name and email differ from the checkout form data (EXP-34 checks which one ends up on the order).</li>
+<li>A second browser (or a second browser profile) for EXP-41 and EXP-42.</li>
+<li>Database access (Kinsta phpMyAdmin or WP-CLI over SSH) to change <code>_mollie_express_expires_at</code> in EXP-39, or 75 minutes of waiting time instead.</li>
+<li>Access to the live Mollie dashboard (payments, refunds, minimum amounts per method).</li>
+</ul>
+<h3>0.5 How to read a case</h3>
+<p>Each case has: ID, source (first line), site, steps, expected result (exact texts are in quotes), level. Where it applies, there is also a blocker, a conflict, or a note.</p>
+<ul>
+<li><strong>Level</strong> says where the check belongs best. <strong>Manual</strong> means a real wallet or a look-and-feel check that cannot be automated now. <strong>E2E</strong> means a browser test could do it later, or an existing E2E spec already covers it.</li>
+<li><strong>Source</strong> says where the expected result comes from:
+<ul>
+<li><code>dev QA note</code>: the &quot;WHAT MUST HAPPEN NOW&quot; text or a developer comment in the ticket.</li>
+<li><code>code</code>: read in the beta5 package. It confirms what was built, not what was asked.</li>
+<li><code>PO</code>: a product owner comment in PIWOO-944.</li>
+<li><code>Mollie docs</code>: Mollie's Express Component or Sessions documentation linked in the ticket.</li>
+<li><code>dev manual</code>: the developer's <code>manual-qa-8.2.0.md</code> (19 Oct), with its case number, for example <code>dev manual #8</code>. It describes the beta5 build and is newer than the ticket QA note.</li>
+<li><code>QA</code>: our own addition.</li>
+</ul>
+</li>
+<li><strong>Conflict</strong> means two sources disagree. Report it as an open question, not as a pass or fail.</li>
+</ul>
+<h3>0.6 Where to look during Express tests</h3>
+<ul>
+<li>Orders: WooCommerce &gt; Orders. Express orders have &quot;Created via&quot; <code>mollie_express</code> in the order meta.</li>
+<li>Logs: WooCommerce &gt; Status &gt; Logs, source <code>mollie-payments-for-woocommerce-</code>. Express events start with <code>express.</code> (for example <code>express.session.created</code>, <code>express.order.created</code>, <code>express.order.reused</code>, <code>express.payment.matched</code>, <code>express.abandoned.cancelled</code>). Warnings and errors are always logged. Info lines need the Mollie debug log setting on.</li>
+<li>Scheduled actions: WooCommerce &gt; Status &gt; Scheduled Actions, hook <code>mollie_woocommerce_cancel_unpaid_orders</code> (runs every 10 minutes).</li>
+<li>Browser devtools: Console for JS errors, Network for <code>wp-json/mollie/v1/express/session</code> and <code>wp-json/mollie/v1/express/order</code>.</li>
+<li>Mollie dashboard (live): payments and their status.</li>
+</ul>
+<h2>1. PIWOO-944 Express Component</h2>
+<p>Site: live-mode site, unless the case says otherwise.</p>
+<p>Cases by source (a case can have two sources): dev QA note 31, dev manual 18, code 38, PO 6, Mollie docs 10, QA 8. Total cases: 56. Cases with only <code>code</code> as the source confirm what was built; they still need a requirement owner to agree.</p>
+<p>Products used in the Cart lines (all created by the setup, prices in EUR):</p>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Type</th>
+<th>Price</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mollie Virtual Not Downloadable Test Product</td>
+<td>virtual</td>
+<td>0.01</td>
+</tr>
+<tr>
+<td>Mollie Simple Test Product 100</td>
+<td>physical</td>
+<td>0.01</td>
+</tr>
+<tr>
+<td>Mollie Simple Test Product 0.02</td>
+<td>physical</td>
+<td>0.02</td>
+</tr>
+<tr>
+<td>Mollie Simple Tax Test Product 1.00</td>
+<td>physical</td>
+<td>1.00</td>
+</tr>
+<tr>
+<td>Mollie Simple Stock 2 Test Product</td>
+<td>physical, stock 2</td>
+<td>0.01</td>
+</tr>
+<tr>
+<td>Mollie Subscription Test Product 100</td>
+<td>subscription</td>
+<td>0.01 per month</td>
+</tr>
+</tbody>
+</table>
+<p>Customer types in the Customer lines:</p>
+<table>
+<thead>
+<tr>
+<th>Customer</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>guest</td>
+<td>New private window, not logged in, empty cart</td>
+</tr>
+<tr>
+<td><code>luca.schmidt</code></td>
+<td>Registered, logged in, full DE billing and shipping address saved (password <code>luca.schmidt</code>)</td>
+</tr>
+<tr>
+<td><code>emma.weber</code></td>
+<td>Registered, logged in, only the billing country DE saved (password <code>emma.weber</code>)</td>
+</tr>
+<tr>
+<td>shop admin</td>
+<td>WP admin user, for settings, orders, refunds</td>
+</tr>
+</tbody>
+</table>
+<p>Empty the cart before each case.</p>
+<h3>Open follow-ups (live money, do before closing the test run)</h3>
+<ul>
+<li>[ ] Order #68 (Express, Pending payment, 0.02, created 2026-10-20 21:14:28 UTC): use it for EXP-39. After about 22:30 UTC run Scheduled Actions <code>mollie_woocommerce_cancel_unpaid_orders</code>. Expected: Cancelled with the note &quot;Express checkout was started and not completed&quot;. If the log says <code>express.abandoned.kept</code>, report it. Make sure #68 ends Cancelled.</li>
+<li>[ ] Payment <code>tr_M46zscySQT4ai5GCPtRYJ</code> (0.03 EUR, paid, no order, from the two-checkout-tab shipping bug): refund at Mollie (dashboard or Refunds API), then click &quot;I have dealt with these&quot; in the admin notice.</li>
+<li>[ ] Refund all paid live test orders (for example #57 to #67, #69, #70) and check that no live payment stays unrefunded.</li>
+</ul>
+<h3>1.0 Release risk and open questions (read first)</h3>
+<ul>
+<li><strong>Conflict, placement.</strong> Dev QA note: the express area is at the top of the block checkout, with a grey shipping box. PO (13 Oct): for 8.2.0, Express must work as a regular payment method placed after address entry and shipping selection; the &quot;true express&quot; version at the top moves to the next release. Beta5 has the top version. Ask before release: is milestone 1 still planned for 8.2.0, and will a new beta follow? All cases below test what beta5 contains.</li>
+<li><strong>Conflict, address source.</strong> Dev QA note: email and billing address come from the wallet, the shipping address comes from the checkout form. PO (21 Sep): data from the wallet takes precedence over stored data. The WIP PR #1324 comment says milestone 1 may need billing and email from the form. Not decided. Beta5 uses wallet data for billing, email and phone.</li>
+<li><strong>Conflict, shipping box.</strong> Dev QA note (section 3): with items to ship and incomplete shipping details, a grey box &quot;Express checkout&quot; shows &quot;Your order contains items to ship. Please fill in the shipping details to use express checkout.&quot; and &quot;Waiting for the shipping cost…&quot;. Beta5 code: Express is loaded only when the price is final when the page is rendered. If shipping is not complete at page load, there is no express area at all and the old checkout buttons are shown instead. When shipping is complete, a line &quot;Ships to &lt;address&gt; · &lt;rate&gt;&quot; with a &quot;Change&quot; link is shown above the wallets. The grey box texts are no longer used. The developer's <code>manual-qa-8.2.0.md</code> (cases 6 to 8) confirms that this is the intended beta5 behaviour, including that a guest must reload after filling the address. So only the ticket QA note is out of date. Cases EXP-22 to EXP-26 test the beta5 behaviour. Ask the developer to update the ticket QA note.</li>
+<li><strong>New hiding rule not in the dev QA note.</strong> When nothing ships, taxes are calculated on the customer address (WooCommerce &quot;Calculate tax based on&quot; = customer billing or shipping address), and the shopper has no saved country (guest, or new account), the express area is not shown (reason <code>tax_address_unknown</code>). See EXP-51.</li>
+<li><strong>Known open bug from the automated beta5 run:</strong> on block checkout, the order note can say &quot;Payment complete.&quot; instead of &quot;Payment via &lt;method&gt; (tr_...)&quot;. Record the payment note text in every paid case.</li>
+<li><strong>Probable bug (PIWOO-856 rule):</strong> the admin notice &quot;Mollie express checkout: a payment was taken without an order&quot; is printed as <code>notice notice-error</code> without the <code>data-mollie-error</code> mark (<code>src/ExpressComponent/WooCommerce/OrphanedExpressPayments.php:82</code>). Check it in EXP-47.</li>
+</ul>
+<h3>1.1 Without paying</h3>
+<p>These cases need the live-mode site and the live key, but no wallet device and no money.</p>
+<h4>Settings</h4>
+<ul>
+<li>
+<p>[ ] <strong>EXP-01</strong> Google Pay settings tab</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed.</li>
+<li>Steps: WooCommerce &gt; Settings &gt; Payments &gt; Mollie &gt; Payment methods. Open Google Pay.</li>
+<li>Expected: Google Pay has exactly one setting, &quot;Show Google Pay in express checkout on the checkout page&quot;. It is off after a fresh install. There are no title, description, fee or other fields.</li>
+<li>Level: manual now, E2E later (settings page, no payment needed).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-02</strong> Google Pay tab only when Mollie offers it</p>
+<ul>
+<li>Source: code.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed.</li>
+<li>Steps: note whether Google Pay is active on the Mollie profile. Check the payment methods list in the plugin.</li>
+<li>Expected: the Google Pay tab is shown only when Google Pay is active at Mollie. If it is not active, there is no tab and no error.</li>
+<li>Level: manual (needs a live profile).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-03</strong> Apple Pay checkout setting text</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed.</li>
+<li>Steps: open the Apple Pay settings.</li>
+<li>Expected: the setting &quot;Enable Apple Pay Express Button on Checkout page&quot; has the description &quot;Enable the Apple Pay direct buy button on the Express Buttons section of the Checkout page. On the block checkout, Mollie express checkout shows the button where it can run; otherwise the classic Apple Pay button is shown.&quot;</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-04</strong> PayPal checkout setting text</p>
+<ul>
+<li>Source: code.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed.</li>
+<li>Steps: open the PayPal settings.</li>
+<li>Expected: the setting &quot;Display on checkout page&quot; has the description &quot;Enable the PayPal button to be used in the Express Buttons section of the checkout page. On the block checkout, Mollie express checkout shows the button where it can run; otherwise the classic PayPal button is shown.&quot; Default off.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-05</strong> No global on/off setting for Express</p>
+<ul>
+<li>Source: dev QA note. Note: the PO agreed on 21 Sep to &quot;its own payment method with its own switch&quot; plus the wallet switches. Beta5 has no own switch. Record as an open question together with the placement conflict.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed.</li>
+<li>Steps: look through Mollie general settings, advanced settings and each wallet tab.</li>
+<li>Expected: there is no setting that turns Mollie express checkout on or off as a whole. Only the per-wallet settings exist.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-06</strong> Google Pay is never in the payment list</p>
+<ul>
+<li>Source: dev QA note, code, dev manual #19</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: enable Google Pay and its setting. Open the block checkout and the classic checkout.</li>
+<li>Expected: Google Pay is not shown as a payment method in the list on either checkout. It can only appear inside the express area.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+</ul>
+<h4>Where the express area is shown</h4>
+<p>Precondition for this group: Apple Pay, PayPal and Google Pay enabled, each with its checkout setting on, no fee on any of them. Customer and cart are in each case (mostly a guest with the virtual product, so no shipping address is needed).</p>
+<ul>
+<li>
+<p>[ ] <strong>EXP-07</strong> Express area on the block checkout</p>
+<ul>
+<li>Source: dev QA note, code, dev manual #1</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: open the block checkout page.</li>
+<li>Expected: the express area at the top shows the wallets that the browser can use (Apple Pay depends on the browser: Safari with a card in Wallet, or other browsers via a QR code with an iPhone). Network shows one call to <code>wp-json/mollie/v1/express/session</code> with status 200. No JS errors in the console.</li>
+<li>Level: manual (live only).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-08</strong> Not on classic checkout, cart, product page, order-pay</p>
+<ul>
+<li>Source: dev QA note, code, dev manual #20</li>
+<li>Customer: guest (new private window, not logged in, empty cart); for Pay for order: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01) for the cart pages and the classic checkout. Product pages: open &quot;Mollie Virtual Not Downloadable Test Product&quot; and &quot;Mollie Simple Test Product 100&quot;. Pay for order: the unpaid order of <code>luca.schmidt</code>.</li>
+<li>Steps: switch the checkout page to the classic shortcode (or use a second page with <code>[woocommerce_checkout]</code>). Open it. Open the cart page (block and classic) and the product page. Open the &quot;Pay for order&quot; page of an unpaid order.</li>
+<li>Expected: no Mollie express area on any of these pages. The old Apple Pay and PayPal buttons show there as the settings say (cart and product settings).</li>
+<li>Level: manual now, E2E later for the &quot;not shown&quot; part.</li>
+<li>Note: confirmed by dev 2026-10-20. On cart and product pages only the old buttons can show. The old Apple Pay button needs Safari (ApplePaySession), so it does not show in Chrome on Windows. The new component (block checkout only) also offers Apple Pay in other browsers via a QR code. The old PayPal button shows for virtual products only.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-09</strong> Test mode shows no express area</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Site: test-mode site (or switch the live-mode site to test mode).</li>
+<li>Steps: same settings as above. Open the block checkout.</li>
+<li>Expected: no express area. The old Apple Pay and PayPal checkout buttons show as the shop admin set them.</li>
+<li>Level: E2E candidate (test mode, no payment). Manual now.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-10</strong> Each wallet follows its own switch</p>
+<ul>
+<li>Source: dev QA note, PO (21 Sep: the merchant's per-wallet switches control what is inside the component), dev manual #22</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: turn off the checkout setting of PayPal only. Reload checkout. Then turn it back on and turn off Apple Pay. Then the same for Google Pay.</li>
+<li>Expected: only the wallet that was turned off disappears from the express area. The others stay.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-11</strong> Wallet off at the shop but active at Mollie</p>
+<ul>
+<li>Source: PO (21 Sep), code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: disable the PayPal payment method itself (WooCommerce &gt; Settings &gt; Payments), while it is still active at Mollie. Reload checkout.</li>
+<li>Expected: PayPal is not in the express area. Nobody can pay with a method the merchant turned off.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-12</strong> Wallet with a fee is not shown</p>
+<ul>
+<li>Source: dev QA note, PO (5 Oct: per-wallet fees unsupported).</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: set a fixed fee on PayPal (Payment Surcharge = fixed fee). Reload checkout. Remove the fee again.</li>
+<li>Expected: PayPal is not in the express area while it has a fee. Apple Pay and Google Pay are still shown.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-13</strong> All wallets off</p>
+<ul>
+<li>Source: code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: turn off the checkout setting of all three wallets.</li>
+<li>Expected: no express area at all, no empty box, no session call in Network.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-14</strong> Old checkout button hidden where the express area shows that wallet</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: with all wallets on, look at the top of the block checkout. Then turn off Google Pay only and look again.</li>
+<li>Expected: no old Apple Pay or old PayPal button next to or above the express area. Each wallet appears once on the page.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-15</strong> Apple Pay only where the browser supports it</p>
+<ul>
+<li>Source: Mollie docs (Apple Pay needs HTTPS and domain validation), PO comment on REQ-H3 (handled by the component), dev manual #1.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: open the block checkout in Chrome on Windows or Android, then in Safari on a Mac or iPhone with a card in Wallet.</li>
+<li>Expected: Chrome shows Google Pay and PayPal. Chrome on Windows can also show Apple Pay: Apple Pay works in other browsers by scanning a QR code with an iPhone, and the Mollie component offers it (seen on the live-mode site 2026-10-20, Chrome on Windows showed Apple Pay, Google Pay and PayPal). Safari shows Apple Pay and PayPal. If Safari also shows Google Pay, write it down (the dev manual does not expect it). Note: the dev manual #1 expects no Apple Pay in Chrome; record what you see.</li>
+<li>Level: manual (real devices).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-16</strong> Apple Pay domain file</p>
+<ul>
+<li>Source: Mollie docs, code (the plugin serves this path).</li>
+<li>Customer: any visitor.</li>
+<li>Cart: not needed.</li>
+<li>Steps: open <code>https://&lt;live-mode site&gt;/.well-known/apple-developer-merchantid-domain-association</code> in the browser.</li>
+<li>Expected: the file loads (HTTP 200, text content), it is not a 404 or a WordPress page.</li>
+<li>Level: manual, E2E candidate.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-17</strong> Content Security Policy (only if the site uses one)</p>
+<ul>
+<li>Source: Mollie docs.</li>
+<li>Customer: any visitor.</li>
+<li>Cart: not needed.</li>
+<li>Steps: check the response headers of the checkout page for <code>Content-Security-Policy</code>.</li>
+<li>Expected: if a CSP exists, <code>js.mollie.com</code> is allowed for scripts and frames, and the console shows no CSP errors. If there is no CSP, write &quot;no CSP&quot; and skip.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+</ul>
+<h4>Carts that hide the express area</h4>
+<p>Rule in beta5: the express area is loaded only when the cart is ready when the page is rendered. If the cart is not ready at page load, there is no express area and the old checkout buttons are shown as configured. If the cart stops being ready after page load, the wallets disappear until it is ready again.</p>
+<ul>
+<li>
+<p>[ ] <strong>EXP-18</strong> Order total zero</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: (a) add the cart, apply coupon <code>percent 100</code> on the cart page, then open checkout. (b) open checkout without the coupon, then apply <code>percent 100</code> on the checkout page, then remove it.</li>
+<li>Expected: (a) no express area, the old buttons are shown as configured. (b) the wallets disappear when the total becomes 0, and come back when the coupon is removed.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-19</strong> Subscription in the cart</p>
+<ul>
+<li>Source: code, dev manual #13, #14. Note: not in the ticket QA note (subscriptions are only listed as &quot;not in scope&quot;).</li>
+<li>Customer: (a) guest (new private window, not logged in, empty cart). (b) <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: (a) 1 x &quot;Mollie Subscription Test Product 100&quot; (subscription, 0.01 per month) only. (b) 1 x &quot;Mollie Subscription Test Product 100&quot; (subscription, 0.01 per month) + 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: taxes off. (a) add cart (a), open checkout. (b) log in, add cart (b), open checkout.</li>
+<li>Expected: in both cases no express area, no placeholder, no message, also in (b) where the address and rate are known at page load. The old buttons show as configured. The normal Mollie methods for subscriptions still work.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-20</strong> Line below zero, total above zero</p>
+<ul>
+<li>Source: QA (PIWOO-842 overlap: Express builds its own lines in <code>SessionLines.php</code>, not the fixed <code>OrderLines</code> / <code>PaymentLines</code>), Mollie docs (the sum of lines must equal the amount; discount lines must be negative).</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved) (no reload needed). A guest also works after filling the address and reloading.</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 0.02&quot; (physical, 0.02) + 1 x &quot;Mollie Simple Tax Test Product 1.00&quot; (physical, 1.00). With &quot;Negative Line Item&quot; active the 0.02 line shows -0.02, total 0.99 incl. shipping.</li>
+<li>Steps: activate &quot;Negative Line Item&quot;. Log in, add the cart, open checkout. Check the order summary shows the line at -0.02 and a total above 0. If the next step is the paid variant of this cart (line below zero, paid), keep the plugin active; otherwise deactivate it after.</li>
+<li>Expected: the wallets are shown. Network: <code>express/session</code> answers 200, no &quot;not available&quot; text. The log has <code>express.session.created</code>, not <code>express.session.refused</code>.</li>
+<li>Level: manual (needs a live session).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-21</strong> Cart with tax and a coupon</p>
+<ul>
+<li>Source: Mollie docs (VAT amount must match the rate exactly, deviations give an error), QA.</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Simple Tax Test Product 1.00&quot; (physical, 1.00), coupon <code>percent 10</code>.</li>
+<li>Tax: turn taxes ON before this case (WooCommerce &gt; Settings &gt; General &gt; &quot;Enable tax rates and calculations&quot;), &quot;Calculate tax based on&quot; = &quot;Shop base address&quot;, rate <code>worldwide10</code> (10%). Turn taxes OFF after the case.</li>
+<li>Steps: run 1 with &quot;Prices entered with tax&quot; = yes, run 2 with &quot;no&quot;. Log in, add the cart, apply <code>percent 10</code>, open checkout.</li>
+<li>Expected: wallets are shown, the session call answers 200. No <code>express.session.refused</code> in the log.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-55</strong> Cart with extra fee lines from another plugin</p>
+<ul>
+<li>Source: QA, code (<code>SessionLines.php</code> builds the lines sent to Mollie), Mollie docs (the sum of lines must equal the amount).</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: activate the Third Party Fees plugin (0.4). Add the cart. Open checkout. Open a wallet sheet (PayPal window or Google Pay sheet) and close it without paying. Deactivate the plugin after.</li>
+<li>Expected: the wallets are shown. Network: <code>express/session</code> answers 200. The amount in the wallet equals the checkout total including &quot;Test Fee&quot; and &quot;Test Fee2&quot; (6.01 EUR). No <code>express.session.refused</code> in the log.</li>
+<li>Level: manual (needs a live session).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-56</strong> Cart with a negative fee line from another plugin</p>
+<ul>
+<li>Source: QA, code (<code>SessionLines.php</code> builds the lines sent to Mollie), Mollie docs (the sum of lines must equal the amount; discount amounts are negative).</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 3 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: activate &quot;Negative 0.01 Fee&quot;. Add the cart (0.03 EUR, total after the fee 0.02 EUR). Open checkout. Open a wallet sheet (PayPal window or Google Pay sheet) and close it without paying. Deactivate the plugin after.</li>
+<li>Expected: the order summary shows the fee &quot;negative001Fee&quot; at -0.01. The wallets are shown, <code>express/session</code> answers 200, the amount in the wallet equals the checkout total (0.02 EUR). No <code>express.session.refused</code> in the log.</li>
+<li>Level: manual (needs a live session).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-51</strong> Nothing to ship, tax on the customer address, no saved country</p>
+<ul>
+<li>Source: code (<code>tax_address_unknown</code>, commit &quot;Show express checkout only when the price is known at page load&quot;), dev manual #2 to #5. Note: not in the ticket QA note.</li>
+<li>Customer: guest (new private window, not logged in, empty cart) and <code>emma.weber</code> (registered, logged in, only billing country DE saved), see the runs below.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01) in all runs.</li>
+<li>Tax: turn taxes ON before this case (WooCommerce &gt; Settings &gt; General &gt; &quot;Enable tax rates and calculations&quot;). Turn taxes OFF after the case.</li>
+<li>Steps: set &quot;Calculate tax based on&quot; (WooCommerce &gt; Settings &gt; Tax) as in the run, add the cart, open the block checkout. Runs:
+<ul>
+<li>(a1) guest, &quot;Customer shipping address&quot;.</li>
+<li>(a2) guest, &quot;Customer billing address&quot;.</li>
+<li>(b1) <code>emma.weber</code>, &quot;Customer shipping address&quot;.</li>
+<li>(b2) <code>emma.weber</code>, &quot;Customer billing address&quot;.</li>
+<li>(c) guest, &quot;Shop base address&quot;.</li>
+</ul>
+</li>
+<li>Expected:
+<ul>
+<li>(a1), (a2): no Mollie express component. The old buttons show as configured (old &quot;Pay with PayPal&quot; button in Chrome, no Google Pay).</li>
+<li>(b1): no component, old PayPal button. Correct, because Emma has no saved shipping country.</li>
+<li>(b2): component shown (Apple Pay, Google Pay, PayPal), because Emma's billing country is saved.</li>
+<li>(c): component shown for the guest.</li>
+<li>When the component shows: no old buttons next to it. When it does not show: no <code>express/session</code> call in Network.</li>
+</ul>
+</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+</ul>
+<h4>Orders with items to ship</h4>
+<p>Beta5 behaviour (see the conflict in 1.0): no grey box. Express needs a complete shipping address and a chosen rate when the page loads.</p>
+<ul>
+<li>
+<p>[ ] <strong>EXP-22</strong> Nothing to ship</p>
+<ul>
+<li>Source: dev QA note, code, dev manual #1</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: taxes off (or not based on the customer address). Add the cart, open checkout.</li>
+<li>Expected: the wallets are shown at once. No &quot;Ships to&quot; line.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-23</strong> Items to ship, shipping details empty at page load</p>
+<ul>
+<li>Source: code, dev QA note (conflict), dev manual #6</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: add the cart, open checkout (address fields empty).</li>
+<li>Expected: beta5: no express area at all, no grey box, no <code>express/session</code> call in Network. The old Apple Pay and PayPal checkout buttons are shown as the settings say. Dev QA note expected the grey box with &quot;Your order contains items to ship. Please fill in the shipping details to use express checkout.&quot; and &quot;Waiting for the shipping cost…&quot;: record that it is not shown (conflict, not a fail).</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-24</strong> Fill shipping details on the page, then reload</p>
+<ul>
+<li>Source: code, dev manual #6, #7, #8. Note: a shopper who fills the address for the first time must reload to see Express. The dev manual says this is intended. It is still worth a product owner decision, because most guests will never reload.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: add the cart, open the block checkout (no express area, address fields empty). Fill the shipping address and pick a rate. Wait 5 seconds. Then reload the page.</li>
+<li>Expected: before the reload the express area does not appear (record what you see). After the reload the express area is shown, with the line &quot;Ships to &lt;address&gt; · &lt;rate&gt; Change&quot; above the wallets. The address is one line in the country format, without name, company and country. The old checkout buttons are gone.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-25</strong> &quot;Change&quot; link</p>
+<ul>
+<li>Source: code (commit &quot;Open the saved shipping address card when Change is clicked&quot;), dev manual #9</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: add the cart, open the block checkout, fill the shipping address, pick a rate and reload the page (the express area shows the &quot;Ships to&quot; line). Click &quot;Change&quot;.</li>
+<li>Expected: the saved shipping address card opens and the cursor is in the first shipping field. The page scrolls to it.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-26</strong> Change shipping rate or address after page load</p>
+<ul>
+<li>Source: dev QA note, code, dev manual #10, #11</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01). Start with the shipping address filled and the page reloaded, so the express area and the &quot;Ships to&quot; line are shown.</li>
+<li>Steps: switch from &quot;Very flat rate&quot; (0.01 EUR) to &quot;Second flat rate&quot; (0.02 EUR). Then change the postcode. Then clear the city field, then fill it again.</li>
+<li>Expected: each complete change makes a new <code>express/session</code> call (after about one second) and the &quot;Ships to&quot; line shows the new address and rate. While the city is empty, the wallets disappear (no grey box). When it is filled again, they come back. Opening the wallet after a change must show the new total (checked with a payment in the case &quot;New total after shipping change&quot;).</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-27</strong> Address in another EU country with a different VAT rate</p>
+<ul>
+<li>Source: PO (5 Oct).</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Simple Tax Test Product 1.00&quot; (physical, 1.00).</li>
+<li>Tax: turn taxes ON before this case (WooCommerce &gt; Settings &gt; General &gt; &quot;Enable tax rates and calculations&quot;), &quot;Calculate tax based on&quot; = &quot;Customer shipping address&quot;. Add standard rates DE 19% and AT 20% by hand (the setup creates only <code>worldwide10</code>). Turn taxes OFF after the case.</li>
+<li>Steps: log in, add the cart, open checkout (DE address from the account). Change the shipping country to Austria.</li>
+<li>Expected: write down what happens (new session with the new total, or the area disappears). PO says VAT changes are not supported for now, so a hidden area is acceptable, a wrong amount is not.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+</ul>
+<h4>No order before approval, long stays, many reloads</h4>
+<ul>
+<li>
+<p>[ ] <strong>EXP-28</strong> No order on page load</p>
+<ul>
+<li>Source: dev QA note.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: first 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01), then 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: note the newest order number. Add the first cart, open checkout and reload 5 times. Empty the cart, add the second cart, do the same.</li>
+<li>Expected: no new order in WooCommerce &gt; Orders (also not in Drafts or Pending payment).</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-29</strong> Many price changes in a short time</p>
+<ul>
+<li>Source: code. Dev QA note only says &quot;the checkout page still works the same when the shopper opens it many times&quot;. Note: the spec text &quot;Express checkout was started too often. Please wait a few minutes, or use the regular checkout.&quot; is not shown in this case by design (the session route hides the area instead).</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01) (the case changes the quantity).</li>
+<li>Steps: on checkout, change the quantity 12 times within 2 minutes (wait about 2 seconds between changes).</li>
+<li>Expected: after about 10 new sessions the wallets disappear, with no error text. The normal payment methods still work. After 10 minutes and one more change, the wallets come back. The log shows <code>express.session.budget_spent</code> or a refused session with reason <code>budget_exhausted</code>.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-30</strong> Long stay on the page</p>
+<ul>
+<li>Source: dev QA note (&quot;stays on it for a long time&quot;), code (15-minute session, one refresh, then idle until interaction).</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: open checkout with the wallets shown. Leave the tab alone for 20 minutes. Then move the mouse or click into the page.</li>
+<li>Expected: after the interaction the wallets are shown again (new session call), and a payment can start (with a wallet account, click a wallet and approve). No error text.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-31</strong> Stale page after login in another tab</p>
+<ul>
+<li>Source: code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart), then log in as <code>luca.schmidt</code> in a second tab.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: open checkout as a guest. In another tab log in as the test shopper. Go back to the first tab and click a wallet button.</li>
+<li>Expected: either the wallet works, or the text &quot;Express checkout could not be started. Please reload the page and try again.&quot; is shown. After a reload the wallets work.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-52</strong> Logged-in shopper with a saved shipping address</p>
+<ul>
+<li>Source: dev manual #12, code.</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: taxes off or based on the shop address. Log in, add the cart, open checkout.</li>
+<li>Expected: the express area is shown on the first page load (no reload needed), with the line &quot;Ships to &lt;street&gt;, &lt;postcode&gt; &lt;city&gt; · &lt;rate name&gt;&quot; and the &quot;Change&quot; link. Old checkout buttons not shown.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-53</strong> Google Pay where the express area is not shown</p>
+<ul>
+<li>Source: dev manual (intro and setup notes), code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: in Chrome, open the block checkout in a state where the express area is hidden: a guest with a physical product and empty address fields, or a guest with a virtual product while taxes are on and based on the customer shipping address.</li>
+<li>Expected: Google Pay is not offered anywhere on the page (it has no old button and is never in the payment list). Only the old Apple Pay and PayPal buttons show as configured.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-32</strong> No new admin notices and no console errors</p>
+<ul>
+<li>Source: dev QA note (&quot;shop admin pages show no new message after normal orders&quot;), QA.</li>
+<li>Customer: the shoppers of the cases above, and the shop admin.</li>
+<li>Cart: the carts of the cases above.</li>
+<li>Steps: after the cases above, open WP admin dashboard and WooCommerce &gt; Orders. Check the browser console on checkout.</li>
+<li>Expected: no new Mollie admin notice. No JS errors from Mollie scripts.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+</ul>
+<h3>1.2 With payment</h3>
+<p>Blocker: needs the devices, the PayPal account and the budget from 0.3. Run the first three payment cases (paid order with a virtual product, paid order with shipping, fee of the method selected in the form) once per wallet: Apple Pay, Google Pay, PayPal. For the other cases one wallet is enough unless the case says otherwise (PayPal is the easiest, it opens a window and gives time).</p>
+<ul>
+<li>
+<p>[ ] <strong>EXP-33</strong> Paid order, virtual product (each wallet)</p>
+<ul>
+<li>Source: dev QA note, code, dev manual #15</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: add the cart, open checkout, pay with the wallet.</li>
+<li>Expected:
+<ul>
+<li>Order is created only after approval in the wallet, not before.</li>
+<li>The shopper lands on the order received page.</li>
+<li>The order payment method is the wallet that paid (Google Pay is shown as Google Pay, not Card).</li>
+<li>Order total = amount in the Mollie dashboard = amount shown in the wallet.</li>
+<li>Order notes: &quot;Express checkout started&quot;, then the payment note. Write down the payment note text (known bug: &quot;Payment complete.&quot; instead of &quot;Payment via ... (tr_...)&quot;).</li>
+<li>Exactly one payment note and one customer email.</li>
+<li>Status Processing (or Completed for a virtual downloadable product, as for other methods).</li>
+<li>No new admin notice.</li>
+</ul>
+</li>
+<li>Level: manual (only real wallets).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-34</strong> Paid order, product with shipping (each wallet)</p>
+<ul>
+<li>Source: dev QA note, code, PO (21 Sep, wallet data takes precedence), dev manual #16, #18. Note: see the address conflict in 1.0.</li>
+<li>Customer: guest (new private window, not logged in, empty cart); wallet account with a different name and email than the form.</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: add the cart, fill the shipping address with name A, pick &quot;Second flat rate&quot; (0.02 EUR), reload the page (Express needs the address at page load), pay with a wallet whose billing address and email are different (name B).</li>
+<li>Expected:
+<ul>
+<li>Total includes the 0.02 EUR shipping, amount at Mollie is the same.</li>
+<li>Billing address, email and phone on the order come from the wallet (name B).</li>
+<li>Shipping address on the order comes from the form (name A).</li>
+<li>Order note &quot;Express checkout started&quot; and one payment note.</li>
+</ul>
+</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-35</strong> Fee of the method selected in the form is not charged</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: in the payment list below, select Card (it has a fee, the total shows the fee). Then pay with a wallet in the express area.</li>
+<li>Expected: the order and the Mollie payment have no Card fee. Order total = cart total without the fee.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-36</strong> New total after shipping change</p>
+<ul>
+<li>Source: dev QA note.</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01).</li>
+<li>Steps: log in, add the cart, open checkout, pick &quot;Very flat rate&quot; (0.01 EUR), wait for the wallets, then switch to &quot;Second flat rate&quot; (0.02 EUR), wait one second, open the wallet.</li>
+<li>Expected: the wallet shows the new total. The order and the Mollie payment have the new total.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-37</strong> Approve twice</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: PayPal: start the payment, in the PayPal window approve, and very quickly click the express button again in the checkout tab (or approve in two windows if possible). Apple Pay: double-tap if the sheet allows it.</li>
+<li>Expected: only one order. The log may show <code>express.order.reused</code>. No second Mollie payment is charged.</li>
+<li>Level: manual (real wallet).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-38</strong> Shopper cancels in the wallet</p>
+<ul>
+<li>Source: dev QA note, code (return handler shows the message only for failed or cancelled orders).</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: start with PayPal, cancel in the PayPal window (or close the Apple Pay sheet).</li>
+<li>Expected: the shopper is back on checkout (or stays there) and sees &quot;Your express checkout payment was not completed. Please try again, or choose another payment method.&quot; if the order became failed or cancelled. If the order is still Pending payment at return, the shopper may land on the order received page: write down what happens. The order stays &quot;Pending payment&quot;. Another wallet or a normal method can still be used.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-39</strong> Abandoned order gets cancelled</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: no new cart. Use an existing Express order with status Pending payment (for example one left when the checkout tab was closed right after the Google Pay sheet). Closing the wallet before approval does not create an order.</li>
+<li>Steps: take the Pending payment Express order. Either wait about 75 minutes, or in the database set the order meta <code>_mollie_express_expires_at</code> to a time more than one hour ago. Then WooCommerce &gt; Status &gt; Scheduled Actions, search <code>mollie_woocommerce_cancel_unpaid_orders</code>, click Run.</li>
+<li>Expected: the order becomes &quot;Cancelled&quot; with the note &quot;Express checkout was started and not completed&quot;. The log has <code>express.abandoned.cancelled</code>. Stock is given back.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-40</strong> Normal unpaid-order cleanup does not touch express orders early</p>
+<ul>
+<li>Source: code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart) for the normal order; then shop admin (WP admin) to check the orders.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01) for the normal order. Plus one existing Express order with status Pending payment (for example one left when the checkout tab was closed right after the Google Pay sheet).</li>
+<li>Steps: WooCommerce &quot;Hold stock&quot; = 10 minutes. Have one Express order with status Pending payment (see the cart line). Create a normal unpaid order: guest, add the virtual product, choose iDEAL | Wero or Card from the payment list (not the express area), click Place order, close the Mollie payment page without paying. Wait at least 12 minutes, open any shop page once (triggers the cron), then reload WooCommerce &gt; Orders.</li>
+<li>Expected: the normal order is Cancelled with the WooCommerce note &quot;Unpaid order cancelled - time limit reached.&quot;. The Express order stays Pending payment (Express orders are excluded from this cancel on purpose).</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-41</strong> Cart changed in another tab</p>
+<ul>
+<li>Source: dev QA note, code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart) (tab A and tab B in the same window).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01). In tab B change it to 2 x, or apply <code>percent 10</code>.</li>
+<li>Steps: tab A: checkout with the wallets shown. Tab B: change the quantity or add a coupon. Tab A, without reload: click the wallet and approve.</li>
+<li>Expected: the wallet shows or the page shows &quot;Your order changed after express checkout was started. Please try again.&quot; No order with the old amount. After the message the wallets come back with the new amount and a payment works.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-42</strong> Last item sold in another browser</p>
+<ul>
+<li>Source: dev QA note (product with few items in stock), code.</li>
+<li>Customer: browser A: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved), so the buttons show on the first load (the product needs shipping; a guest would need to fill the address and reload the page first). Browser B: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: browser A: 2 x &quot;Mollie Simple Stock 2 Test Product&quot; (physical, 0.01, stock 2). Browser B: 1 x the same product. Set the stock back to 2 before the case.</li>
+<li>Steps: set the stock back to 2. Browser A: log in, add the cart, open checkout (buttons visible). Browser B: buy 1 with a normal method. In browser A click the wallet and approve.</li>
+<li>Expected: no order and no charge. A WooCommerce stock message is shown (or &quot;Your cart cannot be ordered as it is.&quot;). The normal checkout shows the stock problem too.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-43</strong> Earlier unpaid order does not block</p>
+<ul>
+<li>Source: dev QA note.</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved), who has the unpaid order.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: log in, add the cart, pay with a wallet.</li>
+<li>Expected: the payment works and a new order is created. The old unpaid order is not changed.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-44</strong> Browser closed right after approval</p>
+<ul>
+<li>Source: Mollie docs (fulfil from the payment webhook, the shopper may never return), dev QA note.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: PayPal: approve, and close the browser tab before the redirect finishes (or block the return URL by going offline right after approval).</li>
+<li>Expected: the order still becomes Processing through the Mollie webhook, with one payment note and one email.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-45</strong> Back button after payment</p>
+<ul>
+<li>Source: Mollie docs (client token is short-lived and scoped to one session), code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps:
+<ol>
+<li>Add the cart, open the block checkout.</li>
+<li>Pay with Google Pay or PayPal in the express area and wait for the order received page.</li>
+<li>Press the browser back button once, to return to the checkout page.</li>
+<li>If the checkout still shows the product and the express buttons, click a wallet again and approve.</li>
+<li>Check WooCommerce &gt; Orders and your card or the Mollie payments list.</li>
+</ol>
+</li>
+<li>Expected: no second payment on the old session. Either the cart is empty, or a new session starts with a new order. If a message is shown, it is &quot;This express checkout was already completed. Please check your email for the order confirmation.&quot;</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-46</strong> Line below zero, paid</p>
+<ul>
+<li>Source: QA (PIWOO-842 overlap), Mollie docs (line sum must equal amount).</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 0.02&quot; (physical, 0.02) + 1 x &quot;Mollie Simple Tax Test Product 1.00&quot; (physical, 1.00). With &quot;Negative Line Item&quot; active the 0.02 line shows -0.02, total 0.99 incl. shipping.</li>
+<li>Steps: activate &quot;Negative Line Item&quot;. Log in, add the cart, open checkout, check the line at -0.02 and the total 0.99 EUR. Pay with a wallet. Deactivate the plugin after.</li>
+<li>Expected: payment works. Order total = amount at Mollie. The order lines in the admin match the checkout.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-47</strong> Payment without an order (admin notice)</p>
+<ul>
+<li>Source: dev QA note (&quot;parts you cannot check directly&quot;, here it can be checked), code.</li>
+<li>Customer: guest (new private window, not logged in, empty cart); then shop admin (WP admin).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: PayPal: click the express PayPal button and wait until the order exists (Pending payment, note &quot;Express checkout started&quot;). In admin, delete this order permanently (also from trash). Then approve in the PayPal window.</li>
+<li>Expected:
+<ul>
+<li>Admin shows the red notice &quot;Mollie express checkout: a payment was taken without an order&quot;, with the payment id, amount and reason, and the link &quot;I have dealt with these&quot;.</li>
+<li>Devtools: check whether the notice has the attribute <code>data-mollie-error</code>. Expected by PIWOO-856: yes. Code says: no. Record what you see.</li>
+<li>Click &quot;I have dealt with these&quot;: the notice is gone and stays gone after reload.</li>
+<li>Refund the payment in the Mollie dashboard.</li>
+</ul>
+</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-48</strong> Full refund from WooCommerce (each wallet)</p>
+<ul>
+<li>Source: dev QA note (refunds in scope).</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: no cart. Refund paid Express orders with a virtual product, one per wallet.</li>
+<li>Steps: open a paid express order, refund the full amount with &quot;Refund via Mollie&quot;.</li>
+<li>Expected: refund note on the order, refund visible in the Mollie dashboard, status Refunded.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-49</strong> Partial refund from WooCommerce</p>
+<ul>
+<li>Source: QA.</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved); then shop admin (WP admin) for the refund.</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01) + 1 x &quot;Mollie Simple Test Product 0.02&quot; (physical, 0.02), paid with a wallet; then refund the 0.02 line.</li>
+<li>Steps: log in, add the cart, pay with a wallet. Then in admin refund the &quot;Mollie Simple Test Product 0.02&quot; line via Mollie.</li>
+<li>Expected: partial refund at Mollie with the right amount, order note, status stays Processing.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-54</strong> Old button pays where the express area is not shown</p>
+<ul>
+<li>Source: dev manual #17, QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: turn taxes on, &quot;Calculate tax based on&quot; = &quot;Customer billing address&quot;, add the cart, open checkout (no express area). Pay with the old Apple Pay button, then repeat with the old PayPal button.</li>
+<li>Expected: works as before this release: the order is paid, the payment method is Apple Pay or PayPal, one payment note, one email. No express note &quot;Express checkout started&quot; on these orders.</li>
+<li>Level: manual (live only on this site), E2E covers the old PayPal button in test mode (<code>tests/qa/tests/05-transaction/paypal-express.spec.ts</code>).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>EXP-50</strong> Normal Mollie methods still work on the same checkout</p>
+<ul>
+<li>Source: dev QA note, dev manual #21</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01).</li>
+<li>Steps: with the express area shown, pay with iDEAL and with Card from the payment list (live, small amounts, or switch to the test-mode site for this one).</li>
+<li>Expected: payments work as before, one payment note, one email. If the express area showed &quot;Express checkout is not available right now. Please use the regular checkout.&quot; at any time, the other methods still work.</li>
+<li>Level: manual, E2E covers normal methods on the test-mode site.</li>
+</ul>
+</li>
+</ul>
+<h3>1.3 Parts you cannot check directly</h3>
+<p>The dev QA note lists these as &quot;parts you cannot check directly&quot;. The manual cases above cover the &quot;your job here&quot; part.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Manual job</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A paid payment ends as a paid order, also after the order was cancelled as not completed</td>
+<td>EXP-33 order status and notes</td>
+</tr>
+<tr>
+<td>Admin notice for a payment without an order</td>
+<td>EXP-47 (we can trigger it with PayPal)</td>
+</tr>
+<tr>
+<td>Messages &quot;expired&quot;, &quot;busy&quot;, &quot;started too often&quot;, &quot;already completed&quot;</td>
+<td>EXP-29, EXP-30, EXP-45</td>
+</tr>
+<tr>
+<td>Two webhooks at the same time change the order once</td>
+<td>EXP-33, EXP-44: one payment note and one email</td>
+</tr>
+</tbody>
+</table>
+<h3>1.4 E2E and manual coverage for PIWOO-944</h3>
+<ul>
+<li><strong>E2E</strong>: none. Express needs live mode, and live payments cannot run in CI. Candidates that need no payment and could run later: EXP-08 and EXP-09 (no area in test mode and outside block checkout), EXP-01, EXP-03, EXP-04 (settings texts), EXP-16 (Apple Pay domain file).</li>
+<li><strong>Manual</strong>: the only check with real wallets, real sessions and real money (section 1.2), plus look and feel of the express area and the &quot;Ships to&quot; line.</li>
+</ul>
+<h3>1.5 Draft Jira questions and comments (do not post without approval)</h3>
+<p>Question for PIWOO-944 (placement):</p>
+<p>Beta5 has the express area at the top of the block checkout (registerExpressPaymentMethod). The comment of 13 Oct says that 8.2.0 should ship milestone 1, Express as a regular payment method after address and shipping (WIP PR #1324, not merged). Is milestone 1 still planned for 8.2.0? If yes, will there be a new beta? QA tests beta5 as it is for now.</p>
+<p>Question for PIWOO-944 (shipping and build):</p>
+<p>Beta5 also contains dev/944-remove-if-no-shipping (not merged into dev/release/8.2.0) and the security patches, so it cannot be rebuilt from one branch. Please merge the branch so the release branch matches the build. With this change the grey shipping box from the ticket QA note is gone: Express is shown only when the shipping address and rate are known when the page loads, otherwise the old buttons are shown. Your <a href="http://manual-qa-8.2.0.md">manual-qa-8.2.0.md</a> confirms this, so please update the ticket QA note (section 3) too. One product question: a guest who fills the address for the first time must reload to see Express, so most guests with a physical product will never see it. Is that OK for 8.2.0?</p>
+<p>Question for PIWOO-944 (own switch):</p>
+<p>On 21 Sep the plan was &quot;its own payment method with its own switch, and still respect the individual wallet switches&quot;. Beta5 has no own switch, only the wallet switches. Is this the agreed behaviour for 8.2.0?</p>
+<p>Comment for PIWOO-944 / PIWOO-856 (only after EXP-47 confirms it):</p>
+<p>The admin notice &quot;Mollie express checkout: a payment was taken without an order&quot; is printed as notice notice-error without the data-mollie-error attribute (src/ExpressComponent/WooCommerce/OrphanedExpressPayments.php:82). PIWOO-856 says every real Mollie error notice carries this mark, and the Playwright error assertions depend on it.</p>
+<h3>1.6 Mapping to the developer's <a href="http://manual-qa-8.2.0.md">manual-qa-8.2.0.md</a></h3>
+<p>All 22 developer cases are covered. Cases EXP-52, EXP-53 and EXP-54 were added from the developer's list.</p>
+<table>
+<thead>
+<tr>
+<th>Dev case</th>
+<th>Topic</th>
+<th>Our case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Virtual, taxes off, guest: component with the browser's wallets</td>
+<td>EXP-07, EXP-15, EXP-22</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Virtual, tax on shop base address, guest</td>
+<td>EXP-51 (c)</td>
+</tr>
+<tr>
+<td>3, 4</td>
+<td>Virtual, tax on customer billing or shipping address, guest: no component</td>
+<td>EXP-51 (a1), (a2)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Virtual, tax on billing address, logged in with saved country</td>
+<td>EXP-51 (b2)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Physical, guest, empty address: no component, legacy buttons</td>
+<td>EXP-23</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Fill address, no reload: still no component</td>
+<td>EXP-24</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Reload: component with the &quot;Ships to&quot; line</td>
+<td>EXP-24</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Change link</td>
+<td>EXP-25</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Clear and refill a required field</td>
+<td>EXP-26</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Other shipping rate</td>
+<td>EXP-26, EXP-36</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Logged in with saved shipping address: component on first load</td>
+<td>EXP-52</td>
+</tr>
+<tr>
+<td>13, 14</td>
+<td>Subscription in the cart</td>
+<td>EXP-19</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Pay with PayPal, virtual</td>
+<td>EXP-33</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Pay with Apple Pay, physical</td>
+<td>EXP-34</td>
+</tr>
+<tr>
+<td>17</td>
+<td>Pay with a legacy button where the component is not shown</td>
+<td>EXP-54</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Pay with Google Pay, physical</td>
+<td>EXP-34</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Google Pay never in the payment list</td>
+<td>EXP-06</td>
+</tr>
+<tr>
+<td>20</td>
+<td>No component on classic checkout, cart, product page</td>
+<td>EXP-08</td>
+</tr>
+<tr>
+<td>21</td>
+<td>Regular method on the block checkout</td>
+<td>EXP-50</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Google Pay setting off</td>
+<td>EXP-10</td>
+</tr>
+</tbody>
+</table>
+<p>Cases in this file that the developer's list does not have (worth sharing with the developer): settings texts and defaults (EXP-01 to EXP-05), wallet off at the shop or with a fee (EXP-11, EXP-12), Apple Pay domain file and CSP (EXP-16, EXP-17), total zero (EXP-18), below-zero discount line, tax with coupons and fee lines from other plugins (EXP-20, EXP-21, EXP-46, EXP-55, EXP-56), EU VAT country change (EXP-27), no order on page load, many changes, long stay, stale nonce (EXP-28 to EXP-31), fee of the form method (EXP-35), approve twice (EXP-37), cancel in wallet and abandoned cleanup (EXP-38 to EXP-40), cart changed and stock (EXP-41, EXP-42), earlier unpaid order (EXP-43), browser closed and back button (EXP-44, EXP-45), payment without an order and its notice (EXP-47), refunds (EXP-48, EXP-49).</p>
+<h2>2. PIWOO-963 Security (surcharge #50065, PayPal button #50066)</h2>
+<p>Site: the same site in <strong>test mode</strong> (Mollie settings &gt; &quot;Enable test mode&quot; = yes). Express is off in test mode, so the old PayPal button shows. Payments here are test payments, nothing is charged.</p>
+<p>Preparation for this section:</p>
+<ul>
+<li>[ ] Test mode on. WooCommerce &quot;Direct bank transfer&quot; (bacs) enabled as a non-Mollie gateway.</li>
+<li>[ ] Mollie fees: Card fixed fee 0.01 EUR (already set). For the switch cases also set iDEAL | Wero to a fixed fee of 0.02 EUR, and remove it after this section.</li>
+<li>[ ] PayPal &quot;Display on product page&quot; on (old PayPal button on the product page, virtual products only).</li>
+<li>[ ] One unpaid order for <code>luca.schmidt</code>: log in, add 1 x &quot;Mollie Simple Tax Test Product 1.00&quot;, choose iDEAL | Wero at checkout, on the Mollie test page choose status &quot;Open&quot; (or go back without choosing). The order stays Pending payment. Its &quot;Pay&quot; link in My account &gt; Orders opens the order-pay page.</li>
+<li>[ ] One paid order (Processing or Completed) of <code>luca.schmidt</code>, for the &quot;order not awaiting payment&quot; case.</li>
+<li>[ ] Product IDs: in WP admin &gt; Products hover the product name, the ID is shown.</li>
+</ul>
+<p>Console templates (open the browser console on the named page and paste; replace the values in capitals).</p>
+<p>Surcharge request (works on any page of the shop):</p>
+<pre><code class="language-js">fetch('/wp-admin/admin-ajax.php',{method:'POST',credentials:'same-origin',body:new URLSearchParams({action:'update_surcharge_order_pay',orderKey:'ORDER_KEY',nonce:'NONCE',method:'GATEWAY_ID'})}).then(r=&gt;r.text()).then(console.log)
+</code></pre>
+<p>The order key and the nonce are in two hidden fields on the order-pay page and on the order received / view order page of that order: <code>mollie-woocommerce-orderKey</code> and <code>mollie-surcharge-nonce</code> (devtools &gt; Elements, search for the name). Gateway IDs look like <code>mollie_wc_gateway_creditcard</code>, <code>mollie_wc_gateway_ideal</code>, <code>bacs</code>.</p>
+<p>PayPal product-page request (run on the product page of a virtual product where the old PayPal button shows):</p>
+<pre><code class="language-js">const n=document.querySelector('#mollie-PayPal-button input[name=&quot;_wpnonce&quot;]').value;
+jQuery.post(molliepaypalbutton.ajaxUrl,{action:'mollie_paypal_update_amount',productId:PRODUCT_ID,productQuantity:QTY,nonce:n},console.log);
+jQuery.post(molliepaypalbutton.ajaxUrl,{action:'mollie_paypal_create_order',productId:PRODUCT_ID,productQuantity:QTY,needShipping:false,'mollie-payments-for-woocommerce_issuer_paypal_button':'paypal',nonce:n},console.log);
+</code></pre>
+<h3>2.1 Surcharge on the order-pay page (#50065)</h3>
+<ul>
+<li>
+<p>[ ] <strong>SEC-01</strong> Switching between Mollie methods changes the fee</p>
+<ul>
+<li>Source: dev QA note (963 patch comment), code.</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: not needed, use the unpaid order from the preparation.</li>
+<li>Steps: My account &gt; Orders &gt; Pay on the unpaid order. Select Card, then iDEAL | Wero, then a Mollie method with no fee.</li>
+<li>Expected: the order totals on the page show the Card fee 0.01, then the iDEAL fee 0.02 (no Card fee left), then no fee. Never two Mollie fees at once.</li>
+<li>Level: manual now, E2E later (order-pay page, test mode).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-02</strong> Switching to a non-Mollie gateway removes the Mollie fee</p>
+<ul>
+<li>Source: dev QA note (&quot;switching to one now removes the Mollie surcharge, which fixes the overcharge case&quot;), code.</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: not needed, the unpaid order.</li>
+<li>Steps: on the order-pay page select Card (fee shows), then select Direct bank transfer. Click &quot;Pay for order&quot;. Open the order in admin.</li>
+<li>Expected: after the switch the page shows no Mollie fee. The order is paid by bank transfer (On hold) and has no Mollie fee line. The order total equals the products plus shipping.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-03</strong> Fee is applied on submit even without JavaScript</p>
+<ul>
+<li>Source: dev QA note (&quot;If JS didn't run, the customer is charged the correct surcharge&quot;), code (<code>woocommerce_before_pay_action</code>).</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: not needed, a new unpaid order (repeat the preparation step).</li>
+<li>Steps: open the order-pay page. Devtools &gt; Settings &gt; Debugger &gt; &quot;Disable JavaScript&quot;, reload. Select Card, click &quot;Pay for order&quot;. On the Mollie test page check the amount, choose &quot;Paid&quot;.</li>
+<li>Expected: the order and the Mollie test payment include the Card fee 0.01, although the page showed no fee without JS. Enable JavaScript again after.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-04</strong> Tamper: gateway ID with a Mollie-like prefix</p>
+<ul>
+<li>Source: dev QA note (&quot;The prefix check is now exact, so xmollie_wc_gateway_… is rejected&quot;), code.</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: not needed, the unpaid order.</li>
+<li>Steps: on the order-pay page copy the order key and nonce, run the surcharge request with <code>method</code> = <code>xmollie_wc_gateway_creditcard</code>. Then reload the order-pay page.</li>
+<li>Expected: answer <code>{&quot;success&quot;:false}</code>. The order totals and notes are unchanged.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-05</strong> Tamper: disabled or unknown gateway</p>
+<ul>
+<li>Source: dev QA note (&quot;only accepts gateways that are registered and enabled&quot;), code.</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: not needed, the unpaid order.</li>
+<li>Steps: run the surcharge request with <code>method</code> = a Mollie gateway that is disabled in WooCommerce (for example <code>mollie_wc_gateway_kbc</code> if off), then with <code>method</code> = <code>does_not_exist</code>.</li>
+<li>Expected: both answer <code>{&quot;success&quot;:false}</code>. The order is unchanged.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-06</strong> Tamper: wrong nonce</p>
+<ul>
+<li>Source: code (nonce check).</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: not needed, the unpaid order.</li>
+<li>Steps: run the surcharge request with the right order key, <code>method</code> = <code>mollie_wc_gateway_creditcard</code> and <code>nonce</code> = <code>0000000000</code>.</li>
+<li>Expected: <code>{&quot;success&quot;:false}</code>, the order is unchanged.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-07</strong> Tamper: order that does not need payment</p>
+<ul>
+<li>Source: dev QA note (&quot;only accepts orders that still need payment&quot;), ticket task (&quot;only accepts orders still awaiting payment&quot;).</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: not needed, the paid order from the preparation.</li>
+<li>Steps: open the order received or view order page of the paid order, copy its order key and nonce from the hidden fields. Run the surcharge request with <code>method</code> = <code>mollie_wc_gateway_creditcard</code>.</li>
+<li>Expected: <code>{&quot;success&quot;:false}</code>. The paid order has no new fee, the total and notes are unchanged.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-08</strong> Tamper: someone else's order</p>
+<ul>
+<li>Source: QA (from the report: anyone with the order key could change the fee).</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: not needed.</li>
+<li>Steps: copy the order key and nonce of Luca's unpaid order (from Luca's order-pay page). In the guest window run the surcharge request with them and <code>method</code> = <code>mollie_wc_gateway_creditcard</code>.</li>
+<li>Expected: <code>{&quot;success&quot;:false}</code> (the nonce belongs to Luca's session), Luca's order is unchanged.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-09</strong> Fee on the normal block and classic checkout (regression)</p>
+<ul>
+<li>Source: QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Simple Tax Test Product 1.00&quot; (physical, 1.00).</li>
+<li>Steps: block checkout: select Card, then iDEAL | Wero, then a method without fee, then Card again and pay (Mollie test page: Paid). Repeat on the classic checkout.</li>
+<li>Expected: the fee line follows the selected method each time, the paid order has exactly one Card fee 0.01, the Mollie test payment amount equals the order total.</li>
+<li>Level: E2E (already covered by <code>03-plugin-settings/surcharge</code> on the classic checkout; block checkout manual for now).</li>
+</ul>
+</li>
+</ul>
+<h3>2.2 Old PayPal button on the product page (#50066)</h3>
+<ul>
+<li>
+<p>[ ] <strong>SEC-10</strong> Normal purchase still works</p>
+<ul>
+<li>Source: dev QA note (&quot;Variations still work&quot;), QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: not needed, the button buys directly from the product page.</li>
+<li>Steps: open the product page of &quot;Mollie Virtual Not Downloadable Test Product&quot;, set quantity 2, click the old PayPal button, on the Mollie test page choose Paid.</li>
+<li>Expected: order paid, 2 x the product, total 0.02, payment method PayPal.</li>
+<li>Level: E2E (covered in test mode by <code>05-transaction/paypal-express.spec.ts</code>), manual quick check.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-11</strong> Tamper: quantity 0 and -1</p>
+<ul>
+<li>Source: dev QA note (&quot;a quantity of at least 1&quot;), code.</li>
+<li>Customer: guest.</li>
+<li>Cart: not needed.</li>
+<li>Steps: on the product page of &quot;Mollie Virtual Not Downloadable Test Product&quot; run both PayPal requests with its product ID and <code>QTY</code> = 0, then -1.</li>
+<li>Expected: <code>update_amount</code> answers <code>{&quot;success&quot;:false,&quot;data&quot;:&quot;product not purchasable&quot;}</code>; <code>create_order</code> answers <code>success:false</code> with &quot;Could not create PayPal payment.&quot; (or similar). No new order in WooCommerce &gt; Orders.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-12</strong> Tamper: more than the stock</p>
+<ul>
+<li>Source: dev QA note (&quot;stock, and no more than the stock allows&quot;).</li>
+<li>Customer: guest.</li>
+<li>Cart: not needed.</li>
+<li>Steps: set &quot;Mollie Virtual Not Downloadable Test Product&quot; to &quot;Manage stock&quot; with stock 1 (restore after). Run both requests with <code>QTY</code> = 2, then 1000.</li>
+<li>Expected: both rejected, no order, stock unchanged.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-13</strong> Tamper: out of stock, draft, private</p>
+<ul>
+<li>Source: dev QA note (&quot;a purchasable product (published, has a price)&quot;).</li>
+<li>Customer: guest.</li>
+<li>Cart: not needed.</li>
+<li>Steps: with the ID of a virtual product run both requests with <code>QTY</code> = 1 while the product is (a) out of stock, (b) Draft, (c) Private. Change the product in admin between the runs and restore it after.</li>
+<li>Expected: all rejected, no order.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-14</strong> Tamper: variable parent, physical product, subscription</p>
+<ul>
+<li>Source: dev QA note (&quot;not a variable parent product&quot;), code (only virtual, non-subscription products).</li>
+<li>Customer: guest.</li>
+<li>Cart: not needed.</li>
+<li>Steps: run both requests with <code>QTY</code> = 1 and the ID of (a) &quot;Mollie Variable Test Product 100&quot; (the parent), (b) &quot;Mollie Simple Test Product 100&quot; (physical), (c) &quot;Mollie Subscription Test Product 100&quot;.</li>
+<li>Expected: all rejected, no order.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-15</strong> Tamper: sold individually</p>
+<ul>
+<li>Source: dev QA note (&quot;sold-individually products limited to quantity 1&quot;).</li>
+<li>Customer: guest.</li>
+<li>Cart: not needed.</li>
+<li>Steps: set &quot;Sold individually&quot; on &quot;Mollie Virtual Not Downloadable Test Product&quot; (restore after). Run both requests with <code>QTY</code> = 2, then with <code>QTY</code> = 1.</li>
+<li>Expected: quantity 2 rejected, no order. Quantity 1: <code>update_amount</code> returns the amount, <code>create_order</code> creates an order and a test payment link (do not pay; the order stays Pending).</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-16</strong> Cart button with a physical product</p>
+<ul>
+<li>Source: code (the cart button accepts only virtual carts).</li>
+<li>Customer: guest.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01), then add 1 x &quot;Mollie Simple Test Product 100&quot; (physical, 0.01) in a second tab.</li>
+<li>Steps: open the classic cart page with the virtual product (old PayPal button shows). In a second tab add the physical product. Back in the first tab, without reload, click the old PayPal button.</li>
+<li>Expected: no PayPal payment for the mixed cart; an error is shown or nothing happens, no order is created.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>SEC-17</strong> Old Apple Pay button (smoke)</p>
+<ul>
+<li>Source: QA (not changed by the patch).</li>
+<li>Customer: guest.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: Safari with Apple Pay only: buy with the old Apple Pay button on the product page.</li>
+<li>Expected: works as before.</li>
+<li>Level: manual. Blocked without an Apple device.</li>
+</ul>
+</li>
+</ul>
+<h3>2.3 Coverage note for PIWOO-963</h3>
+<ul>
+<li>E2E (later, test mode): the order-pay switch cases (SEC-01 to SEC-03) and the tamper requests (SEC-04 to SEC-08, SEC-11 to SEC-15) fit Playwright well: browser page plus request context, no real money.</li>
+<li>Gaps to point out to the developers (unit / integration is their scope): the dev comment says unit tests were added for both fixes; ask whether the order-pay endpoint has integration tests for each rejection (order status, prefix, disabled gateway, nonce) and whether the reporter's curl PoCs were run against a patched site (the dev comment says they were not).</li>
+</ul>
+<h2>3. PIWOO-945 On-hold while the Mollie payment is pending</h2>
+<p>Site: the same site in <strong>test mode</strong>. Store currency EUR (Pay by Bank does not support other currencies).</p>
+<p>What the build does (checked in beta5): an order goes On hold with the note &quot;Awaiting payment confirmation.&quot; only when all four hold: Mollie says the payment is &quot;pending&quot;, the method is <strong>Pay by Bank or Wero</strong>, the order is Pending payment, and the gateway's &quot;Initial order status&quot; is &quot;On hold&quot;. iDEAL | Wero is not included.</p>
+<p>Limit: the Mollie test page offers no &quot;pending&quot; status for Pay by Bank or Wero, so the hold itself cannot be produced in test mode. Live payments with a real bank account are out of scope (live transactions only manual and only for Express). The hold cases below say &quot;not testable&quot; and the developers' integration tests are the coverage.</p>
+<p>Preparation:</p>
+<ul>
+<li>
+<p>[ ] Test mode on. Pay by Bank, Wero, iDEAL | Wero and Bank transfer enabled and active on the test profile.</p>
+</li>
+<li>
+<p>[ ] Logged-in shopper <code>luca.schmidt</code> for the &quot;Pay&quot; button checks in My account.</p>
+</li>
+<li>
+<p>[ ] <strong>HOLD-01</strong> &quot;Initial order status&quot; setting</p>
+<ul>
+<li>Source: code (<code>initial_order_status</code>, shown for methods with delayed confirmation).</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed.</li>
+<li>Steps: open the settings of Pay by Bank, Wero, iDEAL | Wero and Bank transfer.</li>
+<li>Expected: each has &quot;Initial order status&quot; with &quot;On hold (default)&quot; and &quot;Pending payment&quot;. Default is On hold.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>HOLD-02</strong> Pay by Bank: test statuses as before</p>
+<ul>
+<li>Source: dev QA note (&quot;Your job here: check that the order status and the order notes of an order paid with Pay by Bank still work the same as before the change, for a payment that is paid, failed, expired or canceled&quot;).</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot; (virtual, 0.01), a new order per status.</li>
+<li>Steps: pay with Pay by Bank; on the Mollie test page choose, one order each: Paid, Failed, Canceled, Expired, Open.</li>
+<li>Expected: Paid: Processing (or Completed for a downloadable product). Failed: Failed. Expired: Cancelled. Canceled: Pending payment (default of &quot;Order status cancelled payments&quot;). Open: Pending payment, and My account &gt; Orders shows the &quot;Pay&quot; button. Notes as before (payment started, payment via / failed / expired). Never On hold in these cases.</li>
+<li>Level: E2E (covered by the existing Pay by Bank transaction tests in test mode, but they failed on beta5 because of the PLN currency issue, see the beta5 report), manual quick check.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>HOLD-03</strong> Wero: test statuses as before</p>
+<ul>
+<li>Source: code (Wero is held too), QA.</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: pay with Wero; on the Mollie test page choose, one order each: Paid, Failed, Canceled, Expired.</li>
+<li>Expected: same results as HOLD-02. Never On hold.</li>
+<li>Level: E2E (existing Wero tests), manual quick check.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>HOLD-04</strong> iDEAL | Wero and Bank transfer unchanged</p>
+<ul>
+<li>Source: dev comment (&quot;bank transfer and SEPA Direct Debit were already put on-hold by the plugin&quot;), code.</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: (a) iDEAL | Wero, test page Open: order stays Pending payment with the &quot;Pay&quot; button. (b) Bank transfer: order goes On hold right after checkout with the note &quot;Awaiting payment confirmation.&quot;; then on the test page choose Paid (order Processing) or Expired.</li>
+<li>Expected: as described; behaviour as in 8.1.11.</li>
+<li>Level: E2E (existing Bank transfer transition tests), manual quick check.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>HOLD-05</strong> Pending payment held (Pay by Bank or Wero)</p>
+<ul>
+<li>Source: dev QA note (main requirement).</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: not testable in test mode.</li>
+<li>Steps: not testable: Mollie test mode has no &quot;pending&quot; status for these methods.</li>
+<li>Expected (for reference): order On hold, note &quot;Awaiting payment confirmation.&quot;, no &quot;Pay&quot; button in My account; with &quot;Initial order status&quot; = Pending payment the order stays Pending payment; a second pending webhook changes nothing; later paid / failed / expired end like Bank transfer.</li>
+<li>Level: integration (developers: <code>tests/Integration/spec/webhooks/PendingPaymentHoldTest.php</code>). Mark Blocked with &quot;not testable in test mode&quot;.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>HOLD-06</strong> Open question: Wero</p>
+<ul>
+<li>Source: code vs ticket.</li>
+<li>Customer: not needed.</li>
+<li>Cart: not needed.</li>
+<li>Steps: ask the developers: the code holds Pay by Bank AND Wero, the ticket and the changelog only name Pay by Bank. Confirm and update the changelog.</li>
+<li>Expected: answer recorded in the notes.</li>
+<li>Level: manual (question).</li>
+</ul>
+</li>
+</ul>
+<h2>4. PIWOO-856 Admin notice styles (full test)</h2>
+<p>Site: the same site (test or live mode as each case says). In each case inspect the notice in devtools &gt; Elements and check three things: the look (yellow warning or red error), whether it can be closed (X button, class <code>is-dismissible</code>), and whether the element has the attribute <code>data-mollie-error</code> (only real errors).</p>
+<ul>
+<li>
+<p>[ ] <strong>NOTE-01</strong> Test mode notice is a warning</p>
+<ul>
+<li>Source: dev QA note (856), code.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed.</li>
+<li>Steps: test mode on, test key saved. Open WP admin &gt; Dashboard and WooCommerce &gt; Settings.</li>
+<li>Expected: yellow warning &quot;Mollie Payments for WooCommerce The test mode is active, disable it before deploying into production.&quot; with a link on &quot;disable it&quot;. No <code>data-mollie-error</code>. Turn test mode off: the notice is gone.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>NOTE-02</strong> &quot;API keys missing&quot; is a dismissible warning</p>
+<ul>
+<li>Source: dev QA note (856), code.</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: note both keys, remove both keys in Mollie settings and save. Open the Dashboard. Close the notice, reload. Put the keys back after.</li>
+<li>Expected: yellow warning &quot;Mollie Payments for WooCommerce: API keys missing Please set your API keys here.&quot; with a link to the Mollie settings, closable (X). No <code>data-mollie-error</code>. Record whether it comes back after reload.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>NOTE-03</strong> Logo upload errors are errors with the mark</p>
+<ul>
+<li>Source: code (gateway icon upload uses the error notice), QA.</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: in a Mollie gateway's settings (for example Card) use the custom logo upload: (a) upload a <code>.txt</code> file, (b) upload an image larger than 500 KB. Valid images for comparison: <code>tests/qa/resources/files/dummy-logo-png.png</code>.</li>
+<li>Expected: (a) red error &quot;Mollie Payments for WooCommerce Unable to upload the file. Only jpg, jpeg, png, gif and svg files are allowed.&quot; (b) red error &quot;... Unable to upload the file. Size must be under 500kb.&quot; Both closable and with <code>data-mollie-error</code>. The dummy logo uploads without an error.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>NOTE-04</strong> Mollie status error in the settings</p>
+<ul>
+<li>Source: dev QA note (&quot;The message shown when Mollie's status does not match what the shop needs must still look like an error&quot;), code.</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: Mollie settings &gt; API keys with a wrong key (change one character), save. Look at the status area of the settings page.</li>
+<li>Expected: a red error block &quot;Error: ...&quot; with the reason, with <code>data-mollie-error</code>. The connection text shows &quot;Failed to connect to Mollie API - check your API keys&quot; (PIWOO-938). Restore the key after.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>NOTE-05</strong> Apple Pay readiness errors (if shown)</p>
+<ul>
+<li>Source: dev QA note (&quot;The Apple Pay messages about the server or the shop not being ready must still look like errors&quot;), code.</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: with Apple Pay and its button settings on, open the Dashboard and look for &quot;Server not compliant with Apple requirements ...&quot; or &quot;Apple Pay Validation Error: Please review the Apple Server requirements ...&quot;. These only appear when the server or the merchant validation is not ready; they cannot be forced on a working site.</li>
+<li>Expected: if shown: red error with <code>data-mollie-error</code>. If not shown: write &quot;not shown, cannot be triggered&quot; and mark Blocked.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>NOTE-06</strong> Express &quot;payment taken without an order&quot; notice</p>
+<ul>
+<li>Source: QA (new in PIWOO-944), PIWOO-856 rule &quot;every real error message must carry a hidden mark&quot;.</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: when the notice is shown (any orphan Express payment), inspect it.</li>
+<li>Expected: red error with <code>data-mollie-error</code>. On beta5 the attribute is missing (reported as #11); re-check on the new package.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>NOTE-07</strong> No other unexpected red notices</p>
+<ul>
+<li>Source: QA.</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: with test mode on and valid keys, open Dashboard, Plugins, WooCommerce &gt; Settings &gt; Mollie, WooCommerce &gt; Orders. Then the same with test mode off.</li>
+<li>Expected: no red Mollie error notices in a normal setup; only the test mode warning when test mode is on.</li>
+<li>Level: E2E (the Playwright WP/PHP error assertions use <code>[data-mollie-error]</code>).</li>
+</ul>
+</li>
+</ul>
+<h2>5. Phase 1 short re-check on the new package</h2>
+<p>Site: the same site in <strong>test mode</strong>. Short checks that the Phase 1 fixes still work after the Phase 2 changes.</p>
+<ul>
+<li>
+<p>[ ] <strong>P1-01</strong> PIWOO-842 line below zero, normal checkout</p>
+<ul>
+<li>Source: dev QA note (842), QA.</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 0.02&quot; + 1 x &quot;Mollie Simple Tax Test Product 1.00&quot;, with the helper plugin &quot;Negative Line Item&quot; active (the 0.02 line becomes -0.02, total 0.99).</li>
+<li>Steps: block checkout, pay with Card from the payment list (not Express), test page Paid. Repeat with Advanced settings &gt; &quot;Select API Method&quot; = Orders API if that option is used. Deactivate the plugin after.</li>
+<li>Expected: payment created and paid, Mollie amount = order total 0.99 (plus the Card fee if set). No API error.</li>
+<li>Level: manual now, E2E later (the developer note says integration covers the line rules).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>P1-02</strong> PIWOO-842 line at exactly zero</p>
+<ul>
+<li>Source: dev QA note (842).</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot; + 1 x &quot;Mollie Simple Test Product 0.02&quot;, plus a coupon that makes only the first product free (create a coupon &quot;free-a&quot;: percentage 100, &quot;Products&quot; = Mollie Simple Test Product 100).</li>
+<li>Steps: apply &quot;free-a&quot;, pay with Card from the payment list, test page Paid.</li>
+<li>Expected: the first line is 0.00, the payment works, Mollie amount = order total.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>P1-03</strong> PIWOO-908 status update after a normal payment</p>
+<ul>
+<li>Source: dev QA note (908, &quot;your job here&quot;).</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: pay with iDEAL | Wero, test page Paid. Open the order.</li>
+<li>Expected: Processing, one &quot;Payment via ...&quot; note (record if it says &quot;Payment complete.&quot; instead), one webhook-driven status change.</li>
+<li>Level: E2E (covered by the transaction suite).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>P1-04</strong> PIWOO-938 connection messages</p>
+<ul>
+<li>Source: dev QA note (938).</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: Mollie settings &gt; API keys: (a) valid test key, (b) valid live key with test mode off, (c) wrong key (one character changed), (d) both keys empty. Save after each.</li>
+<li>Expected: (a) &quot;Successfully connected with Test API&quot;. (b) &quot;Successfully connected with Live API&quot;. (c) &quot;Failed to connect to Mollie API - check your API keys&quot; with a working dashboard link. (d) &quot;No API key provided. Please set your Mollie API keys below.&quot; and not &quot;Communicating with Mollie failed&quot;. Restore the keys after.</li>
+<li>Level: E2E (<code>03-plugin-settings/mollie-settings-api-keys.spec.ts</code> covers part of it).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>P1-05</strong> PIWOO-772 PHP 8.0</p>
+<ul>
+<li>Source: dev QA note (772).</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: Plugins &gt; Mollie &gt; &quot;View details&quot;; Tools &gt; Site Health &gt; Info &gt; Server.</li>
+<li>Expected: &quot;Requires PHP: 8.0&quot; for the plugin; the site runs PHP 8.0 or higher and the plugin is active.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+</ul>
+<h2>6. Fix verification on the new package</h2>
+<p>When the new package arrives: install it on the site (keep the settings), note the version in 0.1, then re-test each reported bug with its original steps. Live-mode cases are real payments (keep amounts minimal and refund).</p>
+<ul>
+<li>
+<p>[ ] <strong>FIX-01</strong> #1 Second guest order lands on the previous order received page</p>
+<ul>
+<li>Source: Slack #1.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;, twice (two orders).</li>
+<li>Steps: live mode. Pay with Google Pay in the express area, order succeeds. Add the virtual product to the cart again and go to the checkout.</li>
+<li>Expected: the checkout opens normally with the new cart, no redirect to the previous order received page.</li>
+<li>Level: manual (live payment).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-02</strong> #3 PayPal guest order without name and billing address</p>
+<ul>
+<li>Source: Slack #3 (developer: PayPal sends the details only by email for virtual products; asking Mollie).</li>
+<li>Customer: guest.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: live mode, pay with PayPal in the express area, open the order.</li>
+<li>Expected: record what the order shows (name, billing address). Compare with the developer's answer; pass if it matches the agreed behaviour.</li>
+<li>Level: manual (live payment).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-03</strong> #4 Order received page shows Apple Pay after PayPal or Google Pay</p>
+<ul>
+<li>Source: Slack #4.</li>
+<li>Customer: guest.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: live mode, pay with Google Pay (slow webhook, best to reproduce), look at the order received page right away. Repeat with PayPal.</li>
+<li>Expected: the order received page shows the wallet that paid (or a neutral text until the webhook), never &quot;Apple Pay&quot;.</li>
+<li>Level: manual (live payment).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-04</strong> #5 Express session refused for a line below zero</p>
+<ul>
+<li>Source: Slack #5.</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 0.02&quot; + 1 x &quot;Mollie Simple Tax Test Product 1.00&quot;, &quot;Negative Line Item&quot; active.</li>
+<li>Steps: live mode, open the checkout. Optional: pay with Google Pay (0.99, refund after).</li>
+<li>Expected: wallets shown, <code>express/session</code> answers 200; a payment amount equals 0.99.</li>
+<li>Level: manual (live).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-05</strong> #6 Empty &quot;Express Checkout&quot; frame</p>
+<ul>
+<li>Source: Slack #6.</li>
+<li>Customer: guest.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: live mode. Trigger each state where the wallets cannot show: (a) 10 to 12 quick quantity changes (session limit), (b) empty a required shipping field with a physical product, (c) stay idle about 30 minutes.</li>
+<li>Expected: the whole Express Checkout area (frame and &quot;Or continue below&quot;) is removed, not left empty.</li>
+<li>Level: manual (live, no payment).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-06</strong> #7 Message after login in another tab</p>
+<ul>
+<li>Source: Slack #7.</li>
+<li>Customer: guest in tab 1, <code>luca.schmidt</code> login in tab 2.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: live mode. Tab 1 checkout as guest. Tab 2 log in. Tab 1, without reload, click Google Pay and approve; then PayPal.</li>
+<li>Expected: no payment; both wallets show &quot;Express checkout could not be started. Please reload the page and try again.&quot; After a reload the wallets work.</li>
+<li>Level: manual (live).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-07</strong> #8 Google Pay order note without the method name</p>
+<ul>
+<li>Source: Slack #8.</li>
+<li>Customer: guest.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: live mode, pay with Google Pay, open the order notes.</li>
+<li>Expected: &quot;Order completed using Mollie - Google Pay payment (tr_...).&quot; or similar with the method name.</li>
+<li>Level: manual (live payment).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-08</strong> #9 Payment taken without an order with two checkout tabs</p>
+<ul>
+<li>Source: Slack #9 (also reproduced with a quantity change: tr_Vb2bY..., order #71).</li>
+<li>Customer: <code>luca.schmidt</code>.</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot;.</li>
+<li>Steps: live mode. Checkout in tab 1 and tab 2 with Second flat rate. In tab 1 switch to Very flat rate. In tab 2, without reload, pay with Google Pay. Repeat with a quantity change instead of the shipping rate.</li>
+<li>Expected: no payment; tab 2 shows &quot;Your order changed after express checkout was started. Please try again.&quot; No new pending order, no orphan notice.</li>
+<li>Level: manual (live).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-09</strong> #10 Cleanup of unpaid orders scheduled (PIWOO-965)</p>
+<ul>
+<li>Source: Slack #10, PIWOO-965.</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: after installing the new package open WooCommerce &gt; Status &gt; Scheduled Actions and search <code>mollie_woocommerce_cancel_unpaid_orders</code>. Wait for the next run (every 10 minutes).</li>
+<li>Expected: the action exists (pending, recurring every 10 minutes). After it runs, old pending Express orders (#68, #71, #80, #86) become Cancelled with &quot;Express checkout was started and not completed&quot;. Only if PIWOO-965 is part of the new package; otherwise mark &quot;not in this package&quot;.</li>
+<li>Level: manual now, E2E later (good candidate: check the scheduled action after activation of the built zip).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-10</strong> #11 data-mollie-error on the Express orphan notice</p>
+<ul>
+<li>Source: Slack #11.</li>
+<li>Customer: shop admin.</li>
+<li>Cart: not needed.</li>
+<li>Steps: when the orphan notice is shown, inspect it in devtools.</li>
+<li>Expected: the notice element has <code>data-mollie-error</code>.</li>
+<li>Level: manual now, E2E later.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>FIX-11</strong> Express regression on the new package</p>
+<ul>
+<li>Source: QA.</li>
+<li>Customer: guest and <code>luca.schmidt</code>.</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;; 1 x &quot;Mollie Simple Test Product 100&quot;.</li>
+<li>Steps: live mode. Quick run of the no-payment Express cases: component shown for the virtual product, hidden for a guest with a physical product, &quot;Ships to&quot; line for Luca, Google Pay not in the payment list, nothing on classic checkout, cart and product page. One paid order per wallet (Google Pay, PayPal) and one refund.</li>
+<li>Expected: same results as on beta5, except the fixed bugs.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+</ul>
+<h2>7. Release check</h2>
+<ul>
+<li>
+<p>[ ] <strong>REL-01</strong> Version and readme</p>
+<ul>
+<li>Source: release ticket (QA focus report: &quot;readme.txt still says stable tag ... no 8.2.0 changelog yet&quot;).</li>
+<li>Customer: not needed.</li>
+<li>Cart: not needed.</li>
+<li>Steps: unzip the release package, read the plugin header and <code>readme.txt</code>.</li>
+<li>Expected: plugin version 8.2.0 (not beta), &quot;Stable tag: 8.2.0&quot;, &quot;Requires PHP: 8.0&quot;, &quot;Tested up to&quot; current WordPress, an 8.2.0 changelog with Express checkout, the line-below-zero fix, the webhook TypeError fix, the Pay by Bank (and Wero, if confirmed) on-hold change, connection messages, notice styles, PHP 8.0, and the security entry crediting whp-wessel.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>REL-02</strong> Results and open items</p>
+<ul>
+<li>Source: QA.</li>
+<li>Customer: not needed.</li>
+<li>Cart: not needed.</li>
+<li>Steps: export the results from the HTML page to <code>docs/e2e/reports/mollie-8.2.0-phase2-results.json</code>. Check the &quot;Open follow-ups&quot; list in section 1 (refunds, pending orders) is done.</li>
+<li>Expected: every case has a result; all live payments refunded; no stray pending orders.</li>
+<li>Level: manual.</li>
+</ul>
+</li>
+</ul>
+<h2>8. Apple Pay (beta6, Safari on an Apple device)</h2>
+<p>Run on 2026-10-22 by a second tester with an iPad (Safari), live mode, beta6. Same site and test data as section 1. Findings from this run: #13 (Express Apple Pay shown as Google Pay), #14 (Google Pay fails after browser Back on iPad, reload fixes it), #15 (order note without the method name for Apple Pay), #16 (old Apple Pay button does not pay on the block cart and block checkout), plus the Apple Pay settings description (#12).</p>
+<ul>
+<li>
+<p>[ ] <strong>AP-01</strong> Apple Pay in the Express area</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: add the product, open the block checkout in Safari.</li>
+<li>Expected: the &quot;Express Checkout&quot; box shows Apple Pay (and PayPal). No second, old Apple Pay button next to it.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-02</strong> Pay a virtual product with Apple Pay</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: block checkout, tap Apple Pay in the Express area, approve with Face ID / Touch ID. Then open the order in WP admin &gt; WooCommerce &gt; Orders.</li>
+<li>Expected: order received page shown, payment method Apple Pay. Order status Processing, total 0.01. Order notes: &quot;Express checkout started&quot;, then the payment note with the method name (for example &quot;Payment via Apple Pay (tr_...)&quot;). Email and billing address come from your Apple Pay card. Exactly one order.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-03</strong> Pay a product with shipping, change the rate first</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: <code>luca.schmidt</code> (registered, logged in, full DE billing and shipping address saved).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot;.</li>
+<li>Steps: open the block checkout. Above the buttons there is a line &quot;Ships to 969 Market, 12345 Luebeck · Very flat rate Change&quot;. Switch the shipping option to &quot;Second flat rate&quot;, wait until the buttons are back, tap Apple Pay. Check the amount in the Apple Pay sheet, approve. Open the order.</li>
+<li>Expected: the sheet shows 0.03 (0.01 product + 0.02 shipping). The order total is 0.03 with &quot;Second flat rate&quot;. Shipping address on the order: Luca's address from the form. Billing address and email: from your Apple Pay card.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-04</strong> Fee of the method selected below is not charged</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: block checkout, in the payment list below select &quot;Card&quot; (the total shows a 0.01 fee). Then pay with Apple Pay in the Express area at the top.</li>
+<li>Expected: the Apple Pay sheet and the order show 0.01, no Card fee line on the order.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-05</strong> Close the Apple Pay sheet without paying</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: tap Apple Pay, then close the sheet (Cancel / X) without approving. Tap Apple Pay again and close again.</li>
+<li>Expected: you stay on the checkout, no error, no new order in WooCommerce &gt; Orders, nothing charged. The buttons still work.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-06</strong> Old Apple Pay button on the product page</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: not needed, the button buys directly.</li>
+<li>Steps: open the product page of &quot;Mollie Virtual Not Downloadable Test Product&quot;. Tap the Apple Pay button below &quot;Add to cart&quot;, approve.</li>
+<li>Expected: order paid (Processing), payment method Apple Pay, total 0.01. This order has <strong>no</strong> note &quot;Express checkout started&quot; (old button, not the new Express area).</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-07</strong> Old Apple Pay button on the cart page</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Virtual Not Downloadable Test Product&quot;.</li>
+<li>Steps: open the cart page (menu &quot;Cart&quot;), tap the Apple Pay button there, approve.</li>
+<li>Expected: same as AP-06.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-08</strong> Express area hidden for a guest with a shipped product</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: guest (new private window, not logged in, empty cart).</li>
+<li>Cart: 1 x &quot;Mollie Simple Test Product 100&quot;.</li>
+<li>Steps: open the block checkout with the address fields still empty. Then fill in a German shipping address (street, postal code, city) and reload the page.</li>
+<li>Expected: before the reload: no Apple Pay in the Express area (the old Apple Pay button may show instead; note what you see). After the reload: the Express area with Apple Pay and the &quot;Ships to&quot; line. Do not pay.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-09</strong> Refund an Apple Pay order</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed, use the order from AP-02.</li>
+<li>Steps: open the order, click &quot;Refund&quot;, enter the full amount, click &quot;Refund ... via Mollie - Apple Pay&quot;.</li>
+<li>Expected: a refund note on the order, status Refunded, the money comes back to your card within a few days.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+<li>
+<p>[ ] <strong>AP-10</strong> No Apple Pay errors in WP admin</p>
+<ul>
+<li>Source: dev QA note (Apple Pay in the express area, wallet details), code, QA.</li>
+<li>Customer: shop admin (WP admin).</li>
+<li>Cart: not needed.</li>
+<li>Steps: after the cases above open the WP admin Dashboard and WooCommerce &gt; Orders.</li>
+<li>Expected: no red notice &quot;Server not compliant with Apple requirements&quot; or &quot;Apple Pay Validation Error&quot;. If one shows, take a screenshot.</li>
+<li>Level: manual (live, real Apple Pay device).</li>
+</ul>
+</li>
+</ul>
+
+</main>
+<script>
+(function () {
+	var KEY = 'mollie-8.2.0-phase2-manual-results';
+	var STATES = [ [ 'pass', 'Pass' ], [ 'fail', 'Fail' ], [ 'blocked', 'Blocked' ] ];
+	var filter = document.getElementById( 'filter' );
+	var data = { cases: {}, tasks: {} };
+	try { data = JSON.parse( localStorage.getItem( KEY ) ) || data; } catch ( e ) {}
+	data.cases = data.cases || {}; data.tasks = data.tasks || {};
+	function save() { try { localStorage.setItem( KEY, JSON.stringify( data ) ); } catch ( e ) {} }
+	function today() { return new Date().toISOString().slice( 0, 10 ); }
+
+	// Strip the "[ ] " / "[x] " prefix from a list item and return its state.
+	function stripBox( li ) {
+		var node = li.firstChild;
+		// Loose lists wrap items in <p> after a whitespace text node
+		while ( node && ( ( node.nodeType === 3 && ! node.nodeValue.trim() ) || ( node.nodeType === 1 && node.tagName === 'P' ) ) ) {
+			node = node.nodeType === 3 ? node.nextSibling : node.firstChild;
+		}
+		if ( ! node || node.nodeType !== 3 ) { return null; }
+		var m = node.nodeValue.match( /^\[( |x)\] / );
+		if ( ! m ) { return null; }
+		node.nodeValue = node.nodeValue.slice( 4 );
+		return m[ 1 ] === 'x';
+	}
+
+	var cases = [];
+	document.querySelectorAll( 'main li' ).forEach( function ( li ) {
+		var strong = li.querySelector( 'strong' );
+		var isCase = strong && /^[A-Z][A-Z0-9]*-\d+$/.test( strong.textContent ) && /^\s*\[ \] /.test( li.textContent );
+		var checked = stripBox( li );
+		if ( checked === null ) { return; }
+		if ( isCase ) {
+			var id = strong.textContent;
+			var title = ( strong.nextSibling && strong.nextSibling.nodeValue || '' ).trim();
+			li.classList.add( 'case' ); li.id = id; li.dataset.id = id;
+			var r = data.cases[ id ] || ( data.cases[ id ] = { status: '', date: '', notes: '' } );
+			var box = document.createElement( 'div' ); box.className = 'res';
+			STATES.forEach( function ( s ) {
+				var b = document.createElement( 'button' ); b.type = 'button'; b.textContent = s[ 1 ]; b.className = s[ 0 ];
+				b.addEventListener( 'click', function () {
+					r.status = r.status === s[ 0 ] ? '' : s[ 0 ];
+					r.date = r.status ? today() : '';
+					save(); paint( li, r ); count();
+				} );
+				box.appendChild( b );
+			} );
+			var date = document.createElement( 'span' ); date.className = 'date'; box.appendChild( date );
+			var notes = document.createElement( 'textarea' ); notes.placeholder = 'Notes, order number, evidence'; notes.value = r.notes || '';
+			notes.addEventListener( 'input', function () { r.notes = notes.value; save(); } );
+			box.appendChild( notes );
+			li.appendChild( box );
+			cases.push( { li: li, id: id, title: title } );
+			paint( li, r );
+		} else {
+			var key = li.textContent.trim().slice( 0, 80 );
+			var cb = document.createElement( 'input' ); cb.type = 'checkbox';
+			cb.checked = key in data.tasks ? data.tasks[ key ] : checked;
+			cb.addEventListener( 'change', function () { data.tasks[ key ] = cb.checked; save(); } );
+			li.classList.add( 'task' ); li.insertBefore( cb, li.firstChild );
+		}
+	} );
+
+	function paint( li, r ) {
+		li.classList.remove( 'pass', 'fail', 'blocked' );
+		if ( r.status ) { li.classList.add( r.status ); }
+		li.querySelectorAll( '.res button' ).forEach( function ( b ) { b.classList.toggle( 'on', b.classList.contains( r.status ) ); } );
+		li.querySelector( '.res .date' ).textContent = r.date ? 'Set ' + r.date : '';
+		applyFilter();
+	}
+	function count() {
+		var c = { pass: 0, fail: 0, blocked: 0, none: 0 };
+		cases.forEach( function ( x ) { c[ ( data.cases[ x.id ] || {} ).status || 'none' ]++; } );
+		document.getElementById( 'cPass' ).textContent = c.pass + ' pass';
+		document.getElementById( 'cFail' ).textContent = c.fail + ' fail';
+		document.getElementById( 'cBlocked' ).textContent = c.blocked + ' blocked';
+		document.getElementById( 'cNone' ).textContent = c.none + ' not run';
+	}
+	function applyFilter() {
+		var f = filter.value;
+		cases.forEach( function ( x ) {
+			var s = ( data.cases[ x.id ] || {} ).status || 'none';
+			x.li.classList.toggle( 'hidden', f !== 'all' && f !== s );
+		} );
+	}
+	filter.addEventListener( 'change', applyFilter );
+
+	function download( name, text, type ) {
+		var a = document.createElement( 'a' );
+		a.href = URL.createObjectURL( new Blob( [ text ], { type: type } ) ); a.download = name; a.click();
+		setTimeout( function () { URL.revokeObjectURL( a.href ); }, 1000 );
+	}
+	document.getElementById( 'expJson' ).addEventListener( 'click', function () {
+		download( 'mollie-8.2.0-phase2-results.json', JSON.stringify( data, null, 2 ), 'application/json' );
+	} );
+	document.getElementById( 'expMd' ).addEventListener( 'click', function () {
+		var label = { pass: 'PASS', fail: 'FAIL', blocked: 'BLOCKED' };
+		var rows = [ '| ID | Case | Result | Date | Notes |', '| --- | --- | --- | --- | --- |' ];
+		cases.forEach( function ( x ) {
+			var r = data.cases[ x.id ] || {};
+			var n = ( r.notes || '' ).replace( /\r?\n/g, ' ' ).replace( /\|/g, '/' );
+			rows.push( '| ' + x.id + ' | ' + x.title.replace( /\|/g, '/' ) + ' | ' + ( label[ r.status ] || 'NOT RUN' ) + ' | ' + ( r.date || '' ) + ' | ' + n + ' |' );
+		} );
+		download( 'mollie-8.2.0-phase2-results.md', rows.join( '\n' ) + '\n', 'text/markdown' );
+	} );
+	document.getElementById( 'imp' ).addEventListener( 'change', function ( e ) {
+		var f = e.target.files[ 0 ]; if ( ! f ) { return; }
+		f.text().then( function ( t ) {
+			// Merge: imported cases replace only the same IDs, other results stay
+			try { var d = JSON.parse( t ); Object.assign( data.cases, d.cases || {} ); Object.assign( data.tasks, d.tasks || {} ); save(); location.reload(); }
+			catch ( err ) { alert( 'This file is not a results JSON.' ); }
+		} );
+	} );
+	document.getElementById( 'reset' ).addEventListener( 'click', function () {
+		if ( confirm( 'Clear all results in this browser? Export JSON first if you need them.' ) ) {
+			try { localStorage.removeItem( KEY ); } catch ( e ) {}
+			location.reload();
+		}
+	} );
+	count();
+})();
+</script>
+</body>
+</html>

@@ -877,7 +877,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   When Mollie calls the webhook
      *   Then express.payment.orphaned is logged as an error with the payment, its amount and the reason
      *   And the payment is remembered for the admin notice, with its amount and nothing personal
-     *   And the notice names the payment and is shown only to someone who can act on it
+     *   And the notice names the payment, is marked as a Mollie error and is shown only to someone who can act on it
      *
      * @test
      */
@@ -913,7 +913,9 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         (new OrphanedExpressPayments())->renderNotice();
         $notice = (string) ob_get_clean();
         $this->assertStringContainsString($payment['id'], $notice);
-        $this->assertStringContainsString('notice-error', $notice);
+        $this->assertRegExp('/<div\b[^>]*class="[^"]*\bnotice-error\b[^"]*"[^>]*\sdata-mollie-error\b/', $notice);
+        $this->assertStringContainsString('mollie_express_dismiss_orphaned=1', $notice);
+        $this->assertStringContainsString('_wpnonce=', $notice);
 
         wp_set_current_user(0);
         ob_start();

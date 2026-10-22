@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
+use Mollie\WooCommerce\Notice\AdminNotice;
+
 /**
  * Paid express payments with no order, kept for an admin notice. Ids and amounts only.
  */
@@ -78,8 +80,8 @@ class OrphanedExpressPayments
             );
         }
 
-        printf(
-            '<div class="notice notice-error"><p><strong>%s</strong></p><p>%s</p><ul><li>%s</li></ul><p><a href="%s">%s</a></p></div>',
+        $message = sprintf(
+            '<p><strong>%s</strong></p><p>%s</p><ul><li>%s</li></ul><p><a href="%s">%s</a></p>',
             esc_html__('Mollie express checkout: a payment was taken without an order', 'mollie-payments-for-woocommerce'),
             esc_html__(
                 'Mollie holds these express payments, and no order in this store represents them. Check each one in your Mollie dashboard and either refund it or create the order by hand.',
@@ -89,5 +91,7 @@ class OrphanedExpressPayments
             esc_url(wp_nonce_url(add_query_arg('mollie_express_dismiss_orphaned', '1'), self::OPTION)),
             esc_html__('I have dealt with these', 'mollie-payments-for-woocommerce')
         );
+
+        echo (new AdminNotice())->renderNotice('notice-error', $message); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
     }
 }

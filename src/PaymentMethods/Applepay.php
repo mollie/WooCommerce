@@ -116,7 +116,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
                 'countryCode' => $baseLocation['country'],
                 'totalLabel' => get_bloginfo('name'),
             ],
-            'nonce' => wp_create_nonce('mollie_apple_pay_blocks'),
+            'nonce' => wp_create_nonce('woocommerce-process_checkout'),
             'ajaxUrl' => admin_url('admin-ajax.php'),
         ];
     }

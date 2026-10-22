@@ -58,7 +58,9 @@ class ApplepayTest extends TestCase
 
         $fields = $this->makeSut([])->getFormFields([]);
 
-        $description = $fields[self::EXPRESS_FLAG]['desc'];
+        // WC_Settings_API renders 'description' under a checkbox and ignores 'desc'.
+        self::assertArrayNotHasKey('desc', $fields[self::EXPRESS_FLAG]);
+        $description = $fields[self::EXPRESS_FLAG]['description'];
         self::assertStringContainsString('Mollie express checkout shows the button where it can run', $description);
         self::assertStringContainsString('otherwise the classic Apple Pay button is shown', $description);
     }

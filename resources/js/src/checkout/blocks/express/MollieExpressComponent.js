@@ -129,19 +129,27 @@ const isSubscription = ( item ) =>
 
 /**
  * Whether the cart can be paid this way at all; Blocks hides the express area otherwise. Not for
- * the price the store opened no session for: Blocks asks again when the cart changes.
+ * the price the store opened no session for, nor while the shipping form cannot price the cart:
+ * the area renders nothing then, and Blocks keeps its own frame while this says yes. Blocks asks
+ * again when the cart store changes.
  *
  * @param {Object} args Blocks' canMakePayment argument.
  * @return {boolean} Whether to offer the method.
  */
 export function canMakePayment( args ) {
 	const items = args?.cart?.cartItems ?? [];
+	if (
+		! MollieCheckoutManager.isAvailable() ||
+		items.length === 0 ||
+		items.some( isSubscription )
+	) {
+		return false;
+	}
+	const cart = readCart( selectStore );
 	return (
-		MollieCheckoutManager.isAvailable() &&
-		items.length > 0 &&
-		! items.some( isSubscription ) &&
+		cart.status !== 'blocked' &&
 		( refusedFingerprint === null ||
-			readCart( selectStore ).fingerprint !== refusedFingerprint )
+			cart.fingerprint !== refusedFingerprint )
 	);
 }
 

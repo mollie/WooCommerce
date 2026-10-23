@@ -496,6 +496,42 @@ describe( 'what the express area shows', () => {
 		expect( container.textContent ).not.toContain( 'Ships to' );
 		expect( changeButton() ).toBeUndefined();
 	} );
+
+	/**
+	 * Scenario: Blocks keeps its express frame only while the component can show something
+	 *   Given a checkout whose cart ships
+	 *   When the shipping form cannot price the cart (a required field cleared)
+	 *   Then canMakePayment says no, so Blocks removes its Express Checkout frame
+	 *   When the form is complete again
+	 *   Then canMakePayment says yes
+	 *
+	 * The component renders nothing in that state, but the frame is Blocks': it stays as long as
+	 * canMakePayment holds, and Blocks asks again whenever the cart store changes.
+	 */
+	it( 'is not offered to Blocks while the shipping form cannot price the cart', async () => {
+		const blocksArgs = () => ( {
+			cart: { cartItems: mockCart.getCartData().items },
+		} );
+		// The form is priced and the postcode is a required field; the rate stays selected when it is cleared.
+		mockSettings = { defaultFields: { postcode: { required: true } } };
+		const priced = {
+			needsShipping: true,
+			address: ADDRESS,
+			rateSelected: true,
+		};
+
+		mockCart = mockCartStore( priced );
+		expect( canMakePayment( blocksArgs() ) ).toBe( true );
+
+		mockCart = mockCartStore( {
+			...priced,
+			address: { ...ADDRESS, postcode: '' },
+		} );
+		expect( canMakePayment( blocksArgs() ) ).toBe( false );
+
+		mockCart = mockCartStore( priced );
+		expect( canMakePayment( blocksArgs() ) ).toBe( true );
+	} );
 } );
 
 describe( 'a cart the store opened no session for', () => {

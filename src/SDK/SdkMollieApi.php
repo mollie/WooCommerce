@@ -95,6 +95,7 @@ final class SdkMollieApi implements MollieApi
             throw MollieCallFailed::fromRead($exception);
         }
         $method = (string) ($payment->method ?? '');
+        $wallet = (string) ($payment->details->wallet ?? '');
 
         return new PaymentSnapshot(
             (string) $payment->id,
@@ -104,7 +105,8 @@ final class SdkMollieApi implements MollieApi
             mode: (string) ($payment->mode ?? 'live'),
             expressRef: $this->expressRef($payment->metadata ?? null),
             billingAddress: $this->address($payment->billingAddress ?? null),
-            shippingAddress: $this->address($payment->shippingAddress ?? null)
+            shippingAddress: $this->address($payment->shippingAddress ?? null),
+            wallet: $wallet !== '' ? $wallet : null
         );
     }
 

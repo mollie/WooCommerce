@@ -88,7 +88,7 @@ class ExpressRefundTest extends ExpressFlowTestCase
     /**
      * Scenario: a paid Google Pay express order is refunded at Mollie through its own payment method
      *   Given Google Pay activated at Mollie and switched on
-     *   And an express order paid with Google Pay, which Mollie reports as creditcard
+     *   And an express order paid with Google Pay, which Mollie reports as creditcard with the wallet googlepay
      *   When support refunds part of it from WooCommerce with "refund via Mollie"
      *   Then the fake Mollie holds one refund on that payment for that amount
      *
@@ -125,6 +125,7 @@ class ExpressRefundTest extends ExpressFlowTestCase
         $this->assertAnsweredOk($this->startOrder());
         $order = $this->onlyOrderFor($session['ref']);
         $payment = $this->fakeMollie()->completeSession($session['id'], ['status' => 'paid', 'method' => 'creditcard']);
+        $this->fakeMollie()->setPaymentStatus($payment['id'], 'paid', ['details' => ['wallet' => 'googlepay']]);
 
         $this->assertSame(200, $this->deliverWebhook($payment['id']));
         $paid = $this->fresh($order);

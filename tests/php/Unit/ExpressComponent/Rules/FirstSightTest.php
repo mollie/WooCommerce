@@ -37,13 +37,14 @@ class FirstSightTest extends TestCase
      *   And no Mollie method to note
      *   And, the payment carrying no address and the order shipping, no billing and no shipping fields
      *
+     * @group REQ-F2
      * @dataProvider walletsWithAPaymentMethod
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\FirstSight::decide
      */
-    public function testRecordsThePaymentAndSetsTheWalletsPaymentMethod(string $mollieMethod, string $expectedGateway): void
+    public function testRecordsThePaymentAndSetsTheWalletsPaymentMethod(string $mollieMethod, ?string $wallet, string $expectedGateway): void
     {
         $verdict = FirstSight::decide(
-            $this->payment(['method' => $mollieMethod, 'mode' => 'live']),
+            $this->payment(['method' => $mollieMethod, 'wallet' => $wallet, 'mode' => 'live']),
             $this->order(),
             $this->wallets(),
             self::REGISTERED
@@ -59,14 +60,15 @@ class FirstSightTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0: string, 1: string}>
+     * @return array<string, array{0: string, 1: ?string, 2: string}>
      */
     public function walletsWithAPaymentMethod(): array
     {
         return [
-            'Apple Pay' => ['applepay', 'mollie_wc_gateway_applepay'],
-            'PayPal' => ['paypal', 'mollie_wc_gateway_paypal'],
-            'Google Pay, reported as a card payment' => ['creditcard', 'mollie_wc_gateway_googlepay'],
+            'Apple Pay' => ['applepay', null, 'mollie_wc_gateway_applepay'],
+            'Apple Pay, reported as a card payment' => ['creditcard', 'applepay', 'mollie_wc_gateway_applepay'],
+            'PayPal' => ['paypal', null, 'mollie_wc_gateway_paypal'],
+            'Google Pay, reported as a card payment' => ['creditcard', 'googlepay', 'mollie_wc_gateway_googlepay'],
         ];
     }
 
@@ -108,24 +110,23 @@ class FirstSightTest extends TestCase
     }
 
     /**
-     * Scenario: a card payment keeps the provisional method while the plugin has no Google Pay method
-     *   Given a matched payment that Mollie reports as creditcard
-     *   And no registered Google Pay payment method
+     * Scenario: a card payment without a wallet keeps the provisional method
+     *   Given a matched payment that Mollie reports as creditcard with no wallet
+     *   And every wallet's payment method registered
      *   When the first sight is decided
      *   Then the verdict names no gateway
      *   And names creditcard as the Mollie method, for the note
      *
+     * @group REQ-F2
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\FirstSight::decide
      */
-    public function testACardPaymentKeepsTheProvisionalMethodWhileGooglePayIsNotRegistered(): void
+    public function testACardPaymentWithoutAWalletKeepsTheProvisionalMethod(): void
     {
-        $registered = array_values(array_diff(self::REGISTERED, ['mollie_wc_gateway_googlepay']));
-
         $verdict = FirstSight::decide(
-            $this->payment(['method' => 'creditcard']),
+            $this->payment(['method' => 'creditcard', 'wallet' => null]),
             $this->order(),
             $this->wallets(),
-            $registered
+            self::REGISTERED
         );
 
         self::assertNull($verdict->gatewayId());
@@ -133,18 +134,26 @@ class FirstSightTest extends TestCase
     }
 
     /**
-     * Scenario: every wallet row names the method Mollie reports on a payment made with it
+     * Scenario: every wallet row names what Mollie reports on a payment made with it
      *   Given the wallets table in config/express.php
      *   When its rows are read
-     *   Then Apple Pay is paid as applepay, PayPal as paypal, and Google Pay as creditcard
+     *   Then Apple Pay is paid as applepay or as a card with wallet applepay, PayPal as paypal,
+     *     and Google Pay only as a card with wallet googlepay
      *
+     * @group REQ-F2
      * @coversNothing
      */
-    public function testEveryWalletRowNamesTheMethodMollieReportsForIt(): void
+    public function testEveryWalletRowNamesWhatMollieReportsForIt(): void
     {
-        $paidAs = array_map(static fn (array $row): ?string => $row['paidAs'] ?? null, $this->wallets());
+        $reported = array_map(
+            static fn (array $row): array => [$row['paidAs'] ?? null, $row['paidWallet'] ?? null],
+            $this->wallets()
+        );
 
-        self::assertSame(['applepay' => 'applepay', 'paypal' => 'paypal', 'googlepay' => 'creditcard'], $paidAs);
+        self::assertSame(
+            ['applepay' => ['applepay', 'applepay'], 'paypal' => ['paypal', null], 'googlepay' => [null, 'googlepay']],
+            $reported
+        );
     }
 
     /**
@@ -223,6 +232,7 @@ class FirstSightTest extends TestCase
     {
         $values = array_merge([
             'method' => 'paypal',
+            'wallet' => null,
             'mode' => 'live',
             'billingAddress' => null,
             'shippingAddress' => null,
@@ -236,7 +246,8 @@ class FirstSightTest extends TestCase
             mode: $values['mode'],
             expressRef: 'exr_0123456789abcdef0123456789abcdef',
             billingAddress: $values['billingAddress'],
-            shippingAddress: $values['shippingAddress']
+            shippingAddress: $values['shippingAddress'],
+            wallet: $values['wallet']
         );
     }
 

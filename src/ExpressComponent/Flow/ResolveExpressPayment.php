@@ -29,7 +29,7 @@ final class ResolveExpressPayment
     private const FLOW = 'express.payment.resolve';
 
     /**
-     * @param array<string, array{gatewayId: string, paidAs: string}> $wallets
+     * @param array<string, array{gatewayId: string, paidAs?: string, paidWallet?: string}> $wallets
      * @param callable(): array<int, string> $registeredGatewayIds
      */
     public function __construct(
@@ -131,7 +131,12 @@ final class ResolveExpressPayment
                     'order' => $facts->orderId(),
                     'rule' => 'FirstSight',
                     'verdict' => $firstSight->gatewayId() !== null ? 'gateway' : 'unmatched',
-                    'inputs' => sprintf('method=%s gateway=%s', (string) $payment->method(), (string) $firstSight->gatewayId()),
+                    'inputs' => sprintf(
+                        'method=%s wallet=%s gateway=%s',
+                        (string) $payment->method(),
+                        (string) $payment->wallet(),
+                        (string) $firstSight->gatewayId()
+                    ),
                 ]);
                 $this->writer->recordFirstSight($fresh, $firstSight);
 

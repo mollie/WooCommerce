@@ -8,6 +8,7 @@ use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\ExpressComponent\Rules\AddressMapping;
+use Mollie\WooCommerce\ExpressComponent\Rules\FirstSight;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookOrderLookup;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
@@ -1009,12 +1010,14 @@ class MollieOrderService
     protected function getPaymentMethodTitle($payment)
     {
         $payment_method_title = '';
-        // Mollie reports a wallet's payment under another method: Google Pay as creditcard.
-        $paidAs = array_column($this->container->get('express.config')['wallets'], 'paidAs', 'gatewayId');
+        // Mollie reports Apple Pay and Google Pay as creditcard: the wallet tells them apart.
+        $wallets = $this->container->get('express.config')['wallets'];
+        $wallet = isset($payment->details->wallet) ? (string) $payment->details->wallet : null;
 
         if (
             'mollie_wc_gateway_' . $payment->method === $this->gateway->id
-            || ($paidAs[$this->gateway->id] ?? null) === $payment->method
+            || FirstSight::walletGateway((string) $payment->method, $wallet, $wallets, [$this->gateway->id])
+                === $this->gateway->id
         ) {
             $payment_method_title = $this->gateway->method_title;
         }

@@ -20,6 +20,9 @@ class WebhookGuardsTest extends TestCase
      *
      * @dataProvider needsPaymentCases
      * @covers \Mollie\WooCommerce\Payment\Rules\WebhookGuards::needsPayment
+     * @group REQ-121
+     * @group REQ-344
+     * @group REQ-345
      */
     public function testNeedsPaymentAnswersTheFirstOfFiveChecksThatMatches(
         bool $paidByOtherGateway,
@@ -68,6 +71,8 @@ class WebhookGuardsTest extends TestCase
      *
      * @dataProvider supersededCases
      * @covers \Mollie\WooCommerce\Payment\Rules\WebhookGuards::superseded
+     * @group REQ-343
+     * @group REQ-356
      */
     public function testSupersededForAForeignOrTerminalUntrackedPayment(
         bool $tracksThisPayment,

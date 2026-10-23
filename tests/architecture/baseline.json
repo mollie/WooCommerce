@@ -16,5 +16,6 @@
     "entry-points-without-admission-test": 10,
     "new-meta-keys": 0,
     "hook-bridges": 2,
+    "requirements-without-test": 604,
     "rules-without-check": 10
 }

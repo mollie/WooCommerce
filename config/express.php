@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 /**
  * @var array{
- *     wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}>,
+ *     wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>,
  *     surfaces: array<int, string>,
  *     allowedModes: array<int, string>,
  *     sessionLifetimeSeconds: int,
@@ -21,12 +21,13 @@ $express = [
     // A wallet shows when its gateway exists, is enabled, is active at Mollie, has `checkoutSetting` on
     // and carries no surcharge.
     // addressFrom: 'form' waits for the checkout's shipping form; 'wallet' would use the wallet's own sheet.
-    // mollieMethod is the id in Mollie's methods API; paidAs is the method Mollie reports on the payment.
+    // mollieMethod is the id in Mollie's methods API; a payment shows as method paidAs, or as a creditcard with details.wallet paidWallet.
     'wallets' => [
         'applepay' => [
             'gatewayId' => 'mollie_wc_gateway_applepay',
             'mollieMethod' => 'applepay',
             'paidAs' => 'applepay',
+            'paidWallet' => 'applepay',
             'checkoutSetting' => 'mollie_apple_pay_button_enabled_express_checkout',
             'addressFrom' => 'form',
         ],
@@ -40,7 +41,7 @@ $express = [
         'googlepay' => [
             'gatewayId' => 'mollie_wc_gateway_googlepay',
             'mollieMethod' => 'googlepay',
-            'paidAs' => 'creditcard',
+            'paidWallet' => 'googlepay',
             'checkoutSetting' => 'enabled', // its only setting: the method exists only for express
             'addressFrom' => 'form',
         ],

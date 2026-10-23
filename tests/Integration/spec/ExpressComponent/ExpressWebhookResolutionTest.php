@@ -405,18 +405,20 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: a payment Mollie reports as a card payment gets the Google Pay method once it exists
+     * Scenario: a payment Mollie reports as a card payment gets the method of the wallet that paid
      *   Given Google Pay activated at Mollie and switched on
      *   And a pending express order whose provisional payment method is PayPal
-     *   And a paid payment from its session that Mollie reports as creditcard
+     *   And a paid payment from its session that Mollie reports as creditcard with the wallet applepay or googlepay
      *   When Mollie calls the webhook
-     *   Then the order's payment method is Google Pay, with that method's title
+     *   Then the order's payment method is that wallet's, with that method's title
      *   And it has no note about an unknown wallet
-     *   And it is paid, with an "Order completed" note that names Google Pay
+     *   And it is paid, with an "Order completed" note that names the wallet
      *
      * @test
+     * @group REQ-F2
+     * @dataProvider cardPaymentWallets
      */
-    public function it_gives_a_card_payment_the_google_pay_method_once_google_pay_exists(): void
+    public function it_gives_the_wallets_method_to_a_card_payment_made_with_that_wallet(string $wallet, string $expectedGateway): void
     {
         $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
         $this->flushMollieMethodsCache();
@@ -424,18 +426,30 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         [$order, , $sessionId] = $this->expressOrder();
         $this->assertSame(self::PAYPAL_GATEWAY, $order->get_payment_method());
         $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'creditcard']);
+        $this->fakeMollie()->setPaymentStatus($payment['id'], 'paid', ['details' => ['wallet' => $wallet]]);
 
         $this->assertSame(200, $this->deliverWebhook($payment['id']));
 
         $paid = $this->fresh($order);
-        $this->assertSame('mollie_wc_gateway_googlepay', $paid->get_payment_method());
+        $this->assertSame($expectedGateway, $paid->get_payment_method());
         $this->assertSame(
-            WC()->payment_gateways()->payment_gateways()['mollie_wc_gateway_googlepay']->get_title(),
+            WC()->payment_gateways()->payment_gateways()[$expectedGateway]->get_title(),
             $paid->get_payment_method_title()
         );
-        $this->assertSame([], $this->notesContaining($paid, 'creditcard'), 'A Google Pay payment is not an unknown wallet.');
+        $this->assertSame([], $this->notesContaining($paid, 'creditcard'), 'A wallet payment is not an unknown wallet.');
         $this->assertTrue($paid->is_paid());
-        $this->assertCompletedNoteNamesTheMethod($paid, 'mollie_wc_gateway_googlepay', $payment['id']);
+        $this->assertCompletedNoteNamesTheMethod($paid, $expectedGateway, $payment['id']);
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public function cardPaymentWallets(): array
+    {
+        return [
+            'Apple Pay' => ['applepay', 'mollie_wc_gateway_applepay'],
+            'Google Pay' => ['googlepay', 'mollie_wc_gateway_googlepay'],
+        ];
     }
 
     /**

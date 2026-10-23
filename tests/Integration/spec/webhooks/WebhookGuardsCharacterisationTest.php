@@ -49,6 +49,9 @@ class WebhookGuardsCharacterisationTest extends ExpressFlowTestCase
      * @test
      * @dataProvider needsPaymentBranches
      * @covers \Mollie\WooCommerce\Payment\MollieOrderService::orderNeedsPayment
+     * @group REQ-121
+     * @group REQ-344
+     * @group REQ-345
      *
      * @param array<string, string> $meta
      */
@@ -169,6 +172,8 @@ class WebhookGuardsCharacterisationTest extends ExpressFlowTestCase
      * @test
      * @dataProvider supersededStatuses
      * @covers \Mollie\WooCommerce\Payment\MollieOrderService::doPaymentForOrder
+     * @group REQ-343
+     * @group REQ-356
      */
     public function it_ignores_a_terminal_webhook_for_a_payment_the_order_does_not_track(string $status, bool $alreadyPaid): void
     {

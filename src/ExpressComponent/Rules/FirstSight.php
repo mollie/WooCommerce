@@ -15,7 +15,7 @@ use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
 final class FirstSight
 {
     /**
-     * @param array<string, array{gatewayId: string, paidAs: string}> $wallets
+     * @param array<string, array{gatewayId: string, paidAs?: string, paidWallet?: string}> $wallets
      * @param array<int, string> $registeredGatewayIds
      */
     public static function decide(
@@ -26,7 +26,7 @@ final class FirstSight
     ): FirstSightData {
 
         $method = (string) $payment->method();
-        $gatewayId = self::gatewayFor($method, $wallets, $registeredGatewayIds);
+        $gatewayId = self::walletGateway($method, $payment->wallet(), $wallets, $registeredGatewayIds);
 
         $shipping = null;
         if (!$order->needsShipping() && !$order->holdsShipping()) {
@@ -45,14 +45,24 @@ final class FirstSight
     }
 
     /**
-     * @param array<string, array{gatewayId: string, paidAs: string}> $wallets
+     * The registered gateway of the wallet a payment was made with: by the method Mollie reports, or,
+     * for a card payment, by details.wallet. A card payment without a wallet belongs to no wallet.
+     *
+     * @param array<string, array{gatewayId: string, paidAs?: string, paidWallet?: string}> $wallets
      * @param array<int, string> $registeredGatewayIds
      */
-    private static function gatewayFor(string $method, array $wallets, array $registeredGatewayIds): ?string
+    public static function walletGateway(
+        string $method,
+        ?string $wallet,
+        array $wallets,
+        array $registeredGatewayIds
+    ): ?string
     {
-        foreach ($wallets as $wallet) {
-            if ($wallet['paidAs'] === $method && in_array($wallet['gatewayId'], $registeredGatewayIds, true)) {
-                return $wallet['gatewayId'];
+        foreach ($wallets as $row) {
+            $byMethod = isset($row['paidAs']) && $row['paidAs'] === $method;
+            $byWallet = $method === 'creditcard' && $wallet !== null && ($row['paidWallet'] ?? null) === $wallet;
+            if (($byMethod || $byWallet) && in_array($row['gatewayId'], $registeredGatewayIds, true)) {
+                return $row['gatewayId'];
             }
         }
 

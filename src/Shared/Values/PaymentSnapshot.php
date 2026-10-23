@@ -6,6 +6,7 @@ namespace Mollie\WooCommerce\Shared\Values;
 
 /**
  * expressRef is metadata.express_ref, inherited from the express session.
+ * wallet is details.wallet: Mollie reports Apple Pay and Google Pay both as creditcard.
  */
 final class PaymentSnapshot
 {
@@ -17,7 +18,8 @@ final class PaymentSnapshot
         private string $mode = 'live',
         private ?string $expressRef = null,
         private ?MollieAddress $billingAddress = null,
-        private ?MollieAddress $shippingAddress = null
+        private ?MollieAddress $shippingAddress = null,
+        private ?string $wallet = null
     ) {
     }
 
@@ -59,5 +61,10 @@ final class PaymentSnapshot
     public function shippingAddress(): ?MollieAddress
     {
         return $this->shippingAddress;
+    }
+
+    public function wallet(): ?string
+    {
+        return $this->wallet;
     }
 }

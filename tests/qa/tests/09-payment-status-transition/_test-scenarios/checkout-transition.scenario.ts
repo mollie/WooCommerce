@@ -1,7 +1,11 @@
 /**
  * External dependencies
  */
-import { countTotals, expect, WooCommerceApi } from '@inpsyde/playwright-utils/build';
+import {
+	countTotals,
+	expect,
+	WooCommerceApi,
+} from '@inpsyde/playwright-utils/build';
 import { Client as MollieClientApi } from 'mollie-api-typescript';
 /**
  * Internal dependencies
@@ -80,11 +84,32 @@ const assertOnHoldCancelledByMollie = async (
 		'Assert the order is genuinely on-hold before Mollie cancels the payment'
 	).toEqual( 'on-hold' );
 
-	await mollieClientApi.payments.cancel( { paymentId: molliePaymentId } );
+	if ( mollieApiMethod === 'order' ) {
+		// Orders API: a canceled payment leaves the Mollie order open, so cancel the order itself
+		const mollieOrderId = order.meta_data.find(
+			( meta ) => meta.key === '_mollie_order_id'
+		)?.value;
+		const response = await fetch(
+			`https://api.mollie.com/v2/orders/${ mollieOrderId }`,
+			{
+				method: 'DELETE',
+				headers: {
+					Authorization: `Bearer ${ process.env.MOLLIE_TEST_API_KEY }`,
+				},
+			}
+		);
+		await expect(
+			response.ok,
+			`Assert Mollie cancels the order ${ mollieOrderId }`
+		).toBe( true );
+	} else {
+		await mollieClientApi.payments.cancel( { paymentId: molliePaymentId } );
+	}
 
 	const expectedStatus = getOrderStatusFromMollieStatus(
 		'canceled',
-		mollieApiMethod
+		mollieApiMethod,
+		'banktransfer'
 	);
 	await expect( async () => {
 		const orderAfterCancel = await wooCommerceApi.getOrder( orderId );
@@ -172,11 +197,19 @@ export const testOrderStatusTransitionOnCheckout = (
 			! gateway.availableForApiMethods.includes( mollieApiMethod ),
 			`Test is not eligible for ${ mollieApiMethod } API method.`
 		);
+		// Orders API: only Mollie expires the order itself (after 28 days), there is no API or test page to force it
+		test.skip(
+			transition === 'onHoldToFinal' &&
+				payment.status === 'expired' &&
+				mollieApiMethod === 'order',
+			'Orders API: an expired payment leaves the Mollie order open, the order expires only after 28 days.'
+		);
 
 		if ( ! testData.orderStatus ) {
 			testData.orderStatus = await getOrderStatusFromMollieStatus(
 				payment.status,
-				mollieApiMethod
+				mollieApiMethod,
+				gateway.slug
 			);
 		}
 
@@ -243,7 +276,8 @@ export const testOrderStatusTransitionOnCheckout = (
 			// processMolliePaymentStatus only checks page-redirect behavior,
 			// not the order's actual status - assert that explicitly too.
 			await expect( async () => {
-				const orderAfterPayment = await wooCommerceApi.getOrder( orderId );
+				const orderAfterPayment =
+					await wooCommerceApi.getOrder( orderId );
 				await expect(
 					orderAfterPayment.status,
 					`Assert the order settles to "${ testData.orderStatus }"`

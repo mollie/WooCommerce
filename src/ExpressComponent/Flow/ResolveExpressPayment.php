@@ -134,7 +134,7 @@ final class ResolveExpressPayment
                     'inputs' => sprintf(
                         'method=%s wallet=%s gateway=%s',
                         (string) $payment->method(),
-                        (string) $payment->wallet(),
+                        $this->matchedWalletKey((string) $firstSight->gatewayId()),
                         (string) $firstSight->gatewayId()
                     ),
                 ]);
@@ -172,6 +172,18 @@ final class ResolveExpressPayment
         ]);
 
         return $decision;
+    }
+
+    /** The wallets key (applepay, googlepay, paypal) of the chosen gateway; empty when none matched. */
+    private function matchedWalletKey(string $gatewayId): string
+    {
+        foreach ($this->wallets as $key => $row) {
+            if ($gatewayId !== '' && $row['gatewayId'] === $gatewayId) {
+                return (string) $key;
+            }
+        }
+
+        return '';
     }
 
     private function matchInputs(PaymentSnapshot $payment, ?ExpressOrderFacts $facts): string

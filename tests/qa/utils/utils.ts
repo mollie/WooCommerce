@@ -16,6 +16,7 @@ import {
 	MollieSettingsAdvanced,
 	getCustomerStorageStateName,
 	MollieApi,
+	deleteTransients,
 } from '.';
 import {
 	MollieSettings,
@@ -89,6 +90,8 @@ export class Utils {
 		await this.mollieApi.setAdvancedSettings( {
 			apiMethod: this.mollieApiMethod,
 		} );
+		// Drop the checkout methods cached for the previous Mollie profile
+		deleteTransients();
 	};
 
 	/**

@@ -93,6 +93,7 @@ class ExpressRefundTest extends ExpressFlowTestCase
      *   Then the fake Mollie holds one refund on that payment for that amount
      *
      * @test
+     * @group REQ-F2
      */
     public function it_refunds_a_google_pay_express_order_at_mollie(): void
     {

@@ -134,6 +134,72 @@ class FirstSightTest extends TestCase
     }
 
     /**
+     * Scenario: a card payment whose wallet cannot be matched keeps the provisional method
+     *   Given a matched payment that Mollie reports as creditcard with a wallet that has no row,
+     *     or with a wallet whose payment method is not registered
+     *   When the first sight is decided
+     *   Then the verdict names no gateway
+     *   And names creditcard as the Mollie method, for the note
+     *
+     * @group REQ-F2
+     * @dataProvider cardPaymentsWithAnUnmatchedWallet
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\FirstSight::decide
+     * @param list<string> $registered
+     */
+    public function testACardPaymentWithAnUnmatchedWalletKeepsTheProvisionalMethod(string $wallet, array $registered): void
+    {
+        $verdict = FirstSight::decide(
+            $this->payment(['method' => 'creditcard', 'wallet' => $wallet]),
+            $this->order(),
+            $this->wallets(),
+            $registered
+        );
+
+        self::assertNull($verdict->gatewayId());
+        self::assertSame('creditcard', $verdict->unmatchedMethod());
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: list<string>}>
+     */
+    public function cardPaymentsWithAnUnmatchedWallet(): array
+    {
+        return [
+            'a wallet with no row' => ['samsungpay', self::REGISTERED],
+            'a known wallet whose payment method is not registered' => ['applepay', ['mollie_wc_gateway_ideal']],
+        ];
+    }
+
+    /**
+     * Scenario: the title check of any gateway matches only its own gateway
+     *   Given the registered list of one gateway, as the order service passes it
+     *   When a payment is matched against the wallets table
+     *   Then a card payment made with a wallet matches that wallet's gateway only when it is the registered one
+     *   And a gateway outside the table matches nothing
+     *
+     * @group REQ-F2
+     * @dataProvider registeredGatewayAlone
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\FirstSight::walletGateway
+     */
+    public function testAGatewayAloneMatchesOnlyItsOwnWallet(string $gatewayId, string $method, ?string $wallet, ?string $expected): void
+    {
+        self::assertSame($expected, FirstSight::walletGateway($method, $wallet, $this->wallets(), [$gatewayId]));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: ?string, 3: ?string}>
+     */
+    public function registeredGatewayAlone(): array
+    {
+        return [
+            'Apple Pay gateway, card with its wallet' => ['mollie_wc_gateway_applepay', 'creditcard', 'applepay', 'mollie_wc_gateway_applepay'],
+            'Google Pay gateway, card with the Apple Pay wallet' => ['mollie_wc_gateway_googlepay', 'creditcard', 'applepay', null],
+            'iDEAL gateway, card with a wallet' => ['mollie_wc_gateway_ideal', 'creditcard', 'applepay', null],
+            'iDEAL gateway, an iDEAL payment' => ['mollie_wc_gateway_ideal', 'ideal', null, null],
+        ];
+    }
+
+    /**
      * Scenario: every wallet row names what Mollie reports on a payment made with it
      *   Given the wallets table in config/express.php
      *   When its rows are read

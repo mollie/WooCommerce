@@ -367,7 +367,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     /**
      * Scenario: a Mollie method without a wallet payment method keeps the provisional one, is noted, and is paid
      *   Given a pending express order whose provisional payment method is PayPal
-     *   And a paid payment from its session made with a method that has no wallet row, or no registered payment method
+     *   And a paid payment from its session made with a method that has no wallet row, or as a card payment with no wallet
      *   When Mollie calls the webhook
      *   Then the order keeps the provisional payment method
      *   And it has a note naming the Mollie method
@@ -400,7 +400,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         return [
             'no row in the wallets table' => ['ideal'],
             'googlepay, which Mollie never reports on a payment' => ['googlepay'],
-            'a card payment, while no Google Pay method is registered' => ['creditcard'],
+            'a card payment with no wallet' => ['creditcard'],
         ];
     }
 
@@ -439,6 +439,80 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $this->assertSame([], $this->notesContaining($paid, 'creditcard'), 'A wallet payment is not an unknown wallet.');
         $this->assertTrue($paid->is_paid());
         $this->assertCompletedNoteNamesTheMethod($paid, $expectedGateway, $payment['id']);
+    }
+
+    /**
+     * Scenario: a card payment made with a wallet that is not in the table keeps the provisional method and is paid
+     *   Given a pending express order whose provisional payment method is PayPal
+     *   And a paid payment from its session that Mollie reports as creditcard with a wallet that has no row
+     *   When Mollie calls the webhook
+     *   Then the order keeps the provisional payment method
+     *   And it has a note naming creditcard
+     *   And it is paid
+     *
+     * @test
+     * @group REQ-F2
+     */
+    public function it_keeps_the_provisional_method_for_a_card_payment_with_an_unknown_wallet(): void
+    {
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        [$order, , $sessionId] = $this->expressOrder();
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'creditcard']);
+        $this->fakeMollie()->setPaymentStatus($payment['id'], 'paid', ['details' => ['wallet' => 'samsungpay']]);
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        $paid = $this->fresh($order);
+        $this->assertSame(self::PAYPAL_GATEWAY, $paid->get_payment_method());
+        $this->assertNotSame([], $this->notesContaining($paid, 'creditcard'), 'A note must name the Mollie method.');
+        $this->assertTrue($paid->is_paid(), 'A paid order must never be left unfulfilled over a label.');
+    }
+
+    /**
+     * Scenario: the payment method title of a gateway is its own, whatever wallet the payment names
+     *   Given the order service holding one gateway
+     *   When it names the payment method of a Mollie payment
+     *   Then a card payment made with a wallet gives the title only to that wallet's gateway
+     *   And an iDEAL payment gives its title to the iDEAL gateway and a card payment with a wallet gives it none
+     *
+     * @test
+     * @group REQ-F2
+     * @dataProvider titlesPerGateway
+     */
+    public function it_names_the_payment_method_title_only_for_the_gateway_the_payment_belongs_to(
+        string $gatewayId,
+        string $method,
+        ?string $wallet,
+        bool $givesTitle
+    ): void {
+        $this->container = $this->bootExpressOwning(['woocommerce_payment_gateways']);
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        $gateway = WC()->payment_gateways()->payment_gateways()[$gatewayId];
+        $service = $this->container->get(MollieOrderService::class);
+        $service->setGateway($gateway);
+        $payment = (object) ['method' => $method, 'details' => (object) ($wallet !== null ? ['wallet' => $wallet] : [])];
+
+        $method = new \ReflectionMethod($service, 'getPaymentMethodTitle');
+        $method->setAccessible(true);
+        $title = $method->invoke($service, $payment);
+
+        $this->assertNotSame('', $gateway->method_title, 'The gateway must have a title to give.');
+        $this->assertSame($givesTitle ? $gateway->method_title : '', $title);
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: ?string, 3: bool}>
+     */
+    public function titlesPerGateway(): array
+    {
+        return [
+            'iDEAL payment, iDEAL gateway' => ['mollie_wc_gateway_ideal', 'ideal', null, true],
+            'card with the Apple Pay wallet, iDEAL gateway' => ['mollie_wc_gateway_ideal', 'creditcard', 'applepay', false],
+            'card with the Apple Pay wallet, Apple Pay gateway' => ['mollie_wc_gateway_applepay', 'creditcard', 'applepay', true],
+            'card with the Apple Pay wallet, PayPal gateway' => [self::PAYPAL_GATEWAY, 'creditcard', 'applepay', false],
+        ];
     }
 
     /**

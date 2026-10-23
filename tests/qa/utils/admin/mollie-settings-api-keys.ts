@@ -17,6 +17,12 @@ export class MollieSettingsApiKeys extends MollieSettingsPage {
 		this.page.getByText(
 			'No API key provided. Please set your Mollie API keys below.'
 		);
+	failedToConnectText = () =>
+		this.page.getByText(
+			'Failed to connect to Mollie API - check your API keys'
+		);
+	communicatingWithMollieFailedText = () =>
+		this.page.getByText( 'Communicating with Mollie failed' );
 	molliePaymentModeSelect = () =>
 		this.page.locator(
 			'#mollie-payments-for-woocommerce_test_mode_enabled'

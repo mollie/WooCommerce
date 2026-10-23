@@ -4,3 +4,4 @@ export * from './mollie-settings-payment-methods';
 export * from './mollie-settings-advanced';
 export * from './mollie-settings-gateway';
 export * from './woocommerce-order-edit';
+export * from './wp-admin-dashboard';

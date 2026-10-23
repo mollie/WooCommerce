@@ -206,6 +206,7 @@ export type MollieGateway = {
 	availableForApiMethods?: MollieSettings.ApiMethod[];
 	settings?: MollieSettings.Gateway;
 	isCaptureRequired?: boolean; // Mirrors `paymentCaptureMode: 'manual'` in the gateway's PHP config
+	mollieProfile?: 'nl'; // Active only on this Mollie test profile, not on the default one
 };
 
 export type MolliePaymentStatus =

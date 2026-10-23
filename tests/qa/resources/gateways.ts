@@ -131,6 +131,7 @@ const billink: MollieGateway = {
 	name: 'Billink',
 	availableForApiMethods: [ 'payment' ], // Payments API only
 	isCaptureRequired: true,
+	mollieProfile: 'nl',
 	settings: {
 		...defaultGatewaySettings,
 		id: 'mollie_wc_gateway_billink',

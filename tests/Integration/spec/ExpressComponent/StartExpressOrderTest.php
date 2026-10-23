@@ -39,6 +39,13 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      */
     private array $changedProducts = [];
 
+    /**
+     * Coupons a scenario created, deleted in tearDown().
+     *
+     * @var array<int, int>
+     */
+    private array $couponIds = [];
+
     public function setUp(): void
     {
         parent::setUp();
@@ -58,6 +65,10 @@ class StartExpressOrderTest extends ExpressFlowTestCase
             $product->save();
         }
         $this->changedProducts = [];
+        foreach ($this->couponIds as $couponId) {
+            wp_delete_post($couponId, true);
+        }
+        $this->couponIds = [];
         $this->tearDownExpressCheckout();
 
         parent::tearDown();
@@ -526,6 +537,83 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: a coupon restricted to other emails is refused as the normal checkout refuses it
+     *   Given a guest who applied a coupon allowed for the form's email
+     *   And then changed the form's email to one the coupon does not allow
+     *   When the order is requested
+     *   Then it is answered cart_invalid with WooCommerce's reason naming the coupon
+     *   And no order is created and the coupon left the cart
+     *
+     * @test
+     */
+    public function it_refuses_a_coupon_the_form_email_is_not_allowed_to_use(): void
+    {
+        $this->readyGuestCheckout();
+        $coupon = $this->couponWith(['email_restrictions' => [CanaryData::EMAIL]]);
+        $this->assertTrue(WC()->cart->apply_coupon($coupon->get_code()));
+        WC()->customer->set_billing_email('other.' . CanaryData::EMAIL);
+        $this->startedSession();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrder();
+
+        $this->assertRefused($response, 'cart_invalid');
+        $this->assertStringContainsString($coupon->get_code(), (string) ((array) $response->get_data())['message']);
+        $this->assertSame($before, $this->allOrderIds());
+        $this->assertNotContains($coupon->get_code(), WC()->cart->get_applied_coupons());
+    }
+
+    /**
+     * Scenario: a coupon the guest's email has used up is refused with WooCommerce's reason
+     *   Given a coupon usable once per customer, already used by the form's email
+     *   And a guest who applied it
+     *   When the order is requested
+     *   Then it is answered cart_invalid with WooCommerce's usage-limit reason
+     *   And no order is created
+     *
+     * @test
+     */
+    public function it_refuses_a_coupon_the_guest_email_used_up(): void
+    {
+        $this->readyGuestCheckout();
+        $coupon = $this->couponWith(['usage_limit_per_user' => 1]);
+        add_post_meta($coupon->get_id(), '_used_by', strtolower(CanaryData::EMAIL));
+        $this->assertTrue(WC()->cart->apply_coupon($coupon->get_code()));
+        $this->startedSession();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrder();
+
+        $this->assertRefused($response, 'cart_invalid');
+        $this->assertStringContainsString($coupon->get_code(), (string) ((array) $response->get_data())['message']);
+        $this->assertSame($before, $this->allOrderIds());
+    }
+
+    /**
+     * Scenario: a coupon the form's email may use reaches the order
+     *   Given a guest who applied a coupon allowed for the form's email
+     *   When the order is requested
+     *   Then it is answered ok=true and the order carries the coupon
+     *
+     * @test
+     */
+    public function it_creates_the_order_with_a_coupon_the_form_email_may_use(): void
+    {
+        $this->readyGuestCheckout();
+        $coupon = $this->couponWith(['email_restrictions' => [CanaryData::EMAIL]]);
+        $this->assertTrue(WC()->cart->apply_coupon($coupon->get_code()));
+        $this->startedSession();
+        $before = $this->allOrderIds();
+
+        $response = $this->startOrder();
+
+        $this->assertAnsweredOk($response);
+        $created = array_values(array_diff($this->allOrderIds(), $before));
+        $this->assertCount(1, $created);
+        $this->assertSame([$coupon->get_code()], wc_get_order($created[0])->get_coupon_codes());
+    }
+
+    /**
      * Scenario: an order request that did not come from the shop's own page is refused
      *   Given a guest whose session was started
      *   When the order request carries no nonce, an invalid one, or a nonce for another action
@@ -880,6 +968,23 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     /**
      * Changes a preset product for this scenario only; tearDown() puts it back.
      */
+    /**
+     * @param array<string, mixed> $props
+     */
+    private function couponWith(array $props): \WC_Coupon
+    {
+        $coupon = new \WC_Coupon();
+        $coupon->set_props(array_merge([
+            'code' => 'express-' . strtolower(wp_generate_password(8, false)),
+            'discount_type' => 'fixed_cart',
+            'amount' => '1',
+        ], $props));
+        $coupon->save();
+        $this->couponIds[] = $coupon->get_id();
+
+        return $coupon;
+    }
+
     private function changeProduct(int $productId, callable $change): void
     {
         $product = wc_get_product($productId);

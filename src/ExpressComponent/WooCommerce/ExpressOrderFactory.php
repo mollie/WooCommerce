@@ -16,11 +16,16 @@ class ExpressOrderFactory
         $this->pending = $pending ?? new PendingExpressOrders();
     }
 
-    /** Consumes the raised notices so they are not shown again on the next page. */
+    /**
+     * The cart and coupon checks the checkout runs; the coupon ones may remove a coupon, as there.
+     * Consumes the raised notices so they are not shown again on the next page.
+     */
     public function invalidCartReason(): ?string
     {
         $before = wc_get_notices('error');
         $valid = WC()->cart->check_cart_items();
+        WC()->cart->check_cart_coupons();
+        WC()->cart->check_customer_coupons(['billing_email' => WC()->customer->get_billing_email()]);
         $raised = array_slice(wc_get_notices('error'), count($before));
         if ($valid !== false && $raised === []) {
             return null;

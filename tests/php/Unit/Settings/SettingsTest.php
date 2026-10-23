@@ -513,6 +513,37 @@ class SettingsTest extends TestCase
         self::assertStringContainsString('No API key provided', $result->errorMessage());
     }
 
+    // Mollie answers 400, not 401, for a key it cannot read (a valid key with extra characters)
+    public function testAKeyMollieCannotReadIsReportedAsAKeyProblem(): void
+    {
+        $sut = $this->settingsWithApiClient(
+            $this->apiClientFailingWith(
+                new ApiException('Error executing API call (400: Bad Request): Invalid Authorization header', 400)
+            )
+        );
+
+        $result = $sut->getConnectionStatusWithError();
+
+        self::assertSame(ConnectionResult::KIND_API_KEY, $result->errorKind());
+        self::assertSame(400, $result->errorCode());
+        self::assertSame('', $result->errorMessage());
+    }
+
+    // Only the header message makes a 400 a key problem: any other refusal stays a failed call
+    public function testAnotherBadRequestStaysAnApiFailure(): void
+    {
+        $sut = $this->settingsWithApiClient(
+            $this->apiClientFailingWith(
+                new ApiException("Error executing API call (400: Bad Request): The 'amount' is invalid.", 400)
+            )
+        );
+
+        $result = $sut->getConnectionStatusWithError();
+
+        self::assertSame(ConnectionResult::KIND_API, $result->errorKind());
+        self::assertStringContainsString('amount', $result->errorMessage());
+    }
+
     // An incompatible environment reports the real compatibility errors, not a placeholder
     public function testIncompatibleEnvironmentReportsTheCompatibilityErrors(): void
     {

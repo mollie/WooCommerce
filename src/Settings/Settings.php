@@ -355,11 +355,13 @@ class Settings
             $status->getMollieApiStatus($apiClient);
             return ConnectionResult::connected();
         } catch (ApiException $e) {
-            return ConnectionResult::failed(
-                ConnectionResult::KIND_API,
-                (int) $e->getCode(),
-                Status::plainApiErrorMessage($e)
-            );
+            $message = Status::plainApiErrorMessage($e);
+            // A key that passes the format check with extra characters gets a 400, not a 401.
+            if ((int) $e->getCode() === 400 && stripos($message, 'Authorization header') !== false) {
+                return ConnectionResult::failed(ConnectionResult::KIND_API_KEY, 400, '');
+            }
+
+            return ConnectionResult::failed(ConnectionResult::KIND_API, (int) $e->getCode(), $message);
         }
     }
 

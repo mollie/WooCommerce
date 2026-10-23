@@ -178,6 +178,11 @@ class ConnectionStatusRenderingTest extends IntegrationMockedTestCase
                 ['Communicating with Mollie failed: ', 'The &#039;amount&#039; &amp; &#039;currency&#039; don&#039;t match.'],
                 ['&amp;#039;', '&amp;amp;', 'Documentation:', 'Request body:', 'status.mollie.com', 'API key'],
             ],
+            '400: Mollie cannot read the key (extra characters on a valid key) is a key problem' => [
+                [400, $this->problem(400, 'Bad Request', 'Invalid Authorization header')],
+                ['Failed to connect to Mollie API - check your API keys &#x2716;'],
+                ['Communicating with Mollie failed', 'Invalid Authorization header', 'status.mollie.com'],
+            ],
         ];
     }
 

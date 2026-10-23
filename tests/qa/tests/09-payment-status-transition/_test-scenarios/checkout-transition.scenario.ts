@@ -84,27 +84,7 @@ const assertOnHoldCancelledByMollie = async (
 		'Assert the order is genuinely on-hold before Mollie cancels the payment'
 	).toEqual( 'on-hold' );
 
-	if ( mollieApiMethod === 'order' ) {
-		// Orders API: a canceled payment leaves the Mollie order open, so cancel the order itself
-		const mollieOrderId = order.meta_data.find(
-			( meta ) => meta.key === '_mollie_order_id'
-		)?.value;
-		const response = await fetch(
-			`https://api.mollie.com/v2/orders/${ mollieOrderId }`,
-			{
-				method: 'DELETE',
-				headers: {
-					Authorization: `Bearer ${ process.env.MOLLIE_TEST_API_KEY }`,
-				},
-			}
-		);
-		await expect(
-			response.ok,
-			`Assert Mollie cancels the order ${ mollieOrderId }`
-		).toBe( true );
-	} else {
-		await mollieClientApi.payments.cancel( { paymentId: molliePaymentId } );
-	}
+	await mollieClientApi.payments.cancel( { paymentId: molliePaymentId } );
 
 	const expectedStatus = getOrderStatusFromMollieStatus(
 		'canceled',
@@ -197,12 +177,12 @@ export const testOrderStatusTransitionOnCheckout = (
 			! gateway.availableForApiMethods.includes( mollieApiMethod ),
 			`Test is not eligible for ${ mollieApiMethod } API method.`
 		);
-		// Orders API: only Mollie expires the order itself (after 28 days), there is no API or test page to force it
+		// Orders API: the open bank transfer keeps the Mollie order open; Mollie refuses to cancel it ("Unable to cancel order with open payments") and expires it only after 28 days
 		test.skip(
 			transition === 'onHoldToFinal' &&
-				payment.status === 'expired' &&
+				[ 'canceled', 'expired' ].includes( payment.status ) &&
 				mollieApiMethod === 'order',
-			'Orders API: an expired payment leaves the Mollie order open, the order expires only after 28 days.'
+			'Orders API: the Mollie order stays open (cannot be canceled with an open payment, expires after 28 days).'
 		);
 
 		if ( ! testData.orderStatus ) {

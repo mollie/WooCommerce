@@ -13,6 +13,13 @@ import {
 	creditCardDisabledMollieComponentsPayForOrder,
 } from './_test-data';
 
+// Runs again in each new worker, e.g. after a failed test triggered afterAll
+test.beforeAll( async ( { mollieApi } ) => {
+	await mollieApi.updateMollieGateway( 'creditcard', {
+		mollie_components_enabled: 'no',
+	} );
+} );
+
 // Classic checkout page
 test.describe( () => {
 	test.beforeAll( async ( { utils } ) => {

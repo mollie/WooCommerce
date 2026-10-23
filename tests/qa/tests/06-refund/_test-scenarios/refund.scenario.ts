@@ -17,6 +17,7 @@ import {
 	processMolliePaymentStatus,
 	updateCurrencyIfNeeded,
 	getOrderStatusFromMollieStatus,
+	waitForMollieCapture,
 } from '../../../utils';
 import { MollieTestData, guests } from '../../../resources';
 
@@ -100,20 +101,30 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 			// own status is a tautology - it can never detect a failed/skipped
 			// capture. Poll for the specific success order note the PHP method adds
 			// instead, which is the only real signal capture actually happened.
+			// Orders API ships the order, Payments API sends a payment capture: each writes its own note.
+			const captureNote =
+				mollieApiMethod === 'order'
+					? 'successfully updated to shipped at Mollie'
+					: 'payment capture of';
 			const captureOrderAtMollie = async ( id: number ) => {
 				await wooCommerceApi.updateOrder( id, { status: 'completed' } );
 				await expect( async () => {
 					const notes = await wooCommerceApi.getOrderNotes( id );
 					const captured = notes.some( ( n ) =>
-						n.note.includes(
-							'successfully updated to shipped at Mollie'
-						)
+						n.note.includes( captureNote )
 					);
 					await expect(
 						captured,
 						'Assert order was shipped/captured at Mollie (order note present)'
 					).toBe( true );
 				} ).toPass( { intervals: [ 5_000 ], timeout: 60_000 } );
+				// Payments API: the note only says the capture was sent; refund only after Mollie confirms it
+				if ( mollieApiMethod === 'payment' ) {
+					await waitForMollieCapture(
+						mollieClientApi,
+						molliePaymentId
+					);
+				}
 			};
 
 			let transactionId: string;

@@ -21,6 +21,7 @@ export const refundViaWooCommerce: MollieTestData.ShopRefund[] = [
 	{
 		...baseOrder,
 		testId: 'C3493',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.ideal,
 			status: 'paid',
@@ -34,6 +35,7 @@ export const refundViaWooCommerce: MollieTestData.ShopRefund[] = [
 	{
 		...baseOrder,
 		testId: 'C3459',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.creditcard,
 			status: 'paid',
@@ -62,6 +64,7 @@ export const refundViaWooCommerce: MollieTestData.ShopRefund[] = [
 	{
 		...baseOrder,
 		testId: 'C4567635',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.klarna,
 			status: 'authorized',
@@ -89,6 +92,7 @@ export const refundViaMollieDashboard: MollieTestData.ShopRefund[] = [
 	{
 		...baseOrder,
 		testId: 'C3476',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.ideal,
 			status: 'paid',

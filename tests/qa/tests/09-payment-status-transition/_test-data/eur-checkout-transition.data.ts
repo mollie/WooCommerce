@@ -26,6 +26,7 @@ export const checkoutTransitionsEur: MollieTestData.ShopOrderTransition[] = [
 	{
 		...baseOrder,
 		testId: 'C4567640',
+		testLabel: '@Critical',
 		transition: 'onHoldToFinal',
 		payment: {
 			gateway: gateways.banktransfer,

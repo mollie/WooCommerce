@@ -24,6 +24,7 @@ import { MollieTestData, guests } from '../../../resources';
 export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 	const {
 		testId,
+		testLabel,
 		payment,
 		currency,
 		refundPercentage,
@@ -51,7 +52,8 @@ export const testRefund = ( testData: MollieTestData.ShopRefund ) => {
 	const isMolliePartialRefund =
 		isMollieClientApiRefund && refundPercentage < 100;
 
-	const testTitle = `${ testId } | Refund - ${ refundPart } - ${ gatewayLabel } - Via ${ refundVia }`;
+	const label = testLabel ? ` ${ testLabel }` : '';
+	const testTitle = `${ testId } | Refund - ${ refundPart } - ${ gatewayLabel } - Via ${ refundVia }${ label }`;
 
 	test(
 		testTitle,

@@ -21,6 +21,7 @@ use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Notice\AdminNotice;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerce\Payment\PaymentCheckoutRedirectService;
 use Mollie\WooCommerce\Payment\PaymentFactory;
@@ -211,7 +212,9 @@ return static function (): array {
             assert($orderLock instanceof OrderLock);
             $eventLog = $container->get(EventLog::class);
             assert($eventLog instanceof EventLog);
-            return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId, $container, $webhookHandler, $resolveExpressPayment, $orderLock, $eventLog);
+            $processRecords = $container->get(ProcessRecordStore::class);
+            assert($processRecords instanceof ProcessRecordStore);
+            return new MollieOrderService($HttpResponseService, $logger, $paymentFactory, $data, $pluginId, $container, $webhookHandler, $resolveExpressPayment, $orderLock, $eventLog, $processRecords);
         },
         ApplePayDirectHandler::class => static function (ContainerInterface $container) {
             $appleGateway = isset($container->get('__deprecated.gateway_helpers')['mollie_wc_gateway_applepay']) ? $container->get(

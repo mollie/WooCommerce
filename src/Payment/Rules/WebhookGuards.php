@@ -10,9 +10,12 @@ final class WebhookGuards
     public const SUPERSEDED = 'superseded';
     public const SETTLED = 'settled';
     public const PROCESS = 'process';
+    public const PAID_ELSEWHERE = 'paid_elsewhere';
 
     // Not 'expired': onWebhookExpired handles an untracked payment itself.
     private const TERMINAL_STATUSES = ['failed', 'canceled', 'cancelled'];
+
+    private const MONEY_TAKEN_STATUSES = ['paid', 'authorized'];
 
     public static function needsPayment(
         bool $paidByOtherGateway,
@@ -47,7 +50,8 @@ final class WebhookGuards
         bool $tracksThisPayment,
         bool $createdForOrder,
         string $paymentStatus,
-        bool $needsPayment
+        bool $needsPayment,
+        bool $inLinkedMollieOrder = false
     ): string {
 
         if (!$isMollieGateway) {
@@ -57,6 +61,10 @@ final class WebhookGuards
             return self::SUPERSEDED;
         }
         if (!$needsPayment) {
+            if (!$tracksThisPayment && !$inLinkedMollieOrder && in_array($paymentStatus, self::MONEY_TAKEN_STATUSES, true)) {
+                return self::PAID_ELSEWHERE;
+            }
+
             return self::SETTLED;
         }
 

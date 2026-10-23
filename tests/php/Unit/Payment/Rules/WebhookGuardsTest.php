@@ -121,7 +121,8 @@ class WebhookGuardsTest extends TestCase
         bool $createdForOrder,
         string $paymentStatus,
         bool $needsPayment,
-        string $expected
+        string $expected,
+        bool $inLinkedMollieOrder = false
     ): void {
 
         $verdict = WebhookGuards::decide(
@@ -129,14 +130,15 @@ class WebhookGuardsTest extends TestCase
             $tracksThisPayment,
             $createdForOrder,
             $paymentStatus,
-            $needsPayment
+            $needsPayment,
+            $inLinkedMollieOrder
         );
 
         self::assertSame($expected, $verdict);
     }
 
     /**
-     * @return array<string, array{0: bool, 1: bool, 2: bool, 3: string, 4: bool, 5: string}>
+     * @return array<string, array{0: bool, 1: bool, 2: bool, 3: string, 4: bool, 5: string, 6?: bool}>
      */
     public function decideCases(): array
     {
@@ -151,6 +153,10 @@ class WebhookGuardsTest extends TestCase
             'REQ-387 duplicate paid delivery on a processed order' => [true, true, true, 'paid', false, WebhookGuards::SETTLED],
             'REQ-129 any status for an order that needs no payment' => [true, true, true, 'pending', false, WebhookGuards::SETTLED],
             'REQ-357 expired for an untracked payment of a settled order' => [true, false, true, 'expired', false, WebhookGuards::SETTLED],
+            'paid for an untracked payment of an order another payment settled' => [true, false, true, 'paid', false, WebhookGuards::PAID_ELSEWHERE],
+            'authorized for an untracked payment of an order another payment settled' => [true, false, true, 'authorized', false, WebhookGuards::PAID_ELSEWHERE],
+            'open for an untracked payment of a settled order has taken nothing yet' => [true, false, true, 'open', false, WebhookGuards::SETTLED],
+            'paid for another payment of the Mollie order the settled order is linked to' => [true, false, true, 'paid', false, WebhookGuards::SETTLED, true],
             'REQ-341 paid for the tracked payment' => [true, true, true, 'paid', true, WebhookGuards::PROCESS],
             'REQ-341 failed for the tracked payment' => [true, true, true, 'failed', true, WebhookGuards::PROCESS],
             'REQ-357 expired for an untracked payment is left to its handler' => [true, false, true, 'expired', true, WebhookGuards::PROCESS],
@@ -165,15 +171,15 @@ class WebhookGuardsTest extends TestCase
     /**
      * Scenario: the verdicts are the logged words
      *   Given the verdict constants
-     *   Then they are not_ours, superseded, settled and process
+     *   Then they are not_ours, superseded, settled, paid_elsewhere and process
      *
      * @covers \Mollie\WooCommerce\Payment\Rules\WebhookGuards
      */
-    public function testVerdictsAreTheFourWordsTheStepRecords(): void
+    public function testVerdictsAreTheWordsTheStepRecords(): void
     {
         self::assertSame(
-            ['not_ours', 'superseded', 'settled', 'process'],
-            [WebhookGuards::NOT_OURS, WebhookGuards::SUPERSEDED, WebhookGuards::SETTLED, WebhookGuards::PROCESS]
+            ['not_ours', 'superseded', 'settled', 'paid_elsewhere', 'process'],
+            [WebhookGuards::NOT_OURS, WebhookGuards::SUPERSEDED, WebhookGuards::SETTLED, WebhookGuards::PAID_ELSEWHERE, WebhookGuards::PROCESS]
         );
     }
 }

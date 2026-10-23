@@ -68,6 +68,19 @@ class MolliePaymentAttempt
     }
 
     /**
+     * Whether the payment belongs to the Mollie order this order is linked to (Orders API), whichever of
+     * its payments it is.
+     *
+     * @param object $payment Mollie payment resource (anything exposing ->orderId)
+     */
+    public static function belongsToLinkedMollieOrder(WC_Order $order, $payment): bool
+    {
+        $mollieOrderId = is_object($payment) && isset($payment->orderId) && is_string($payment->orderId) ? $payment->orderId : '';
+
+        return $mollieOrderId !== '' && $mollieOrderId === self::orderId($order);
+    }
+
+    /**
      * Whether the payment was created for this order according to Mollie's own record of it: the
      * plugin writes metadata.order_id when it creates a payment or order at Mollie, so a webhook
      * caller cannot set that value.

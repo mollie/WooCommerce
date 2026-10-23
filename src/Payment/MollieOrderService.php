@@ -53,6 +53,7 @@ class MollieOrderService
     private ResolveExpressPayment $resolveExpressPayment;
     private OrderLock $orderLock;
     private EventLog $eventLog;
+    private ProcessRecordStore $processRecords;
 
     /**
      * MollieOrderService constructor.
@@ -67,7 +68,8 @@ class MollieOrderService
         WebhookHandler $webhookHandler,
         ResolveExpressPayment $resolveExpressPayment,
         OrderLock $orderLock,
-        EventLog $eventLog
+        EventLog $eventLog,
+        ProcessRecordStore $processRecords
     ) {
 
         $this->httpResponse = $httpResponse;
@@ -80,6 +82,7 @@ class MollieOrderService
         $this->resolveExpressPayment = $resolveExpressPayment;
         $this->orderLock = $orderLock;
         $this->eventLog = $eventLog;
+        $this->processRecords = $processRecords;
     }
 
     public function setGateway($gateway)
@@ -335,7 +338,8 @@ class MollieOrderService
                 }
 
                 $needsPayment = $this->orderNeedsPayment($order);
-                $verdict = WebhookGuards::decide(true, $tracksThisPayment, $createdForOrder, $status, $needsPayment);
+                $inLinkedMollieOrder = MolliePaymentAttempt::belongsToLinkedMollieOrder($order, $payment);
+                $verdict = WebhookGuards::decide(true, $tracksThisPayment, $createdForOrder, $status, $needsPayment, $inLinkedMollieOrder);
                 $this->logWebhookGuards($order, $verdict, sprintf(
                     'mollie=1 tracks=%d created=%d status=%s needsPayment=%d',
                     (int) $tracksThisPayment,
@@ -343,6 +347,12 @@ class MollieOrderService
                     $status,
                     (int) $needsPayment
                 ));
+
+                if ($verdict === WebhookGuards::PAID_ELSEWHERE) {
+                    // Its refunds and chargebacks are not the order's money: they must not change the order.
+                    $this->recordPaymentNotApplied($order, $payment);
+                    return true;
+                }
 
                 if ($verdict === WebhookGuards::SETTLED) {
                     $this->handlePaidOrderWebhook($order, $payment);
@@ -444,6 +454,37 @@ class MollieOrderService
             $this->pluginId . '_initial_order_status_' . $paymentMethod->getProperty('id'),
             $initialOrderStatus
         );
+    }
+
+    /**
+     * Once per payment: a redelivery, or a later refund of it, finds the question already open.
+     *
+     * @param Payment|Order $payment
+     */
+    private function recordPaymentNotApplied(WC_Order $order, $payment): void
+    {
+        $stored = $this->processRecords->read($order);
+        $record = $stored->withOpen(WebhookGuards::PAID_ELSEWHERE, (string) $payment->id);
+        if ($record->open() === $stored->open()) {
+            return;
+        }
+        $this->processRecords->write($order, $record);
+        $order->save();
+
+        $amount = (string) ($payment->amount->value ?? '');
+        $currency = (string) ($payment->amount->currency ?? '');
+        $order->add_order_note(strtr(
+            /* translators: {payment} payment id, {amount} {currency} its amount, {reason} reason code. */
+            __('Mollie payment {payment} ({amount} {currency}) was not applied to this order ({reason}). Check it in your Mollie dashboard and refund it or handle it by hand.', 'mollie-payments-for-woocommerce'),
+            ['{payment}' => (string) $payment->id, '{amount}' => $amount, '{currency}' => $currency, '{reason}' => WebhookGuards::PAID_ELSEWHERE]
+        ));
+        $this->eventLog->warning('payment.not_applied', [
+            'order' => $order->get_id(),
+            'mollie_id' => (string) $payment->id,
+            'status' => (string) $payment->status,
+            'amount' => $amount,
+            'currency' => $currency,
+        ]);
     }
 
     private function logWebhookGuards(WC_Order $order, string $verdict, string $inputs): void

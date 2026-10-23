@@ -1593,6 +1593,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             $container->get(ResolveExpressPayment::class),
             $container->get(OrderLock::class),
             $container->get(EventLog::class),
+            $container->get(ProcessRecordStore::class),
         ])->makePartial()->shouldAllowMockingProtectedMethods();
         $service->shouldReceive('getPaymentIdFromRequest')->andReturn($paymentId);
 

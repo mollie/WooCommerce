@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\MollieObject;
 use Mollie\WooCommerce\Payment\MollieOrderService;
 use Mollie\WooCommerce\Payment\OrderLock;
+use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\Payment\PaymentFactory;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
 use Mollie\WooCommerce\SDK\HttpResponse;
@@ -58,7 +59,8 @@ class MollieOrderServiceTest extends TestCase
             Mockery::mock(WebhookHandler::class),
             $this->expressStage(),
             new OrderLock(Mockery::mock(\wpdb::class)),
-            new EventLog(new NullLogger())
+            new EventLog(new NullLogger()),
+            new ProcessRecordStore()
         );
     }
 

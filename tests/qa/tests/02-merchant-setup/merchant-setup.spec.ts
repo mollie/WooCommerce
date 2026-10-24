@@ -45,6 +45,11 @@ test.describe.serial( () => {
 				continue;
 			}
 
+			// not active on the default Mollie profile connected here
+			if ( gateway.mollieProfile ) {
+				continue;
+			}
+
 			const mollieGatewayName = `Mollie - ${ gateway.name }`;
 			await expect
 				.soft(

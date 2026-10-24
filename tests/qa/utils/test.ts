@@ -30,6 +30,7 @@ import {
 	MollieSettingsAdvanced,
 	WooCommerceOrderEdit,
 	MollieSettingsGateway,
+	WpAdminDashboard,
 } from './admin';
 import {
 	Checkout,
@@ -56,6 +57,7 @@ type TestBaseExtend = BaseExtend & {
 	mollieSettingsPaymentMethods: MollieSettingsPaymentMethods;
 	mollieSettingsAdvanced: MollieSettingsAdvanced;
 	mollieSettingsGateway: MollieSettingsGateway;
+	wpAdminDashboard: WpAdminDashboard;
 	mollieApiMethod?: MollieSettings.ApiMethod;
 	isMultistepCheckout?: boolean;
 	// Mollie merchant profile whose API key the shard uses (see mollieApiKeys)
@@ -101,9 +103,10 @@ const test = base.extend< TestBaseExtend >( {
 				return; // no log yet or wp-env not reachable
 			}
 			// Parallel shards share one site, so the log can hold other tests' entries
-			const note = testInfo.config.workers > 1
-				? 'Note: this shard runs tests in parallel, so the log can contain entries from other tests.\n\n'
-				: '';
+			const note =
+				testInfo.config.workers > 1
+					? 'Note: this shard runs tests in parallel, so the log can contain entries from other tests.\n\n'
+					: '';
 			await testInfo.attach( 'mollie-log', {
 				body: note + log,
 				contentType: 'text/plain',
@@ -140,13 +143,20 @@ const test = base.extend< TestBaseExtend >( {
 		)?.description;
 		await use( new MollieSettingsGateway( { page, gatewaySlug } ) );
 	},
+	wpAdminDashboard: async ( { page }, use ) => {
+		await use( new WpAdminDashboard( { page } ) );
+	},
 	mollieApiMethod: [ null, { option: true } ],
 	isMultistepCheckout: [ null, { option: true } ],
 	wooCommerceOrderEdit: async ( { page }, use ) => {
 		await use( new WooCommerceOrderEdit( { page } ) );
 	},
 
-	visitorPage: async ( { browser, recordVideoOptions }, use, testInfo ) => {
+	visitorPage: async (
+		{ browser, recordVideoOptions, javaScriptEnabled },
+		use,
+		testInfo
+	) => {
 		// check if visitor is specified in test otherwise use guest
 		const storageStateName =
 			testInfo.annotations?.find( ( el ) => el.type === 'visitor' )
@@ -155,6 +165,8 @@ const test = base.extend< TestBaseExtend >( {
 		// apply current visitor's storage state to the context
 		const context = await browser.newContext( {
 			...testInfo.project.use, // Spread project's use config
+			// test.use() overrides are not in project.use
+			javaScriptEnabled,
 			storageState: fs.existsSync( storageStatePath )
 				? storageStatePath
 				: undefined,

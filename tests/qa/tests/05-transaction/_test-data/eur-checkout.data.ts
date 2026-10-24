@@ -226,6 +226,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420253',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'paid',
@@ -379,6 +380,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420283',
+		testLabel: '@Critical',
 		payment: {
 			gateway: gateways.banktransfer,
 			status: 'open',
@@ -392,7 +394,6 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 			gateway: gateways.banktransfer,
 			status: 'expired',
 		},
-		orderStatus: 'on-hold',
 	},
 	{
 		...baseOrder,

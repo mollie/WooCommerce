@@ -42,7 +42,7 @@ const testOrder: MollieTestData.ShopOrder = {
 };
 
 test.describe( 'Webhook authentication (mollie_webhook_secret)', () => {
-	test( 'C4567601 | REST webhook rejects requests with no secret, a wrong secret, or an unknown transaction', async ( {
+	test( 'C4567601 | REST webhook rejects requests with no secret, a wrong secret, or an unknown transaction @Critical', async ( {
 		visitorRequest,
 		requestUtils,
 	} ) => {

@@ -26,7 +26,8 @@ const virtualOrder: MollieTestData.ShopOrder = {
 	shipping: freeShipping,
 };
 
-// orderStatus is set explicitly here instead of relying on getOrderStatusFromMollieStatus()
+// Paid, pending and canceled set orderStatus explicitly (a paid virtual product completes);
+// failed and expired take it from getOrderStatusFromMollieStatus(), which depends on the API method
 
 export const payPalExpressProduct: MollieTestData.ShopOrder[] = [
 	{
@@ -51,7 +52,6 @@ export const payPalExpressProduct: MollieTestData.ShopOrder[] = [
 	{
 		...virtualOrder,
 		testId: 'C4567645',
-		orderStatus: 'failed',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'failed',
@@ -69,7 +69,6 @@ export const payPalExpressProduct: MollieTestData.ShopOrder[] = [
 	{
 		...virtualOrder,
 		testId: 'C4567647',
-		orderStatus: 'cancelled',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'expired',
@@ -100,7 +99,6 @@ export const payPalExpressCart: MollieTestData.ShopOrder[] = [
 	{
 		...virtualOrder,
 		testId: 'C4567650',
-		orderStatus: 'failed',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'failed',
@@ -118,7 +116,6 @@ export const payPalExpressCart: MollieTestData.ShopOrder[] = [
 	{
 		...virtualOrder,
 		testId: 'C4567652',
-		orderStatus: 'cancelled',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'expired',
@@ -149,7 +146,6 @@ export const payPalExpressCheckout: MollieTestData.ShopOrder[] = [
 	{
 		...virtualOrder,
 		testId: 'C4567655',
-		orderStatus: 'failed',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'failed',
@@ -167,7 +163,6 @@ export const payPalExpressCheckout: MollieTestData.ShopOrder[] = [
 	{
 		...virtualOrder,
 		testId: 'C4567657',
-		orderStatus: 'cancelled',
 		payment: {
 			gateway: gateways.paypal,
 			status: 'expired',

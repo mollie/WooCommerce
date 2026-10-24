@@ -54,7 +54,12 @@ import { countTotals } from '@inpsyde/playwright-utils/build';
 /**
  * Internal dependencies
  */
-import { test, expect, processMolliePaymentStatus } from '../../utils';
+import {
+	test,
+	expect,
+	processMolliePaymentStatus,
+	waitForMollieCapture,
+} from '../../utils';
 import {
 	gateways,
 	orders,
@@ -101,6 +106,7 @@ test( 'C4567637 | A late "completed" webhook replay must not un-refund an alread
 	wooCommerceApi,
 	wooCommerceOrderEdit,
 	visitorRequest,
+	mollieClientApi,
 } ) => {
 	test.setTimeout( 3 * 60_000 );
 
@@ -149,6 +155,10 @@ test( 'C4567637 | A late "completed" webhook replay must not un-refund an alread
 			'Assert order was shipped/captured at Mollie (order note present)'
 		).toBe( true );
 	} ).toPass( { intervals: [ 5_000 ], timeout: 60_000 } );
+	// Payments API: the note only says the capture was sent; refund only after Mollie confirms it
+	if ( transactionId.startsWith( 'tr_' ) ) {
+		await waitForMollieCapture( mollieClientApi, molliePaymentId );
+	}
 
 	const capturedProduct = await wooCommerceApi.getProduct( testProductId );
 	const stockAfterCapture = capturedProduct.stock_quantity;
@@ -177,9 +187,11 @@ test( 'C4567637 | A late "completed" webhook replay must not un-refund an alread
 
 	// Klarna never fires onWebhookPaid(), so webhookUrl/amountRefunded never land
 	// on the payment sub-resource - fetch the Mollie Order directly instead.
+	// On the Payments API the transaction is the payment itself (tr_).
+	const mollieResource = transactionId.startsWith( 'ord_' ) ? 'orders' : 'payments';
 	const getMollieOrder = async () => {
 		const response = await visitorRequest.get(
-			`https://api.mollie.com/v2/orders/${ transactionId }`,
+			`https://api.mollie.com/v2/${ mollieResource }/${ transactionId }`,
 			{
 				headers: {
 					Authorization: `Bearer ${ process.env.MOLLIE_TEST_API_KEY }`,

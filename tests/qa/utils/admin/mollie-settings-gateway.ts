@@ -19,6 +19,8 @@ export class MollieSettingsGateway extends WooCommerceAdminPage {
 	}
 
 	// Locators
+	adminNotice = ( text: string ) =>
+		this.page.locator( '.notice', { hasText: text } );
 	enableGatewayCheckbox = () =>
 		this.page.locator(
 			`#woocommerce_mollie_wc_gateway_${ this.gateway.slug }_enabled`

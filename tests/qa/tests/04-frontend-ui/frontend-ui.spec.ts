@@ -32,6 +32,11 @@ test( 'C420154 | Validate correct gateways shown with Order API on Classic check
 			continue;
 		}
 
+		// not active on the default Mollie profile connected here
+		if ( gateway.mollieProfile ) {
+			continue;
+		}
+
 		guest = guests[ gateway.country ];
 		countryCode = guest.billing.country;
 

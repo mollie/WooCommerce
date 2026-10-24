@@ -59,11 +59,10 @@ export async function updateCurrencyIfNeeded(
 	wooCommerceApi: WooCommerceApi,
 	currency: string | undefined
 ) {
-	if ( currency && currency !== 'EUR' ) {
-		await wooCommerceApi.updateGeneralSettings( {
-			woocommerce_currency: currency,
-		} );
-	}
+	// Always set it: a previous test may have left another currency (e.g. PLN after Blik)
+	await wooCommerceApi.updateGeneralSettings( {
+		woocommerce_currency: currency || 'EUR',
+	} );
 }
 
 /**

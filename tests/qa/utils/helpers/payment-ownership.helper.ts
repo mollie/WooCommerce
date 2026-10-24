@@ -10,6 +10,29 @@ type MollieResource = {
 	metadata?: { order_id?: string | number };
 	amount?: { value: string; currency: string };
 	amountRefunded?: { value: string; currency: string };
+	amountCaptured?: { value: string; currency: string };
+};
+
+/**
+ * Waits until Mollie reports the payment (tr_) as captured. The plugin's capture note only says the capture was sent.
+ */
+export const waitForMollieCapture = async (
+	mollieClientApi: MollieClientApi,
+	paymentId: string
+): Promise< void > => {
+	await expect
+		.poll(
+			async () => {
+				const payment = await getMollieResource( mollieClientApi, paymentId );
+				return Number( payment.amountCaptured?.value ?? 0 ) > 0;
+			},
+			{
+				message: `Assert Mollie payment ${ paymentId } is captured`,
+				intervals: [ 5_000 ],
+				timeout: 120_000,
+			}
+		)
+		.toBe( true );
 };
 
 /**

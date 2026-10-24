@@ -73,6 +73,7 @@ return [
         '/^wc/',
         '/^icl_/',
         '/^wpml_/',
+        '/^as_/',
     ]), // list<string|regex>
 
     'expose-global-constants' => false,   // bool

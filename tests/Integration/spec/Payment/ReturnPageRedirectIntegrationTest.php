@@ -190,6 +190,75 @@ class ReturnPageRedirectIntegrationTest extends PaymentFlowTestCase
     }
 
     /**
+     * Scenario: An expired payment on an order that is already cancelled lands on order-received
+     *   Given an order the expired webhook already cancelled, before the customer came back
+     *     (iDEAL | Wero, Bizum and Pay by Bank send the customer back right after "expired")
+     *   When the customer returns from Mollie
+     *   Then they are sent to the order-received page, which says the order was cancelled
+     *   And they are not invited to pay with another method, because WooCommerce would refuse
+     *     to let them pay a cancelled order on the order-pay page
+     *
+     * @test
+     * @group integration
+     * @group ReturnPage
+     * @group REQ-117
+     * @covers \Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler::getReturnRedirectUrlForOrder
+     */
+    public function it_sends_an_expired_payment_on_a_cancelled_order_to_the_order_received_page()
+    {
+        $order = $this->unpaidOrderWithPayment('mollie_wc_gateway_ideal', 'tr_expired');
+        $order->set_status('cancelled');
+        $order->save();
+        $this->stubPaymentGet('tr_expired', ['isExpired' => true]);
+
+        $redirectUrl = $this->returnRedirectUrlFor($order, 'mollie_wc_gateway_ideal');
+
+        $this->assertFalse($order->needs_payment(), 'Precondition: WooCommerce refuses to let a cancelled order be paid.');
+        $this->assertSame(
+            $this->orderReceivedUrl($order, 'mollie_wc_gateway_ideal'),
+            $redirectUrl,
+            'A cancelled order cannot be paid again, so the customer must land on order-received.'
+        );
+        $this->assertSame([], $this->errorNoticeMessages(), 'A cancelled order must not invite the customer to retry.');
+        $this->assertSame(
+            'Your order has been cancelled.',
+            apply_filters('woocommerce_thankyou_order_received_text', '', $order),
+            'The order-received page must tell the customer the order was cancelled.'
+        );
+    }
+
+    /**
+     * Scenario: A cancelled payment on an order that is already cancelled lands on order-received
+     *   Given an order whose payment the customer cancelled
+     *   And the merchant left cancelled payments on "pending", but the order was already cancelled
+     *     (the canceled webhook keeps a cancelled order cancelled)
+     *   When the customer returns from Mollie
+     *   Then they are sent to the order-received page and not invited to retry
+     *
+     * @test
+     * @group integration
+     * @group ReturnPage
+     * @group REQ-117
+     * @covers \Mollie\WooCommerce\Gateway\MolliePaymentGatewayHandler::getReturnRedirectUrlForOrder
+     */
+    public function it_sends_a_cancelled_payment_on_a_cancelled_order_to_the_order_received_page()
+    {
+        $this->setCancelledPaymentsSetting('pending');
+        $order = $this->unpaidOrderWithCancelledPayment('mollie_wc_gateway_ideal', 'tr_cancelled');
+        $order->set_status('cancelled');
+        $order->save();
+
+        $redirectUrl = $this->returnRedirectUrlFor($order, 'mollie_wc_gateway_ideal');
+
+        $this->assertSame(
+            $this->orderReceivedUrl($order, 'mollie_wc_gateway_ideal'),
+            $redirectUrl,
+            'A cancelled order cannot be paid again, so the customer must land on order-received.'
+        );
+        $this->assertSame([], $this->errorNoticeMessages(), 'A cancelled order must not invite the customer to retry.');
+    }
+
+    /**
      * Scenario: A return whose payment cannot be resolved fails safe
      *   Given an unpaid order pointing at a Mollie payment the API will not return
      *     (a wrong API key after a mode switch, a payment on another account, an outage)

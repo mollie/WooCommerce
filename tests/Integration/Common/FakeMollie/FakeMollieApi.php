@@ -153,6 +153,9 @@ final class FakeMollieApi
         if ($method === 'POST' && $path === 'payments') {
             return $this->createPayment($state, $request);
         }
+        if ($method === 'POST' && $path === 'orders') {
+            return $this->createOrder($state, $request);
+        }
         if ($method === 'DELETE' && preg_match('#^payments/(tr_[^/]+)$#', $path, $m)) {
             if (!isset($state['payments'][$m[1]])) {
                 return $this->problem(404, 'Not Found', 'No payment exists with token ' . $m[1] . '.');
@@ -353,6 +356,76 @@ final class FakeMollieApi
         ]);
 
         return ['status' => 201, 'body' => $this->paymentResource($state, $state['payments'][$id])];
+    }
+
+    /**
+     * POST /v2/orders, as documented: amount, orderNumber, redirectUrl and at least one line, the
+     * lines adding up to the amount. The order starts "created" with one open payment, which
+     * carries the order's metadata, redirect and webhook URL; GET …?embed=payments shows it.
+     *
+     * @param array<string, mixed> $state
+     * @param array<string, mixed> $request
+     * @return array{status: int, body: array<string, mixed>|null}
+     */
+    private function createOrder(array &$state, array $request): array
+    {
+        $body = $request['body'];
+        if (!isset($body['amount']['value'], $body['amount']['currency'])) {
+            return $this->problem(422, 'Unprocessable Entity', 'The amount is required.', 'amount');
+        }
+        if (!isset($body['orderNumber']) || (string) $body['orderNumber'] === '') {
+            return $this->problem(422, 'Unprocessable Entity', 'The order number is required.', 'orderNumber');
+        }
+        if (!isset($body['redirectUrl']) || (string) $body['redirectUrl'] === '') {
+            return $this->problem(422, 'Unprocessable Entity', 'The redirect URL is required.', 'redirectUrl');
+        }
+        if (!isset($body['lines']) || !is_array($body['lines']) || $body['lines'] === []) {
+            return $this->problem(422, 'Unprocessable Entity', 'At least one line is required.', 'lines');
+        }
+        $linesTotal = 0;
+        foreach ($body['lines'] as $index => $line) {
+            if (!isset($line['totalAmount']['value'], $line['totalAmount']['currency'])) {
+                return $this->problem(422, 'Unprocessable Entity', 'The line total is required.', "lines[{$index}].totalAmount");
+            }
+            if ($line['totalAmount']['currency'] !== $body['amount']['currency']) {
+                return $this->problem(422, 'Unprocessable Entity', 'The line currency must match the order currency.', "lines[{$index}].totalAmount");
+            }
+            $linesTotal += (int) round((float) $line['totalAmount']['value'] * 100);
+        }
+        if ($linesTotal !== (int) round((float) $body['amount']['value'] * 100)) {
+            return $this->problem(422, 'Unprocessable Entity', 'The total amount of the order does not match the sum of the lines.', 'amount');
+        }
+
+        $now = $this->now($state);
+        $id = 'ord_fake' . $this->nextSequence($state);
+        $paymentId = 'tr_fake' . $this->nextSequence($state);
+        $paymentFields = isset($body['payment']) && is_array($body['payment']) ? $body['payment'] : [];
+        unset($body['payment']);
+        $order = array_merge($body, [
+            'id' => $id,
+            'mode' => $request['authorizedAs'],
+            'status' => 'created',
+            'metadata' => $body['metadata'] ?? null,
+            'webhookUrl' => $body['webhookUrl'] ?? ($paymentFields['webhookUrl'] ?? null),
+            'createdAt' => gmdate('c', $now),
+            'paymentId' => $paymentId,
+        ]);
+        $state['orders'][$id] = $order;
+        $state['payments'][$paymentId] = array_merge($paymentFields, [
+            'id' => $paymentId,
+            'orderId' => $id,
+            'mode' => $order['mode'],
+            'status' => 'open',
+            'method' => $body['method'] ?? null,
+            'amount' => $body['amount'],
+            'description' => 'Order ' . $body['orderNumber'],
+            'metadata' => $order['metadata'],
+            'redirectUrl' => $body['redirectUrl'],
+            'webhookUrl' => $order['webhookUrl'],
+            'createdAt' => gmdate('c', $now),
+        ]);
+
+        return ['status' => 201, 'body' => $this->orderResource($state, $order, '')];
     }
 
     /**
@@ -937,6 +1010,9 @@ final class FakeMollieApi
             ],
         ]);
         unset($resource['paymentId']);
+        if ($order['status'] === 'created') {
+            $resource['_links']['checkout'] = ['href' => 'https://www.mollie.com/checkout/order/' . $order['id'], 'type' => 'text/html'];
+        }
         if ($refunded > 0) {
             $resource['amountRefunded'] = [
                 'value' => number_format($refunded, 2, '.', ''),

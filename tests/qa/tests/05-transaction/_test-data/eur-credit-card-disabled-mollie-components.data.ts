@@ -9,7 +9,7 @@ import {
 } from '../../../resources';
 import { baseOrder } from './transaction-base-order.data';
 
-const creditCardDisabledComponents: MollieGateway = {
+export const creditCardDisabledComponents: MollieGateway = {
 	...gateways.creditcard,
 	settings: {
 		...gateways.creditcard.settings,

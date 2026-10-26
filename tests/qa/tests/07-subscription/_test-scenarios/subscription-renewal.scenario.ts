@@ -14,6 +14,7 @@ import {
 	updateCurrencyIfNeeded,
 	assertOrderNotes,
 	assertSubscriptionNotes,
+	assertPaymentBelongsToOrder,
 } from '../../../utils';
 
 export const testSubscriptionRenewal = (
@@ -40,6 +41,7 @@ export const testSubscriptionRenewal = (
 				orderReceived,
 				payForOrder,
 				wooCommerceApi,
+				mollieClientApi,
 				mollieApi,
 				wooCommerceOrderEdit,
 				wooCommerceSubscriptionEdit,
@@ -75,6 +77,10 @@ export const testSubscriptionRenewal = (
 					transactionId,
 					`Assert Transaction ID ${ transactionId } is defined`
 				).toBeDefined();
+				await assertPaymentBelongsToOrder(
+					{ mollieClientApi, wooCommerceApi },
+					Number( orderId )
+				);
 
 				const subscriptions =
 					await wooCommerceApi.getSubscriptionByParentId( orderId );
@@ -170,6 +176,10 @@ export const testSubscriptionRenewal = (
 						renewalTransactionId,
 						`${ assertionPrefix }Assert Transaction ID ${ renewalTransactionId } is defined`
 					).toBeDefined();
+					await assertPaymentBelongsToOrder(
+						{ mollieClientApi, wooCommerceApi },
+						renewalOrderId
+					);
 
 					// Assert current renewal order
 					await wooCommerceOrderEdit.visit( renewalOrderId );

@@ -6,6 +6,8 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\Payment;
 
+use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
+use Mollie\WooCommerce\Payment\Rules\CancelUnpaidSchedule;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
@@ -110,8 +112,9 @@ class PaymentModule implements ServiceModule, ExecutableModule
         $paymentMethods = $container->get('gateway.paymentMethods');
         add_action(
             'init',
-            function () use ($paymentMethods) {
-                $this->handleExpiryDateCancelation($paymentMethods);
+            function () use ($paymentMethods, $container) {
+                $expressCleanup = $container->has('express.cleanup_needed') && ($container->get('express.cleanup_needed'))();
+                $this->handleExpiryDateCancelation($paymentMethods, $expressCleanup);
             },
             10,
             0
@@ -197,8 +200,21 @@ class PaymentModule implements ServiceModule, ExecutableModule
     private function cancelOrderIfStillUnpaid($unpaid_order)
     {
         $order = wc_get_order($unpaid_order);
+        if (!$order instanceof \WC_Order || $order->get_created_via() === StartOrderDecision::CREATED_VIA) {
+            // An express order is cancelled only by ExpireAbandonedExpressOrders, which asks Mollie first.
+            return;
+        }
+        if (!$order->has_status('pending')) {
+            return;
+        }
         $mollieOrderService = $this->container->get(MollieOrderService::class);
-        if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
+        try {
+            $checked = $mollieOrderService->doPaymentForOrder($order);
+        } catch (OrderLockTimeout $busy) {
+            // Busy elsewhere; the next run looks again.
+            return;
+        }
+        if ($checked) {
             $order = wc_get_order($unpaid_order);
             if (!$order->has_status('pending')) {
                 return;
@@ -520,13 +536,15 @@ class PaymentModule implements ServiceModule, ExecutableModule
     }
 
     /**
-     * Add/remove scheduled action to cancel orders on expiration date
+     * Add/remove scheduled action to cancel orders on expiration date, and to clean up abandoned
+     * express orders, which run on the same action
      * @param $paymentMethods
+     * @param bool $expressCleanup Express is on, or one of its pending orders may be left.
      * @return void
      */
-    public function handleExpiryDateCancelation($paymentMethods)
+    public function handleExpiryDateCancelation($paymentMethods, bool $expressCleanup = false)
     {
-        if (!$this->IsExpiryDateEnabled($paymentMethods)) {
+        if (!CancelUnpaidSchedule::needed($this->gatewaySettings($paymentMethods), $expressCleanup)) {
             as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;
         }
@@ -551,17 +569,22 @@ class PaymentModule implements ServiceModule, ExecutableModule
      */
     public function IsExpiryDateEnabled($paymentMethods): bool
     {
+        return CancelUnpaidSchedule::needed($this->gatewaySettings($paymentMethods), false);
+    }
+
+    /**
+     * Each payment method's stored settings, as get_option() returns them.
+     *
+     * @param $paymentMethods
+     * @return array<int, mixed>
+     */
+    private function gatewaySettings($paymentMethods): array
+    {
+        $settings = [];
         foreach ($paymentMethods as $paymentMethod) {
-            $optionName = "mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings";
-            $option = get_option($optionName, false);
-            if (!empty($option) && isset($option['enabled']) && $option['enabled'] !== 'yes') {
-                continue;
-            }
-            if (!empty($option["activate_expiry_days_setting"]) && $option["activate_expiry_days_setting"] === 'yes') {
-                return true;
-            }
+            $settings[] = get_option("mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings", false);
         }
-        return false;
+        return $settings;
     }
 
     /**

@@ -76,11 +76,16 @@ export class Utils {
 	 * 	- Clears Mollie DB
 	 * 	- Sets mollie API keys
 	 * 	- Sets API method (Payment or Order API)
+	 *
+	 * @param apiKeys defaults to mollieApiKeys.default; pass a different key set
+	 *                (e.g. mollieApiKeys.nl) for tests needing another merchant profile.
 	 */
-	cleanReconnectMollie = async () => {
-		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
+	cleanReconnectMollie = async (
+		apiKeys: MollieSettings.ApiKeys = mollieApiKeys.default
+	) => {
+		await this.mollieApi.setMollieApiKeys( apiKeys );
 		await this.mollieApi.cleanMollieDb();
-		await this.mollieApi.setMollieApiKeys( mollieApiKeys.default );
+		await this.mollieApi.setMollieApiKeys( apiKeys );
 		await this.mollieApi.setAdvancedSettings( {
 			apiMethod: this.mollieApiMethod,
 		} );
@@ -140,6 +145,12 @@ export class Utils {
 
 		if ( enableSubscriptionsPlugin === true ) {
 			await this.requestUtils.activatePlugin( woocommerceSubscriptionsPlugin.slug );
+
+			// Without these, the REST API rejects product type "subscription" (400)
+			await this.wooCommerceApi.updateSubscriptionsSettings( {
+				woocommerce_subscriptions_enable_simple_subscription: 'yes',
+				woocommerce_subscriptions_enable_variable_subscription: 'yes',
+			} );
 		}
 
 		if ( enableSubscriptionsPlugin === false ) {

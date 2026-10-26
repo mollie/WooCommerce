@@ -24,7 +24,7 @@
     "psr/container": "1.1.0",
     "psr/log":"^1.1.4",
     "sniccowp/php-scoper-wordpress-excludes": "^6.6",
-    "enshrined/svg-sanitize": "^0.22.0",
+    "enshrined/svg-sanitize": "^1.0",
     "giggsey/libphonenumber-for-php": "^8.12"
   },
   "require-dev": {
@@ -56,7 +56,10 @@
       "Mollie\\WooCommerceTests\\Unit\\": "tests/php/Unit",
       "Mollie\\WooCommerceTests\\Functional\\": "tests/php/Functional",
       "Mollie\\WooCommerceTests\\Integration\\": "tests/Integration"
-    }
+    },
+    "exclude-from-classmap": [
+      "tests/php/Unit/Architecture/fixtures/"
+    ]
   },
   "scripts": {
     "check-coding-standards": "vendor/bin/phpcs --parallel=8 -s",
@@ -64,10 +67,12 @@
     "fix-coding-standards": "vendor/bin/phpcbf --standard=phpcs.transition.xml.dist",
     "tests": "@php ./vendor/phpunit/phpunit/phpunit --coverage-text",
     "tests:no-cov": "@php ./vendor/phpunit/phpunit/phpunit --no-coverage",
+    "tests:integration": "ddev exec phpunit -c tests/Integration/phpunit.xml.dist",
     "phpstan": "vendor/bin/phpstan analyse",
     "phpstan:raw": "vendor/bin/phpstan analyse --no-progress --error-format=raw",
     "check-psalm": "vendor/bin/psalm",
-    "check-psalm:no-cache": "vendor/bin/psalm --no-cache"
+    "check-psalm:no-cache": "vendor/bin/psalm --no-cache",
+    "fitness": "@php tests/architecture/fitness.php"
   },
   "repositories": [
     {

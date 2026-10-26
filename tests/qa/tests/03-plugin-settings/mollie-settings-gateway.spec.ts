@@ -4,11 +4,6 @@
 import { annotateGateway, test, expect } from '../../utils';
 import { gateways, guests, products } from '../../resources';
 
-test.beforeAll( async ( { utils } ) => {
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-} );
-
 // for( let key in  gateways ) {
 const key = 'creditcard';
 const gateway = gateways[ key ];

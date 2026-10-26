@@ -64,7 +64,6 @@ import {
 	gateways,
 	orders,
 	products,
-	shopConfigDefault,
 	piwoo890OrderReceivedProbePlugin,
 	MollieTestData,
 } from '../../resources';
@@ -85,11 +84,7 @@ type OrderReceivedResponse = {
 	hit: string | null;
 };
 
-test.beforeAll( async ( { utils, requestUtils, plugins } ) => {
-	await utils.configureStore( shopConfigDefault );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-
+test.beforeAll( async ( { requestUtils, plugins } ) => {
 	if (
 		! ( await requestUtils.isPluginInstalled(
 			piwoo890OrderReceivedProbePlugin.slug
@@ -140,7 +135,7 @@ test.describe( 'Order-received page double-counted after Mollie return (PIWOO-89
 		return responses;
 	};
 
-	test( 'Nothing broke: the order confirmation page still loads and displays correctly after paying with Mollie', async ( {
+	test( 'C4567603 | Nothing broke: the order confirmation page still loads and displays correctly after paying with Mollie', async ( {
 		utils,
 		checkout,
 		mollieHostedCheckout,
@@ -215,7 +210,7 @@ test.describe( 'Order-received page double-counted after Mollie return (PIWOO-89
 		}
 	} );
 
-	test( 'The thank-you page is observed as such exactly once across the whole Mollie return redirect chain', async ( {
+	test( 'C4567604 | The thank-you page is observed as such exactly once across the whole Mollie return redirect chain', async ( {
 		utils,
 		checkout,
 		mollieHostedCheckout,

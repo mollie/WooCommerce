@@ -21,6 +21,9 @@ class SharedModule implements ServiceModule
     public function services(): array
     {
         return [
+            Clock::class => static function (): Clock {
+                return new SystemClock();
+            },
             'shared.plugin_id' => static function (ContainerInterface $container): string {
                 //Get plugin legacy id
                 return $container->get('properties')->get('textDomain');

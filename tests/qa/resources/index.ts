@@ -3,7 +3,6 @@ export {
 	shippingZones,
 	flatRate,
 	freeShipping,
-	guests,
 	customers,
 	taxSettings,
 	coupons,
@@ -13,6 +12,7 @@ export {
 export * from './cards';
 export * from './e2e-plugins';
 export * from './gateways';
+export * from './guests';
 export * from './mollie-config';
 export * from './products';
 export * from './woocommerce-config';

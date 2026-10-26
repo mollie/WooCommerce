@@ -24,6 +24,7 @@ class ApplePayDataObjectTest extends TestCase
     }
     /**
      *
+     * @group REQ-242
      */
     public function testDataObjectSuccess()
     {
@@ -91,6 +92,9 @@ class ApplePayDataObjectTest extends TestCase
         self::assertEquals($expectedAddress, $shippingAddress);
     }
 
+    /**
+     * @group REQ-243
+     */
     public function testDataObjectErrorNoUrl()
     {
         $postDummyData = new postDTOTestsStubs();
@@ -111,6 +115,9 @@ class ApplePayDataObjectTest extends TestCase
         self::assertEquals($expectedErrorsIndex, $dataObject->errors());
     }
 
+    /**
+     * @group REQ-243
+     */
     public function testDataObjectErrorNoNonce()
     {
         $postDummyData = new postDTOTestsStubs();
@@ -129,6 +136,9 @@ class ApplePayDataObjectTest extends TestCase
         self::assertEquals($expectedErrorsValue, $dataObject->errors());
     }
 
+    /**
+     * @group REQ-244
+     */
     public function testDataObjectErrorShippingIncorrect()
     {
         $postDummyData = new postDTOTestsStubs();

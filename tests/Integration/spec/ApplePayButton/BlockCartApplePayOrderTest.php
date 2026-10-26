@@ -16,6 +16,10 @@ use Psr\Container\ContainerInterface;
  * It starts at process_checkout(): the handler reads the request with filter_input(), which has
  * no input under PHPUnit.
  *
+ * process_checkout() defines WOOCOMMERCE_CHECKOUT, which makes is_checkout() true for the rest of
+ * the process, so this folder runs as the last suite (tests/Integration/phpunit.xml.dist). Every
+ * test that runs process_checkout() belongs here.
+ *
  * @group integration
  * @group ApplePayButton
  */
@@ -24,6 +28,9 @@ class BlockCartApplePayOrderTest extends ExpressFlowTestCase
     use ExpressCheckoutFixtures;
 
     private const GATEWAY = 'mollie_wc_gateway_applepay';
+
+    /** What Apple hands the page after the shopper authorised. */
+    private const APPLE_TOKEN = ['paymentData' => 'fake'];
 
     /**
      * @var array<string, mixed>
@@ -117,6 +124,187 @@ class BlockCartApplePayOrderTest extends ExpressFlowTestCase
         $this->assertSame([], array_values(array_diff($this->allOrderIds(), $before)));
     }
 
+    /**
+     * Scenario: the token Apple returned reaches Mollie with the payment
+     *   Given a guest with a virtual product in the cart
+     *   And the shop creates its payments through the given Mollie API
+     *   When the button posts the authorized payment with the token Apple returned
+     *   Then Mollie is asked for one Apple Pay payment carrying that token, encoded
+     *
+     * @test
+     * @dataProvider mollieApis
+     * @group REQ-318
+     */
+    public function it_sends_the_apple_pay_token_to_mollie(string $api, string $endpoint, array $tokenPath): void
+    {
+        // Given
+        $this->setOptionForTest(self::PLUGIN_ID . '_api_switch', $api);
+        $container = $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+        $this->makeCartVirtual();
+
+        // When
+        $answer = $this->postAuthorizedPayment($this->nonceOfTheBlockPage($container));
+
+        // Then
+        $created = $this->fakeMollie()->requests('POST', $endpoint);
+        $this->assertCount(1, $created, 'One Mollie ' . $endpoint . ' request. Answer: ' . wp_json_encode($answer));
+        $sent = $created[0]['body'];
+        $this->assertSame('applepay', $sent['method']);
+        $token = $sent;
+        foreach ($tokenPath as $key) {
+            $token = $token[$key] ?? null;
+        }
+        $this->assertSame(wp_json_encode(self::APPLE_TOKEN), $token);
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: array<int, string>}>
+     */
+    public function mollieApis(): array
+    {
+        return [
+            'Payments API' => ['payment', 'payments', ['applePayPaymentToken']],
+            'Orders API' => ['order', 'orders', ['payment', 'applePayPaymentToken']],
+        ];
+    }
+
+    /**
+     * Scenario: Mollie's notification decides what happens to the Apple Pay order
+     *   Given a guest paid a virtual product with the Apple Pay button
+     *   When Mollie reports the payment with the given status
+     *   Then the webhook is answered 200
+     *   And the order gets the given status, paid only when Mollie said paid
+     *
+     * @test
+     * @dataProvider mollieOutcomes
+     * @group REQ-341
+     */
+    public function it_settles_the_apple_pay_order_from_the_webhook(string $mollieStatus, string $wcStatus, bool $paid): void
+    {
+        // Given
+        $this->setOptionForTest(self::PLUGIN_ID . '_api_switch', 'payment');
+        $container = $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+        $this->makeCartVirtual();
+        $before = $this->allOrderIds();
+        $answer = $this->postAuthorizedPayment($this->nonceOfTheBlockPage($container));
+        $created = array_values(array_diff($this->allOrderIds(), $before));
+        $this->assertCount(1, $created, 'Answer: ' . wp_json_encode($answer));
+        $paymentId = (string) wc_get_order($created[0])->get_meta('_mollie_payment_id', true);
+        $this->assertStringStartsWith('tr_', $paymentId);
+
+        // When
+        $this->fakeMollie()->setPaymentStatus($paymentId, $mollieStatus);
+        $status = $this->deliverWebhook($paymentId);
+
+        // Then
+        $this->assertSame(200, $status);
+        $order = wc_get_order($created[0]);
+        $this->assertSame($wcStatus, $order->get_status());
+        $this->assertSame($paid, $order->is_paid());
+        $this->assertSame(self::GATEWAY, $order->get_payment_method());
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: bool}>
+     */
+    public function mollieOutcomes(): array
+    {
+        return [
+            'paid' => ['paid', 'processing', true],
+            'failed' => ['failed', 'failed', false],
+            'canceled' => ['canceled', 'pending', false],
+            'expired' => ['expired', 'cancelled', false],
+        ];
+    }
+
+    /**
+     * Scenario: the order is paid when Mollie charges the Apple Pay token at creation
+     *   Given a guest paid a virtual product with the Apple Pay button
+     *   And the shop creates its payments through the given Mollie API
+     *   And Mollie answers the creation with the payment already paid, as it does for a token
+     *   And Mollie's webhook arrives at the given moment
+     *   When the webhook is processed
+     *   Then the webhook is answered 200
+     *   And the order is paid with the Apple Pay gateway
+     *
+     * The webhook before the creation answer is the race seen live on 2026-10-26 (QA beta 7 #23):
+     * Mollie calls while the plugin has not linked the payment to the order yet. On the Orders API
+     * Mollie answered a token order with no redirectUrl and the method creditcard.
+     *
+     * @test
+     * @dataProvider tokenCharges
+     * @group REQ-341
+     */
+    public function it_pays_the_order_when_mollie_charges_the_token_at_creation(string $api, bool $webhookBeforeTheAnswer): void
+    {
+        // Given
+        $this->setOptionForTest(self::PLUGIN_ID . '_api_switch', $api);
+        $container = $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+        $this->makeCartVirtual();
+        $before = $this->allOrderIds();
+        $mollieId = '';
+        $early = null;
+        $paidAtCreation = function ($response, array $args, string $url) use ($webhookBeforeTheAnswer, &$mollieId, &$early) {
+            if (!is_array($response) || ($args['method'] ?? '') !== 'POST' || !preg_match('#/v2/(payments|orders)$#', $url)) {
+                return $response;
+            }
+            $created = json_decode((string) $response['body'], true);
+            $mollieId = (string) $created['id'];
+            if (strpos($mollieId, 'ord_') === 0) {
+                $orders = $this->fakeMollie()->orders();
+                $this->fakeMollie()->setPaymentStatus((string) $orders[$mollieId]['paymentId'], 'paid');
+                $this->fakeMollie()->setOrderStatus($mollieId, 'paid', ['redirectUrl' => null, 'method' => 'creditcard']);
+                $created = array_merge($created, ['redirectUrl' => null, 'method' => 'creditcard']);
+            } else {
+                $this->fakeMollie()->setPaymentStatus($mollieId, 'paid');
+            }
+            $created['status'] = 'paid';
+            $response['body'] = wp_json_encode($created);
+            if ($webhookBeforeTheAnswer) {
+                // The plugin has not seen the creation answer yet: the order does not know the payment.
+                $early = $this->deliverWebhook($mollieId);
+            }
+
+            return $response;
+        };
+        add_filter('pre_http_request', $paidAtCreation, 2, 3);
+        try {
+            $answer = $this->postAuthorizedPayment($this->nonceOfTheBlockPage($container));
+        } finally {
+            remove_filter('pre_http_request', $paidAtCreation, 2);
+        }
+        $created = array_values(array_diff($this->allOrderIds(), $before));
+        $this->assertCount(1, $created, 'Answer: ' . wp_json_encode($answer));
+
+        // When
+        $status = $early ?? $this->deliverWebhook($mollieId);
+
+        // Then
+        $this->assertSame(200, $status);
+        $order = wc_get_order($created[0]);
+        $this->assertTrue($order->is_paid(), 'Status: ' . $order->get_status());
+        $this->assertSame(self::GATEWAY, $order->get_payment_method());
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: bool}>
+     */
+    public function tokenCharges(): array
+    {
+        return [
+            'Payments API, webhook after the creation answer' => ['payment', false],
+            'Payments API, webhook before the creation answer' => ['payment', true],
+            'Orders API, webhook after the creation answer' => ['order', false],
+            'Orders API, webhook before the creation answer' => ['order', true],
+        ];
+    }
+
     private function nonceOfTheBlockPage(ContainerInterface $container): string
     {
         $methods = $container->get('gateway.paymentMethods');
@@ -157,7 +345,7 @@ class BlockCartApplePayOrderTest extends ExpressFlowTestCase
             'action' => 'mollie_apple_pay_create_order_cart',
             'shippingContact' => $contact,
             'billingContact' => $contact,
-            'token' => ['paymentData' => 'fake'],
+            'token' => self::APPLE_TOKEN,
             'shippingMethod' => [],
             'mollie-payments-for-woocommerce_issuer_applepay' => 'applepay',
             'woocommerce-process-checkout-nonce' => $nonce,

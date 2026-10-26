@@ -36,6 +36,9 @@ class SurfaceOwnershipTest extends TestCase
      * @dataProvider ownershipCases
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\SurfaceOwnership::owns
      * @param array<int, string> $wallets
+     * @group REQ-A1
+     * @group REQ-B2
+     * @group REQ-H1
      */
     public function testOwnsTheCheckoutOnlyWhenTheCartIsReadyAtPageLoad(
         string $surface,

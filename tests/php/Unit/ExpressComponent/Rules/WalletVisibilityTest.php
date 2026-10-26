@@ -36,6 +36,7 @@ class WalletVisibilityTest extends TestCase
      * @param array<int, string> $active Wallets whose Mollie method is active.
      * @param array<int, string> $expressOn Wallets whose express button on the checkout is turned on.
      * @param array<int, string> $expectedShown
+     * @group REQ-A7
      */
     public function testShowsOnlyWalletsWhoseMethodExistsIsEnabledIsActiveAndHasExpressOn(
         bool $isHttps,

@@ -67,6 +67,7 @@ class EventLogTest extends ExpressFlowTestCase
      *   And no marked value can be found anywhere in the log
      *
      * @test
+     * @group REQ-G6
      */
     public function it_drops_a_field_that_is_not_on_the_allowlist(): void
     {

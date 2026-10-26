@@ -65,6 +65,8 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   And express.abandoned.cancelled is logged
      *
      * @test
+     * @group REQ-E1
+     * @group REQ-E3
      */
     public function it_cancels_an_order_whose_session_mollie_reports_expired(): void
     {
@@ -89,6 +91,8 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider finalPayments
+     * @group REQ-E1
+     * @group REQ-E3
      */
     public function it_cancels_an_order_whose_known_payment_can_no_longer_succeed(string $paymentStatus): void
     {
@@ -129,6 +133,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   And the younger order is still pending, and Mollie was asked about the control's session, never the other order's
      *
      * @test
+     * @group REQ-E2
      */
     public function it_waits_until_expiry_and_grace_have_passed(): void
     {
@@ -158,6 +163,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider stillPayable
+     * @group REQ-E2
      */
     public function it_keeps_an_order_whose_payment_could_still_succeed(string $paymentStatus, bool $orderKnowsPayment): void
     {
@@ -201,6 +207,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   And express.abandoned.kept is logged
      *
      * @test
+     * @group REQ-E4
      */
     public function it_keeps_the_order_when_mollie_cannot_be_reached(): void
     {
@@ -283,6 +290,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   And express.abandoned.kept is logged with the reason mollie_unreachable
      *
      * @test
+     * @group REQ-E4
      */
     public function it_keeps_an_order_mollie_could_not_be_asked_about_however_old_it_is(): void
     {
@@ -305,6 +313,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   Then the order is still pending
      *
      * @test
+     * @group REQ-E2
      */
     public function it_keeps_an_order_mollie_says_is_payable_however_old_it_is(): void
     {
@@ -327,6 +336,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   And express.abandoned.kept is logged with the reason asked_in_other_mode
      *
      * @test
+     * @group REQ-E4
      */
     public function it_keeps_a_live_order_mollie_does_not_know_in_test_mode(): void
     {
@@ -438,6 +448,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   Then no marked value reached the log
      *
      * @test
+     * @group REQ-G6
      */
     public function it_leaks_no_canary_during_cleanup(): void
     {
@@ -461,6 +472,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   And the ordinary order is cancelled exactly as before
      *
      * @test
+     * @group REQ-E2
      */
     public function it_is_not_cancelled_by_the_expiry_setting_of_its_payment_method(): void
     {
@@ -493,6 +505,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      * The status is written straight to the table so only a fresh read, not OrderCache, can see it.
      *
      * @test
+     * @group REQ-E2
      */
     public function it_keeps_an_order_another_process_paid_while_mollie_was_asked(): void
     {
@@ -528,6 +541,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
      *   Then 200, the order is paid once and tracks the payment, no orphan
      *
      * @test
+     * @group REQ-D1
      */
     public function it_pays_an_order_cleanup_cancelled_when_its_payment_is_paid_late(): void
     {

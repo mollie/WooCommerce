@@ -52,6 +52,7 @@ class ExpressOrderWriterTest extends ExpressFlowTestCase
      *   And the order was saved exactly once, and order.written was logged once
      *
      * @test
+     * @group REQ-F2
      */
     public function it_stamps_a_new_order_in_one_save_with_one_note(): void
     {
@@ -179,6 +180,7 @@ class ExpressOrderWriterTest extends ExpressFlowTestCase
      *   And the order was saved exactly once, and order.written was logged once
      *
      * @test
+     * @group REQ-E3
      */
     public function it_cancels_an_abandoned_order_with_one_note(): void
     {

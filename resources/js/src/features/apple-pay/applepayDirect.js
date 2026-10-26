@@ -219,6 +219,7 @@ import { request } from './applePayRequest.js';
 					shipping_email: shippingContact.emailAddress || '',
 					order_comments: '',
 					payment_method: 'mollie_wc_gateway_applepay',
+					ship_to_different_address: 1,
 					_wp_http_referer: '/?wc-ajax=update_order_review',
 				},
 				complete: ( jqXHR, textStatus ) => {},

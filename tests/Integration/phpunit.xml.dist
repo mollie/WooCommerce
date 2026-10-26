@@ -7,6 +7,12 @@
     <testsuites>
         <testsuite name="integration">
             <directory>spec</directory>
+            <exclude>spec/ApplePayButton</exclude>
+        </testsuite>
+        <!-- Last: these tests run WC_Checkout::process_checkout(), which defines WOOCOMMERCE_CHECKOUT
+             and so makes is_checkout() true for every test after them. -->
+        <testsuite name="integration-wc-checkout">
+            <directory>spec/ApplePayButton</directory>
         </testsuite>
     </testsuites>
 </phpunit>

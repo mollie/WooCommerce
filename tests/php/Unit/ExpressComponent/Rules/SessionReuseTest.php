@@ -28,6 +28,7 @@ class SessionReuseTest extends TestCase
      *
      * @dataProvider sessions
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\SessionReuse::fits
+     * @group REQ-G2
      */
     public function testReusesASessionOnlyForTheSamePriceWithTimeLeft(
         string $sessionFingerprint,

@@ -14,6 +14,7 @@ class ApplePayDirectHandlerTest extends TestCase
 {
     /**
      *
+     * @group REQ-246
      */
     public function testApplePayScriptDataOnProduct()
     {
@@ -65,6 +66,9 @@ class ApplePayDirectHandlerTest extends TestCase
         self::assertEquals($expected, $result);
     }
 
+    /**
+     * @group REQ-246
+     */
     public function testApplePayScriptDataOnCart()
     {
         /*

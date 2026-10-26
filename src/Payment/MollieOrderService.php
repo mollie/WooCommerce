@@ -16,9 +16,13 @@ use Mollie\WooCommerce\SDK\HttpResponse;
 use Mollie\WooCommerce\SDK\MollieCallFailed;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Mollie\WooCommerce\Shared\Values\Admit;
+use Mollie\WooCommerce\Shared\Values\Money;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\WooCommerceAmount;
 use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\Payment\Rules\PendingPaymentHold;
+use Mollie\WooCommerce\Payment\Rules\UnlinkedPaymentMatch;
 use Mollie\WooCommerce\Payment\Rules\WebhookGuards;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Psr\Container\ContainerInterface;
@@ -1219,5 +1223,74 @@ class MollieOrderService
             return '';
         }
         return $payment->redirectUrl;
+    }
+
+    /**
+     * The order a Mollie order names in its metadata, for a webhook that found no order linked to it
+     * and no redirectUrl to follow. Mollie charges an Apple Pay token when the order is created and
+     * calls at once, before the checkout request has linked it, and answers a token order without a
+     * redirectUrl. The data comes from Mollie, which the plugin just asked; payments (tr_) are never
+     * matched this way (UnlinkedPaymentMatch).
+     */
+    public function orderNamedByPayment(string $transactionID): ?WC_Order
+    {
+        $isMollieOrder = strpos($transactionID, 'ord_') === 0;
+        $mollieOrder = null;
+        if ($isMollieOrder) {
+            try {
+                $paymentObject = $this->paymentFactory->getPaymentObject($transactionID);
+                $mollieOrder = $paymentObject ? $paymentObject->getPaymentObject($paymentObject->data()) : null;
+            } catch (ApiException $exception) {
+                return null;
+            }
+        }
+        $metadata = isset($mollieOrder->metadata) ? (array) $mollieOrder->metadata : [];
+        $orderId = isset($metadata['order_id']) && is_scalar($metadata['order_id']) ? (int) $metadata['order_id'] : 0;
+        $order = $orderId > 0 ? wc_get_order($orderId) : false;
+        $order = $order instanceof WC_Order ? $order : null;
+        $gateway = $order ? wc_get_payment_gateway_by_order($order) : false;
+        $verdict = UnlinkedPaymentMatch::admit(
+            $isMollieOrder && $mollieOrder !== null,
+            $orderId,
+            $order !== null,
+            $order !== null && (string) ($mollieOrder->orderNumber ?? '') === (string) $order->get_order_number(),
+            $gateway && mollieWooCommerceIsMollieGateway($gateway->id),
+            $order !== null && $order->needs_payment(),
+            $this->mollieAmount($mollieOrder->amount ?? null),
+            $order ? $this->wooCommerceAmount($order) : null
+        );
+        $this->eventLog->info('rule.decided', [
+            'order' => $orderId,
+            'mollie_id' => $transactionID,
+            'rule' => 'UnlinkedPaymentMatch',
+            'verdict' => $verdict instanceof Admit ? 'admit' : $verdict->code(),
+        ]);
+
+        return $verdict instanceof Admit ? $order : null;
+    }
+
+    /**
+     * @param mixed $amount Mollie's {value, currency}, as an object or an array
+     */
+    private function mollieAmount($amount): ?Money
+    {
+        $amount = is_object($amount) ? (array) $amount : $amount;
+        if (!is_array($amount) || !isset($amount['value'], $amount['currency'])) {
+            return null;
+        }
+        try {
+            return Money::fromDecimal((string) $amount['value'], (string) $amount['currency']);
+        } catch (\InvalidArgumentException $unreadable) {
+            return null;
+        }
+    }
+
+    private function wooCommerceAmount(WC_Order $order): ?Money
+    {
+        try {
+            return WooCommerceAmount::toMoney($order->get_total(), $order->get_currency());
+        } catch (\InvalidArgumentException $unreadable) {
+            return null;
+        }
     }
 }

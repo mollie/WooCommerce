@@ -60,6 +60,8 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *   And the token is in no option or transient and in no log line
      *
      * @test
+     * @group REQ-G1
+     * @group REQ-G3
      */
     public function it_answers_only_the_token_and_expiry_for_a_valid_start(): void
     {
@@ -141,6 +143,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider shoppers
+     * @group REQ-C2
      */
     public function it_always_asks_the_wallet_for_contact_and_billing(bool $loggedIn, bool $formFilled): void
     {
@@ -180,6 +183,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *   And the shipping_fee line is the chosen rate's cost including its tax
      *
      * @test
+     * @group REQ-B4
      */
     public function it_prices_from_the_server_cart_whatever_the_request_sends(): void
     {
@@ -256,6 +260,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider badNonces
+     * @group REQ-G3
      */
     public function it_refuses_a_start_without_a_valid_nonce(?string $nonceAction, ?string $literal): void
     {
@@ -295,6 +300,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      * WooCommerce binds a guest nonce to its session only for actions named 'woocommerce*'.
      *
      * @test
+     * @group REQ-G3
      */
     public function it_refuses_a_nonce_issued_to_another_shopper(): void
     {
@@ -366,6 +372,8 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      * @test
      * @dataProvider ineligible
      * @param list<string> $presets
+     * @group REQ-B2
+     * @group REQ-H1
      */
     public function it_refuses_an_ineligible_cart_with_its_reason(array $presets, bool $testMode, string $reason): void
     {
@@ -461,6 +469,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *   Then the request is refused as not available, and nothing is sent to Mollie
      *
      * @test
+     * @group REQ-B2
      */
     public function it_sends_no_session_to_mollie_for_a_cart_that_costs_nothing(): void
     {
@@ -508,6 +517,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider orderStates
+     * @group REQ-G2
      */
     public function it_creates_a_new_session_once_the_remembered_one_has_a_settled_order(string $state, bool $reused): void
     {
@@ -570,6 +580,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *   Then a new session is created and its token returned
      *
      * @test
+     * @group REQ-G2
      */
     public function it_creates_a_new_session_when_the_remembered_one_is_about_to_expire(): void
     {
@@ -594,6 +605,8 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider shippingChanges
+     * @group REQ-G2
+     * @group REQ-B4
      */
     public function it_creates_a_new_session_when_shipping_changes_the_total(string $country, string $rate): void
     {
@@ -852,6 +865,8 @@ class StartExpressSessionTest extends ExpressFlowTestCase
      *   And Mollie's message is neither in the response nor in the log
      *
      * @test
+     * @group REQ-B6
+     * @group REQ-G6
      */
     public function it_hides_mollies_text_when_the_payload_is_refused(): void
     {

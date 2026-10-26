@@ -100,6 +100,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      * @dataProvider noExpressButtonOnTheCheckout
      * @param string|null $applePay null removes the setting, as if it had never been saved
      * @param string|null $payPal null removes the setting, as if it had never been saved
+     * @group REQ-A2
      */
     public function it_keeps_express_off_when_no_wallet_has_its_checkout_button_on(?string $applePay, ?string $payPal): void
     {
@@ -144,6 +145,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider checkoutButtonSettings
+     * @group REQ-A1
      */
     public function it_owns_the_checkout_when_a_wallet_has_its_checkout_button_on(string $applePay, string $payPal, bool $expected): void
     {
@@ -175,6 +177,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      *   Then it owns the checkout only
      *
      * @test
+     * @group REQ-A1
      */
     public function it_never_owns_the_cart_or_the_product_page(): void
     {
@@ -201,6 +204,8 @@ class MutualExclusionTest extends ExpressFlowTestCase
      *   And Apple Pay's non-page-aware flag still decides everywhere else
      *
      * @test
+     * @group REQ-A3
+     * @group REQ-A6
      */
     public function it_hides_legacy_buttons_on_checkout_only_when_express_owns_it(): void
     {
@@ -228,6 +233,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider reasonsExpressCannotRun
+     * @group REQ-A4
      */
     public function it_keeps_legacy_buttons_as_configured_when_express_cannot_run(string $reason): void
     {
@@ -342,6 +348,8 @@ class MutualExclusionTest extends ExpressFlowTestCase
      *   And the legacy methods return their configured values again, on every page
      *
      * @test
+     * @group REQ-A7
+     * @group REQ-A4
      */
     public function it_stops_owning_the_checkout_when_the_merchant_disables_every_wallet(): void
     {
@@ -369,6 +377,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      * @test
      * @dataProvider activeMollieMethods
      * @param array<int, string> $active
+     * @group REQ-A7
      */
     public function it_needs_a_wallet_to_be_active_at_mollie(array $active, bool $expected): void
     {

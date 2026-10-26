@@ -121,6 +121,7 @@ class ExpressOrderStockHoldTest extends ExpressFlowTestCase
      *   Then WooCommerce's out-of-stock reason is returned and the hold stays
      *
      * @test
+     * @group REQ-C4
      */
     public function it_refuses_with_woocommerces_reason_when_another_shopper_holds_the_last_stock(): void
     {

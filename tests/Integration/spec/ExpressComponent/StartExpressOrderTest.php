@@ -89,6 +89,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   And its total and line items equal the cart's
      *
      * @test
+     * @group REQ-B3
      */
     public function it_creates_one_pending_express_order_matching_the_cart(): void
     {
@@ -126,6 +127,8 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   And its total, which includes that rate, equals the cart total
      *
      * @test
+     * @group REQ-B3
+     * @group REQ-C3
      */
     public function it_ships_to_the_form_address_with_the_chosen_rate_as_its_shipping_line(): void
     {
@@ -209,6 +212,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   And express.order.reused is logged
      *
      * @test
+     * @group REQ-B5
      */
     public function it_creates_one_order_for_two_sequential_requests(): void
     {
@@ -235,6 +239,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   And the session is forgotten, so the next start creates a new one
      *
      * @test
+     * @group REQ-G2
      */
     public function it_refuses_a_repeat_submit_once_the_order_no_longer_needs_payment(): void
     {
@@ -264,6 +269,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   And still exactly one order exists for the session
      *
      * @test
+     * @group REQ-B5
      */
     public function it_answers_the_existing_order_to_a_request_that_waited_for_the_lock(): void
     {
@@ -419,6 +425,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider priceChanges
+     * @group REQ-G2
      */
     public function it_refuses_and_forgets_the_session_when_the_price_changed(string $change): void
     {
@@ -511,6 +518,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   And no order is created
      *
      * @test
+     * @group REQ-C4
      */
     public function it_refuses_with_woocommerces_reason_when_the_last_item_sold_out(): void
     {
@@ -622,6 +630,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider badNonces
+     * @group REQ-G3
      */
     public function it_refuses_an_order_request_without_a_valid_nonce(?string $nonceAction, ?string $literal): void
     {
@@ -698,6 +707,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   And the order is answered with the fact only, so nothing overrides what the sheet collected
      *
      * @test
+     * @group REQ-C2
      */
     public function it_asks_the_wallet_for_contact_and_billing_when_nothing_ships(): void
     {
@@ -847,6 +857,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   Then no marked value reached the log
      *
      * @test
+     * @group REQ-G6
      */
     public function it_leaks_no_canary_while_starting_an_order(): void
     {

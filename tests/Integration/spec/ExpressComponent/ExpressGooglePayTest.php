@@ -81,6 +81,7 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
      *   And it is off, although the general enabled default is on
      *
      * @test
+     * @group REQ-A2
      */
     public function it_shows_one_express_checkbox_off_by_default(): void
     {

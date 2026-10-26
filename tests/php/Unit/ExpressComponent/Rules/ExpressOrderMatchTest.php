@@ -68,6 +68,8 @@ class ExpressOrderMatchTest extends TestCase
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressOrderMatch::admit
      * @param array<string, mixed> $paymentOverrides
      * @param array<string, mixed>|null $orderOverrides Null when no order carries the ref.
+     * @group REQ-G5
+     * @group REQ-D7
      */
     public function testRefusesEachMismatchWithItsOwnReason(
         array $paymentOverrides,

@@ -42,6 +42,8 @@ class ExpressRefundTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider refundAmounts
+     * @group REQ-F1
+     * @group REQ-F3
      */
     public function it_refunds_a_paid_express_order_at_mollie(bool $full): void
     {
@@ -94,6 +96,7 @@ class ExpressRefundTest extends ExpressFlowTestCase
      *
      * @test
      * @group REQ-F2
+     * @group REQ-F1
      */
     public function it_refunds_a_google_pay_express_order_at_mollie(): void
     {

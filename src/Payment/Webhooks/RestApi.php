@@ -182,6 +182,14 @@ class RestApi
                 $redirectUrl = $this->mollieOrderService->getRedirectUrlFromPaymentObject($transactionID);
                 $order_id = $this->mollieOrderService->getOrderIdFromRedirectUrl($redirectUrl);
                 $key = $this->mollieOrderService->getKeyFromRedirectUrl($redirectUrl);
+                if ($order_id === '') {
+                    // No redirectUrl, as Mollie answers an Apple Pay token order: the metadata names the order.
+                    $named = $this->mollieOrderService->orderNamedByPayment((string) $transactionID);
+                    if ($named !== null) {
+                        $this->mollieOrderService->doPaymentForOrder($named, (string) $transactionID);
+                        return new \WP_REST_Response(null, 200);
+                    }
+                }
                 $this->mollieOrderService->onWebhookActionFallback($order_id, $key, $transactionID);
                 return new \WP_REST_Response(null, 200);
             } catch (OrderLockTimeout $timeout) {

@@ -25,6 +25,7 @@ class AddressMappingTest extends TestCase
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\AddressMapping::toWooCommerce
      * @param array<string, mixed> $mollie
      * @param array<string, string> $expected
+     * @group REQ-D5
      */
     public function testMapsAMollieAddressToWooCommerceFields(array $mollie, array $expected): void
     {

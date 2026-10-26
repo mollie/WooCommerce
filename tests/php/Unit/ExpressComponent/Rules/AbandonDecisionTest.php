@@ -29,6 +29,9 @@ class AbandonDecisionTest extends TestCase
      *
      * @dataProvider answers
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\AbandonDecision::decide
+     * @group REQ-E1
+     * @group REQ-E2
+     * @group REQ-E4
      */
     public function testDecidesWhetherAnAbandonedExpressOrderIsCancelled(
         bool $stillPending,
@@ -106,6 +109,7 @@ class AbandonDecisionTest extends TestCase
      *   When its abandon grace is compared with the session lifetime
      *   Then cleanup looks at an order only a full session lifetime or more after its session expired,
      *        so a payment started at the last moment has had as long again to arrive
+     * @group REQ-E2
      */
     public function testTheCleanupGraceIsLongerThanASessionLives(): void
     {

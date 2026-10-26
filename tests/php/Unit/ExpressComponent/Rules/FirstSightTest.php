@@ -231,6 +231,8 @@ class FirstSightTest extends TestCase
      * The sheet is where the shopper chose that address, so it wins over the form and the account.
      *
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\FirstSight::decide
+     * @group REQ-C2
+     * @group REQ-D5
      */
     public function testTheWalletsBillingAddressReplacesTheOrdersOwn(): void
     {
@@ -256,6 +258,7 @@ class FirstSightTest extends TestCase
      *
      * @dataProvider shippingCases
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\FirstSight::decide
+     * @group REQ-C3
      */
     public function testOnlyAnOrderThatShipsKeepsItsShippingAddress(
         bool $needsShipping,

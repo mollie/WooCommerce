@@ -33,6 +33,8 @@ class ExpressAvailabilityTest extends TestCase
      * @dataProvider shopLevelCases
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
      * @param array<int, string> $wallets Wallets that are visible: method enabled, active, express button on.
+     * @group REQ-A1
+     * @group REQ-A2
      */
     public function testResolvesAvailabilityWithoutACart(
         string $surface,
@@ -86,6 +88,8 @@ class ExpressAvailabilityTest extends TestCase
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
      * @param array<int, bool> $lines One entry per cart line: whether it is a subscription.
      * @param array<int, string> $wallets
+     * @group REQ-B2
+     * @group REQ-H1
      */
     public function testRefusesACartThatCannotBePaidByExpress(
         array $lines,
@@ -184,6 +188,7 @@ class ExpressAvailabilityTest extends TestCase
      *
      * @dataProvider totals
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @group REQ-B2
      */
     public function testRefusesACartWithNothingToPay(
         ?int $totalInCents,

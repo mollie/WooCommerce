@@ -208,6 +208,8 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And express.payment.matched is logged once for this order and payment
      *
      * @test
+     * @group REQ-D1
+     * @group REQ-D3
      */
     public function it_pays_a_pending_express_order_found_by_the_payments_express_ref(): void
     {
@@ -264,6 +266,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider mollieFailuresWorthARetry
+     * @group REQ-D1
      */
     public function it_has_mollie_retry_a_webhook_whose_payment_could_not_be_fetched(int $mollieStatus, string $kind): void
     {
@@ -331,6 +334,8 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider wallets
+     * @group REQ-F2
+     * @group REQ-D1
      */
     public function it_records_the_payment_and_the_method_of_the_wallet_that_paid(string $mollieMethod, string $expectedGateway): void
     {
@@ -536,6 +541,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And the payment was completed once, and the order got no further note
      *
      * @test
+     * @group REQ-D4
      */
     public function it_resolves_a_repeated_webhook_by_transaction_id_without_the_express_stage(): void
     {
@@ -574,6 +580,8 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider mismatches
+     * @group REQ-G5
+     * @group REQ-D7
      */
     public function it_refuses_a_mismatched_payment_and_touches_nothing(string $case, string $expectedReason, int $newNotes): void
     {
@@ -772,6 +780,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And the payment is remembered, with one note and one orphaned error
      *
      * @test
+     * @group REQ-D4
      */
     public function it_remembers_a_paid_payment_for_an_order_another_payment_already_paid(): void
     {
@@ -866,6 +875,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider ordinaryOrderPointers
+     * @group REQ-G5
      */
     public function it_does_not_pay_an_ordinary_order_named_by_the_payment(string $pointer): void
     {
@@ -915,6 +925,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And with no field other than the correlation id, the payment id and the reason
      *
      * @test
+     * @group REQ-D7
      */
     public function it_answers_200_and_logs_unmatched_with_ids_only(): void
     {
@@ -968,6 +979,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And the notice names the payment, is marked as a Mollie error and is shown only to someone who can act on it
      *
      * @test
+     * @group REQ-D7
      */
     public function it_reports_a_captured_payment_that_belongs_to_no_order(): void
     {
@@ -1078,6 +1090,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider unsuccessfulStatuses
+     * @group REQ-D6
      */
     public function it_leaves_a_failed_cancelled_or_expired_payment_unpaid(string $paymentStatus): void
     {
@@ -1115,6 +1128,8 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And its shipping address is unchanged
      *
      * @test
+     * @group REQ-D5
+     * @group REQ-C2
      */
     public function it_writes_the_wallets_billing_details_to_a_guest_order_that_had_none(): void
     {
@@ -1156,6 +1171,9 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider heldAddresses
+     * @group REQ-C2
+     * @group REQ-C3
+     * @group REQ-D5
      */
     public function it_takes_the_wallets_billing_address_and_leaves_the_shipping_one(string $source): void
     {
@@ -1202,6 +1220,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And the order is paid
      *
      * @test
+     * @group REQ-C3
      */
     public function it_never_writes_the_wallets_shipping_address_on_an_order_that_needs_shipping(): void
     {
@@ -1238,6 +1257,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      *   And the second resolution added no note
      *
      * @test
+     * @group REQ-D4
      */
     public function it_converges_on_one_write_when_a_second_resolution_waits_for_the_order_lock(): void
     {

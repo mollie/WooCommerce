@@ -134,6 +134,7 @@ class CancelUnpaidScheduleTest extends ExpressFlowTestCase
      *   Then the action is no longer scheduled
      *
      * @test
+     * @group REQ-E1
      */
     public function it_keeps_the_cleanup_scheduled_until_no_pending_express_order_is_left(): void
     {

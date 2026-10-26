@@ -54,6 +54,7 @@ class ExpressReturnTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider knownOrders
+     * @group REQ-C5
      */
     public function it_redirects_a_known_ref_to_the_order_received_page(bool $paidByWebhook): void
     {
@@ -125,6 +126,7 @@ class ExpressReturnTest extends ExpressFlowTestCase
      *   And the order's status and meta are exactly as before
      *
      * @test
+     * @group REQ-C5
      */
     public function it_sends_a_failed_payment_back_to_the_checkout_with_a_notice(): void
     {
@@ -150,6 +152,7 @@ class ExpressReturnTest extends ExpressFlowTestCase
      *   And the return asked nothing of Mollie
      *
      * @test
+     * @group REQ-D2
      */
     public function it_does_not_mark_the_order_paid_on_the_return_alone(): void
     {
@@ -176,6 +179,7 @@ class ExpressReturnTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider returnedOrders
+     * @group REQ-G2
      */
     public function it_drops_the_session_the_shopper_returned_from(bool $failed): void
     {

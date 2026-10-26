@@ -274,6 +274,9 @@ final class FakeMollieApi
                 'status' => 'verified',
             ]];
         }
+        if ($method === 'POST' && $path === 'wallets/applepay/sessions') {
+            return $this->applePayMerchantSession($state, $request);
+        }
 
         return $this->problem(501, 'Not Faked', "{$method} /v2/{$path} is not implemented by the fake Mollie API.");
     }
@@ -1157,6 +1160,35 @@ final class FakeMollieApi
     /**
      * @return array{status: int, body: array<string, mixed>}
      */
+    /**
+     * The merchant session Apple's sheet needs before it shows. Mollie relays it from Apple as an
+     * opaque object, which the plugin hands to the browser unchanged. Both fields are required.
+     *
+     * @param array<string, mixed> $state
+     * @param array<string, mixed> $request
+     * @return array{status: int, body: array<string, mixed>|null}
+     */
+    private function applePayMerchantSession(array &$state, array $request): array
+    {
+        foreach (['domain', 'validationUrl'] as $field) {
+            if ((string) ($request['body'][$field] ?? '') === '') {
+                return $this->problem(422, 'Unprocessable Entity', "The '{$field}' field is required.", $field);
+            }
+        }
+        $now = $this->now($state);
+
+        return ['status' => 201, 'body' => [
+            'epochTimestamp' => $now * 1000,
+            'expiresAt' => ($now + 3600) * 1000,
+            'merchantSessionIdentifier' => 'SSH_FAKE_' . $this->nextSequence($state),
+            'nonce' => 'fake-nonce',
+            'merchantIdentifier' => 'fake.merchant.identifier',
+            'domainName' => (string) $request['body']['domain'],
+            'displayName' => 'Fake Mollie shop',
+            'signature' => 'fake-signature',
+        ]];
+    }
+
     private function problem(int $status, string $title, string $detail, ?string $field = null): array
     {
         $body = [

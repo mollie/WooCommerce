@@ -88,6 +88,7 @@ class SessionPayloadTest extends TestCase
      * The session's amount is fixed at creation, so a shipping address from the sheet could not be priced.
      *
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\SessionPayload::requiredCustomerDetails
+     * @group REQ-C2
      */
     public function testAlwaysAsksTheWalletForContactAndBilling(): void
     {

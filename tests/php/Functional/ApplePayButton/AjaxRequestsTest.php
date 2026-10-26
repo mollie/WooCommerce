@@ -374,6 +374,8 @@ class AjaxRequestsTest extends TestCase
      * @test
      * @runInSeparateProcess
      * @preserveGlobalState disabled
+     * @group REQ-233
+     * @group REQ-273
      */
     public function cartCalculationResultsUsesWpmlTranslatedFeeLabel()
     {

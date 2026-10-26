@@ -179,6 +179,8 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider pagesExpressDoesNotOwn
+     * @group REQ-A1
+     * @group REQ-A2
      */
     public function it_loads_nothing_where_express_does_not_own_the_block_checkout(string $page, string $shop): void
     {
@@ -284,6 +286,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *   And they hold the routes' refusal text, for a refusal WordPress makes before the route runs
      *
      * @test
+     * @group REQ-G1
      */
     public function it_localizes_only_the_allowlisted_express_data(): void
     {
@@ -371,6 +374,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *   And names no wallet outside the wallets table
      *
      * @test
+     * @group REQ-A7
      */
     public function it_offers_only_the_wallets_the_merchant_turned_on(): void
     {
@@ -402,6 +406,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider googlePaySetting
+     * @group REQ-A7
      */
     public function it_offers_google_pay_once_its_payment_method_is_turned_on(string $enabled, bool $offered): void
     {
@@ -447,6 +452,8 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *
      * @test
      * @dataProvider pageLoads
+     * @group REQ-A3
+     * @group REQ-A4
      */
     public function it_owns_the_block_checkout_at_page_load_only_when_the_price_is_known(
         bool $ships,

@@ -25,6 +25,7 @@ class AdmissionTest extends TestCase
      *
      * @dataProvider requests
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\Admission::admit
+     * @group REQ-G3
      */
     public function testAdmitsTheSessionRouteOnlyWithAValidNonce(
         string $entryPoint,

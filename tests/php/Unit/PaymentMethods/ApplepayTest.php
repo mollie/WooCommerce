@@ -50,6 +50,7 @@ class ApplepayTest extends TestCase
     /**
      * The checkout setting tells the merchant that express checkout shows the button where it can
      * run, and the classic button otherwise.
+     * @group REQ-A5
      */
     public function test_checkout_setting_says_express_checkout_shows_the_button_where_it_can_run(): void
     {
@@ -116,6 +117,7 @@ class ApplepayTest extends TestCase
      *   When isExpressCheckoutEnabled() is called
      *   Then it returns false
      *   And the decision was asked of the shared helper, for the checkout, once
+     * @group REQ-A3
      */
     public function test_is_express_checkout_enabled_is_false_on_checkout_when_express_owns_it(): void
     {
@@ -138,6 +140,7 @@ class ApplepayTest extends TestCase
      *   When isExpressCheckoutEnabled() is called
      *   Then it returns true, as today
      *   And mollieWooCommerceExpressOwnsSurface() is not called
+     * @group REQ-A6
      */
     public function test_is_express_checkout_enabled_ignores_express_off_the_checkout_page(): void
     {

@@ -34,6 +34,7 @@ $finders = [
                       '.github',
                       '.ddev',
                       '.idea',
+                      '.psalm',
                       'modules.local',
                       'tests',
                       'node_modules',
@@ -73,6 +74,7 @@ return [
         '/^wc/',
         '/^icl_/',
         '/^wpml_/',
+        '/^as_/',
     ]), // list<string|regex>
 
     'expose-global-constants' => false,   // bool

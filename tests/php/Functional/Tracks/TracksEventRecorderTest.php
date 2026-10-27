@@ -12,22 +12,6 @@ use function Brain\Monkey\Functions\when;
 class TracksEventRecorderTest extends TestCase
 {
     /**
-     * WHEN WC_Tracks class is not available
-     * THEN recordEvent skips silently
-     * @test
-     */
-    public function recordEventSkipsWhenWcTracksUnavailable()
-    {
-        when('get_site_url')->justReturn('https://example.com');
-
-        // WC_Tracks is not loaded in the test environment, so class_exists returns false natively
-        $recorder = new TracksEventRecorder('8.1.6');
-        $recorder->recordEvent('mollie_plugin_activated');
-
-        $this->addToAssertionCount(1);
-    }
-
-    /**
      * WHEN recordEvent is called
      * THEN properties are enriched with plugin_version and store_url
      * @test

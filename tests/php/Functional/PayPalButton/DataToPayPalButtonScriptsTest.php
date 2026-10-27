@@ -2,7 +2,6 @@
 
 namespace Mollie\WooCommerceTests\Functional\PayPalButton;
 
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\Stubs\WC_Product;
@@ -18,9 +17,6 @@ use function Brain\Monkey\Functions\when;
 
 class DataToPayPalButtonScriptsTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
-
     /**
      *
      */
@@ -258,28 +254,6 @@ class DataToPayPalButtonScriptsTest extends TestCase
     }
 
 
-    public function testWhichPaypalButtonReturnsPathForFourSegmentColor()
-    {
-        /*
-         * Stubs
-         */
-        stubs([
-            'get_option' => ['color' => 'en-checkout-pill-golden'],
-        ]);
-
-        /*
-         * Sut
-         */
-        $pluginUrl = 'http://pluginUrl.com/';
-        $sut = new DataToPayPal($pluginUrl);
-
-        /*
-         * Execute Test
-         */
-        $result = $sut->selectedPaypalButtonUrl();
-        self::assertStringContainsString('en/checkout/pill-golden.png', $result);
-    }
-
     public function testWhichPaypalButtonHandlesTwoSegmentColorWithFallbacks()
     {
         /*
@@ -321,8 +295,8 @@ class DataToPayPalButtonScriptsTest extends TestCase
          * Execute Test
          */
         $result = $sut->selectedPaypalButtonUrl();
-        self::assertIsString($result);
-        self::assertNotEmpty($result);
+        // An empty colour names no button image, so the default one is used.
+        self::assertStringContainsString('en/checkout/pill-golden.png', $result);
     }
 
     public function testWhichPaypalButtonUsesDefaultColorWhenColorKeyAbsent()

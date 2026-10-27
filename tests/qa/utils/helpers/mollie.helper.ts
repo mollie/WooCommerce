@@ -20,7 +20,16 @@ import {
 export const getOrderStatusFromMollieStatus = (
 	paymentStatus: MolliePaymentStatus,
 	mollieApiMethod: MollieSettings.ApiMethod = 'payment',
+	gatewaySlug?: string
 ): WooCommerce.OrderStatus => {
+	// Orders API: an expired bank transfer payment leaves the Mollie order "created", so the order stays on-hold
+	if (
+		mollieApiMethod === 'order' &&
+		gatewaySlug === 'banktransfer' &&
+		paymentStatus === 'expired'
+	) {
+		return 'on-hold';
+	}
 	const statusConversion = {
 		paid: 'processing',
 		authorized: 'processing',
@@ -119,9 +128,8 @@ export const captureMolliePaymentAttempt = async (
 ): Promise< MolliePaymentAttempt > => {
 	await mollieHostedCheckout.assertUrl();
 	const orderId = await mollieHostedCheckout.captureOrderNumber();
-	const { transaction_id: transactionId } = await wooCommerceApi.getOrder(
-		orderId
-	);
+	const { transaction_id: transactionId } =
+		await wooCommerceApi.getOrder( orderId );
 	await expect(
 		transactionId,
 		`Assert order ${ orderId } is linked to a Mollie payment`

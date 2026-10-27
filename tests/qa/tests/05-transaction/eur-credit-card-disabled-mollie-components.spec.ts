@@ -12,12 +12,9 @@ import {
 	creditCardDisabledMollieComponentsCheckout,
 	creditCardDisabledMollieComponentsPayForOrder,
 } from './_test-data';
-import { shopConfigDefault } from '../../resources';
 
-test.beforeAll( async ( { utils, mollieApi } ) => {
-	await utils.configureStore( shopConfigDefault );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
+// Runs again in each new worker, e.g. after a failed test triggered afterAll
+test.beforeAll( async ( { mollieApi } ) => {
 	await mollieApi.updateMollieGateway( 'creditcard', {
 		mollie_components_enabled: 'no',
 	} );

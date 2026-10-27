@@ -14,7 +14,7 @@
         <exclude-pattern>*.scss</exclude-pattern>
         <exclude-pattern>*.json</exclude-pattern>
 
-    <config name="testVersion" value="7.4"/>
+    <config name="testVersion" value="8.0"/>
     <config name="ignore_warnings_on_exit" value="1"/>
     <rule ref="Inpsyde">
         <exclude name="NeutronStandard.StrictTypes.RequireStrictTypes.StrictTypes"/>
@@ -32,6 +32,13 @@
         <exclude name="Generic.Metrics.NestingLevel.TooHigh"/>
     </rule>
 
-
+    <!-- Rules/ folders and src/Shared/Values may not call WordPress (PureRulesTest), so they cannot use
+    esc_html(). Their exceptions report invalid arguments to the calling code; escaping is the job of
+    whatever outputs them. IdempotencyKey had the same exemption under src/Core and keeps it in src/SDK. -->
+    <rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
+        <exclude-pattern>./src/*/Rules/*</exclude-pattern>
+        <exclude-pattern>./src/Shared/Values/*</exclude-pattern>
+        <exclude-pattern>./src/SDK/IdempotencyKey.php</exclude-pattern>
+    </rule>
 
 </ruleset>

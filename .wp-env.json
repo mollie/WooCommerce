@@ -4,7 +4,7 @@
         "WP_HOME": "http://mywp.site",
         "WP_SITEURL": "http://mywp.site"
     },
-    "phpVersion": "8.0",
+    "phpVersion": "8.2",
     "plugins": [
         "./tests/qa/resources/e2e-snippets"
     ],

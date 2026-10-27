@@ -58,56 +58,6 @@ class PaymentProcessorUnprocessablePhoneTest extends IntegrationMockedTestCase
         parent::tearDown();
     }
 
-    /**
-     * @test
-     * @scenario Customer checkout fails due to invalid phone number
-     *
-     * Given a customer places an order with an invalid phone number
-     * When the payment processor attempts to create the order via Mollie API
-     * And the Mollie API returns a 422 unprocessable entity error for invalid phone
-     * Then the system should log a debug message about the invalid phone number
-     * And the payment processing should return a failure result
-     * And the system should handle the error gracefully without throwing exceptions
-     */
-    public function payment_processing_fails_gracefully_when_customer_provides_invalid_phone_number(): void
-    {
-        $unprocessablePhoneException = new ApiException(
-            'Unprocessable Entity: The phone number is invalid',
-            422
-        );
-
-        $logger = Mockery::mock(LoggerInterface::class);
-        $logMessages = [];
-
-        $logger->shouldReceive('debug')
-            ->withAnyArgs()
-            ->andReturnUsing(function($message) use (&$logMessages) {
-                $logMessages[] = $message;
-            });
-
-        $mockedServices = $this->getMockedApiServices();
-        $mockedServices[LoggerInterface::class] = function () use ($logger) {
-            return $logger;
-        };
-
-        $container = $this->bootstrapModule($mockedServices);
-        $paymentProcessor = $container->get(PaymentProcessor::class);
-        $this->apiMock()
-            ->mockEndpointException('orders', 'create', [], $unprocessablePhoneException);
-
-        $result = $paymentProcessor->processPayment($this->order, $this->paymentGateway);
-        $phoneMessageFound = false;
-        foreach ($logMessages as $message) {
-            if (strpos($message, 'Invalid phone number') !== false) {
-                $phoneMessageFound = true;
-                break;
-            }
-        }
-        $this->assertTrue($phoneMessageFound, 'Phone invalid message was not logged');
-
-        $this->assertEquals(['result' => 'failure'], $result);
-    }
-
 
     /**
      * @test

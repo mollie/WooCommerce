@@ -1,7 +1,11 @@
 /**
  * External dependencies
  */
-import { countTotals, expect, WooCommerceApi } from '@inpsyde/playwright-utils/build';
+import {
+	countTotals,
+	expect,
+	WooCommerceApi,
+} from '@inpsyde/playwright-utils/build';
 import { Client as MollieClientApi } from 'mollie-api-typescript';
 /**
  * Internal dependencies
@@ -84,7 +88,8 @@ const assertOnHoldCancelledByMollie = async (
 
 	const expectedStatus = getOrderStatusFromMollieStatus(
 		'canceled',
-		mollieApiMethod
+		mollieApiMethod,
+		'banktransfer'
 	);
 	await expect( async () => {
 		const orderAfterCancel = await wooCommerceApi.getOrder( orderId );
@@ -172,11 +177,19 @@ export const testOrderStatusTransitionOnCheckout = (
 			! gateway.availableForApiMethods.includes( mollieApiMethod ),
 			`Test is not eligible for ${ mollieApiMethod } API method.`
 		);
+		// Orders API: the open bank transfer keeps the Mollie order open; Mollie refuses to cancel it ("Unable to cancel order with open payments") and expires it only after 28 days
+		test.skip(
+			transition === 'onHoldToFinal' &&
+				[ 'canceled', 'expired' ].includes( payment.status ) &&
+				mollieApiMethod === 'order',
+			'Orders API: the Mollie order stays open (cannot be canceled with an open payment, expires after 28 days).'
+		);
 
 		if ( ! testData.orderStatus ) {
 			testData.orderStatus = await getOrderStatusFromMollieStatus(
 				payment.status,
-				mollieApiMethod
+				mollieApiMethod,
+				gateway.slug
 			);
 		}
 
@@ -243,7 +256,8 @@ export const testOrderStatusTransitionOnCheckout = (
 			// processMolliePaymentStatus only checks page-redirect behavior,
 			// not the order's actual status - assert that explicitly too.
 			await expect( async () => {
-				const orderAfterPayment = await wooCommerceApi.getOrder( orderId );
+				const orderAfterPayment =
+					await wooCommerceApi.getOrder( orderId );
 				await expect(
 					orderAfterPayment.status,
 					`Assert the order settles to "${ testData.orderStatus }"`

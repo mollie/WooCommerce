@@ -7,14 +7,7 @@ import {
 	guests,
 	MollieGateway,
 	products,
-	shopConfigClassic,
 } from '../../resources';
-
-test.beforeAll( async ( { utils } ) => {
-	await utils.configureStore( shopConfigClassic );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-} );
 
 test( 'C420154 | Validate correct gateways shown with Order API on Classic checkout', async ( {
 	utils,
@@ -36,6 +29,11 @@ test( 'C420154 | Validate correct gateways shown with Order API on Classic check
 
 		// exclude tests for payment methods if not available for tested API
 		if ( ! gateway.availableForApiMethods.includes( mollieApiMethod ) ) {
+			continue;
+		}
+
+		// not active on the default Mollie profile connected here
+		if ( gateway.mollieProfile ) {
 			continue;
 		}
 

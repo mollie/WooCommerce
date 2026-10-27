@@ -42,14 +42,17 @@ export const testPaymentStatusOnClassicCheckout = (
 	}, testInfo ) => {
 		// exclude tests for payment methods if not available for tested API
 		test.skip(
-			! gateway.availableForApiMethods.includes( mollieApiMethod ), 
+			! gateway.availableForApiMethods.includes( mollieApiMethod ),
 			`Test is not eligible for ${ mollieApiMethod } API method.`
 		);
 
 		// Sets the default orderStatus based on API method, if specific is not set
 		if ( ! testData.orderStatus ) {
-			testData.orderStatus =
-				await getOrderStatusFromMollieStatus( payment.status, mollieApiMethod );
+			testData.orderStatus = await getOrderStatusFromMollieStatus(
+				payment.status,
+				mollieApiMethod,
+				gateway.slug
+			);
 		}
 
 		await updateCurrencyIfNeeded( wooCommerceApi, currency );

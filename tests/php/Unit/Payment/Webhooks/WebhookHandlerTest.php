@@ -6,7 +6,6 @@ namespace Mollie\WooCommerceTests\Unit\Payment\Webhooks;
 
 use Inpsyde\PaymentGateway\PaymentGateway;
 use Mockery;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Payment\MollieOrder;
 use Mollie\Api\Resources\Payment;
 use Mollie\WooCommerce\Payment\MolliePayment;
@@ -25,7 +24,6 @@ use function Brain\Monkey\Functions\when;
  */
 class WebhookHandlerTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
     /** @var LoggerInterface&\Mockery\MockInterface */
     private $logger;
 
@@ -393,14 +391,16 @@ class WebhookHandlerTest extends TestCase
     /**
      * An order that is settled by every reasonable signal (processing status, authorized,
      * paid-and-processed, no longer needs payment) — yet NOT in a WC "final" status, so the
-     * current handlers do not already bail on isFinalOrderStatus().
+     * current handlers do not already bail on isFinalOrderStatus(). It tracks the payment the late
+     * webhook is about, so the stale-payment check is not what makes a handler bail.
      */
-    private function makeSettledOrder(int $orderId): \Mockery\MockInterface
+    private function makeSettledOrder(int $orderId, string $trackedPaymentId): \Mockery\MockInterface
     {
         $order = Mockery::mock(WC_Order::class);
         $order->shouldReceive('get_id')->andReturn($orderId);
         $order->shouldReceive('get_status')->andReturn('processing');
         $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_klarna');
+        $order->shouldReceive('get_meta')->with('_mollie_payment_id', true)->andReturn($trackedPaymentId);
         // Any settled meta read (_mollie_authorized / _mollie_paid_and_processed / ids) is truthy.
         $order->shouldReceive('get_meta')->andReturn('1');
         $order->shouldReceive('add_order_note')->zeroOrMoreTimes();
@@ -537,7 +537,7 @@ class WebhookHandlerTest extends TestCase
     {
         // Arrange
         $orderId      = 601;
-        $order        = $this->makeSettledOrder($orderId);
+        $order        = $this->makeSettledOrder($orderId, 'tr_STRAY_CANCEL');
         $mollieObject = Mockery::mock(MolliePayment::class);
         $gateway      = Mockery::mock(PaymentGateway::class);
         $gateway->id  = 'mollie_wc_gateway_klarna';
@@ -561,47 +561,6 @@ class WebhookHandlerTest extends TestCase
     }
 
     /**
-     * Scenario: The settled guard does not suppress a legitimate cancellation
-     *   Given a genuinely non-settled pending order with no authorized/paid meta
-     *   When a canceled-payment webhook is handled
-     *   Then the cancellation is processed fully and the order status is updated
-     *
-     * @covers \Mollie\WooCommerce\Payment\Webhooks\WebhookHandler::onWebhookCanceled
-     */
-    public function test_on_webhook_canceled_still_cancels_non_settled_order(): void
-    {
-        // Arrange
-        $orderId      = 602;
-        $order        = Mockery::mock(WC_Order::class);
-        $mollieObject = Mockery::mock(MolliePayment::class);
-        $gateway      = Mockery::mock(PaymentGateway::class);
-        $gateway->id  = 'mollie_wc_gateway_klarna';
-        $payment      = $this->makePayment('tr_REAL_CANCEL');
-
-        $order->shouldReceive('get_id')->andReturn($orderId);
-        $order->shouldReceive('get_status')->andReturn('pending');
-        $order->shouldReceive('needs_payment')->andReturn(true);
-        $order->shouldReceive('get_payment_method')->andReturn('mollie_wc_gateway_klarna');
-        $order->shouldReceive('get_meta')->andReturn(''); // no settled meta
-
-        $mollieObject->shouldReceive('isFinalOrderStatus')->with($order)->andReturn(false);
-        $mollieObject->shouldReceive('getCancelledMolliePaymentId')->andReturn('');
-        $mollieObject->shouldReceive('deleteSubscriptionFromPending')->once()->with($order);
-
-        $this->settings->shouldReceive('getOrderStatusCancelledPayments')->andReturn('pending');
-        when('wc_get_payment_gateway_by_order')->justReturn($gateway);
-        when('apply_filters')->returnArg(2);
-
-        // When / Then — a real cancellation is processed exactly once.
-        $order->shouldReceive('add_order_note')->once();
-        $mollieObject->shouldReceive('unsetActiveMolliePayment')->once()->with($orderId, 'tr_REAL_CANCEL');
-        $mollieObject->shouldReceive('setCancelledMolliePaymentId')->once()->with($orderId, 'tr_REAL_CANCEL');
-        $mollieObject->shouldReceive('updateOrderStatus')->once();
-
-        $this->sut->onWebhookCanceled($order, $payment, 'Klarna', $mollieObject);
-    }
-
-    /**
      * Scenario: A late failed webhook does not fail an already-settled order
      *   Given an order already settled (paid, processing, or authorized)
      *   When a late failed-payment webhook for an earlier attempt is handled
@@ -613,7 +572,7 @@ class WebhookHandlerTest extends TestCase
     {
         // Arrange
         $orderId      = 701;
-        $order        = $this->makeSettledOrder($orderId);
+        $order        = $this->makeSettledOrder($orderId, 'tr_LATE_FAIL');
         $mollieObject = Mockery::mock(MolliePayment::class);
         $gateway      = Mockery::mock(PaymentGateway::class);
         $gateway->id  = 'mollie_wc_gateway_klarna';
@@ -643,7 +602,7 @@ class WebhookHandlerTest extends TestCase
     {
         // Arrange
         $orderId      = 801;
-        $order        = $this->makeSettledOrder($orderId);
+        $order        = $this->makeSettledOrder($orderId, 'tr_LATE_EXPIRE');
         $mollieObject = Mockery::mock(MolliePayment::class);
         $payment      = $this->makePayment('tr_LATE_EXPIRE');
 

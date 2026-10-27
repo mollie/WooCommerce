@@ -1,10 +1,21 @@
 /**
  * External dependencies
  */
+import { APIRequestContext, Response } from '@playwright/test';
 import {
 	expect,
 	PayForOrder as PayForOrderBase,
 } from '@inpsyde/playwright-utils/build';
+/**
+ * Internal dependencies
+ */
+import { urls } from '../urls';
+
+type SurchargeRequest = { orderKey: string; nonce: string; method: string };
+
+const isSurchargeCall = ( response: Response ) =>
+	response.url().includes( 'admin-ajax.php' ) &&
+	!! response.request().postData()?.includes( 'update_surcharge_order_pay' );
 
 export class PayForOrder extends PayForOrderBase {
 	// Locators
@@ -12,6 +23,19 @@ export class PayForOrder extends PayForOrderBase {
 		this.paymentOptionsContainer().locator(
 			`label[for="payment_method_mollie_wc_gateway_${ slug }"]`
 		);
+	// Any gateway, also non-Mollie ones like bacs
+	paymentMethodLabel = ( gatewayId: string ) =>
+		this.paymentOptionsContainer().locator(
+			`label[for="payment_method_${ gatewayId }"]`
+		);
+	orderReviewFeeRow = ( feeName: string ) =>
+		this.page.locator( '#order_review tfoot tr', { hasText: feeName } );
+	surchargeOrderKeyInput = () =>
+		this.page
+			.locator( 'input[name="mollie-woocommerce-orderKey"]' )
+			.first();
+	surchargeNonceInput = () =>
+		this.page.locator( 'input[name="mollie-surcharge-nonce"]' ).first();
 	cardComponentsContainer = () =>
 		this.page.locator(
 			'.payment_method_mollie_wc_gateway_creditcard .mollie-components'
@@ -211,6 +235,52 @@ export class PayForOrder extends PayForOrderBase {
 		}
 
 		await this.payForOrderButton().click();
+	};
+
+	/**
+	 * Opens the page and waits for the surcharge call the page script sends on load
+	 *
+	 * @param orderId
+	 * @param orderKey
+	 * @return the order key and surcharge nonce rendered for this visitor
+	 */
+	visitAndWaitForSurcharge = async ( orderId: number, orderKey: string ) => {
+		await Promise.all( [
+			this.page.waitForResponse( isSurchargeCall ),
+			this.visit( orderId, orderKey ),
+		] );
+		return {
+			orderKey: await this.surchargeOrderKeyInput().inputValue(),
+			nonce: await this.surchargeNonceInput().inputValue(),
+		};
+	};
+
+	/**
+	 * Selects a payment method and waits for the surcharge call the page script sends on change
+	 *
+	 * @param gatewayId
+	 */
+	selectPaymentMethodAndWaitForSurcharge = async ( gatewayId: string ) => {
+		await Promise.all( [
+			this.page.waitForResponse( isSurchargeCall ),
+			this.paymentMethodLabel( gatewayId ).click(),
+		] );
+	};
+
+	/**
+	 * Sends update_surcharge_order_pay directly, as the visitor or as another user
+	 *
+	 * @param data
+	 * @param request defaults to the visitor of this page
+	 */
+	postSurchargeUpdate = async (
+		data: SurchargeRequest,
+		request: APIRequestContext = this.page.request
+	) => {
+		const response = await request.post( urls.admin.ajax, {
+			form: { action: 'update_surcharge_order_pay', ...data },
+		} );
+		return response.json();
 	};
 
 	// Assertions

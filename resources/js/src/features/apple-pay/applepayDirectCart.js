@@ -144,7 +144,10 @@ import { maybeShowButton } from './maybeShowApplePayButton.js';
 					billing_first_name: billingContact.givenName || '',
 					billing_last_name: billingContact.familyName || '',
 					billing_company: '',
-					billing_country: billingContact.countryCode || '',
+					// Apple keeps the case the address was saved with; WooCommerce takes upper-case codes only.
+					billing_country: (
+						billingContact.countryCode || ''
+					).toUpperCase(),
 					billing_address_1: billingContact.addressLines[ 0 ] || '',
 					billing_address_2: billingContact.addressLines[ 1 ] || '',
 					billing_postcode: billingContact.postalCode || '',
@@ -155,7 +158,9 @@ import { maybeShowButton } from './maybeShowApplePayButton.js';
 					shipping_first_name: shippingContact.givenName || '',
 					shipping_last_name: shippingContact.familyName || '',
 					shipping_company: '',
-					shipping_country: shippingContact.countryCode || '',
+					shipping_country: (
+						shippingContact.countryCode || ''
+					).toUpperCase(),
 					shipping_address_1: shippingContact.addressLines[ 0 ] || '',
 					shipping_address_2: shippingContact.addressLines[ 1 ] || '',
 					shipping_postcode: shippingContact.postalCode || '',

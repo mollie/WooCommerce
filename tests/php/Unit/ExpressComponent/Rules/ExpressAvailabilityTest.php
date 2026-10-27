@@ -1,0 +1,353 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Mollie\WooCommerceTests\Unit\ExpressComponent\Rules;
+
+use Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartLine;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
+use Mollie\WooCommerce\Shared\Values\Money;
+use Mollie\WooCommerceTests\TestCase;
+
+/**
+ * Whether the Express Component may run on this surface, in this mode, for this cart; the first
+ * failing check names the reason. Uses the real config/express.php.
+ *
+ * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability
+ */
+class ExpressAvailabilityTest extends TestCase
+{
+    private const ALL_WALLETS = ['applepay', 'paypal'];
+
+    /**
+     * Scenario: without a cart, the checkout is available only when every shop-level check holds
+     *   Given express settings, shop facts and a surface, with no cart
+     *   When availability is resolved
+     *   Then it is available only on the checkout, in an allowed mode, over HTTPS and with at least
+     *        one wallet visible
+     *   And otherwise it is unavailable with the reason of the first check that failed
+     *
+     * @dataProvider shopLevelCases
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @param array<int, string> $wallets Wallets that are visible: method enabled, active, express button on.
+     * @group REQ-A1
+     * @group REQ-A2
+     */
+    public function testResolvesAvailabilityWithoutACart(
+        string $surface,
+        string $mode,
+        bool $isHttps,
+        array $wallets,
+        string $expectedStatus,
+        ?string $expectedReason
+    ): void {
+
+        $result = ExpressAvailability::resolve(
+            $this->settings(),
+            $this->shop($mode, $isHttps, $wallets),
+            null,
+            $surface
+        );
+
+        self::assertSame($expectedStatus, $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: bool, 3: array<int, string>, 4: string, 5: ?string}>
+     */
+    public function shopLevelCases(): array
+    {
+        return [
+            'everything holds on the checkout' => ['checkout', 'live', true, self::ALL_WALLETS, 'available', null],
+            'one wallet is enough' => ['checkout', 'live', true, ['paypal'], 'available', null],
+            'the cart is not a v1 surface' => ['cart', 'live', true, self::ALL_WALLETS, 'unavailable', 'surface_not_supported'],
+            'the product page is not a v1 surface' => ['product', 'live', true, self::ALL_WALLETS, 'unavailable', 'surface_not_supported'],
+            'test mode is not allowed' => ['checkout', 'test', true, self::ALL_WALLETS, 'unavailable', 'mode_not_allowed'],
+            'the site is not HTTPS' => ['checkout', 'live', false, self::ALL_WALLETS, 'unavailable', 'not_https'],
+            // No wallet has its express button turned on (or exists, is enabled, is active): the merchant asked for nothing.
+            'no wallet is visible' => ['checkout', 'live', true, [], 'unavailable', 'no_wallet_visible'],
+            // The order is fixed: each row fails every later check too, and must report only the first.
+            'an unsupported surface is reported before the mode' => ['cart', 'test', false, [], 'unavailable', 'surface_not_supported'],
+            'the mode is reported before HTTPS' => ['checkout', 'test', false, [], 'unavailable', 'mode_not_allowed'],
+            'HTTPS is reported before the wallets' => ['checkout', 'live', false, [], 'unavailable', 'not_https'],
+        ];
+    }
+
+    /**
+     * Scenario: a cart that express checkout cannot pay is refused
+     *   Given the checkout is otherwise available
+     *   When availability is resolved for an empty cart, or a cart holding a subscription product
+     *   Then it is unavailable with cart_empty, or subscription_in_cart
+     *   And a shop-level reason still wins over a cart-level one
+     *
+     * @dataProvider unpayableCarts
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @param array<int, bool> $lines One entry per cart line: whether it is a subscription.
+     * @param array<int, string> $wallets
+     * @group REQ-B2
+     * @group REQ-H1
+     */
+    public function testRefusesACartThatCannotBePaidByExpress(
+        array $lines,
+        array $wallets,
+        string $expectedReason
+    ): void {
+
+        $result = ExpressAvailability::resolve(
+            $this->settings(),
+            $this->shop('live', true, $wallets),
+            $this->cart($lines, false, false, false),
+            'checkout'
+        );
+
+        self::assertSame('unavailable', $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: array<int, bool>, 1: array<int, string>, 2: string}>
+     */
+    public function unpayableCarts(): array
+    {
+        return [
+            'an empty cart' => [[], self::ALL_WALLETS, 'cart_empty'],
+            'a subscription product' => [[true], self::ALL_WALLETS, 'subscription_in_cart'],
+            'a subscription next to a normal product' => [[false, true], self::ALL_WALLETS, 'subscription_in_cart'],
+            'no wallet is visible and the cart is empty' => [[], [], 'no_wallet_visible'],
+        ];
+    }
+
+    /**
+     * Scenario: a cart that ships waits for the checkout form only where the wallet needs it
+     *   Given the checkout is otherwise available and the cart holds a normal product
+     *   When availability is resolved while the shipping destination or rate is missing
+     *   Then it is blocked with shipping_incomplete, not unavailable, if every visible wallet takes
+     *        its address from the checkout form
+     *   And it is available once the destination is complete and a rate is chosen
+     *   And Apple Pay waits for the form like PayPal: it has no address sheet of its own here
+     *   And a cart that needs no shipping is available whatever the form says
+     *
+     * @dataProvider shippingCases
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @param array<int, bool> $lines
+     * @param array<int, string> $wallets
+     */
+    public function testBlocksAShippableCartUntilTheFormIsCompleteWhereTheWalletNeedsIt(
+        array $lines,
+        array $wallets,
+        bool $needsShipping,
+        bool $destinationComplete,
+        bool $rateChosen,
+        string $expectedStatus,
+        ?string $expectedReason
+    ): void {
+
+        $result = ExpressAvailability::resolve(
+            $this->settings(),
+            $this->shop('live', true, $wallets),
+            $this->cart($lines, $needsShipping, $destinationComplete, $rateChosen),
+            'checkout'
+        );
+
+        self::assertSame($expectedStatus, $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: array<int, bool>, 1: array<int, string>, 2: bool, 3: bool, 4: bool, 5: string, 6: ?string}>
+     */
+    public function shippingCases(): array
+    {
+        return [
+            'PayPal only, ships, destination incomplete' => [[false], ['paypal'], true, false, true, 'blocked', 'shipping_incomplete'],
+            'PayPal only, ships, no rate chosen' => [[false], ['paypal'], true, true, false, 'blocked', 'shipping_incomplete'],
+            'PayPal only, ships, neither' => [[false], ['paypal'], true, false, false, 'blocked', 'shipping_incomplete'],
+            'PayPal only, ships, destination and rate complete' => [[false], ['paypal'], true, true, true, 'available', null],
+            'PayPal only, nothing to ship, form empty' => [[false], ['paypal'], false, false, false, 'available', null],
+            // Every wallet takes the shipping address from the checkout form, Apple Pay included.
+            'Apple Pay only, ships, form empty' => [[false], ['applepay'], true, false, false, 'blocked', 'shipping_incomplete'],
+            'Apple Pay only, ships, no rate chosen' => [[false], ['applepay'], true, true, false, 'blocked', 'shipping_incomplete'],
+            'Apple Pay only, ships, destination and rate complete' => [[false], ['applepay'], true, true, true, 'available', null],
+            'both wallets, ships, form empty: both wait' => [[false], self::ALL_WALLETS, true, false, false, 'blocked', 'shipping_incomplete'],
+            // Filling in the form cannot fix a subscription, so it is unavailable, not blocked.
+            'PayPal only, ships incomplete, with a subscription' => [[true], ['paypal'], true, false, false, 'unavailable', 'subscription_in_cart'],
+        ];
+    }
+
+    /**
+     * Scenario: a cart with nothing to pay is not offered express checkout
+     *   Given the checkout is otherwise available and the cart's price is final
+     *   When availability is resolved for a cart whose total is zero
+     *   Then it is unavailable with nothing_to_pay
+     *   And a cart that still waits for its shipping is blocked, not refused: its total is not final
+     *   And a cart whose total is not known is not refused for it
+     *
+     * @dataProvider totals
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @group REQ-B2
+     */
+    public function testRefusesACartWithNothingToPay(
+        ?int $totalInCents,
+        bool $needsShipping,
+        bool $shippingComplete,
+        string $expectedStatus,
+        ?string $expectedReason
+    ): void {
+
+        $cart = new CartFacts(
+            lines: [new CartLine(productId: 100, quantity: 1, isSubscription: false)],
+            needsShipping: $needsShipping,
+            shippingDestinationComplete: $shippingComplete,
+            shippingRateChosen: $shippingComplete,
+            total: $totalInCents === null ? null : Money::fromMinorUnits($totalInCents, 'EUR')
+        );
+
+        $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
+
+        self::assertSame($expectedStatus, $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: ?int, 1: bool, 2: bool, 3: string, 4: ?string}>
+     */
+    public function totals(): array
+    {
+        return [
+            'nothing ships, total zero' => [0, false, false, 'unavailable', 'nothing_to_pay'],
+            'ships, form complete, total zero' => [0, true, true, 'unavailable', 'nothing_to_pay'],
+            'ships, form incomplete, total zero so far' => [0, true, false, 'blocked', 'shipping_incomplete'],
+            'one cent to pay' => [1, false, false, 'available', null],
+            'total not known' => [null, false, false, 'available', null],
+        ];
+    }
+
+    /**
+     * Scenario: a cart with nothing to ship waits for no address unless its taxes follow one nobody gave yet
+     *   Given the checkout is otherwise available
+     *   And a cart whose taxes do or do not follow the customer's address, saved on the account or not
+     *   When availability is resolved
+     *   Then a cart with nothing to ship whose taxes follow an address that is not saved is unavailable
+     *        with tax_address_unknown, because its price is not known when the page loads
+     *   And a cart that ships keeps the shipping rule, which already waits for the whole address
+     *   And an empty cart or a subscription is reported first, and the tax rule before nothing_to_pay
+     *
+     * @dataProvider taxAddressCases
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @param array<int, bool> $lines One entry per line: whether it is a subscription.
+     */
+    public function testRefusesACartWhoseTaxesWaitForAnAddressNobodyGaveYet(
+        array $lines,
+        bool $needsShipping,
+        bool $shippingComplete,
+        bool $taxesFollowCustomerAddress,
+        bool $customerAddressSaved,
+        int $totalInCents,
+        string $expectedStatus,
+        ?string $expectedReason
+    ): void {
+
+        $cartLines = [];
+        foreach ($lines as $index => $isSubscription) {
+            $cartLines[] = new CartLine(productId: 100 + $index, quantity: 1, isSubscription: $isSubscription);
+        }
+        $cart = new CartFacts(
+            lines: $cartLines,
+            needsShipping: $needsShipping,
+            shippingDestinationComplete: $shippingComplete,
+            shippingRateChosen: $shippingComplete,
+            total: Money::fromMinorUnits($totalInCents, 'EUR'),
+            taxesFollowCustomerAddress: $taxesFollowCustomerAddress,
+            customerAddressSaved: $customerAddressSaved
+        );
+
+        $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
+
+        self::assertSame($expectedStatus, $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: array<int, bool>, 1: bool, 2: bool, 3: bool, 4: bool, 5: int, 6: string, 7: ?string}>
+     */
+    public function taxAddressCases(): array
+    {
+        return [
+            'nothing ships, taxes off or on the shop address' => [[false], false, false, false, false, 1000, 'available', null],
+            'nothing ships, taxes follow the address, guest' => [[false], false, false, true, false, 1000, 'unavailable', 'tax_address_unknown'],
+            'nothing ships, taxes follow the address, saved on the account' => [[false], false, false, true, true, 1000, 'available', null],
+            'nothing ships, taxes on the shop address, saved on the account' => [[false], false, false, false, true, 1000, 'available', null],
+            'ships, form complete, taxes follow an address not saved' => [[false], true, true, true, false, 1000, 'available', null],
+            'ships, form incomplete, taxes follow an address not saved' => [[false], true, false, true, false, 1000, 'blocked', 'shipping_incomplete'],
+            'an empty cart is reported first' => [[], false, false, true, false, 1000, 'unavailable', 'cart_empty'],
+            'a subscription is reported first' => [[true], false, false, true, false, 1000, 'unavailable', 'subscription_in_cart'],
+            'the tax rule before nothing to pay' => [[false], false, false, true, false, 0, 'unavailable', 'tax_address_unknown'],
+        ];
+    }
+
+    private function settings(): ExpressSettings
+    {
+        $config = self::config();
+
+        return new ExpressSettings(
+            supportedSurfaces: $config['surfaces'],
+            allowedModes: $config['allowedModes'],
+            wallets: $config['wallets']
+        );
+    }
+
+    /**
+     * @param array<int, string> $wallets Wallets that are visible: registered, enabled, active and with
+     *        their express button turned on at the checkout.
+     */
+    private function shop(string $mode, bool $isHttps, array $wallets): ShopFacts
+    {
+        $rows = self::config()['wallets'];
+        $gatewayIds = [];
+        $mollieMethods = [];
+        foreach ($wallets as $wallet) {
+            self::assertArrayHasKey($wallet, $rows, "config/express.php has no '{$wallet}' wallet row.");
+            $gatewayIds[] = $rows[$wallet]['gatewayId'];
+            $mollieMethods[] = $rows[$wallet]['mollieMethod'];
+        }
+
+        return new ShopFacts(
+            mode: $mode,
+            isHttps: $isHttps,
+            registeredGatewayIds: $gatewayIds,
+            enabledGatewayIds: $gatewayIds,
+            activeMollieMethods: $mollieMethods,
+            expressCheckoutGatewayIds: $gatewayIds
+        );
+    }
+
+    /**
+     * @param array<int, bool> $lines One entry per line: whether it is a subscription.
+     */
+    private function cart(array $lines, bool $needsShipping, bool $destinationComplete, bool $rateChosen): CartFacts
+    {
+        $cartLines = [];
+        foreach ($lines as $index => $isSubscription) {
+            $cartLines[] = new CartLine(productId: 100 + $index, quantity: 1, isSubscription: $isSubscription);
+        }
+
+        return new CartFacts(
+            lines: $cartLines,
+            needsShipping: $needsShipping,
+            shippingDestinationComplete: $destinationComplete,
+            shippingRateChosen: $rateChosen
+        );
+    }
+
+    /**
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     */
+    private static function config(): array
+    {
+        return require PROJECT_DIR . '/config/express.php';
+    }
+}

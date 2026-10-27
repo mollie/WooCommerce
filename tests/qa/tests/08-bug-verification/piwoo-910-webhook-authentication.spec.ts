@@ -28,7 +28,6 @@ import {
 	gateways,
 	orders,
 	products,
-	shopConfigDefault,
 	MollieTestData,
 } from '../../resources';
 
@@ -42,14 +41,8 @@ const testOrder: MollieTestData.ShopOrder = {
 	},
 };
 
-test.beforeAll( async ( { utils } ) => {
-	await utils.configureStore( shopConfigDefault );
-	await utils.installAndActivateMollie();
-	await utils.cleanReconnectMollie();
-} );
-
 test.describe( 'Webhook authentication (mollie_webhook_secret)', () => {
-	test( 'C4567601 | REST webhook rejects requests with no secret, a wrong secret, or an unknown transaction', async ( {
+	test( 'C4567601 | REST webhook rejects requests with no secret, a wrong secret, or an unknown transaction @Critical', async ( {
 		visitorRequest,
 		requestUtils,
 	} ) => {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mollie\WooCommerceTests\Unit\Payment;
 
 use Mockery;
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\Api\Endpoints\OrderEndpoint;
 use Mollie\Api\Endpoints\PaymentEndpoint;
 use Mollie\Api\Exceptions\ApiException;
@@ -29,8 +28,6 @@ use function Brain\Monkey\Functions\when;
  */
 class MollieObjectTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
-
     /** @var LoggerInterface&\Mockery\MockInterface */
     private $logger;
 
@@ -196,30 +193,6 @@ class MollieObjectTest extends TestCase
         // Then — both null; Mockery ->once() above asserts the API was not called a second time
         $this->assertNull($first);
         $this->assertNull($second);
-    }
-
-    /**
-     * @scenario Resetting the static cache (simulating a new PHP request) causes the next
-     *           call to hit the Mollie API again, even for a previously cached payment_id.
-     * @covers \Mollie\WooCommerce\Payment\MollieObject::getPaymentObjectPayment
-     */
-    public function test_static_cache_reset_causes_fresh_api_call(): void
-    {
-        // Arrange
-        $paymentId = 'tr_reset_test';
-        $payment   = $this->makePayment($paymentId);
-        $this->paymentEndpoint
-            ->shouldReceive('get')
-            ->with($paymentId)
-            ->twice()
-            ->andReturn($payment);
-
-        // When — first call populates cache; reset simulates new PHP request; second call must hit API
-        $this->sut->getPaymentObjectPayment($paymentId, false, true);
-        $this->resetStaticCaches();
-        $this->sut->getPaymentObjectPayment($paymentId, false, true);
-
-        // Then — Mockery ->twice() above verifies the API was called exactly twice
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Mollie\WooCommerceTests\Integration\spec\Payment;
 
 use Mockery;
 use Mollie\WooCommerce\Payment\PaymentModule;
+use Mollie\WooCommerceTests\Integration\API\Traits\APIMockTrait;
 use Mollie\WooCommerceTests\Integration\IntegrationMockedTestCase;
 use Psr\Log\LoggerInterface as Logger;
 use ReflectionFunction;
@@ -20,6 +21,8 @@ use ReflectionFunction;
  */
 class PaymentModuleReturnRedirectTest extends IntegrationMockedTestCase
 {
+    use APIMockTrait;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -36,7 +39,7 @@ class PaymentModuleReturnRedirectTest extends IntegrationMockedTestCase
 
     public function test_it_registers_return_redirect_callback_on_init_not_template_redirect(): void
     {
-        $this->bootstrapModule();
+        $this->bootstrapModule($this->getMockedApiServices());
 
         $this->assertTrue(
             $this->hookHasCallbackBoundTo('init', PaymentModule::class),
@@ -72,11 +75,11 @@ class PaymentModuleReturnRedirectTest extends IntegrationMockedTestCase
             $debugMessages[] = $message;
         });
 
-        $this->bootstrapModule([
+        $this->bootstrapModule(array_merge($this->getMockedApiServices(), [
             Logger::class => static function () use ($loggerSpy) {
                 return $loggerSpy;
             },
-        ]);
+        ]));
         $callback = $this->findCallbackBoundTo('init', PaymentModule::class);
 
         $this->assertNotNull($callback, 'Expected an "init" callback bound to a PaymentModule instance.');

@@ -394,7 +394,6 @@ export const classicCheckoutEur: MollieTestData.ShopOrder[] = [
 			gateway: gateways.banktransfer,
 			status: 'expired',
 		},
-		orderStatus: 'on-hold',
 	},
 	{
 		...baseOrder,

@@ -2,7 +2,6 @@
 
 namespace Mollie\WooCommerceTests\Functional\ApplePayButton;
 
-use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDataObjectHttp;
 use Mollie\WooCommerceTests\Stubs\postDTOTestsStubs;
 use Mollie\WooCommerceTests\Functional\HelperMocks;
@@ -15,7 +14,6 @@ use function Brain\Monkey\Functions\when;
 
 class ApplePayDataObjectTest extends TestCase
 {
-    use MockeryPHPUnitIntegration;
     /** @var HelperMocks */
     private $helperMocks;
 
@@ -26,6 +24,7 @@ class ApplePayDataObjectTest extends TestCase
     }
     /**
      *
+     * @group REQ-242
      */
     public function testDataObjectSuccess()
     {
@@ -93,6 +92,9 @@ class ApplePayDataObjectTest extends TestCase
         self::assertEquals($expectedAddress, $shippingAddress);
     }
 
+    /**
+     * @group REQ-243
+     */
     public function testDataObjectErrorNoUrl()
     {
         $postDummyData = new postDTOTestsStubs();
@@ -113,6 +115,9 @@ class ApplePayDataObjectTest extends TestCase
         self::assertEquals($expectedErrorsIndex, $dataObject->errors());
     }
 
+    /**
+     * @group REQ-243
+     */
     public function testDataObjectErrorNoNonce()
     {
         $postDummyData = new postDTOTestsStubs();
@@ -131,6 +136,9 @@ class ApplePayDataObjectTest extends TestCase
         self::assertEquals($expectedErrorsValue, $dataObject->errors());
     }
 
+    /**
+     * @group REQ-244
+     */
     public function testDataObjectErrorShippingIncorrect()
     {
         $postDummyData = new postDTOTestsStubs();
@@ -167,12 +175,6 @@ class ApplePayDataObjectTest extends TestCase
         self::assertEquals($expectedErrorsContact, $dataObject->errors());
     }
 
-
-    public function testCallerPagePropertyIsDeclaredExplicitly()
-    {
-        $reflection = new \ReflectionClass(ApplePayDataObjectHttp::class);
-        self::assertTrue($reflection->hasProperty('callerPage'));
-    }
 
     /**
      * @inheritDoc

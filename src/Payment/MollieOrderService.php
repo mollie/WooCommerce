@@ -6,11 +6,24 @@ namespace Mollie\WooCommerce\Payment;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Resources\Order;
 use Mollie\Api\Resources\Payment;
+use Mollie\WooCommerce\ExpressComponent\Rules\AddressMapping;
+use Mollie\WooCommerce\ExpressComponent\Rules\FirstSight;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookHandler;
+use Mollie\WooCommerce\Payment\Webhooks\WebhookOrderLookup;
 use Mollie\WooCommerce\Payment\Webhooks\WebhookSecret;
 use Mollie\WooCommerce\SDK\HttpResponse;
+use Mollie\WooCommerce\SDK\MollieCallFailed;
 use Mollie\WooCommerce\Shared\Data;
 use Mollie\WooCommerce\Shared\SharedDataDictionary;
+use Mollie\WooCommerce\Shared\Values\Admit;
+use Mollie\WooCommerce\Shared\Values\Money;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\WooCommerceAmount;
+use Mollie\WooCommerce\ExpressComponent\Flow\ResolveExpressPayment;
+use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\Payment\Rules\PendingPaymentHold;
+use Mollie\WooCommerce\Payment\Rules\UnlinkedPaymentMatch;
+use Mollie\WooCommerce\Payment\Rules\WebhookGuards;
+use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
 use Mollie\Psr\Container\ContainerInterface;
 use Mollie\Psr\Log\LoggerInterface as Logger;
 use WC_Order;
@@ -39,10 +52,14 @@ class MollieOrderService
     // @phpstan-ignore-next-line
     private string $currentLockValue;
     private WebhookHandler $webhookHandler;
+    private ResolveExpressPayment $resolveExpressPayment;
+    private \Mollie\WooCommerce\Payment\OrderLock $orderLock;
+    private EventLog $eventLog;
+    private \Mollie\WooCommerce\Payment\ProcessRecordStore $processRecords;
     /**
      * MollieOrderService constructor.
      */
-    public function __construct(HttpResponse $httpResponse, Logger $logger, \Mollie\WooCommerce\Payment\PaymentFactory $paymentFactory, Data $data, string $pluginId, ContainerInterface $container, WebhookHandler $webhookHandler)
+    public function __construct(HttpResponse $httpResponse, Logger $logger, \Mollie\WooCommerce\Payment\PaymentFactory $paymentFactory, Data $data, string $pluginId, ContainerInterface $container, WebhookHandler $webhookHandler, ResolveExpressPayment $resolveExpressPayment, \Mollie\WooCommerce\Payment\OrderLock $orderLock, EventLog $eventLog, \Mollie\WooCommerce\Payment\ProcessRecordStore $processRecords)
     {
         $this->httpResponse = $httpResponse;
         $this->logger = $logger;
@@ -51,6 +68,10 @@ class MollieOrderService
         $this->pluginId = $pluginId;
         $this->container = $container;
         $this->webhookHandler = $webhookHandler;
+        $this->resolveExpressPayment = $resolveExpressPayment;
+        $this->orderLock = $orderLock;
+        $this->eventLog = $eventLog;
+        $this->processRecords = $processRecords;
     }
     public function setGateway($gateway)
     {
@@ -79,14 +100,26 @@ class MollieOrderService
         }
         $transactionID = sanitize_text_field(wp_unslash($paymentId));
         $this->logger->debug(__METHOD__ . ': Received WC-API webhook with transaction ID: ' . $transactionID);
-        $orders = wc_get_orders(['transaction_id' => $transactionID, 'limit' => 2]);
+        $orders = WebhookOrderLookup::find($transactionID);
         if (!$orders) {
-            $this->logger->debug(__METHOD__ . ': No orders found for transaction ID: ' . $transactionID . ' fall back to search in meta data');
-            //Fallback search order in order mollie oder meta
-            $orders = wc_get_orders(['limit' => 2, 'meta_key' => substr($transactionID, 0, 4) === 'ord_' ? '_mollie_order_id' : '_mollie_payment_id', 'meta_compare' => '=', 'meta_value' => $transactionID]);
-            if (!$orders) {
-                $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
+            try {
+                $expressOrder = $this->resolveExpressPayment->resolve($transactionID);
+            } catch (\Mollie\WooCommerce\Payment\OrderLockTimeout|MollieCallFailed $retryable) {
+                // Nothing was written; Mollie retries.
+                $this->httpResponse->setHttpResponseCode(503);
+                return;
+            }
+            if ($expressOrder !== null) {
+                $orders = [$expressOrder];
+            }
+        }
+        if (!$orders) {
+            $this->logger->debug(__METHOD__ . ': No orders found in mollie meta for transaction ID: ' . $transactionID);
+            try {
                 $this->onWebhookActionFallback($order_id, $key, $transactionID);
+                return;
+            } catch (\Mollie\WooCommerce\Payment\OrderLockTimeout $timeout) {
+                $this->httpResponse->setHttpResponseCode(503);
                 return;
             }
         }
@@ -105,8 +138,13 @@ class MollieOrderService
             $this->logger->debug(__METHOD__ . ":  Invalid key {$key} for order {$order_id}.");
             return;
         }
-        if (!$this->doPaymentForOrder($order)) {
-            $this->httpResponse->setHttpResponseCode(400);
+        try {
+            if (!$this->doPaymentForOrder($order)) {
+                $this->httpResponse->setHttpResponseCode(400);
+            }
+        } catch (\Mollie\WooCommerce\Payment\OrderLockTimeout $timeout) {
+            $this->httpResponse->setHttpResponseCode(503);
+            return;
         }
         // Status 200
     }
@@ -143,6 +181,7 @@ class MollieOrderService
      * @param string $key
      * @param string $payment_object_id
      * @return void
+     * @throws OrderLockTimeout
      */
     public function onWebhookActionFallback(string $order_id, string $key, string $payment_object_id)
     {
@@ -171,7 +210,7 @@ class MollieOrderService
      * additional actions based on the payment status, method, and gateway setup.
      *
      * @param \WC_Order $order The WooCommerce order object to check the payment status for.
-     * @return bool Returns true if the payment is valid or if the order does not need payment.
+     * @return bool Returns true if the payment is valid, if the order does not need payment, or if it is locked.
      *              Returns false if there is a payment issue or the payment cannot be verified.
      */
     public function checkPaymentForUnpaidOrder(\WC_Order $order): bool
@@ -179,18 +218,27 @@ class MollieOrderService
         if (!$order->has_status(['pending'])) {
             return \true;
         }
-        return $this->doPaymentForOrder($order);
+        try {
+            return $this->doPaymentForOrder($order);
+        } catch (\Mollie\WooCommerce\Payment\OrderLockTimeout $timeout) {
+            // Locked by another request, so not unpaid.
+            return \true;
+        }
     }
     /**
      * Processes the payment for a given WooCommerce order.
      *
      * @param \WC_Order $order The order object for which the payment is being processed.
      * @return bool Returns true if the payment was successfully processed, false otherwise.
+     * @throws OrderLockTimeout
      */
     public function doPaymentForOrder(\WC_Order $order, $payment_object_id = ''): bool
     {
         $gateway = wc_get_payment_gateway_by_order($order);
-        if (!$gateway || !mollieWooCommerceIsMollieGateway($gateway->id)) {
+        $isMollieGateway = $gateway && mollieWooCommerceIsMollieGateway($gateway->id);
+        // Before the fetch: a foreign order costs no Mollie call.
+        if (WebhookGuards::decide($isMollieGateway, \false, \false, '', \false) === WebhookGuards::NOT_OURS) {
+            $this->logWebhookGuards($order, WebhookGuards::NOT_OURS, 'mollie=0');
             return \false;
         }
         $this->setGateway($gateway);
@@ -222,56 +270,117 @@ class MollieOrderService
         $this->logger->debug($this->gateway->id . ": Mollie payment object {$payment->id} (" . $payment->mode . ") action call for order {$order->get_id()}.");
         $method_name = 'onWebhook' . ucfirst($payment->status);
         $payment_method_title = $this->getPaymentMethodTitle($payment);
-        // A payment that is not the attempt the order is linked to may only act on the order when
-        // Mollie's own record of that payment names this order (metadata.order_id, written by the
-        // plugin at creation, so a caller cannot forge it).
-        // A superseded attempt that does name the order (e.g. the method the customer abandoned
-        // before paying with another one) must still not terminate it: onWebhookExpired guards that
-        // case itself (and records an order note), failed and canceled are shortcut here.
-        if (!\Mollie\WooCommerce\Payment\MolliePaymentAttempt::isCurrentAttempt($order, (string) $payment->id) && (!\Mollie\WooCommerce\Payment\MolliePaymentAttempt::wasCreatedForOrder($order, $payment) || $this->isTerminalPaymentStatus($payment))) {
-            $this->logger->debug(__METHOD__ . ": webhook for payment {$payment->id} (status {$payment->status}) ignored — " . "order {$order->get_id()} is linked to a different attempt.");
-            return \true;
-        }
-        if (!$this->orderNeedsPayment($order)) {
-            $this->handlePaidOrderWebhook($order, $payment);
-            $this->processRefunds($order, $payment);
-            $this->processChargebacks($order, $payment);
-            if ($order->get_status() === 'processing' && method_exists($payment, 'isCompleted') && $payment->isCompleted() && method_exists($this->webhookHandler, 'onWebhookCompleted')) {
-                $this->webhookHandler->onWebhookCompleted($order, $payment, $payment_method_title, $payment_object);
+        $logMethod = __METHOD__;
+        return $this->orderLock->withFreshOrder($order->get_id(), function (WC_Order $order) use ($payment, $payment_object, $method_name, $payment_method_title, $logMethod): bool {
+            $tracksThisPayment = \Mollie\WooCommerce\Payment\MolliePaymentAttempt::isCurrentAttempt($order, (string) $payment->id);
+            // Mollie's metadata.order_id, written by the plugin at creation: the caller cannot set it.
+            $createdForOrder = \Mollie\WooCommerce\Payment\MolliePaymentAttempt::wasCreatedForOrder($order, $payment);
+            $status = isset($payment->status) ? (string) $payment->status : '';
+            // Before orderNeedsPayment(), which must not log for a superseded payment.
+            if (WebhookGuards::superseded($tracksThisPayment, $createdForOrder, $status)) {
+                $this->logger->debug($logMethod . ": webhook for superseded payment {$payment->id} (status {$payment->status}) ignored — " . "order {$order->get_id()} is linked to a different attempt.");
+                $this->logWebhookGuards($order, WebhookGuards::SUPERSEDED, sprintf('mollie=1 tracks=0 created=%d status=%s', (int) $createdForOrder, $status));
+                return \true;
             }
+            $needsPayment = $this->orderNeedsPayment($order);
+            $inLinkedMollieOrder = \Mollie\WooCommerce\Payment\MolliePaymentAttempt::belongsToLinkedMollieOrder($order, $payment);
+            $verdict = WebhookGuards::decide(\true, $tracksThisPayment, $createdForOrder, $status, $needsPayment, $inLinkedMollieOrder);
+            $this->logWebhookGuards($order, $verdict, sprintf('mollie=1 tracks=%d created=%d status=%s needsPayment=%d', (int) $tracksThisPayment, (int) $createdForOrder, $status, (int) $needsPayment));
+            if ($verdict === WebhookGuards::PAID_ELSEWHERE) {
+                // Its refunds and chargebacks are not the order's money: they must not change the order.
+                $this->recordPaymentNotApplied($order, $payment);
+                return \true;
+            }
+            if ($verdict === WebhookGuards::SETTLED) {
+                $this->handlePaidOrderWebhook($order, $payment);
+                $this->processRefunds($order, $payment);
+                $this->processChargebacks($order, $payment);
+                if ($order->get_status() === 'processing' && method_exists($payment, 'isCompleted') && $payment->isCompleted() && method_exists($this->webhookHandler, 'onWebhookCompleted')) {
+                    $this->webhookHandler->onWebhookCompleted($order, $payment, $payment_method_title, $payment_object);
+                }
+                return \true;
+            }
+            if ($payment->method === 'paypal' && isset($payment->billingAddress) && $this->isOrderButtonPayment($order)) {
+                $this->logger->debug($this->gateway->id . ": updating address from express button");
+                $this->setBillingAddressAfterPayment($payment, $order);
+            }
+            if (method_exists($this->webhookHandler, $method_name)) {
+                do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
+                $this->webhookHandler->{$method_name}($order, $payment, $payment_method_title, $payment_object);
+                $this->holdOrderForPendingPayment($order, $status, (string) ($payment->method ?? ''));
+            } else {
+                $order->add_order_note(sprintf(
+                    /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
+                    __('%1$s payment %2$s (%3$s), not processed.', 'mollie-payments-for-woocommerce'),
+                    $this->gateway->method_title,
+                    $payment->status,
+                    $payment->id . ($payment->mode === 'test' ? ' - ' . __('test mode', 'mollie-payments-for-woocommerce') : '')
+                ));
+                return \false;
+            }
+            do_action($this->pluginId . '_after_webhook_action', $payment, $order);
             return \true;
+        });
+    }
+    private function holdOrderForPendingPayment(WC_Order $order, string $paymentStatus, string $paymentMethod): void
+    {
+        if ($paymentStatus !== 'pending') {
+            return;
         }
-        if ($payment->method === 'paypal' && isset($payment->billingAddress) && $this->isOrderButtonPayment($order)) {
-            $this->logger->debug($this->gateway->id . ": updating address from express button");
-            $this->setBillingAddressAfterPayment($payment, $order);
+        $orderStatus = (string) $order->get_status();
+        $initialOrderStatus = $this->initialOrderStatusOf($order);
+        $holds = PendingPaymentHold::holds($paymentStatus, $paymentMethod, $orderStatus, $initialOrderStatus);
+        $this->eventLog->info('rule.decided', ['order' => $order->get_id(), 'rule' => 'PendingPaymentHold', 'verdict' => $holds ? 'hold' : 'keep', 'inputs' => sprintf('status=%s method=%s order_status=%s initial=%s', $paymentStatus, $paymentMethod, $orderStatus, $initialOrderStatus)]);
+        if ($holds) {
+            $this->updateOrderStatus($order, SharedDataDictionary::STATUS_ON_HOLD, __('Awaiting payment confirmation.', 'mollie-payments-for-woocommerce') . "\n");
         }
-        if (method_exists($this->webhookHandler, $method_name)) {
-            do_action($this->pluginId . '_before_webhook_payment_action', $payment, $order);
-            $this->webhookHandler->{$method_name}($order, $payment, $payment_method_title, $payment_object);
-        } else {
-            $order->add_order_note(sprintf(
-                /* translators: Placeholder 1: payment method title, placeholder 2: payment status, placeholder 3: payment ID */
-                __('%1$s payment %2$s (%3$s), not processed.', 'mollie-payments-for-woocommerce'),
-                $this->gateway->method_title,
-                $payment->status,
-                $payment->id . ($payment->mode === 'test' ? ' - ' . __('test mode', 'mollie-payments-for-woocommerce') : '')
-            ));
-            return \false;
-        }
-        do_action($this->pluginId . '_after_webhook_action', $payment, $order);
-        return \true;
     }
     /**
-     * A terminal Mollie payment status whose webhook handler (onWebhookFailed / onWebhookCanceled)
-     * has no own "different attempt" guard and would otherwise terminate the order. 'expired' is
-     * intentionally excluded: onWebhookExpired already guards the superseded-attempt case itself.
-     *
-     * @param object $payment
+     * The status the order's method starts its orders in, as the payment processor reads it.
      */
-    private function isTerminalPaymentStatus($payment): bool
+    private function initialOrderStatusOf(WC_Order $order): string
     {
-        $status = isset($payment->status) ? (string) $payment->status : '';
-        return in_array($status, ['failed', 'canceled', 'cancelled'], \true);
+        $gateway = wc_get_payment_gateway_by_order($order);
+        if (!$gateway instanceof \WC_Payment_Gateway) {
+            return '';
+        }
+        try {
+            $paymentMethod = $this->container->get('payment_gateway.getPaymentMethod')($gateway->id);
+        } catch (\Throwable $notFound) {
+            return '';
+        }
+        if (!$paymentMethod instanceof PaymentMethodI) {
+            return '';
+        }
+        $initialOrderStatus = apply_filters($this->pluginId . '_initial_order_status', $paymentMethod->getInitialOrderStatus());
+        return (string) apply_filters($this->pluginId . '_initial_order_status_' . $paymentMethod->getProperty('id'), $initialOrderStatus);
+    }
+    /**
+     * Once per payment: a redelivery, or a later refund of it, finds the question already open.
+     *
+     * @param Payment|Order $payment
+     */
+    private function recordPaymentNotApplied(WC_Order $order, $payment): void
+    {
+        $stored = $this->processRecords->read($order);
+        $record = $stored->withOpen(WebhookGuards::PAID_ELSEWHERE, (string) $payment->id);
+        if ($record->open() === $stored->open()) {
+            return;
+        }
+        $this->processRecords->write($order, $record);
+        $order->save();
+        $amount = (string) ($payment->amount->value ?? '');
+        $currency = (string) ($payment->amount->currency ?? '');
+        $order->add_order_note(strtr(
+            /* translators: {payment} payment id, {amount} {currency} its amount, {reason} reason code. */
+            __('Mollie payment {payment} ({amount} {currency}) was not applied to this order ({reason}). Check it in your Mollie dashboard and refund it or handle it by hand.', 'mollie-payments-for-woocommerce'),
+            ['{payment}' => (string) $payment->id, '{amount}' => $amount, '{currency}' => $currency, '{reason}' => WebhookGuards::PAID_ELSEWHERE]
+        ));
+        $this->eventLog->warning('payment.not_applied', ['order' => $order->get_id(), 'mollie_id' => (string) $payment->id, 'status' => (string) $payment->status, 'amount' => $amount, 'currency' => $currency]);
+    }
+    private function logWebhookGuards(WC_Order $order, string $verdict, string $inputs): void
+    {
+        $this->eventLog->info('rule.decided', ['order' => $order->get_id(), 'rule' => 'WebhookGuards', 'verdict' => $verdict, 'inputs' => $inputs]);
     }
     /**
      * @param \WC_Order $order
@@ -292,30 +401,20 @@ class MollieOrderService
         $order_id = $order->get_id();
         $gateway = wc_get_payment_gateway_by_order($order);
         $paymentMethod = $this->container->get('payment_gateway.getPaymentMethod')($gateway->id);
-        // Check whether the order is processed and paid via another gateway
-        if ($this->isOrderPaidByOtherGateway($order)) {
-            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: no, previously processed by other (non-Mollie) gateway.', [\true]);
-            return \false;
+        $paidByOtherGateway = (bool) $this->isOrderPaidByOtherGateway($order);
+        $paidAndProcessed = (bool) $this->isOrderPaidAndProcessed($order);
+        $authorized = '1' === $order->get_meta('_mollie_authorized');
+        $wcNeedsPayment = $order->needs_payment();
+        $onHoldAsInitialStatus = $paymentMethod->getInitialOrderStatus() === SharedDataDictionary::STATUS_ON_HOLD && $order->has_status(SharedDataDictionary::STATUS_ON_HOLD);
+        $needsPayment = WebhookGuards::needsPayment($paidByOtherGateway, $paidAndProcessed, $authorized, $wcNeedsPayment, $onHoldAsInitialStatus);
+        $checksInRuleOrder = [[$paidByOtherGateway, 'no, previously processed by other (non-Mollie) gateway.', [\true]], [!$paidAndProcessed, 'yes, order not previously processed by Mollie gateway.', [\true]], [$authorized, 'yes, order is authorized.', []], [$wcNeedsPayment, 'yes, WooCommerce thinks order needs payment.', [\true]], [$onHoldAsInitialStatus, 'yes, has status On-Hold. ', [\true]]];
+        foreach ($checksInRuleOrder as [$matched, $line, $context]) {
+            if ($matched) {
+                $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: ' . $line, $context);
+                break;
+            }
         }
-        // Check whether the order is processed and paid via Mollie
-        if (!$this->isOrderPaidAndProcessed($order)) {
-            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order not previously processed by Mollie gateway.', [\true]);
-            return \true;
-        }
-        if ('1' === $order->get_meta('_mollie_authorized')) {
-            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, order is authorized.');
-            return \true;
-        }
-        if ($order->needs_payment()) {
-            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, WooCommerce thinks order needs payment.', [\true]);
-            return \true;
-        }
-        // Has initial order status 'on-hold'
-        if ($paymentMethod->getInitialOrderStatus() === SharedDataDictionary::STATUS_ON_HOLD && $order->has_status(SharedDataDictionary::STATUS_ON_HOLD)) {
-            $this->logger->debug(__METHOD__ . ' ' . $gateway->id . ': Order ' . $order_id . ' orderNeedsPayment check: yes, has status On-Hold. ', [\true]);
-            return \true;
-        }
-        return \false;
+        return $needsPayment;
     }
     /**
      * @return bool
@@ -554,9 +653,8 @@ class MollieOrderService
      */
     protected function setBillingAddressAfterPayment($payment, $order)
     {
-        $billingAddress = $payment->billingAddress;
-        $wooBillingAddress = ['first_name' => $billingAddress->givenName, 'last_name' => $billingAddress->familyName, 'email' => $billingAddress->email, 'phone' => null, 'address_1' => $billingAddress->streetAndNumber, 'address_2' => null, 'city' => $billingAddress->city, 'state' => null, 'postcode' => $billingAddress->postalCode, 'country' => $billingAddress->country];
-        $order->set_address($wooBillingAddress, 'billing');
+        // Only the fields Mollie supplied are written.
+        $order->set_address(AddressMapping::toWooCommerce((array) $payment->billingAddress), 'billing');
     }
     /**
      * @param Payment|Order $payment
@@ -629,7 +727,10 @@ class MollieOrderService
     protected function getPaymentMethodTitle($payment)
     {
         $payment_method_title = '';
-        if ('mollie_wc_gateway_' . $payment->method === $this->gateway->id) {
+        // Mollie reports Apple Pay and Google Pay as creditcard: the wallet tells them apart.
+        $wallets = $this->container->get('express.config')['wallets'];
+        $wallet = isset($payment->details->wallet) ? (string) $payment->details->wallet : null;
+        if ('mollie_wc_gateway_' . $payment->method === $this->gateway->id || FirstSight::walletGateway((string) $payment->method, $wallet, $wallets, [$this->gateway->id]) === $this->gateway->id) {
             $payment_method_title = $this->gateway->method_title;
         }
         return $payment_method_title;
@@ -740,6 +841,61 @@ class MollieOrderService
             $this->logger->debug(__METHOD__ . ": payment {$transactionID} not found.", [\true]);
             return '';
         }
+        if (!is_string($payment->redirectUrl) || $payment->redirectUrl === '') {
+            $this->logger->debug(__METHOD__ . ": payment {$transactionID} has no redirect URL.", [\true]);
+            return '';
+        }
         return $payment->redirectUrl;
+    }
+    /**
+     * The order a Mollie order names in its metadata, for a webhook that found no order linked to it
+     * and no redirectUrl to follow. Mollie charges an Apple Pay token when the order is created and
+     * calls at once, before the checkout request has linked it, and answers a token order without a
+     * redirectUrl. The data comes from Mollie, which the plugin just asked; payments (tr_) are never
+     * matched this way (UnlinkedPaymentMatch).
+     */
+    public function orderNamedByPayment(string $transactionID): ?WC_Order
+    {
+        $isMollieOrder = strpos($transactionID, 'ord_') === 0;
+        $mollieOrder = null;
+        if ($isMollieOrder) {
+            try {
+                $paymentObject = $this->paymentFactory->getPaymentObject($transactionID);
+                $mollieOrder = $paymentObject ? $paymentObject->getPaymentObject($paymentObject->data()) : null;
+            } catch (ApiException $exception) {
+                return null;
+            }
+        }
+        $metadata = isset($mollieOrder->metadata) ? (array) $mollieOrder->metadata : [];
+        $orderId = isset($metadata['order_id']) && is_scalar($metadata['order_id']) ? (int) $metadata['order_id'] : 0;
+        $order = $orderId > 0 ? wc_get_order($orderId) : \false;
+        $order = $order instanceof WC_Order ? $order : null;
+        $gateway = $order ? wc_get_payment_gateway_by_order($order) : \false;
+        $verdict = UnlinkedPaymentMatch::admit($isMollieOrder && $mollieOrder !== null, $orderId, $order !== null, $order !== null && (string) ($mollieOrder->orderNumber ?? '') === (string) $order->get_order_number(), $gateway && mollieWooCommerceIsMollieGateway($gateway->id), $order !== null && $order->needs_payment(), $this->mollieAmount($mollieOrder->amount ?? null), $order ? $this->wooCommerceAmount($order) : null);
+        $this->eventLog->info('rule.decided', ['order' => $orderId, 'mollie_id' => $transactionID, 'rule' => 'UnlinkedPaymentMatch', 'verdict' => $verdict instanceof Admit ? 'admit' : $verdict->code()]);
+        return $verdict instanceof Admit ? $order : null;
+    }
+    /**
+     * @param mixed $amount Mollie's {value, currency}, as an object or an array
+     */
+    private function mollieAmount($amount): ?Money
+    {
+        $amount = is_object($amount) ? (array) $amount : $amount;
+        if (!is_array($amount) || !isset($amount['value'], $amount['currency'])) {
+            return null;
+        }
+        try {
+            return Money::fromDecimal((string) $amount['value'], (string) $amount['currency']);
+        } catch (\InvalidArgumentException $unreadable) {
+            return null;
+        }
+    }
+    private function wooCommerceAmount(WC_Order $order): ?Money
+    {
+        try {
+            return WooCommerceAmount::toMoney($order->get_total(), $order->get_currency());
+        } catch (\InvalidArgumentException $unreadable) {
+            return null;
+        }
     }
 }

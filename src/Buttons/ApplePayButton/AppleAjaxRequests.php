@@ -423,6 +423,16 @@ class AppleAjaxRequests
      */
     protected function addAddressesToOrder(\Mollie\WooCommerce\Buttons\ApplePayButton\ApplePayDataObjectHttp $applePayRequestDataObject)
     {
+        add_filter('woocommerce_checkout_posted_data', static function (array $data) use ($applePayRequestDataObject): array {
+            $shippingAddress = $applePayRequestDataObject->shippingAddress();
+            if ($shippingAddress === []) {
+                return $data;
+            }
+            foreach (['first_name', 'last_name', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country'] as $field) {
+                $data['shipping_' . $field] = $shippingAddress[$field] ?? '';
+            }
+            return $data;
+        });
         add_action('woocommerce_checkout_create_order', static function ($order, $data) use ($applePayRequestDataObject) {
             if ($applePayRequestDataObject->shippingMethod() !== null) {
                 $billingAddress = $applePayRequestDataObject->billingAddress();

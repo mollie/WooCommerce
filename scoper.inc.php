@@ -8,7 +8,7 @@ use Mollie\Isolated\Symfony\Component\Finder\Finder;
 $wp_classes = \json_decode(\file_get_contents(__DIR__ . '/vendor/sniccowp/php-scoper-wordpress-excludes/generated/exclude-wordpress-classes.json'), \true);
 $wp_constants = \json_decode(\file_get_contents(__DIR__ . '/vendor/sniccowp/php-scoper-wordpress-excludes/generated/exclude-wordpress-constants.json'), \true);
 $wp_functions = \json_decode(\file_get_contents(__DIR__ . '/vendor/sniccowp/php-scoper-wordpress-excludes/generated/exclude-wordpress-functions.json'), \true);
-$finders = [Finder::create()->files()->ignoreVCS(\true)->ignoreDotFiles(\false)->exclude(['.github', '.ddev', '.idea', 'modules.local', 'tests', 'node_modules'])->in('.')];
+$finders = [Finder::create()->files()->ignoreVCS(\true)->ignoreDotFiles(\false)->exclude(['.github', '.ddev', '.idea', '.psalm', 'modules.local', 'tests', 'node_modules'])->in('.')];
 return [
     'prefix' => 'Mollie',
     // string|null
@@ -24,7 +24,7 @@ return [
     // list<string|regex>
     'exclude-classes' => \array_merge($wp_classes, ['WooCommerce', '/^WC_/', '\WCS_Retry_Manager']),
     // list<string|regex>
-    'exclude-functions' => \array_merge($wp_functions, ['/^wc/', '/^icl_/', '/^wpml_/']),
+    'exclude-functions' => \array_merge($wp_functions, ['/^wc/', '/^icl_/', '/^wpml_/', '/^as_/']),
     // list<string|regex>
     'expose-global-constants' => \false,
     // bool

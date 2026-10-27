@@ -4,6 +4,8 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment;
 
+use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
+use Mollie\WooCommerce\Payment\Rules\CancelUnpaidSchedule;
 use Mollie\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\Inpsyde\Modularity\Module\ServiceModule;
@@ -89,8 +91,9 @@ class PaymentModule implements ServiceModule, ExecutableModule
         add_action('woocommerce_order_status_completed', [$this, 'shipAndCaptureOrderAtMollie']);
         add_filter('woocommerce_cancel_unpaid_order', [$this, 'maybeLetWCCancelOrder'], 9, 2);
         $paymentMethods = $container->get('gateway.paymentMethods');
-        add_action('init', function () use ($paymentMethods) {
-            $this->handleExpiryDateCancelation($paymentMethods);
+        add_action('init', function () use ($paymentMethods, $container) {
+            $expressCleanup = $container->has('express.cleanup_needed') && $container->get('express.cleanup_needed')();
+            $this->handleExpiryDateCancelation($paymentMethods, $expressCleanup);
         }, 10, 0);
         add_action(OrderItemsRefunder::ACTION_AFTER_REFUND_ORDER_ITEMS, [$this, 'addOrderNoteForRefundCreated'], 10, 3);
         add_action(OrderItemsRefunder::ACTION_AFTER_CANCELED_ORDER_ITEMS, [$this, 'addOrderNoteForCancelledLineItems'], 10, 2);
@@ -143,8 +146,21 @@ class PaymentModule implements ServiceModule, ExecutableModule
     private function cancelOrderIfStillUnpaid($unpaid_order)
     {
         $order = wc_get_order($unpaid_order);
+        if (!$order instanceof \WC_Order || $order->get_created_via() === StartOrderDecision::CREATED_VIA) {
+            // An express order is cancelled only by ExpireAbandonedExpressOrders, which asks Mollie first.
+            return;
+        }
+        if (!$order->has_status('pending')) {
+            return;
+        }
         $mollieOrderService = $this->container->get(\Mollie\WooCommerce\Payment\MollieOrderService::class);
-        if ($mollieOrderService->checkPaymentForUnpaidOrder($order)) {
+        try {
+            $checked = $mollieOrderService->doPaymentForOrder($order);
+        } catch (\Mollie\WooCommerce\Payment\OrderLockTimeout $busy) {
+            // Busy elsewhere; the next run looks again.
+            return;
+        }
+        if ($checked) {
             $order = wc_get_order($unpaid_order);
             if (!$order->has_status('pending')) {
                 return;
@@ -400,17 +416,19 @@ class PaymentModule implements ServiceModule, ExecutableModule
         return;
     }
     /**
-     * Add/remove scheduled action to cancel orders on expiration date
+     * Add/remove scheduled action to cancel orders on expiration date, and to clean up abandoned
+     * express orders, which run on the same action
      * @param $paymentMethods
+     * @param bool $expressCleanup Express is on, or one of its pending orders may be left.
      * @return void
      */
-    public function handleExpiryDateCancelation($paymentMethods)
+    public function handleExpiryDateCancelation($paymentMethods, bool $expressCleanup = \false)
     {
-        if (!$this->IsExpiryDateEnabled($paymentMethods)) {
+        if (!CancelUnpaidSchedule::needed($this->gatewaySettings($paymentMethods), $expressCleanup)) {
             as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;
         }
-        $canSchedule = function_exists('Mollie\as_schedule_single_action');
+        $canSchedule = function_exists('as_schedule_single_action');
         if ($canSchedule) {
             if (\false === as_next_scheduled_action('mollie_woocommerce_cancel_unpaid_orders')) {
                 as_schedule_recurring_action(time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');
@@ -425,17 +443,21 @@ class PaymentModule implements ServiceModule, ExecutableModule
      */
     public function IsExpiryDateEnabled($paymentMethods): bool
     {
+        return CancelUnpaidSchedule::needed($this->gatewaySettings($paymentMethods), \false);
+    }
+    /**
+     * Each payment method's stored settings, as get_option() returns them.
+     *
+     * @param $paymentMethods
+     * @return array<int, mixed>
+     */
+    private function gatewaySettings($paymentMethods): array
+    {
+        $settings = [];
         foreach ($paymentMethods as $paymentMethod) {
-            $optionName = "mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings";
-            $option = get_option($optionName, \false);
-            if (!empty($option) && isset($option['enabled']) && $option['enabled'] !== 'yes') {
-                continue;
-            }
-            if (!empty($option["activate_expiry_days_setting"]) && $option["activate_expiry_days_setting"] === 'yes') {
-                return \true;
-            }
+            $settings[] = get_option("mollie_wc_gateway_{$paymentMethod->getProperty('id')}_settings", \false);
         }
-        return \false;
+        return $settings;
     }
     /**
      * Returns the order from the Request first by Id, if not by Key

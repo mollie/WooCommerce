@@ -45,7 +45,8 @@ class ApplePayDirectHandler
                     '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
                     '</a>'
                 );
-                echo '<div class="notice notice-error"><p>' . wp_kses_post($message) . '</p></div>';
+                echo (new AdminNotice())->renderNotice('notice-error', '<p>' . $message . '</p>');
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
             });
             return;
         }
@@ -58,7 +59,8 @@ class ApplePayDirectHandler
                     '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server" target="_blank">',
                     '</a>'
                 );
-                echo '<div class="notice notice-error"><p>' . wp_kses_post($message) . '</p></div>';
+                echo (new AdminNotice())->renderNotice('notice-error', '<p>' . $message . '</p>');
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
             });
         }
         if ($buttonEnabledProduct) {

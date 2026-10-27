@@ -16,7 +16,9 @@ class SharedModule implements ServiceModule
     use ModuleClassNameIdTrait;
     public function services(): array
     {
-        return ['shared.plugin_id' => static function (ContainerInterface $container): string {
+        return [\Mollie\WooCommerce\Shared\Clock::class => static function (): \Mollie\WooCommerce\Shared\Clock {
+            return new \Mollie\WooCommerce\Shared\SystemClock();
+        }, 'shared.plugin_id' => static function (ContainerInterface $container): string {
             //Get plugin legacy id
             return $container->get('properties')->get('textDomain');
         }, 'shared.plugin_version' => static function (ContainerInterface $container): string {

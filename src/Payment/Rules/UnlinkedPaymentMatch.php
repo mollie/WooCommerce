@@ -12,7 +12,7 @@ use Mollie\WooCommerce\Shared\Values\Refuse;
  * Whether a Mollie order no WooCommerce order is linked to yet may be handed to the order its
  * metadata names. Only a Mollie order qualifies: the plugin creates one per WooCommerce order, with
  * that order's number, through the Orders API, while express and other payments are tr_ payments
- * that must never pay an order they were not created for (REQ-G5). The data comes from Mollie,
+ * that must never pay an order they were not created for. The data comes from Mollie,
  * which the plugin asked; a refusal is answered 200, as before.
  */
 final class UnlinkedPaymentMatch

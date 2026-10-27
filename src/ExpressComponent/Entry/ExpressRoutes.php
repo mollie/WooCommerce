@@ -33,7 +33,7 @@ class ExpressRoutes
     public function register(): void
     {
         register_rest_route(RestApi::ROUTE_NAMESPACE, self::SESSION_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'startSession'], 'permission_callback' => [$this, 'admitSession'], 'args' => ['nonce' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field']]]]);
-        register_rest_route(RestApi::ROUTE_NAMESPACE, self::ORDER_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'startOrder'], 'permission_callback' => [$this, 'admitOrder'], 'args' => ['nonce' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field']]]]);
+        register_rest_route(RestApi::ROUTE_NAMESPACE, self::ORDER_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'startOrder'], 'permission_callback' => [$this, 'admitOrder'], 'args' => ['nonce' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field'], 'token' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field']]]]);
     }
     /**
      * @return true|WP_Error
@@ -64,7 +64,7 @@ class ExpressRoutes
     }
     public function startOrder(WP_REST_Request $request): WP_REST_Response
     {
-        $result = FormPaymentMethod::setAsideDuring(fn(): ExpressOrderResult => $this->startOrder->start());
+        $result = FormPaymentMethod::setAsideDuring(fn(): ExpressOrderResult => $this->startOrder->start((string) $request->get_param('token')));
         if ($result->isOk()) {
             $data = ['ok' => \true];
         } else {
@@ -86,7 +86,7 @@ class ExpressRoutes
         }
         // Anyone can cause this: info, not a warning.
         $this->log->info($event, $fields + ['reason' => $decision->code()]);
-        return new WP_Error('mollie_express_forbidden', __('Express checkout could not be started. Please reload the page and try again.', 'mollie-payments-for-woocommerce'), ['status' => $decision->httpStatus()]);
+        return new WP_Error('mollie_express_forbidden', self::messageFor('mollie_express_forbidden'), ['status' => $decision->httpStatus()]);
     }
     private function admission(string $entryPoint, WP_REST_Request $request): Admit|Refuse
     {
@@ -98,9 +98,10 @@ class ExpressRoutes
     public static function messageFor(string $code): string
     {
         return match ($code) {
+            'mollie_express_forbidden' => __('Express checkout could not be started. Please reload the page and try again.', 'mollie-payments-for-woocommerce'),
             'shipping_incomplete' => __('Your order contains items to ship. Please fill in the shipping details to use express checkout.', 'mollie-payments-for-woocommerce'),
             'session_missing', 'session_expired' => __('Express checkout has expired. Please try again.', 'mollie-payments-for-woocommerce'),
-            'cart_changed' => __('Your order changed after express checkout was started. Please try again.', 'mollie-payments-for-woocommerce'),
+            'cart_changed', 'session_replaced' => __('Your order changed after express checkout was started. Please try again.', 'mollie-payments-for-woocommerce'),
             'try_again' => __('Express checkout is busy with this order. Please try again in a moment.', 'mollie-payments-for-woocommerce'),
             'budget_exhausted' => __('Express checkout was started too often. Please wait a few minutes, or use the regular checkout.', 'mollie-payments-for-woocommerce'),
             'order_not_payable' => __('This express checkout was already completed. Please check your email for the order confirmation.', 'mollie-payments-for-woocommerce'),

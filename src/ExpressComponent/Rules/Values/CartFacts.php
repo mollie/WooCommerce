@@ -15,8 +15,10 @@ final class CartFacts
      * @param list<CartFee> $fees
      * @param list<CartCoupon> $coupons
      * @param string $destination The one the shipping rates were calculated for.
+     * @param bool $taxesFollowCustomerAddress Taxes are calculated on the customer's address, not the shop's.
+     * @param bool $customerAddressSaved The address the taxes follow is saved on the customer's account.
      */
-    public function __construct(private array $lines, private bool $needsShipping, private bool $shippingDestinationComplete, private bool $shippingRateChosen, private ?Money $total = null, private array $fees = [], private array $coupons = [], private ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\CartShipping $shipping = null, private string $cartHash = '', private string $destination = '')
+    public function __construct(private array $lines, private bool $needsShipping, private bool $shippingDestinationComplete, private bool $shippingRateChosen, private ?Money $total = null, private array $fees = [], private array $coupons = [], private ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\CartShipping $shipping = null, private string $cartHash = '', private string $destination = '', private bool $taxesFollowCustomerAddress = \false, private bool $customerAddressSaved = \false)
     {
     }
     /**
@@ -67,5 +69,13 @@ final class CartFacts
     public function destination(): string
     {
         return $this->destination;
+    }
+    public function taxesFollowCustomerAddress(): bool
+    {
+        return $this->taxesFollowCustomerAddress;
+    }
+    public function customerAddressSaved(): bool
+    {
+        return $this->customerAddressSaved;
     }
 }

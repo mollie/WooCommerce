@@ -26,7 +26,7 @@ final class ResolveExpressPayment
 {
     private const FLOW = 'express.payment.resolve';
     /**
-     * @param array<string, array{gatewayId: string, paidAs: string}> $wallets
+     * @param array<string, array{gatewayId: string, paidAs?: string, paidWallet?: string}> $wallets
      * @param callable(): array<int, string> $registeredGatewayIds
      */
     public function __construct(private MollieApi $mollie, private ExpressOrderFactsBuilder $orderFacts, private OrderLock $lock, private ExpressOrderWriter $writer, private EventLog $log, private OrphanedExpressPayments $orphaned, private array $wallets, private $registeredGatewayIds)
@@ -98,7 +98,7 @@ final class ResolveExpressPayment
                 return null;
             }
             $firstSight = FirstSight::decide($payment, $facts, $this->wallets, $registeredGatewayIds);
-            $this->log->info('rule.decided', ['order' => $facts->orderId(), 'rule' => 'FirstSight', 'verdict' => $firstSight->gatewayId() !== null ? 'gateway' : 'unmatched', 'inputs' => sprintf('method=%s gateway=%s', (string) $payment->method(), (string) $firstSight->gatewayId())]);
+            $this->log->info('rule.decided', ['order' => $facts->orderId(), 'rule' => 'FirstSight', 'verdict' => $firstSight->gatewayId() !== null ? 'gateway' : 'unmatched', 'inputs' => sprintf('method=%s wallet=%s gateway=%s', (string) $payment->method(), $this->matchedWalletKey((string) $firstSight->gatewayId()), (string) $firstSight->gatewayId())]);
             $this->writer->recordFirstSight($fresh, $firstSight);
             return $fresh;
         });
@@ -116,6 +116,16 @@ final class ResolveExpressPayment
         $decision = ExpressOrderMatch::admit($payment, $facts);
         $this->log->info('rule.decided', ['order' => $facts !== null ? $facts->orderId() : 0, 'rule' => 'ExpressOrderMatch', 'verdict' => $decision instanceof Refuse ? $decision->code() : 'admit', 'inputs' => $this->matchInputs($payment, $facts)]);
         return $decision;
+    }
+    /** The wallets key (applepay, googlepay, paypal) of the chosen gateway; empty when none matched. */
+    private function matchedWalletKey(string $gatewayId): string
+    {
+        foreach ($this->wallets as $key => $row) {
+            if ($gatewayId !== '' && $row['gatewayId'] === $gatewayId) {
+                return (string) $key;
+            }
+        }
+        return '';
     }
     private function matchInputs(PaymentSnapshot $payment, ?ExpressOrderFacts $facts): string
     {

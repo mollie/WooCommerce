@@ -14,7 +14,7 @@ class ExpressFactsBuilder
 {
     private const GATEWAY_PREFIX = 'mollie_wc_gateway_';
     /**
-     * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
+     * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
      * @param array<string, mixed> $paymentMethods Keyed by Mollie method id.
      * @param callable(): array<int, string> $activeMollieMethods Cached method ids active on the profile.
      */
@@ -36,6 +36,13 @@ class ExpressFactsBuilder
     public function mode(): string
     {
         return $this->settings->isTestModeEnabled() ? 'test' : 'live';
+    }
+    /**
+     * The mode and the profile stored when its key was saved; options only, no Mollie call.
+     */
+    public function account(): string
+    {
+        return $this->mode() . ':' . (string) get_option($this->settings->getSettingId('profile_merchant_id'), '');
     }
     /** Options only, no Mollie call: cheap enough to run on every request. */
     public function anyWalletTurnedOn(): bool

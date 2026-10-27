@@ -20,20 +20,6 @@ $loader = (static function () {
     return $loader;
 })();
 
-// Class aliases. For more information see:
-// https://github.com/humbug/php-scoper/blob/master/docs/further-reading.md#class-aliases
-if (!function_exists('humbug_phpscoper_expose_class')) {
-    function humbug_phpscoper_expose_class($exposed, $prefixed) {
-        if (!class_exists($exposed, false) && !interface_exists($exposed, false) && !trait_exists($exposed, false)) {
-            spl_autoload_call($prefixed);
-        }
-    }
-}
-humbug_phpscoper_expose_class('WC_Product_Subscription_Variation', 'Mollie\WC_Product_Subscription_Variation');
-humbug_phpscoper_expose_class('WC_Subscriptions_Manager', 'Mollie\WC_Subscriptions_Manager');
-humbug_phpscoper_expose_class('WC_Product_Variable_Subscription', 'Mollie\WC_Product_Variable_Subscription');
-humbug_phpscoper_expose_class('WC_Subscriptions_Admin', 'Mollie\WC_Subscriptions_Admin');
-
 // Function aliases. For more information see:
 // https://github.com/humbug/php-scoper/blob/master/docs/further-reading.md#function-aliases
 if (!function_exists('has_block')) { function has_block() { return \Mollie\has_block(...func_get_args()); } }
@@ -82,6 +68,5 @@ if (!function_exists('mb_substr_count')) { function mb_substr_count() { return \
 if (!function_exists('mb_trim')) { function mb_trim() { return \Mollie\mb_trim(...func_get_args()); } }
 if (!function_exists('mb_ucfirst')) { function mb_ucfirst() { return \Mollie\mb_ucfirst(...func_get_args()); } }
 if (!function_exists('untrailingslashit')) { function untrailingslashit() { return \Mollie\untrailingslashit(...func_get_args()); } }
-if (!function_exists('wcs_get_subscriptions')) { function wcs_get_subscriptions() { return \Mollie\wcs_get_subscriptions(...func_get_args()); } }
 
 return $loader;

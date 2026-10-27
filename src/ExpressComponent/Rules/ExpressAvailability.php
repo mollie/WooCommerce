@@ -41,6 +41,10 @@ final class ExpressAvailability
                 return ExpressAvailabilityResult::unavailable('subscription_in_cart');
             }
         }
+        // Nothing ships, so no form gives the address the taxes wait for: the price is not known yet.
+        if (!$cart->needsShipping() && $cart->taxesFollowCustomerAddress() && !$cart->customerAddressSaved()) {
+            return ExpressAvailabilityResult::unavailable('tax_address_unknown');
+        }
         if (!in_array(\true, \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons($settings, $shop, $cart), \true)) {
             return ExpressAvailabilityResult::blocked('shipping_incomplete');
         }

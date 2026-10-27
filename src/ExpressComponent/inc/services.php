@@ -60,7 +60,7 @@ return static function (): array {
             return new ExpressUrls($secret);
         },
         StartExpressSession::class => static function (ContainerInterface $container): StartExpressSession {
-            return new StartExpressSession($container->get(CartFactsBuilder::class), $container->get(ExpressFactsBuilder::class), $container->get(ExpressSessionStore::class), $container->get(ExpressSessionBudget::class), $container->get(ExpressUrls::class), $container->get(MollieApi::class), $container->get(Clock::class), $container->get(EventLog::class), (int) $container->get('express.config')['sessionReuseMarginSeconds']);
+            return new StartExpressSession($container->get(CartFactsBuilder::class), $container->get(ExpressFactsBuilder::class), $container->get(ExpressOrderFactsBuilder::class), $container->get(ExpressSessionStore::class), $container->get(ExpressSessionBudget::class), $container->get(ExpressUrls::class), $container->get(MollieApi::class), $container->get(Clock::class), $container->get(EventLog::class), (int) $container->get('express.config')['sessionReuseMarginSeconds']);
         },
         PendingExpressOrders::class => static function (): PendingExpressOrders {
             return new PendingExpressOrders();
@@ -85,7 +85,7 @@ return static function (): array {
             return new StartExpressOrder($container->get(CartFactsBuilder::class), $container->get(ExpressFactsBuilder::class), $container->get(ExpressOrderFactsBuilder::class), $container->get(ExpressSessionStore::class), $container->get(ExpressOrderFactory::class), $container->get(ExpressOrderWriter::class), $container->get(OrderLock::class), $container->get(Clock::class), $container->get(EventLog::class));
         },
         ExpressReturnHandler::class => static function (ContainerInterface $container): ExpressReturnHandler {
-            return new ExpressReturnHandler($container->get(ExpressOrderFactsBuilder::class), $container->get(EventLog::class));
+            return new ExpressReturnHandler($container->get(ExpressOrderFactsBuilder::class), $container->get(ExpressSessionStore::class), $container->get(EventLog::class));
         },
         ExpireAbandonedExpressOrders::class => static function (ContainerInterface $container): ExpireAbandonedExpressOrders {
             return new ExpireAbandonedExpressOrders($container->get(ExpressOrderFactsBuilder::class), $container->get(MollieApi::class), $container->get(OrderLock::class), $container->get(ExpressOrderWriter::class), $container->get(Clock::class), $container->get(EventLog::class), $container->get(PendingExpressOrders::class), $container->get(ExpressFactsBuilder::class), (int) $container->get('express.config')['abandonGraceSeconds']);

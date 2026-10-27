@@ -428,7 +428,7 @@ class PaymentModule implements ServiceModule, ExecutableModule
             as_unschedule_action('mollie_woocommerce_cancel_unpaid_orders');
             return;
         }
-        $canSchedule = function_exists('Mollie\as_schedule_single_action');
+        $canSchedule = function_exists('as_schedule_single_action');
         if ($canSchedule) {
             if (\false === as_next_scheduled_action('mollie_woocommerce_cancel_unpaid_orders')) {
                 as_schedule_recurring_action(time(), 600, 'mollie_woocommerce_cancel_unpaid_orders');

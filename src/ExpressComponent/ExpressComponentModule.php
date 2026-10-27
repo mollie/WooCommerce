@@ -8,6 +8,7 @@ use Mollie\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\Inpsyde\Modularity\Module\ServiceModule;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\OrphanedExpressPayments;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressAssets;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\CartFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressReturnHandler;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
@@ -29,20 +30,25 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
     }
     public function run(ContainerInterface $container): bool
     {
-        add_filter('mollie_wc_express_owns_surface', static function ($owns, $surface) use ($container): bool {
-            $facts = $container->get(ExpressFactsBuilder::class);
-            assert($facts instanceof ExpressFactsBuilder);
-            return SurfaceOwnership::owns($facts->settings(), $facts->shopFacts(), (string) $surface);
+        // Decided once per request and surface, from the cart as the page is rendered.
+        $owned = [];
+        add_filter('mollie_wc_express_owns_surface', static function ($owns, $surface) use ($container, &$owned): bool {
+            $surface = (string) $surface;
+            $owned[$surface] ??= self::owns($container, $surface);
+            return $owned[$surface];
         }, 10, 2);
         add_action('rest_api_init', static function () use ($container): void {
             $routes = $container->get(ExpressRoutes::class);
             assert($routes instanceof ExpressRoutes);
             $routes->register();
         });
-        add_action('wp_enqueue_scripts', static function () use ($container): void {
+        add_action('wp_enqueue_scripts', static function () use ($container, &$owned): void {
             $assets = $container->get(ExpressAssets::class);
             assert($assets instanceof ExpressAssets);
-            $assets->enqueue();
+            $assets->enqueue(static function () use ($container, &$owned): bool {
+                $owned[ExpressAssets::SURFACE] ??= self::owns($container, ExpressAssets::SURFACE);
+                return $owned[ExpressAssets::SURFACE];
+            });
         });
         add_action('woocommerce_api_' . ExpressUrls::RETURN_API, static function () use ($container): void {
             $handler = $container->get(ExpressReturnHandler::class);
@@ -69,5 +75,20 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $cleanup->run();
         }, 12, 0);
         return \true;
+    }
+    /**
+     * A cart WooCommerce has not loaded is not owned.
+     */
+    private static function owns(ContainerInterface $container, string $surface): bool
+    {
+        $facts = $container->get(ExpressFactsBuilder::class);
+        assert($facts instanceof ExpressFactsBuilder);
+        $carts = $container->get(CartFactsBuilder::class);
+        assert($carts instanceof CartFactsBuilder);
+        $cart = $carts->fromCart();
+        if ($cart === null) {
+            return \false;
+        }
+        return SurfaceOwnership::owns($facts->settings(), $facts->shopFacts(), $cart, $surface);
     }
 }

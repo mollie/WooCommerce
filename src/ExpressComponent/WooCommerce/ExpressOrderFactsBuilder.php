@@ -26,7 +26,7 @@ class ExpressOrderFactsBuilder
         if ($remembered === null) {
             return null;
         }
-        return new RememberedSession($remembered['id'], $remembered['ref'], $remembered['fingerprint'], $remembered['expiresAt']);
+        return new RememberedSession($remembered['id'], $remembered['token'], $remembered['ref'], $remembered['fingerprint'], $remembered['expiresAt']);
     }
     public function orderByRef(string $ref): ?WC_Order
     {

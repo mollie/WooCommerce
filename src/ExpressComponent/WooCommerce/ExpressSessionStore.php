@@ -13,7 +13,7 @@ class ExpressSessionStore
     private const ATTEMPTS_KEY = 'mollie_express_session_attempts';
     private const SEED_KEY = 'mollie_express_session_seed';
     /**
-     * @return array{id: string, token: string, expiresAt: int, fingerprint: string, ref: string, attempt: int}|null
+     * @return array{id: string, token: string, expiresAt: int, fingerprint: string, account: string, ref: string, attempt: int}|null
      */
     public function remembered(): ?array
     {
@@ -22,15 +22,24 @@ class ExpressSessionStore
         if (!is_array($stored) || !isset($stored['id'], $stored['token'], $stored['expiresAt'], $stored['fingerprint'], $stored['ref'], $stored['attempt'])) {
             return null;
         }
-        return ['id' => (string) $stored['id'], 'token' => (string) $stored['token'], 'expiresAt' => (int) $stored['expiresAt'], 'fingerprint' => (string) $stored['fingerprint'], 'ref' => (string) $stored['ref'], 'attempt' => (int) $stored['attempt']];
+        return [
+            'id' => (string) $stored['id'],
+            'token' => (string) $stored['token'],
+            'expiresAt' => (int) $stored['expiresAt'],
+            'fingerprint' => (string) $stored['fingerprint'],
+            // Absent in a session remembered before the account was; it then matches no account.
+            'account' => (string) ($stored['account'] ?? ''),
+            'ref' => (string) $stored['ref'],
+            'attempt' => (int) $stored['attempt'],
+        ];
     }
-    public function remember(string $id, string $token, int $expiresAt, string $fingerprint, string $ref, int $attempt): void
+    public function remember(string $id, string $token, int $expiresAt, string $fingerprint, string $account, string $ref, int $attempt): void
     {
         $session = $this->session();
         if (!$session) {
             return;
         }
-        $session->set(self::SESSION_KEY, ['id' => $id, 'token' => $token, 'expiresAt' => $expiresAt, 'fingerprint' => $fingerprint, 'ref' => $ref, 'attempt' => $attempt]);
+        $session->set(self::SESSION_KEY, ['id' => $id, 'token' => $token, 'expiresAt' => $expiresAt, 'fingerprint' => $fingerprint, 'account' => $account, 'ref' => $ref, 'attempt' => $attempt]);
         $session->set(self::ATTEMPTS_KEY, max($attempt, $this->attemptsSoFar()));
     }
     public function forget(): void

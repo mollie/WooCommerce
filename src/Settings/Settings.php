@@ -270,7 +270,12 @@ class Settings
             $status->getMollieApiStatus($apiClient);
             return \Mollie\WooCommerce\Settings\ConnectionResult::connected();
         } catch (ApiException $e) {
-            return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_API, (int) $e->getCode(), Status::plainApiErrorMessage($e));
+            $message = Status::plainApiErrorMessage($e);
+            // A key that passes the format check with extra characters gets a 400, not a 401.
+            if ((int) $e->getCode() === 400 && stripos($message, 'Authorization header') !== \false) {
+                return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_API_KEY, 400, '');
+            }
+            return \Mollie\WooCommerce\Settings\ConnectionResult::failed(\Mollie\WooCommerce\Settings\ConnectionResult::KIND_API, (int) $e->getCode(), $message);
         }
     }
     /**

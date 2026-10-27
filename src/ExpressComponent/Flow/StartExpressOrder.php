@@ -33,14 +33,14 @@ final class StartExpressOrder
     public function __construct(private CartFactsBuilder $cartFacts, private ExpressFactsBuilder $expressFacts, private ExpressOrderFactsBuilder $orderFacts, private ExpressSessionStore $store, private ExpressOrderFactory $factory, private ExpressOrderWriter $writer, private OrderLock $lock, private Clock $clock, private EventLog $log)
     {
     }
-    public function start(): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult
+    public function start(string $submittedToken): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult
     {
         $started = microtime(\true);
         $this->log->step(self::FLOW . '.started', ['entry' => 'submit']);
         $result = null;
         $endedBadly = \true;
         try {
-            $result = $this->startOrRefuse($endedBadly);
+            $result = $this->startOrRefuse($submittedToken, $endedBadly);
             return $result;
         } finally {
             $this->log->step(self::FLOW . '.finished', ['result' => $result === null ? 'failed' : ($result->isOk() ? 'ok' : (string) $result->code()), 'ms' => (int) round((microtime(\true) - $started) * 1000)]);
@@ -50,7 +50,7 @@ final class StartExpressOrder
     /**
      * @param-out bool $endedBadly
      */
-    private function startOrRefuse(bool &$endedBadly): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult
+    private function startOrRefuse(string $submittedToken, bool &$endedBadly): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult
     {
         $session = $this->orderFacts->rememberedSession();
         if ($session === null) {
@@ -58,8 +58,8 @@ final class StartExpressOrder
             return $this->refuse(null, 'session_missing', self::HTTP_CONFLICT);
         }
         try {
-            $result = $this->lock->withLock($session->expressRef(), function () use ($session): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult {
-                return $this->startLocked($session);
+            $result = $this->lock->withLock($session->expressRef(), function () use ($session, $submittedToken): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult {
+                return $this->startLocked($session, $submittedToken);
             });
             $endedBadly = \false;
             return $result;
@@ -67,12 +67,12 @@ final class StartExpressOrder
             return $this->refuse($session, 'try_again', 503);
         }
     }
-    private function startLocked(RememberedSession $session): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult
+    private function startLocked(RememberedSession $session, string $submittedToken): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressOrderResult
     {
         $order = $this->orderFacts->orderByRef($session->expressRef());
         $existing = $order instanceof WC_Order ? $this->orderFacts->fromOrder($order) : null;
         $cart = $this->cartFacts->fromCart() ?? new CartFacts([], \false, \false, \false);
-        $decision = StartOrderDecision::admit($session, $existing, $cart, $this->clock->now());
+        $decision = StartOrderDecision::admit($session, $submittedToken, $existing, $cart, $this->clock->now());
         $this->logDecision($session, $existing, $cart, $decision);
         if ($decision instanceof Refuse) {
             if (in_array($decision->code(), self::REFUSALS_THAT_SPEND_SESSION, \true)) {

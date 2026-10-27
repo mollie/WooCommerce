@@ -11,6 +11,14 @@ class GatewaySurchargeHandler
     protected $gatewayFeeLabel;
     protected $surcharge;
     /**
+     * The payment method posted to the Store API checkout in this request
+     */
+    protected ?string $storeApiPaymentMethod = null;
+    /**
+     * The order paid through the Store API order-pay route in this request
+     */
+    protected int $storeApiOrderPayId = 0;
+    /**
      * GatewaySurchargeHandler constructor.
      */
     public function __construct(Surcharge $surcharge)
@@ -36,6 +44,9 @@ class GatewaySurchargeHandler
             $this->updateSurchargeOrderPay();
         });
         add_action('woocommerce_order_item_meta_end', [$this, 'renderHiddenOrderKeyFields'], 10, 4);
+        add_action('woocommerce_before_pay_action', [$this, 'recalculateSurchargeOnPayAction']);
+        add_filter('rest_request_before_callbacks', [$this, 'rememberStoreApiCheckout'], 10, 3);
+        add_action('woocommerce_store_api_checkout_order_processed', [$this, 'recalculateSurchargeOnStoreApiOrderPay']);
     }
     public function renderHiddenOrderKeyFields($item_id, $item, $order, $bool = \false)
     {
@@ -82,35 +93,142 @@ class GatewaySurchargeHandler
     }
     public function updateSurchargeOrderPay()
     {
-        if (!$this->verifyNonce()) {
+        $order = $this->verifyNonce() ? $this->canProcessOrder() : \false;
+        $gatewayName = $order ? $this->canProcessGateway() : \false;
+        if (!$order || !$gatewayName) {
+            // wp_send_json_error() ends the request
+            wp_send_json_error();
+        }
+        $amount = $this->applyOrderSurcharge($order, $gatewayName);
+        $data = ['amount' => $amount > 0 ? $amount : \false, 'currency' => get_woocommerce_currency_symbol(), 'newTotal' => $order->get_total()];
+        if ($amount > 0) {
+            $data['name'] = $this->gatewayFeeLabel;
+        }
+        wp_send_json_success($data);
+    }
+    /**
+     * Applies the surcharge of the gateway submitted on the order-pay form before
+     * the payment is processed.
+     * WC_Form_Handler::pay_action() verifies the nonce, the order key and
+     * that the order needs payment before firing this hook.
+     *
+     * @param mixed $order
+     */
+    public function recalculateSurchargeOnPayAction($order): void
+    {
+        if (!$order instanceof WC_Order || !$order->needs_payment()) {
             return;
         }
-        $order = $this->canProcessOrder();
-        if (!$order) {
-            return;
-        }
-        $gatewayName = $this->canProcessGateway();
+        $gatewayName = $this->canProcessGateway('payment_method');
         if (!$gatewayName) {
             return;
         }
-        $this->orderRemoveFee($order);
-        $gatewaySettings = $this->gatewaySettings($gatewayName);
-        $orderAmount = (float) $order->get_total();
-        if ($this->surcharge->aboveMaxLimit($orderAmount, $gatewaySettings)) {
+        $this->recalculateOrderSurcharge($order, $gatewayName);
+    }
+    /**
+     * Remembers the payment method posted to the Store API checkout, and the order
+     * paid through the Store API order-pay route, so the surcharge follows the
+     * payment method the order is placed with.
+     *
+     * @param mixed $response
+     * @param mixed $handler
+     * @param mixed $request
+     * @return mixed The unchanged response
+     */
+    public function rememberStoreApiCheckout($response, $handler, $request)
+    {
+        if (!$request instanceof \WP_REST_Request || $request->get_method() !== 'POST') {
+            return $response;
+        }
+        if (!preg_match('#^/wc/store(?:/v\d+)?/checkout(?:/(\d+))?$#', $request->get_route(), $matches)) {
+            return $response;
+        }
+        $paymentMethod = $request->get_param('payment_method');
+        $this->storeApiPaymentMethod = is_string($paymentMethod) ? sanitize_text_field($paymentMethod) : '';
+        $this->storeApiOrderPayId = isset($matches[1]) ? absint($matches[1]) : 0;
+        return $response;
+    }
+    /**
+     * Applies the surcharge of the order's payment method when an existing order is
+     * paid through the Store API order-pay route (POST /wc/store/v1/checkout/{id}),
+     * as recalculateSurchargeOnPayAction() does for the order-pay form. The route has
+     * already checked that the order needs payment and set the payment method on it.
+     *
+     * @param mixed $order
+     */
+    public function recalculateSurchargeOnStoreApiOrderPay($order): void
+    {
+        if (!$order instanceof WC_Order || $this->storeApiOrderPayId !== $order->get_id()) {
             return;
         }
-        if (!isset($gatewaySettings['payment_surcharge']) || $gatewaySettings['payment_surcharge'] === Surcharge::NO_FEE) {
-            $data = ['amount' => \false, 'currency' => get_woocommerce_currency_symbol(), 'newTotal' => $order->get_total()];
-            wp_send_json_success($data);
+        $gatewayName = $order->get_payment_method();
+        if (!$this->isEnabledGateway($gatewayName)) {
+            return;
         }
-        $amount = $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
-        if ($amount > 0) {
-            $this->orderAddFee($order, $amount, $this->gatewayFeeLabel);
-            $order->calculate_totals();
-            $newTotal = $order->get_total();
-            $data = ['amount' => $amount, 'name' => $this->gatewayFeeLabel, 'currency' => get_woocommerce_currency_symbol(), 'newTotal' => $newTotal];
-            wp_send_json_success($data);
+        $this->recalculateOrderSurcharge($order, $gatewayName);
+    }
+    /**
+     * Replaces the surcharge of an order awaiting payment with the surcharge of the
+     * gateway it is about to be paid with. The gateway must have been validated before.
+     */
+    protected function recalculateOrderSurcharge(WC_Order $order, string $gatewayName): void
+    {
+        if (!$order->needs_payment()) {
+            return;
         }
+        if (!$this->orderHasSurchargeFee($order) && !$this->gatewayHasSurcharge($gatewayName)) {
+            return;
+        }
+        $this->applyOrderSurcharge($order, $gatewayName);
+    }
+    /**
+     * Replaces any surcharge on the order with the surcharge of the given gateway.
+     * The gateway must have been validated by canProcessGateway() before.
+     *
+     * @return float The surcharge amount added, 0 if none applies
+     */
+    protected function applyOrderSurcharge(WC_Order $order, string $gatewayName): float
+    {
+        $this->orderRemoveFee($order);
+        if (!$this->gatewayHasSurcharge($gatewayName)) {
+            return 0.0;
+        }
+        $gatewaySettings = $this->gatewaySettings($gatewayName);
+        if ($this->surcharge->aboveMaxLimit((float) $order->get_total(), $gatewaySettings)) {
+            return 0.0;
+        }
+        $amount = (float) $this->surcharge->calculateFeeAmountOrder($order, $gatewaySettings);
+        if ($amount <= 0) {
+            return 0.0;
+        }
+        $this->orderAddFee($order, $amount, $this->gatewayFeeLabel);
+        $order->calculate_totals();
+        return $amount;
+    }
+    protected function gatewayHasSurcharge(string $gatewayName): bool
+    {
+        if (!$this->isMollieGateway($gatewayName)) {
+            return \false;
+        }
+        $gatewaySettings = $this->gatewaySettings($gatewayName);
+        return is_array($gatewaySettings) && isset($gatewaySettings['payment_surcharge']) && $gatewaySettings['payment_surcharge'] !== Surcharge::NO_FEE;
+    }
+    protected function orderHasSurchargeFee(WC_Order $order): bool
+    {
+        foreach ($order->get_fees() as $fee) {
+            if ($this->isSurchargeFee($fee->get_name())) {
+                return \true;
+            }
+        }
+        return \false;
+    }
+    /**
+     * An empty label would match every fee on the order
+     */
+    protected function isSurchargeFee($feeName): bool
+    {
+        $label = (string) $this->gatewayFeeLabel;
+        return $label !== '' && strpos((string) $feeName, $label) !== \false;
     }
     public function add_engraving_fees()
     {
@@ -154,7 +272,7 @@ class GatewaySurchargeHandler
     }
     protected function chosenGateway()
     {
-        $gateway = WC()->session->get('chosen_payment_method');
+        $gateway = $this->storeApiPaymentMethod ?? WC()->session->get('chosen_payment_method');
         if (empty($gateway)) {
             $gateway = empty($_REQUEST['payment_method']) ? '' : sanitize_text_field(wp_unslash($_REQUEST['payment_method']));
         }
@@ -165,7 +283,7 @@ class GatewaySurchargeHandler
     }
     protected function isMollieGateway($gateway): bool
     {
-        return !empty($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== \false;
+        return !empty($gateway) && strpos($gateway, 'mollie_wc_gateway_') === 0;
     }
     private function gatewaySettings($gateway)
     {
@@ -186,7 +304,7 @@ class GatewaySurchargeHandler
         foreach ($fees as $fee) {
             $feeName = $fee->get_name();
             $feeId = $fee->get_id();
-            if (strpos($feeName, $this->gatewayFeeLabel) !== \false) {
+            if ($this->isSurchargeFee($feeName)) {
                 $order->remove_item($feeId);
                 wc_delete_order_item($feeId);
                 $order->calculate_totals();
@@ -217,27 +335,41 @@ class GatewaySurchargeHandler
             return \false;
         }
         $order = wc_get_order($orderId);
-        if (!$order) {
+        if (!$order instanceof WC_Order) {
+            return \false;
+        }
+        // Only orders still awaiting payment may have their surcharge changed
+        if (!$order->needs_payment()) {
             return \false;
         }
         return $order;
     }
-    protected function canProcessGateway()
+    /**
+     * Returns the posted gateway ID if it belongs to a registered, enabled gateway
+     *
+     * @return string|false
+     */
+    protected function canProcessGateway(string $postKey = 'method')
     {
         // phpcs:ignore WordPress.Security.NonceVerification
-        if (!isset($_POST['method'])) {
+        if (!isset($_POST[$postKey])) {
             return \false;
         }
         // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $postedMethod = wc_clean(wp_unslash($_POST['method']));
-        $gateway = !empty($postedMethod) ? $postedMethod : \false;
-        if (!$gateway) {
+        $postedMethod = wc_clean(wp_unslash($_POST[$postKey]));
+        return $this->isEnabledGateway($postedMethod) ? $postedMethod : \false;
+    }
+    /**
+     * @param mixed $gatewayId
+     */
+    protected function isEnabledGateway($gatewayId): bool
+    {
+        if (!is_string($gatewayId) || $gatewayId === '') {
             return \false;
         }
-        if (!$this->isMollieGateway($gateway)) {
-            return \false;
-        }
-        return $gateway;
+        $gateways = WC()->payment_gateways()->payment_gateways();
+        $gateway = $gateways[$gatewayId] ?? null;
+        return $gateway instanceof \WC_Payment_Gateway && $gateway->enabled === 'yes';
     }
     protected function surchargeFeeOption()
     {

@@ -33,11 +33,10 @@ final class SessionLines
         $lines = [];
         foreach ($cart->lines() as $line) {
             $subtotal = $line->subtotal();
-            $lines[] = self::raw('physical', self::nameOr($line->name(), 'Product'), max(1, $line->quantity()), $subtotal === null ? 0 : $subtotal->minorUnits(), $line->vatRate());
+            $lines[] = self::orDiscount('physical', $line->name(), 'Product', max(1, $line->quantity()), $subtotal === null ? 0 : $subtotal->minorUnits(), $line->vatRate());
         }
         foreach ($cart->fees() as $fee) {
-            $amount = $fee->amount()->minorUnits();
-            $lines[] = $amount < 0 ? self::raw('discount', self::nameOr($fee->name(), 'Discount'), 1, $amount, null) : self::raw('surcharge', self::nameOr($fee->name(), 'Fee'), 1, $amount, $fee->vatRate());
+            $lines[] = self::orDiscount('surcharge', $fee->name(), 'Fee', 1, $fee->amount()->minorUnits(), $fee->vatRate());
         }
         $shipping = $cart->shipping();
         if ($shipping !== null) {
@@ -47,6 +46,15 @@ final class SessionLines
             $lines[] = self::raw('discount', $coupon->code(), 1, -abs($coupon->amount()->minorUnits()), null);
         }
         return $lines;
+    }
+    /**
+     * Mollie refuses a line of any other type below zero, so it goes as a discount of its whole total.
+     *
+     * @return array{type: string, description: string, quantity: int, total: int, vatRate: ?string}
+     */
+    private static function orDiscount(string $type, string $name, string $fallback, int $quantity, int $total, ?string $vatRate): array
+    {
+        return $total < 0 ? self::raw('discount', self::nameOr($name, 'Discount'), 1, $total, null) : self::raw($type, self::nameOr($name, $fallback), $quantity, $total, $vatRate);
     }
     private static function nameOr(string $name, string $fallback): string
     {

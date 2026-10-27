@@ -13,6 +13,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressAvailabilityResult;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\CartFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionBudget;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
 use Mollie\WooCommerce\Log\EventLog;
@@ -26,7 +27,7 @@ use Mollie\WooCommerce\Shared\Clock;
 final class StartExpressSession
 {
     private const INTENT = 'express.session.v1';
-    public function __construct(private CartFactsBuilder $cartFacts, private ExpressFactsBuilder $expressFacts, private ExpressSessionStore $store, private ExpressSessionBudget $budget, private ExpressUrls $urls, private MollieApi $mollie, private Clock $clock, private EventLog $log, private int $reuseMarginSeconds)
+    public function __construct(private CartFactsBuilder $cartFacts, private ExpressFactsBuilder $expressFacts, private ExpressOrderFactsBuilder $orderFacts, private ExpressSessionStore $store, private ExpressSessionBudget $budget, private ExpressUrls $urls, private MollieApi $mollie, private Clock $clock, private EventLog $log, private int $reuseMarginSeconds)
     {
     }
     public function start(string $surface, string $callerAddress): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult
@@ -38,9 +39,10 @@ final class StartExpressSession
             return $this->refuse($surface, (string) $availability->reason(), 409);
         }
         $fingerprint = PricingFingerprint::of($cart);
+        $account = $this->expressFacts->account();
         $remembered = $this->store->remembered();
         if ($remembered !== null) {
-            $fits = SessionReuse::fits($remembered['fingerprint'], $remembered['expiresAt'], $fingerprint, $this->clock->now(), $this->reuseMarginSeconds);
+            $fits = SessionReuse::fits($remembered['fingerprint'], $remembered['account'], $remembered['expiresAt'], $fingerprint, $account, $this->clock->now(), $this->reuseMarginSeconds, $this->orderSettled($remembered['ref']));
             if ($fits) {
                 $this->log->info('express.session.reused', ['session' => $remembered['id'], 'surface' => $surface]);
                 return \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult::started($remembered['token'], gmdate('c', $remembered['expiresAt']));
@@ -54,9 +56,9 @@ final class StartExpressSession
             }
             return $this->refuse($surface, 'budget_exhausted', 429);
         }
-        return $this->create($cart, $fingerprint, $shop->mode(), $surface);
+        return $this->create($cart, $fingerprint, $account, $shop->mode(), $surface);
     }
-    private function create(CartFacts $cart, string $fingerprint, string $mode, string $surface): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult
+    private function create(CartFacts $cart, string $fingerprint, string $account, string $mode, string $surface): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult
     {
         $attempt = $this->store->nextAttempt();
         $customer = $this->store->customerKey();
@@ -74,10 +76,15 @@ final class StartExpressSession
             $this->log->error('express.session.failed', ['surface' => $surface, 'kind' => $failure->kind(), 'ms' => $this->msSince($started)]);
             return $failure->kind() === MollieCallFailed::VALIDATION ? \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult::refused('session_refused', 502) : \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult::refused('mollie_unavailable', 503);
         }
-        $this->store->remember($session->id(), $session->clientAccessToken(), $expiresAt, $fingerprint, $ref, $attempt);
+        $this->store->remember($session->id(), $session->clientAccessToken(), $expiresAt, $fingerprint, $account, $ref, $attempt);
         $total = $cart->total();
         $this->log->info('express.session.created', ['session' => $session->id(), 'surface' => $surface, 'mode' => $mode, 'amount' => $total === null ? '' : $total->toDecimal(), 'currency' => $total === null ? '' : $total->currency(), 'ms' => $this->msSince($started)]);
         return \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult::started($session->clientAccessToken(), $session->expiresAt());
+    }
+    private function orderSettled(string $ref): bool
+    {
+        $order = $this->orderFacts->orderByRef($ref);
+        return $order !== null && !$this->orderFacts->fromOrder($order)->needsPayment();
     }
     private function refuse(string $surface, string $reason, int $httpStatus): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult
     {

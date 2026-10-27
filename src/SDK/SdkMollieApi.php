@@ -79,7 +79,8 @@ final class SdkMollieApi implements \Mollie\WooCommerce\SDK\MollieApi
             throw \Mollie\WooCommerce\SDK\MollieCallFailed::fromRead($exception);
         }
         $method = (string) ($payment->method ?? '');
-        return new PaymentSnapshot((string) $payment->id, (string) $payment->status, $method !== '' ? $method : null, Money::fromDecimal((string) $payment->amount->value, (string) $payment->amount->currency), mode: (string) ($payment->mode ?? 'live'), expressRef: $this->expressRef($payment->metadata ?? null), billingAddress: $this->address($payment->billingAddress ?? null), shippingAddress: $this->address($payment->shippingAddress ?? null));
+        $wallet = (string) ($payment->details->wallet ?? '');
+        return new PaymentSnapshot((string) $payment->id, (string) $payment->status, $method !== '' ? $method : null, Money::fromDecimal((string) $payment->amount->value, (string) $payment->amount->currency), mode: (string) ($payment->mode ?? 'live'), expressRef: $this->expressRef($payment->metadata ?? null), billingAddress: $this->address($payment->billingAddress ?? null), shippingAddress: $this->address($payment->shippingAddress ?? null), wallet: $wallet !== '' ? $wallet : null);
     }
     /**
      * @template T

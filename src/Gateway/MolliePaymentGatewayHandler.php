@@ -17,6 +17,7 @@ use Mollie\WooCommerce\Shared\SharedDataDictionary;
 use Mollie\Psr\Log\LoggerInterface as Logger;
 use UnexpectedValueException;
 use WC_Order;
+use WC_Payment_Gateway;
 class MolliePaymentGatewayHandler
 {
     /**
@@ -247,17 +248,13 @@ class MolliePaymentGatewayHandler
                 if ($order_status_cancelled_payments === 'cancelled') {
                     return $gateway->get_return_url($order);
                 } else {
-                    $this->notice->addNotice('error', __('You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
-                    // Return to order payment page
-                    return $order->get_checkout_payment_url(\false);
+                    return $this->retryPaymentUrl($order, $gateway, __('You have cancelled your payment. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
                 }
             }
             try {
                 $payment = $this->activePaymentObject($order_id, \false);
                 if (!$payment->isOpen() && !$payment->isPending() && !$payment->isPaid() && !$payment->isAuthorized()) {
-                    $this->notice->addNotice('error', __('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
-                    // Return to order payment page
-                    return $order->get_checkout_payment_url(\false);
+                    return $this->retryPaymentUrl($order, $gateway, __('Your payment was not successful. Please complete your order with a different payment method.', 'mollie-payments-for-woocommerce'));
                 }
                 if ($payment->method === "giftcard") {
                     $this->paymentMethod->debugGiftcardDetails($payment, $order);
@@ -277,6 +274,19 @@ class MolliePaymentGatewayHandler
          * to avoid problems with other plugins that uses the action before
          */
         return $gateway->get_return_url($order);
+    }
+    /**
+     * The order payment page with a notice, so the shopper can try another method. An order
+     * WooCommerce will not let be paid there (the expired webhook cancels it before the shopper is
+     * back) goes to the order-received page instead, which says it was cancelled.
+     */
+    private function retryPaymentUrl(WC_Order $order, WC_Payment_Gateway $gateway, string $notice): string
+    {
+        if (!$order->needs_payment()) {
+            return $gateway->get_return_url($order);
+        }
+        $this->notice->addNotice('error', $notice);
+        return $order->get_checkout_payment_url(\false);
     }
     /**
      * Retrieve the payment object

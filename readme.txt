@@ -230,6 +230,23 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 
 == Changelog ==
 
+= 8.2.0 - 27-10-2026 =
+* Feature - Mollie express checkout on the block checkout: Apple Pay, Google Pay and PayPal in one express area (shipping limited)
+* Fixed - API error when a line item is discounted below zero
+* Fixed - TypeError in the webhook fallback when a payment has no redirect URL
+* Fixed - Fatal error in the WC-API webhook when a payment was not linked to any order
+* Fixed - Unpaid orders were not cancelled after the configured number of days
+* Fixed - Simultaneous webhook deliveries could process the same payment twice
+* Fixed - Pay by Bank and Wero orders stay payable while the Mollie payment is pending; they now go on-hold until the payment is confirmed
+* Fixed - Shoppers returning from an expired payment were sent to a payment page that could not be used
+* Fixed - Apple Pay button: use the shipping address from the Apple Pay sheet, and mark orders paid when the Orders API webhook arrives first
+* Fixed - Security hardening for order validation (props whp-wessel)
+* Improvement - Connection failures during setup are now explained
+* Improvement - Mollie admin error notices have consistent styling
+* Improvement - An order note now flags an extra payment received after the order was already paid
+* Changed - Minimum PHP version is now 8.0
+* Changed - Updated the Apple Pay domain verification file
+
 = 8.1.11 - 12-10-2026 =
 * Fixed - Improved webhook validation.
 * Fixed - Bank transfer instructions shown for expired, canceled or failed payments

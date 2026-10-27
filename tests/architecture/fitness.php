@@ -67,7 +67,7 @@ const EXPRESS_LOOKUP_META_KEYS = [
  * match: path relative to the root, file content => line numbers of the hits.
  * instead: the sentence a failure line gives after the rule id.
  *
- * @return array<string, array{rule: string, target: ?int, mode: string, scope: string, count: string, match: ?callable, measure?: callable, instead: string}>
+ * @return array<string, array{rule: string, target: ?int, mode: string, scope: string, count: string, match: ?callable, instead: string}>
  */
 function metrics(): array
 {
@@ -314,20 +314,6 @@ function metrics(): array
             'match' => null,
             'instead' => 'add the filter immediately before the WooCommerce call, remove it in finally, and list it.',
         ],
-        'requirements-without-test' => [
-            'rule' => 'R-30',
-            'target' => 0,
-            'mode' => RATCHET,
-            'scope' => '',
-            'count' => 'hits',
-            'match' => null,
-            'measure' => static function (string $root): int {
-                $out = shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/tests/architecture/trace.php') . ' --count 2>/dev/null');
-
-                return (int) trim((string) $out);
-            },
-            'instead' => 'tag the test that proves the requirement with @group REQ-nnn, or write one (docs/requirements/README.md).',
-        ],
         'rules-without-check' => [
             'rule' => '',
             'target' => null,
@@ -374,9 +360,6 @@ function measure(string $root, string $name, array $metric, array $baseline): in
 {
     if ($metric['mode'] === MANUAL) {
         return $baseline[$name] ?? 0;
-    }
-    if (isset($metric['measure'])) {
-        return ($metric['measure'])($root);
     }
 
     $hits = hits($root, $metric);

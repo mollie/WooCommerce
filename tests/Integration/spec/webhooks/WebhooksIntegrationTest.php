@@ -629,6 +629,7 @@ class WebhooksIntegrationTest extends IntegrationMockedTestCase
             $container->get(ResolveExpressPayment::class),
             $container->get(OrderLock::class),
             $container->get(EventLog::class),
+            $container->get(ProcessRecordStore::class),
         ])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $webhookService->shouldReceive('getPaymentIdFromRequest')

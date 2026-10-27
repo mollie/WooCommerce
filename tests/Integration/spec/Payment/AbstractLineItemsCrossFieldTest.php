@@ -31,6 +31,8 @@ use WC_Tax;
  */
 abstract class AbstractLineItemsCrossFieldTest extends IntegrationMockedTestCase
 {
+    private const PRODUCT_SKU = 'PIWOO_931_PRODUCT';
+
     private int $originalDecimals = 2;
     /** @var array<string, mixed> */
     private array $originalTaxOptions = [];
@@ -450,9 +452,14 @@ abstract class AbstractLineItemsCrossFieldTest extends IntegrationMockedTestCase
         string $taxStatus,
         float $netDiscount = 0.0
     ): WC_Order {
-        $product = new WC_Product_Simple();
-        $product->set_name('PIWOO-931 Product');
-        $product->set_sku('PIWOO_931_' . uniqid());
+        // One shared product, reused across runs; each test overwrites its price and tax status.
+        $productId = wc_get_product_id_by_sku(self::PRODUCT_SKU);
+        $product = $productId ? wc_get_product($productId) : null;
+        if (!$product instanceof WC_Product_Simple) {
+            $product = new WC_Product_Simple();
+            $product->set_name('PIWOO-931 Product');
+            $product->set_sku(self::PRODUCT_SKU);
+        }
         $product->set_regular_price($netPrice);
         $product->set_tax_status($taxStatus); // 'taxable' → standard class; 'none' → no VAT
         $product->set_tax_class('');

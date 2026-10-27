@@ -2,4 +2,4 @@
 
 namespace Mollie;
 
-return array('dependencies' => array('react', 'wc-blocks-registry', 'wc-settings', 'wp-api-fetch', 'wp-data', 'wp-element', 'wp-hooks'), 'version' => '4948f0cd85cbf39be467');
+return array('dependencies' => array('react', 'wc-blocks-registry', 'wc-settings', 'wp-api-fetch', 'wp-data', 'wp-element', 'wp-hooks'), 'version' => '28dc69057b8cef10c8e6');

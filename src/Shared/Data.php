@@ -588,7 +588,7 @@ class Data
                 ]);
 
             if (! empty($customer_latest_subscription)) {
-                $customerId = get_post_meta($customer_latest_subscription[0]->get_id(), '_mollie_customer_id', $single = true);
+                $customerId = $customer_latest_subscription[0]->get_meta('_mollie_customer_id');
 
                 // Store this customer ID as user meta too
                 $this->setUserMollieCustomerId($userId, $customerId);

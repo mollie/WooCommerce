@@ -409,41 +409,35 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: a cart whose taxes wait for an address nobody gave is refused before Mollie is asked
-     *   Given a guest with a cart with nothing to ship and an empty checkout form
-     *   And taxes based on the customer's billing (or shipping) address
+     * Scenario: a shop whose taxes follow the buyer's address in more than one country is refused before Mollie is asked
+     *   Given taxes on, based on the customer's billing (or shipping) address
+     *   And a shop that sells to Germany and Italy
+     *   And a guest with a cart that ships, a complete destination and a chosen rate
      *   When a session is requested
-     *   Then it is answered 409 as not available, with the reason tax_address_unknown
+     *   Then it is answered 409 as not available, with the reason tax_depends_on_address
      *   And nothing is sent to Mollie
      *
      * @test
      * @dataProvider taxBasesOnTheCustomer
+     * @group REQ-NEW-EXPRESS-TAX
      */
-    public function it_refuses_a_session_without_a_mollie_call_when_taxes_wait_for_the_address(string $taxBasedOn): void
+    public function it_refuses_a_session_without_a_mollie_call_when_taxes_depend_on_the_address(string $taxBasedOn): void
     {
-        $this->setOptionForTest('woocommerce_calc_taxes', 'yes');
-        $this->setOptionForTest('woocommerce_tax_based_on', $taxBasedOn);
-        $product = wc_get_product((int) wc_get_product_id_by_sku(ProductPresets::get()['simple']['sku']));
-        $this->assertInstanceOf(\WC_Product::class, $product);
-        $wasVirtual = $product->get_virtual();
-        $product->set_virtual(true);
-        $product->save();
-        try {
-            $this->bootExpress();
-            $this->actAsGuest();
-            $this->cartWith(['simple']);
-            $this->fillCheckoutForm([], []);
-            $this->recalculate();
-            $this->assertFalse(WC()->cart->needs_shipping(), 'The cart must ship nothing, or the scenario proves nothing.');
+        // Given
+        $this->shopSellingToGermanyAndItalyWithTaxesOn($taxBasedOn);
+        $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+        $this->chooseRate('standard');
+        $this->assertTrue(WC()->cart->needs_shipping(), 'The cart must ship, or the scenario proves nothing.');
 
-            $response = $this->startSession();
-        } finally {
-            $product->set_virtual($wasVirtual);
-            $product->save();
-        }
+        // When
+        $response = $this->startSession();
 
+        // Then
         $this->assertSame(409, $response->get_status());
-        $this->assertSame('tax_address_unknown', $this->loggedEvents('express.session.refused')[0]['context']['reason'] ?? null);
+        $this->assertSame('tax_depends_on_address', ((array) $response->get_data())['code']);
         $this->assertSame([], $this->fakeMollie()->requests('POST'));
     }
 
@@ -456,6 +450,49 @@ class StartExpressSessionTest extends ExpressFlowTestCase
             'taxes on the billing address' => ['billing'],
             'taxes on the shipping address' => ['shipping'],
         ];
+    }
+
+    /**
+     * Scenario: a saved address does not make a shop with address-dependent taxes eligible
+     *   Given the same shop, taxes based on the billing address
+     *   And a logged-in customer whose account has a saved billing country
+     *   When a session is requested
+     *   Then it is answered 409 as not available, with the reason tax_depends_on_address
+     *   And nothing is sent to Mollie
+     *
+     * @test
+     * @group REQ-NEW-EXPRESS-TAX
+     */
+    public function it_refuses_a_session_for_a_customer_with_a_saved_address_when_taxes_depend_on_the_address(): void
+    {
+        // Given
+        $this->shopSellingToGermanyAndItalyWithTaxesOn('billing');
+        $this->bootExpress();
+        $this->actAsCustomer();
+        update_user_meta($this->customer_id, 'billing_country', 'DE');
+        try {
+            $this->cartWith(['simple']);
+            $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+            $this->chooseRate('standard');
+
+            // When
+            $response = $this->startSession();
+        } finally {
+            delete_user_meta($this->customer_id, 'billing_country');
+        }
+
+        // Then
+        $this->assertSame(409, $response->get_status());
+        $this->assertSame('tax_depends_on_address', ((array) $response->get_data())['code']);
+        $this->assertSame([], $this->fakeMollie()->requests('POST'));
+    }
+
+    private function shopSellingToGermanyAndItalyWithTaxesOn(string $taxBasedOn): void
+    {
+        $this->setOptionForTest('woocommerce_calc_taxes', 'yes');
+        $this->setOptionForTest('woocommerce_tax_based_on', $taxBasedOn);
+        $this->setOptionForTest('woocommerce_allowed_countries', 'specific');
+        $this->setOptionForTest('woocommerce_specific_allowed_countries', ['DE', 'IT']);
     }
 
     // ──────────────────────────────────────────────────────────────────────────

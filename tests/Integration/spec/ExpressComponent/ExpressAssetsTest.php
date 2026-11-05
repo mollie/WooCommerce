@@ -444,25 +444,40 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     /**
      * Scenario: Express owns the block checkout only when the price is known when the page loads
      *   Given Apple Pay and PayPal with their legacy checkout buttons configured on
-     *   And the cart, the shopper and the shop's tax basis as they are when the checkout page loads
+     *   And the cart, the shopper, the shop's tax basis and the countries it sells to as they are
+     *        when the checkout page loads
      *   When the block checkout page enqueues its scripts
-     *   Then mollieExpressData is printed exactly when the cart is ready: nothing to ship and no tax
-     *        that waits for an address nobody gave, or a complete shipping address with a chosen rate
+     *   Then mollieExpressData is printed exactly when the cart is ready and its price does not depend
+     *        on an address the wallet gives later: nothing to ship, or a complete shipping address
+     *        with a chosen rate, and no taxes that follow the customer's address in a shop selling to
+     *        more than one country
+     *   And an address saved on the customer's account changes nothing
      *   And the legacy Apple Pay and PayPal buttons step aside exactly then, and show as configured otherwise
      *
      * @test
      * @dataProvider pageLoads
      * @group REQ-A3
      * @group REQ-A4
+     * @group REQ-NEW-EXPRESS-TAX
+     * @param string $sells 'many countries' (sells and ships everywhere), 'one country' (sells and ships to Luxembourg
+     *        only) or 'one country, ships worldwide' (sells to Luxembourg, ships anywhere).
      */
     public function it_owns_the_block_checkout_at_page_load_only_when_the_price_is_known(
         bool $ships,
         string $taxes,
+        string $sells,
         string $shopper,
         bool $owned
     ): void {
 
         $this->legacyButtonsConfiguredOn();
+        if ($sells !== 'many countries') {
+            $this->setOptionForTest('woocommerce_allowed_countries', 'specific');
+            $this->setOptionForTest('woocommerce_specific_allowed_countries', ['LU']);
+        }
+        if ($sells === 'one country, ships worldwide') {
+            $this->setOptionForTest('woocommerce_ship_to_countries', 'all');
+        }
         if ($taxes === 'off') {
             $this->setOptionForTest('woocommerce_calc_taxes', 'no');
         } else {
@@ -491,22 +506,36 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     }
 
     /**
-     * @return array<string, array{0: bool, 1: string, 2: string, 3: bool}>
+     * @return array<string, array{0: bool, 1: string, 2: string, 3: string, 4: bool}>
      */
     public function pageLoads(): array
     {
+        $many = 'many countries';
+        $one = 'one country';
+        $worldwide = 'one country, ships worldwide';
+
         return [
-            'nothing ships, taxes off, guest' => [false, 'off', 'guest, nothing typed', true],
-            'nothing ships, taxes on the shop address, guest' => [false, 'base', 'guest, nothing typed', true],
-            'nothing ships, taxes on the billing address, guest' => [false, 'billing', 'guest, nothing typed', false],
-            'nothing ships, taxes on the shipping address, guest' => [false, 'shipping', 'guest, nothing typed', false],
-            'nothing ships, taxes on the billing address, its country saved on the account' => [false, 'billing', 'customer, billing country saved', true],
-            'nothing ships, taxes on the shipping address, its country saved on the account' => [false, 'shipping', 'customer, shipping country saved', true],
-            'nothing ships, taxes on the billing address, only the shipping country saved' => [false, 'billing', 'customer, shipping country saved', false],
-            'ships, guest who typed only a country' => [true, 'shipping', 'guest, only a country typed', false],
-            'ships, guest who typed nothing' => [true, 'shipping', 'guest, nothing typed', false],
-            'ships, customer with a saved address and a chosen rate' => [true, 'shipping', 'customer, shipping address saved', true],
-            'ships, returning guest whose session holds the address and a rate' => [true, 'shipping', 'returning guest, address and rate in the session', true],
+            'nothing ships, taxes off, many countries' => [false, 'off', $many, 'guest, nothing typed', true],
+            'nothing ships, taxes on the shop address, many countries' => [false, 'base', $many, 'guest, nothing typed', true],
+            'nothing ships, taxes on the billing address, many countries' => [false, 'billing', $many, 'guest, nothing typed', false],
+            'nothing ships, taxes on the shipping address, many countries' => [false, 'shipping', $many, 'guest, nothing typed', false],
+            'nothing ships, taxes on the billing address, one country' => [false, 'billing', $one, 'guest, nothing typed', true],
+            'nothing ships, taxes on the shipping address, one country' => [false, 'shipping', $one, 'guest, nothing typed', true],
+            // A saved address does not change the answer.
+            'nothing ships, taxes on the billing address, many countries, its country saved on the account' => [false, 'billing', $many, 'customer, billing country saved', false],
+            'nothing ships, taxes on the shipping address, many countries, its country saved on the account' => [false, 'shipping', $many, 'customer, shipping country saved', false],
+            'nothing ships, taxes on the shop address, many countries, a country saved on the account' => [false, 'base', $many, 'customer, billing country saved', true],
+            // The taxes follow the shipping address only where the cart ships: the shipping countries count then.
+            'nothing ships, taxes on the shipping address, sells to one country, ships worldwide' => [false, 'shipping', $worldwide, 'guest, nothing typed', true],
+            'ships, taxes on the shipping address, sells to one country, ships worldwide' => [true, 'shipping', $worldwide, 'customer, shipping address saved', false],
+            'ships, taxes on the billing address, sells to one country, ships worldwide' => [true, 'billing', $worldwide, 'customer, shipping address saved', true],
+            // The form still has to be complete where the cart ships.
+            'ships, shop sells to one country, shipping form not complete (only a country typed)' => [true, 'shipping', $one, 'guest, only a country typed', false],
+            'ships, shop sells to one country, shipping form empty' => [true, 'shipping', $one, 'guest, nothing typed', false],
+            'ships, shop sells to one country, customer with a saved address and a chosen rate' => [true, 'shipping', $one, 'customer, shipping address saved', true],
+            'ships, shop sells to one country, returning guest whose session holds the address and a rate' => [true, 'shipping', $one, 'returning guest, address and rate in the session', true],
+            'ships, many countries, taxes on the shop address, customer with a saved address and a rate' => [true, 'base', $many, 'customer, shipping address saved', true],
+            'ships, many countries, taxes on the shipping address, customer with a saved address and a rate' => [true, 'shipping', $many, 'customer, shipping address saved', false],
         ];
     }
 

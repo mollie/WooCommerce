@@ -227,25 +227,31 @@ class ExpressAvailabilityTest extends TestCase
     }
 
     /**
-     * Scenario: a cart with nothing to ship waits for no address unless its taxes follow one nobody gave yet
+     * Scenario: a cart is offered only where its price, taxes included, is known before the wallet gives an address
      *   Given the checkout is otherwise available
-     *   And a cart whose taxes do or do not follow the customer's address, saved on the account or not
-     *   When availability is resolved
-     *   Then a cart with nothing to ship whose taxes follow an address that is not saved is unavailable
-     *        with tax_address_unknown, because its price is not known when the page loads
-     *   And a cart that ships keeps the shipping rule, which already waits for the whole address
-     *   And an empty cart or a subscription is reported first, and the tax rule before nothing_to_pay
+     *   And the shop's tax settings: taxes on or off, the address they follow, the countries it sells to
+     *        and whether rates differ inside one country
+     *   When availability is resolved, whether the cart ships or not and whether the form is complete or not
+     *   Then it is unavailable with tax_depends_on_address when taxes follow the customer's address and
+     *        the shop sells to more than one country
+     *   And it is available when the shop sells to one country, even if its rates differ by state or postcode
+     *   And an empty cart or a subscription is reported first, and the tax reason before shipping_incomplete
+     *        and nothing_to_pay
      *
-     * @dataProvider taxAddressCases
+     * @dataProvider taxCases
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
      * @param array<int, bool> $lines One entry per line: whether it is a subscription.
+     * @param array<int, string> $taxCountries
+     * @group REQ-NEW-EXPRESS-TAX
      */
-    public function testRefusesACartWhoseTaxesWaitForAnAddressNobodyGaveYet(
+    public function testResolvesTheTaxVerdictForEveryCart(
         array $lines,
         bool $needsShipping,
         bool $shippingComplete,
-        bool $taxesFollowCustomerAddress,
-        bool $customerAddressSaved,
+        bool $taxEnabled,
+        string $taxBasedOn,
+        array $taxCountries,
+        bool $ratesVaryWithinCountry,
         int $totalInCents,
         string $expectedStatus,
         ?string $expectedReason
@@ -261,8 +267,10 @@ class ExpressAvailabilityTest extends TestCase
             shippingDestinationComplete: $shippingComplete,
             shippingRateChosen: $shippingComplete,
             total: Money::fromMinorUnits($totalInCents, 'EUR'),
-            taxesFollowCustomerAddress: $taxesFollowCustomerAddress,
-            customerAddressSaved: $customerAddressSaved
+            taxEnabled: $taxEnabled,
+            taxBasedOn: $taxBasedOn,
+            taxCountries: $taxCountries,
+            ratesVaryWithinCountry: $ratesVaryWithinCountry
         );
 
         $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
@@ -272,20 +280,28 @@ class ExpressAvailabilityTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0: array<int, bool>, 1: bool, 2: bool, 3: bool, 4: bool, 5: int, 6: string, 7: ?string}>
+     * @return array<string, array{0: array<int, bool>, 1: bool, 2: bool, 3: bool, 4: string, 5: array<int, string>, 6: bool, 7: int, 8: string, 9: ?string}>
      */
-    public function taxAddressCases(): array
+    public function taxCases(): array
     {
+        $two = ['DE', 'IT'];
+        $one = ['DE'];
+
         return [
-            'nothing ships, taxes off or on the shop address' => [[false], false, false, false, false, 1000, 'available', null],
-            'nothing ships, taxes follow the address, guest' => [[false], false, false, true, false, 1000, 'unavailable', 'tax_address_unknown'],
-            'nothing ships, taxes follow the address, saved on the account' => [[false], false, false, true, true, 1000, 'available', null],
-            'nothing ships, taxes on the shop address, saved on the account' => [[false], false, false, false, true, 1000, 'available', null],
-            'ships, form complete, taxes follow an address not saved' => [[false], true, true, true, false, 1000, 'available', null],
-            'ships, form incomplete, taxes follow an address not saved' => [[false], true, false, true, false, 1000, 'blocked', 'shipping_incomplete'],
-            'an empty cart is reported first' => [[], false, false, true, false, 1000, 'unavailable', 'cart_empty'],
-            'a subscription is reported first' => [[true], false, false, true, false, 1000, 'unavailable', 'subscription_in_cart'],
-            'the tax rule before nothing to pay' => [[false], false, false, true, false, 0, 'unavailable', 'tax_address_unknown'],
+            'taxes off, ships, form complete' => [[false], true, true, false, 'billing', $two, false, 1000, 'available', null],
+            'taxes on the shop address, many countries' => [[false], true, true, true, 'base', $two, false, 1000, 'available', null],
+            'one country, one rate, nothing ships' => [[false], false, false, true, 'billing', $one, false, 1000, 'available', null],
+            'one country, one rate, ships, form incomplete' => [[false], true, false, true, 'billing', $one, false, 1000, 'blocked', 'shipping_incomplete'],
+            'regional rates, nothing ships' => [[false], false, false, true, 'billing', $one, true, 1000, 'available', null],
+            'regional rates, ships, form complete' => [[false], true, true, true, 'shipping', $one, true, 1000, 'available', null],
+            'two countries on the billing address, ships, form complete' => [[false], true, true, true, 'billing', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
+            'two countries on the shipping address, ships, form complete' => [[false], true, true, true, 'shipping', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
+            'two countries, nothing ships' => [[false], false, false, true, 'billing', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
+            'two countries, ships, form incomplete: not blocked' => [[false], true, false, true, 'billing', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
+            'two countries, total zero: the tax reason first' => [[false], false, false, true, 'billing', $two, false, 0, 'unavailable', 'tax_depends_on_address'],
+            'compatible taxes, total zero' => [[false], false, false, false, 'base', [], false, 0, 'unavailable', 'nothing_to_pay'],
+            'an empty cart is reported first' => [[], false, false, true, 'billing', $two, false, 1000, 'unavailable', 'cart_empty'],
+            'a subscription is reported first' => [[true], false, false, true, 'billing', $two, false, 1000, 'unavailable', 'subscription_in_cart'],
         ];
     }
 

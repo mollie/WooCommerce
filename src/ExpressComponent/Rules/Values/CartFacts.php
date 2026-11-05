@@ -17,8 +17,9 @@ final class CartFacts
      * @param list<CartFee> $fees
      * @param list<CartCoupon> $coupons
      * @param string $destination The one the shipping rates were calculated for.
-     * @param bool $taxesFollowCustomerAddress Taxes are calculated on the customer's address, not the shop's.
-     * @param bool $customerAddressSaved The address the taxes follow is saved on the customer's account.
+     * @param string $taxBasedOn 'base', 'billing' or 'shipping': the address the taxes follow.
+     * @param list<string> $taxCountries Countries whose address the taxes can follow (shipping or selling countries); empty when they could not be read.
+     * @param bool $ratesVaryWithinCountry The tax rates of the only such country differ by state, postcode or city.
      */
     public function __construct(
         private array $lines,
@@ -31,8 +32,10 @@ final class CartFacts
         private ?CartShipping $shipping = null,
         private string $cartHash = '',
         private string $destination = '',
-        private bool $taxesFollowCustomerAddress = false,
-        private bool $customerAddressSaved = false
+        private bool $taxEnabled = false,
+        private string $taxBasedOn = 'base',
+        private array $taxCountries = [],
+        private bool $ratesVaryWithinCountry = false
     ) {
     }
 
@@ -95,13 +98,26 @@ final class CartFacts
         return $this->destination;
     }
 
-    public function taxesFollowCustomerAddress(): bool
+    public function taxEnabled(): bool
     {
-        return $this->taxesFollowCustomerAddress;
+        return $this->taxEnabled;
     }
 
-    public function customerAddressSaved(): bool
+    public function taxBasedOn(): string
     {
-        return $this->customerAddressSaved;
+        return $this->taxBasedOn;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function taxCountries(): array
+    {
+        return $this->taxCountries;
+    }
+
+    public function ratesVaryWithinCountry(): bool
+    {
+        return $this->ratesVaryWithinCountry;
     }
 }

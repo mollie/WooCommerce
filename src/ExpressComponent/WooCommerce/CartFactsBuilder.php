@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
+use Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartCoupon;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFee;
@@ -30,6 +31,7 @@ class CartFactsBuilder
         $currency = get_woocommerce_currency();
         $needsShipping = $cart->needs_shipping();
         $chosenRates = $needsShipping ? $this->chosenRates() : null;
+        $countries = $this->taxCountries($needsShipping);
 
         return new CartFacts(
             lines: $this->lines($cart, $customer, $currency),
@@ -47,32 +49,76 @@ class CartFactsBuilder
                 $customer->get_shipping_postcode(),
                 $customer->get_shipping_city(),
             ]),
-            taxesFollowCustomerAddress: $this->taxesFollowCustomerAddress(),
-            customerAddressSaved: $this->customerAddressSaved()
+            taxEnabled: wc_tax_enabled(),
+            taxBasedOn: $this->taxBasedOn(),
+            taxCountries: $countries,
+            ratesVaryWithinCountry: $this->ratesVaryWithinCountry($countries)
         );
     }
 
-    private function taxesFollowCustomerAddress(): bool
+    /**
+     * The verdict for the merchant notice, read from the shop's settings alone: no cart is needed.
+     */
+    public function taxVerdict(): string
     {
-        return wc_tax_enabled() && get_option('woocommerce_tax_based_on') !== 'base';
+        $countries = $this->taxCountries(true);
+
+        return TaxCompatibility::decide(
+            wc_tax_enabled(),
+            $this->taxBasedOn(),
+            $countries,
+            $this->ratesVaryWithinCountry($countries)
+        );
+    }
+
+    private function taxBasedOn(): string
+    {
+        return (string) get_option('woocommerce_tax_based_on', 'shipping');
     }
 
     /**
-     * The country the taxes are based on is saved on the logged-in customer's account.
+     * The countries whose address the taxes can follow: where the shop ships to when the taxes follow the
+     * shipping address of a cart that ships, where it sells to otherwise. Empty when WooCommerce does not
+     * answer: the rule then counts the shop as incompatible.
+     *
+     * @return list<string>
      */
-    private function customerAddressSaved(): bool
+    private function taxCountries(bool $cartShips): array
     {
-        $userId = get_current_user_id();
-        if ($userId === 0) {
+        if (!function_exists('WC') || !WC()->countries instanceof \WC_Countries) {
+            return [];
+        }
+        $followsShipping = $cartShips
+            && $this->taxBasedOn() === 'shipping'
+            && get_option('woocommerce_ship_to_countries') !== 'disabled';
+
+        return array_keys(
+            $followsShipping ? WC()->countries->get_shipping_countries() : WC()->countries->get_allowed_countries()
+        );
+    }
+
+    /**
+     * A rate of the only country the taxes can follow (or of any country) that names a state, a postcode or a city.
+     *
+     * @param list<string> $countries
+     */
+    private function ratesVaryWithinCountry(array $countries): bool
+    {
+        if (count($countries) !== 1) {
             return false;
         }
-        $basis = get_option('woocommerce_tax_based_on');
-        $metaKey = $basis === 'billing' ? 'billing_country' : ($basis === 'shipping' ? 'shipping_country' : '');
-        if ($metaKey === '') {
-            return false;
+        foreach (array_merge([''], \WC_Tax::get_tax_class_slugs()) as $taxClass) {
+            foreach (\WC_Tax::get_rates_for_tax_class($taxClass) as $rate) {
+                if (!in_array((string) $rate->tax_rate_country, ['', $countries[0]], true)) {
+                    continue;
+                }
+                if ((string) $rate->tax_rate_state !== '' || (int) $rate->postcode_count > 0 || (int) $rate->city_count > 0) {
+                    return true;
+                }
+            }
         }
 
-        return (string) get_user_meta($userId, $metaKey, true) !== '';
+        return false;
     }
 
     /**

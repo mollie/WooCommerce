@@ -16,7 +16,9 @@ use Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressUrls;
 use Mollie\WooCommerce\ExpressComponent\Rules\SurfaceOwnership;
 use Mollie\WooCommerce\ExpressComponent\Flow\ExpireAbandonedExpressOrders;
+use Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility;
 use Mollie\WooCommerce\Log\EventLog;
+use Mollie\WooCommerce\Notice\AdminNotice;
 use Psr\Container\ContainerInterface;
 
 class ExpressComponentModule implements ServiceModule, ExecutableModule
@@ -76,6 +78,7 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
             $orphaned = $container->get(OrphanedExpressPayments::class);
             assert($orphaned instanceof OrphanedExpressPayments);
             $orphaned->renderNotice();
+            self::renderTaxNotice($container);
         });
 
         add_action('shutdown', static function () use ($container): void {
@@ -95,6 +98,59 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         }, 12, 0);
 
         return true;
+    }
+
+    /**
+     * One notice while a wallet's express switch is on: an error when the component is hidden because
+     * the price would depend on the wallet's address, a warning when only the rates differ by region.
+     */
+    private static function renderTaxNotice(ContainerInterface $container): void
+    {
+        if (!current_user_can('manage_woocommerce')) {
+            return;
+        }
+        $facts = $container->get(ExpressFactsBuilder::class);
+        assert($facts instanceof ExpressFactsBuilder);
+        if (!$facts->anyWalletTurnedOn()) {
+            return;
+        }
+        $carts = $container->get(CartFactsBuilder::class);
+        assert($carts instanceof CartFactsBuilder);
+        $verdict = $carts->taxVerdict();
+        if ($verdict === TaxCompatibility::COMPATIBLE) {
+            return;
+        }
+
+        $incompatible = $verdict === TaxCompatibility::INCOMPATIBLE;
+
+        $notice = (new AdminNotice())->renderNotice($incompatible ? 'notice-error' : 'notice-warning', self::taxNoticeMessage($incompatible));
+
+        echo $notice; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
+    }
+
+    private static function taxNoticeMessage(bool $incompatible): string
+    {
+        if ($incompatible) {
+            $title = esc_html__('Mollie express checkout is hidden: the price depends on the customer\'s address', 'mollie-payments-for-woocommerce');
+            $body = esc_html__(
+                'Your taxes follow the customer\'s address and that address can be in more than one country (the countries you sell to, or ship to when taxes follow the shipping address). The wallet gives its address after the price is set, and Mollie cannot change the amount of a session. To offer express checkout, set "Calculate tax based on" to your shop base address, or limit selling and shipping to one country.',
+                'mollie-payments-for-woocommerce'
+            );
+        } else {
+            $title = esc_html__('Mollie express checkout: your tax rates differ by state or postcode', 'mollie-payments-for-woocommerce');
+            $body = esc_html__(
+                'Express checkout is still offered. The tax charged follows the address the wallet gives, so it can differ from the price shown. Check "Calculate tax based on" if this is a problem.',
+                'mollie-payments-for-woocommerce'
+            );
+        }
+
+        return sprintf(
+            '<p><strong>%s</strong></p><p>%s</p><p><a href="%s">%s</a></p>',
+            $title,
+            $body,
+            esc_url(admin_url('admin.php?page=wc-settings&tab=tax')),
+            esc_html__('Open the tax settings', 'mollie-payments-for-woocommerce')
+        );
     }
 
     /**

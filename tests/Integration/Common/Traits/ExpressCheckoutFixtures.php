@@ -259,6 +259,9 @@ trait ExpressCheckoutFixtures
         $this->setOptionForTest('woocommerce_ship_to_countries', '');
         $this->setOptionForTest('woocommerce_allowed_countries', 'all');
         $this->setOptionForTest('woocommerce_currency', 'EUR');
+        // Taxes on the shop's address, so the tax rule never hides the component; every rate is 21%, amounts unchanged.
+        $this->setOptionForTest('woocommerce_default_country', 'LU');
+        $this->setOptionForTest('woocommerce_tax_based_on', 'base');
 
         foreach (['LU', 'AT', 'MT'] as $country) {
             $this->taxRateIds[] = \WC_Tax::_insert_tax_rate([

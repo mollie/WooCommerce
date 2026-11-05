@@ -50,13 +50,16 @@ final class ExpressAvailability
                 return ExpressAvailabilityResult::unavailable('subscription_in_cart');
             }
         }
-        // Nothing ships, so no form gives the address the taxes wait for: the price is not known yet.
+        // Mollie cannot change a session's amount: the price must not depend on an address the wallet gives later.
         if (
-            !$cart->needsShipping()
-            && $cart->taxesFollowCustomerAddress()
-            && !$cart->customerAddressSaved()
+            TaxCompatibility::decide(
+                $cart->taxEnabled(),
+                $cart->taxBasedOn(),
+                $cart->taxCountries(),
+                $cart->ratesVaryWithinCountry()
+            ) === TaxCompatibility::INCOMPATIBLE
         ) {
-            return ExpressAvailabilityResult::unavailable('tax_address_unknown');
+            return ExpressAvailabilityResult::unavailable('tax_depends_on_address');
         }
         if (!in_array(true, WalletVisibility::buttons($settings, $shop, $cart), true)) {
             return ExpressAvailabilityResult::blocked('shipping_incomplete');

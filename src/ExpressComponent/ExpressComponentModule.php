@@ -111,7 +111,11 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         }
         // The verdict reads the tax-rate table: not on every admin page.
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-        if (!$screen instanceof \WP_Screen || !function_exists('wc_get_screen_ids') || !in_array($screen->id, wc_get_screen_ids(), true)) {
+        if (
+            !$screen instanceof \WP_Screen
+            || !function_exists('wc_get_screen_ids')
+            || !in_array($screen->id, wc_get_screen_ids(), true)
+        ) {
             return;
         }
         $facts = $container->get(ExpressFactsBuilder::class);
@@ -127,8 +131,8 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         }
 
         $incompatible = $verdict === TaxCompatibility::INCOMPATIBLE;
-
-        $notice = (new AdminNotice())->renderNotice($incompatible ? 'notice-error' : 'notice-warning', self::taxNoticeMessage($incompatible));
+        $level = $incompatible ? 'notice-error' : 'notice-warning';
+        $notice = (new AdminNotice())->renderNotice($level, self::taxNoticeMessage($incompatible));
 
         echo $notice; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
     }

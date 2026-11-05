@@ -9,10 +9,6 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { dispatch, select as selectStore, useSelect } from '@wordpress/data';
 /**
- * External dependencies
- */
-import { getSetting } from '@woocommerce/settings';
-/**
  * Internal dependencies
  */
 import { expressReadiness } from './expressReadiness';
@@ -36,102 +32,14 @@ const REMOUNT_AFTER = [
 ];
 /** WordPress's refusal when the shopper logged in in another tab: its own text is not for shoppers. */
 const LOGIN_CHANGED = 'rest_cookie_invalid_nonce';
-const ADDRESS_FIELDS = [
-	'first_name',
-	'last_name',
-	'company',
-	'address_1',
-	'address_2',
-	'country',
-	'city',
-	'state',
-	'postcode',
-	'phone',
-];
 const HEIGHT = '48px';
-/** Used when WooCommerce sends no address formats. */
-const FALLBACK_ADDRESS_FORMAT = '{address_1}\n{address_2}\n{postcode} {city}';
-/**
- * The shipping fields WooCommerce requires for a country: the checkout's default fields, as the
- * country's locale overrides them.
- *
- * @param {string} country Country code.
- * @return {string[]} Field names.
- */
-export function requiredShippingFields( country ) {
-	const defaults = getSetting( 'defaultFields', {} );
-	const locale = getSetting( 'countryData', {} )?.[ country ]?.locale ?? {};
-
-	return ADDRESS_FIELDS.filter( ( field ) => {
-		const merged = {
-			...( defaults[ field ] ?? {} ),
-			...( locale[ field ] ?? {} ),
-		};
-		return merged.required === true && merged.hidden !== true;
-	} );
-}
-
-/**
- * Where an address is, in its country's format as the block checkout sends it: one line, without
- * the name, the company or the country.
- *
- * @param {Object} address The shipping fields as the form holds them.
- * @return {string} The address, its lines joined by commas.
- */
-export function formatShippingAddress( address ) {
-	const country = getSetting( 'countryData', {} )?.[ address.country ] ?? {};
-	const format =
-		country.format ??
-		getSetting( 'defaultAddressFormat', FALLBACK_ADDRESS_FORMAT );
-	const state = address.state ?? '';
-	const values = {
-		address_1: address.address_1,
-		address_2: address.address_2,
-		city: address.city,
-		postcode: address.postcode,
-		state: country.states?.[ state ] ?? state,
-		state_code: state,
-	};
-
-	return format
-		.split( '\n' )
-		.map( ( line ) =>
-			line
-				.replace(
-					/\{(\w+?)(_upper)?\}/g,
-					( placeholder, key, upper ) => {
-						const value = String( values[ key ] ?? '' );
-						return upper ? value.toUpperCase() : value;
-					}
-				)
-				.replace( /\s+/g, ' ' )
-				.replace( /^[\s,]+|[\s,]+$/g, '' )
-		)
-		.filter( Boolean )
-		.join( ', ' );
-}
-
-/**
- * Fills a translated message's numbered placeholders, in whatever order the translation has them.
- *
- * @param {string}    message A message with %1$s, %2$s….
- * @param {...string} values  The values, in placeholder order.
- * @return {string} The message.
- */
-const fill = ( message, ...values ) =>
-	message.replace(
-		/%(\d+)\$s/g,
-		( placeholder, n ) => values[ n - 1 ] ?? ''
-	);
-
 const isSubscription = ( item ) =>
 	Boolean( item?.extensions?.subscriptions?.billing_period );
 
 /**
  * Whether the cart can be paid this way at all; Blocks hides the express area otherwise. Not for
- * the price the store opened no session for, nor while the shipping form cannot price the cart:
- * the area renders nothing then, and Blocks keeps its own frame while this says yes. Blocks asks
- * again when the cart store changes.
+ * the price the store opened no session for. The shipping form never decides: the wallet gives the
+ * address. Blocks asks again when the cart store changes.
  *
  * @param {Object} args Blocks' canMakePayment argument.
  * @return {boolean} Whether to offer the method.
@@ -147,9 +55,7 @@ export function canMakePayment( args ) {
 	}
 	const cart = readCart( selectStore );
 	return (
-		cart.status !== 'blocked' &&
-		( refusedFingerprint === null ||
-			cart.fingerprint !== refusedFingerprint )
+		refusedFingerprint === null || cart.fingerprint !== refusedFingerprint
 	);
 }
 
@@ -163,66 +69,23 @@ function readCart( select ) {
 	const store = select( CART_STORE );
 	const cart = store.getCartData();
 	const totals = store.getCartTotals();
-	const address = store.getCustomerData()?.shippingAddress ?? {};
-	const packages = store.getShippingRates() ?? [];
-	const selectedRates = packages.map(
-		( pack ) =>
-			`${ pack.package_id }:${
-				( pack.shipping_rates ?? [] ).find( ( rate ) => rate.selected )
-					?.rate_id ?? ''
-			}`
-	);
+	// The session is priced without shipping, and Mollie adds the option the shopper picks in the wallet:
+	// what PricingFingerprint::of() hashes server-side. The rate and the address never reprice it.
+	const withoutShipping =
+		Number( totals.total_price ) -
+		Number( totals.total_shipping ?? 0 ) -
+		Number( totals.total_shipping_tax ?? 0 );
 	const { status } = expressReadiness( {
 		itemCount: cart.items?.length ?? 0,
 		hasSubscription: ( cart.items ?? [] ).some( isSubscription ),
-		needsShipping: store.getNeedsShipping(),
-		shippingAddress: address,
-		requiredShippingFields: requiredShippingFields( address.country ),
-		hasSelectedRate:
-			packages.length > 0 &&
-			packages.every( ( pack ) =>
-				( pack.shipping_rates ?? [] ).some( ( rate ) => rate.selected )
-			),
-		// A cost the store has actually worked out for this address, free shipping included.
-		hasShippingAmount:
-			totals.total_shipping !== undefined &&
-			totals.total_shipping !== null,
-		isCalculating:
-			store.isCustomerDataUpdating() ||
-			store.isShippingRateBeingSelected() ||
-			Boolean( store.isAddressFieldsForShippingRatesUpdating?.() ),
-		nothingToPay: Number( totals.total_price ) === 0,
+		nothingToPay: withoutShipping === 0,
 	} );
-
-	const rateNames = packages
-		.map(
-			( pack ) =>
-				( pack.shipping_rates ?? [] ).find( ( rate ) => rate.selected )
-					?.name ?? ''
-		)
-		.filter( Boolean )
-		.join( ', ' );
 
 	return {
 		status,
-		// Where the order ships and how, as the shopper filled it in; empty when nothing ships.
-		shipsTo: store.getNeedsShipping()
-			? formatShippingAddress( address )
-			: '',
-		shipsVia: store.getNeedsShipping() ? rateNames : '',
-		// What PricingFingerprint::of() hashes server-side; the destination only while something ships.
 		fingerprint: [
 			totals.currency_code,
-			totals.total_price,
-			...selectedRates,
-			...( store.getNeedsShipping()
-				? [
-						address.country ?? '',
-						address.state ?? '',
-						address.postcode ?? '',
-						address.city ?? '',
-				  ]
-				: [] ),
+			withoutShipping,
 			...( cart.items ?? [] ).map(
 				( item ) => `${ item.key }:${ item.quantity }`
 			),
@@ -256,44 +119,6 @@ function useSettled( status, fingerprint ) {
 	return settled;
 }
 
-const SHIPPING_FIELD =
-	'#shipping-fields input, #shipping-fields select, .wc-block-checkout__shipping-fields input';
-// After a reload Blocks shows a saved address as a card, with its fields behind this button.
-const SHIPPING_CARD_EDIT =
-	'#shipping-fields .wc-block-components-address-card__edit';
-const CARD_OPEN_FRAMES = 20;
-
-function focusField( field ) {
-	field.scrollIntoView( { block: 'center' } );
-	field.focus();
-}
-
-function focusShippingAddress() {
-	const edit = document.querySelector( SHIPPING_CARD_EDIT );
-	if ( ! edit ) {
-		const field = document.querySelector( SHIPPING_FIELD );
-		if ( field ) {
-			focusField( field );
-		}
-		return;
-	}
-	// The card keeps its fields in the page, hidden, until it is opened.
-	edit.click();
-	let framesLeft = CARD_OPEN_FRAMES;
-	const focusOnceShown = () => {
-		const field = document.querySelector( SHIPPING_FIELD );
-		if ( field && field.getClientRects().length > 0 ) {
-			focusField( field );
-			return;
-		}
-		framesLeft -= 1;
-		if ( framesLeft > 0 ) {
-			window.requestAnimationFrame( focusOnceShown );
-		}
-	};
-	window.requestAnimationFrame( focusOnceShown );
-}
-
 export default function MollieExpressComponent( {
 	data,
 	onClick,
@@ -302,12 +127,6 @@ export default function MollieExpressComponent( {
 } ) {
 	const live = useSelect( ( select ) => readCart( select ), [] );
 	const settled = useSettled( live.status, live.fingerprint );
-	// The shipping line of the last ready cart: a form being edited would show half an address.
-	const shipping = useRef( { to: '', via: '' } );
-	if ( live.status === 'ready' ) {
-		shipping.current = { to: live.shipsTo, via: live.shipsVia };
-	}
-
 	const [ failedAt, setFailedAt ] = useState( null );
 	const [ refusedShippingAt, setRefusedShippingAt ] = useState( null );
 	const [ attempt, setAttempt ] = useState( 0 );
@@ -335,9 +154,8 @@ export default function MollieExpressComponent( {
 		);
 	}
 
-	const blocked =
-		settled.status === 'blocked' ||
-		refusedShippingAt === settled.fingerprint;
+	// The order route can still refuse a submit for the shipping form: not retried at this price.
+	const blocked = refusedShippingAt === settled.fingerprint;
 	const failed = failedAt === settled.fingerprint;
 	const ready = settled.status === 'ready' && ! blocked && ! failed && ! idle;
 
@@ -495,30 +313,6 @@ export default function MollieExpressComponent( {
 			{ notice && (
 				<p className="mollie-express-component__notice" role="alert">
 					{ notice }
-				</p>
-			) }
-			{ shipping.current.to && (
-				<p className="mollie-express-component__ships-to">
-					{ `${ fill(
-						data.messages.shipsTo,
-						shipping.current.to,
-						shipping.current.via
-					) } ` }
-					<button
-						type="button"
-						className="mollie-express-component__change"
-						onClick={ () => focusShippingAddress() }
-						style={ {
-							padding: 0,
-							border: 0,
-							background: 'none',
-							color: 'inherit',
-							textDecoration: 'underline',
-							cursor: 'pointer',
-						} }
-					>
-						{ data.messages.change }
-					</button>
 				</p>
 			) }
 			<div

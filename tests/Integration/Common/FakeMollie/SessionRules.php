@@ -203,6 +203,24 @@ final class SessionRules
             }
         }
 
+        if (isset($payload['shipping'])) {
+            $shipping = $payload['shipping'];
+            $hasCallback = is_array($shipping) && isset($shipping['callbackUrl']);
+            $hasOptions = is_array($shipping) && isset($shipping['options']);
+            if ($hasCallback === $hasOptions) {
+                $violations[] = self::violation('shipping', 'Shipping takes options or a callbackUrl, one of them and not both.');
+            }
+            if ($hasCallback && !preg_match('#^https://#', (string) $shipping['callbackUrl'])) {
+                $violations[] = self::violation('shipping.callbackUrl', 'The callback URL must be https.');
+            }
+            if ($hasCallback && in_array('shipping_fee', array_column((array) ($payload['lines'] ?? []), 'type'), true)) {
+                $violations[] = self::violation('lines', "A shipping_fee line must not be sent beside shipping.callbackUrl: Mollie adds it for the chosen option.");
+            }
+            if (!in_array('shipping-address', (array) ($payload['requiredCustomerDetails'] ?? []), true)) {
+                $violations[] = self::violation('requiredCustomerDetails', "Must contain 'shipping-address' once shipping is set.");
+            }
+        }
+
         if (isset($payload['metadata']) && strlen((string) json_encode($payload['metadata'])) > 1024) {
             $violations[] = self::violation('metadata', 'The metadata may be at most about 1kB.');
         }

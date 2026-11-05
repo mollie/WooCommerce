@@ -13,7 +13,7 @@ final class CartFacts
 {
     /**
      * @param list<CartLine> $lines
-     * @param Money|null $total Including VAT, shipping and fees.
+     * @param Money|null $total Including VAT and fees, without shipping: the shipping options are priced apart.
      * @param list<CartFee> $fees
      * @param list<CartCoupon> $coupons
      * @param string $destination The one the shipping rates were calculated for.

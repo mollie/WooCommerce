@@ -27,9 +27,8 @@ class SurfaceOwnershipTest extends TestCase
      *   Given express settings, shop facts and the cart as it is when the page loads
      *   When ownership of a surface is asked
      *   Then the checkout is owned when the mode is allowed, the site is HTTPS, a wallet is visible
-     *        and the cart is ready: nothing to ship, or a complete shipping address with a chosen rate,
+     *        and the cart is ready: whatever the shipping form holds, since the wallet gives the address,
      *        and no tax that depends on an address the wallet gives later
-     *   And a cart that waits for the shipping form is not owned, so no placeholder is ever shown
      *   And the cart and the product page are never owned
      *   And the answer is the same as availability resolved with that cart
      *
@@ -75,7 +74,7 @@ class SurfaceOwnershipTest extends TestCase
             'the checkout, nothing to ship' => ['checkout', 'live', true, $wallets, $nothingShips, true],
             'the checkout, ships, address and rate known' => ['checkout', 'live', true, $wallets, $shipsReady, true],
             'the checkout, through one wallet' => ['checkout', 'live', true, ['paypal'], $nothingShips, true],
-            'the checkout, ships, address not complete yet' => ['checkout', 'live', true, $wallets, self::cart(true, false), false],
+            'the checkout, ships, address not complete yet' => ['checkout', 'live', true, $wallets, self::cart(true, false), true],
             'the checkout, taxes follow the address and the shop sells to two countries' => ['checkout', 'live', true, $wallets, self::cart(false, false, true), false],
             'the checkout, ships, taxes follow the address and the shop sells to two countries' => ['checkout', 'live', true, $wallets, self::cart(true, true, true), false],
             'the checkout, an empty cart' => ['checkout', 'live', true, $wallets, new CartFacts([], false, false, false), false],

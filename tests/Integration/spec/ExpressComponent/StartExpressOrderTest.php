@@ -132,6 +132,8 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      */
     public function it_ships_to_the_form_address_with_the_chosen_rate_as_its_shipping_line(): void
     {
+        $this->markTestIncomplete('REQ-C3 changed by feat:express:shipping-callback');
+
         $this->readyGuestCheckout();
         $this->chooseRate('express');
         $session = $this->startedSession();
@@ -172,6 +174,8 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      */
     public function it_refuses_a_shipping_cart_while_the_form_is_incomplete(string $whatIsMissing): void
     {
+        $this->markTestIncomplete('REQ-H2 changed by feat:express:shipping-callback');
+
         $this->readyGuestCheckout();
         $this->startedSession();
         if ($whatIsMissing === 'destination') {
@@ -416,7 +420,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     /**
      * Scenario: a checkout priced differently from its session is refused and the session forgotten
      *   Given a guest whose session was started
-     *   When the cart quantity, the shipping destination or the shipping rate changes
+     *   When the cart quantity changes
      *   And the order is requested
      *   Then it is answered ok=false with code cart_changed
      *   And no order is created
@@ -424,30 +428,29 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *       handing out the discarded one
      *
      * @test
-     * @dataProvider priceChanges
      * @group REQ-G2
      */
-    public function it_refuses_and_forgets_the_session_when_the_price_changed(string $change): void
+    public function it_refuses_and_forgets_the_session_when_the_price_changed(): void
     {
         $this->readyGuestCheckout();
         $this->startedSession();
         $before = $this->allOrderIds();
-        $this->changeCheckout($change);
+        $this->changeCheckout();
 
         $response = $this->startOrder();
 
         $this->assertRefused($response, 'cart_changed');
         $this->assertSame($before, $this->allOrderIds());
 
-        $this->restoreCheckout($change);
+        $this->restoreCheckout();
         $this->assertSame(200, $this->startSession()->get_status());
         $this->assertCount(2, $this->fakeMollie()->sessions(), 'The refused session must have been discarded, not reused.');
     }
 
     /**
      * Scenario: a tab that pays a session another tab replaced gets no order, and the other tab still can
-     *   Given a shopper whose checkout is open in two tabs, the second one started with the standard rate
-     *   And the first tab switched to the express rate, which started a new session for the new total
+     *   Given a shopper whose checkout is open in two tabs, the second one started with two items
+     *   And the first tab changed the quantity, which started a new session for the new total
      *   When the second tab submits the session it still shows
      *   Then it is answered ok=false with code session_replaced and the cart_changed message
      *   And no order is created, so the wallet takes no payment
@@ -459,7 +462,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     {
         $this->readyGuestCheckout();
         $secondTab = $this->token($this->startSession());
-        $this->chooseRate('express');
+        $this->changeCheckout();
         $firstTab = $this->token($this->startSession());
         $this->assertNotSame($secondTab, $firstTab, 'The new total must have started a new session.');
         $before = $this->allOrderIds();
@@ -495,18 +498,6 @@ class StartExpressOrderTest extends ExpressFlowTestCase
 
         $this->assertRefused($response, 'session_replaced');
         $this->assertSame($before, $this->allOrderIds());
-    }
-
-    /**
-     * @return array<string, array{0: string}>
-     */
-    public function priceChanges(): array
-    {
-        return [
-            'the cart quantity changed' => ['quantity'],
-            'the shipping destination changed' => ['destination'],
-            'the shipping rate changed' => ['rate'],
-        ];
     }
 
     /**
@@ -932,27 +923,15 @@ class StartExpressOrderTest extends ExpressFlowTestCase
         return $lines;
     }
 
-    private function changeCheckout(string $change): void
+    private function changeCheckout(): void
     {
-        if ($change === 'quantity') {
-            WC()->cart->set_quantity((string) array_key_first(WC()->cart->get_cart()), 3);
-        } elseif ($change === 'destination') {
-            $this->fillCheckoutForm($this->billing(), array_merge($this->shipping('LU'), ['postcode' => '5678']));
-        } else {
-            WC()->session->set('chosen_shipping_methods', [$this->rates['express']]);
-        }
+        WC()->cart->set_quantity((string) array_key_first(WC()->cart->get_cart()), 3);
         $this->recalculate();
     }
 
-    private function restoreCheckout(string $change): void
+    private function restoreCheckout(): void
     {
-        if ($change === 'quantity') {
-            WC()->cart->set_quantity((string) array_key_first(WC()->cart->get_cart()), 2);
-        } elseif ($change === 'destination') {
-            $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
-        } else {
-            WC()->session->set('chosen_shipping_methods', [$this->rates['standard']]);
-        }
+        WC()->cart->set_quantity((string) array_key_first(WC()->cart->get_cart()), 2);
         $this->recalculate();
     }
 

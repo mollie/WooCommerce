@@ -132,6 +132,16 @@ trait ExpressCheckoutFixtures
         return $this->decimal((float) WC()->cart->get_total('edit'));
     }
 
+    /**
+     * What an express session is priced at: the cart total, shipping and its tax left out.
+     */
+    private function cartTotalWithoutShipping(): string
+    {
+        return $this->decimal(
+            (float) WC()->cart->get_total('edit') - (float) WC()->cart->get_shipping_total() - (float) WC()->cart->get_shipping_tax()
+        );
+    }
+
     private function decimal(float $amount): string
     {
         return number_format($amount, 2, '.', '');

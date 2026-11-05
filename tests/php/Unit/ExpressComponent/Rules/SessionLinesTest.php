@@ -56,10 +56,11 @@ class SessionLinesTest extends TestCase
      *   And every line satisfies both formulas and the lines sum to the cart total to the cent
      *   And a coupon is a discount line with a negative unitPrice
      *   And a fee is a surcharge line
-     *   And the chosen shipping rate is exactly one shipping_fee line
+     *   And no line is a shipping_fee, whatever rate the cart holds: the total is the cart's without shipping
      *
      * @dataProvider cartShapes
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\SessionLines::fromCart
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
      */
     public function testBuildsLinesThatPassTheSessionRules(CartFacts $cart): void
     {
@@ -74,10 +75,10 @@ class SessionLinesTest extends TestCase
         self::assertSame([], SessionRules::violations($payload), 'The lines break the documented Sessions rules.');
 
         $types = array_column($lines, 'type');
-        self::assertSame(
-            $cart->shipping() === null ? 0 : 1,
-            count(array_keys($types, 'shipping_fee', true)),
-            'The chosen shipping rate must be exactly one shipping_fee line.'
+        self::assertNotContains(
+            'shipping_fee',
+            $types,
+            'Mollie refuses a shipping_fee line beside shipping.callbackUrl: it adds the option the shopper picks.'
         );
         if ($cart->coupons() !== []) {
             self::assertContains('discount', $types, 'A coupon must be a discount line.');
@@ -110,11 +111,12 @@ class SessionLinesTest extends TestCase
             'a percentage coupon' => [$this->cart([$twoAtTen], '18.00', coupons: [new CartCoupon('ten-percent', $this->money('2.00'))])],
             'a fixed coupon' => [$this->cart([$twoAtTen], '15.00', coupons: [new CartCoupon('five-off', $this->money('5.00'))])],
             'a fee' => [$this->cart([$twoAtTen], '21.21', fees: [$handling])],
-            'a taxed shipping rate' => [$this->cart([$twoAtTen], '26.05', shipping: $flatRate)],
+            // The total is the cart's without shipping: Mollie adds the option the shopper picks in the wallet.
+            'a taxed shipping rate' => [$this->cart([$twoAtTen], '20.00', shipping: $flatRate)],
             'mixed VAT rates' => [$this->cart([$twoAtTen, $threeAtFiveFortyFive], '36.35')],
             'everything at once' => [$this->cart(
                 [$twoAtTen, $threeAtFiveFortyFive],
-                '38.61',
+                '32.56',
                 fees: [$handling],
                 coupons: [new CartCoupon('five-off', $this->money('5.00'))],
                 shipping: $flatRate

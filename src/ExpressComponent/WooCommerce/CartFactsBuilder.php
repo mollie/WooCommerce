@@ -9,7 +9,6 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartCoupon;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFee;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartLine;
-use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartShipping;
 use Mollie\WooCommerce\Shared\Values\Money;
 use WC_Cart;
 use WC_Customer;
@@ -38,11 +37,10 @@ class CartFactsBuilder
             needsShipping: $needsShipping,
             shippingDestinationComplete: $customer->has_full_shipping_address(),
             shippingRateChosen: $chosenRates !== null,
-            total: $this->money($cart->get_total('edit'), $currency),
+            total: $this->money($this->totalWithoutShipping($cart), $currency),
             fees: $this->fees($cart, $customer, $currency),
             coupons: $this->coupons($cart, $currency),
-            shipping: $chosenRates === null ? null : $this->shipping($cart, $customer, $chosenRates, $currency),
-            cartHash: $cart->get_cart_hash(),
+            cartHash: $this->cartHash($cart),
             destination: implode('|', [
                 $customer->get_shipping_country(),
                 $customer->get_shipping_state(),
@@ -195,18 +193,25 @@ class CartFactsBuilder
     }
 
     /**
-     * @param array<string, string> $chosenRates Rate id => label.
+     * WooCommerce's own hash includes the cart total, shipping too: a change of the shipping rate would change it.
      */
-    private function shipping(WC_Cart $cart, WC_Customer $customer, array $chosenRates, string $currency): CartShipping
+    private function cartHash(WC_Cart $cart): string
     {
-        $tax = (float) $cart->get_shipping_tax();
+        $items = [];
+        foreach ($cart->get_cart() as $key => $item) {
+            unset($item['data']);
+            $items[(string) $key] = $item;
+        }
 
-        return new CartShipping(
-            array_keys($chosenRates),
-            implode(', ', array_filter($chosenRates)),
-            $this->money((float) $cart->get_shipping_total() + $tax, $currency),
-            $tax !== 0.0 ? $this->sumOfRates(\WC_Tax::get_shipping_tax_rates(null, $customer)) : '0.00'
-        );
+        return hash('sha256', (string) wp_json_encode($items) . $this->totalWithoutShipping($cart));
+    }
+
+    /**
+     * The session is priced without shipping: Mollie adds the option the shopper picks in the wallet.
+     */
+    private function totalWithoutShipping(WC_Cart $cart): float
+    {
+        return (float) $cart->get_total('edit') - (float) $cart->get_shipping_total() - (float) $cart->get_shipping_tax();
     }
 
     /**

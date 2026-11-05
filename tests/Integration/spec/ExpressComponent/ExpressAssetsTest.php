@@ -281,12 +281,12 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *   And no marked value and no profile id is in it
      *   And the nonce is one the express routes admit
      *   And restUrl is the plugin's REST base
-     *   And the messages hold the two labels of the "Ships to" line, and nothing for a waiting state,
-     *       which is never shown
+     *   And the messages hold nothing for a waiting state or the form's shipping address: neither is shown
      *   And they hold the routes' refusal text, for a refusal WordPress makes before the route runs
      *
      * @test
      * @group REQ-G1
+     * @group REQ-H2
      */
     public function it_localizes_only_the_allowlisted_express_data(): void
     {
@@ -313,15 +313,13 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         $this->assertSame(rest_url('mollie/v1/'), $data['restUrl']);
 
         $this->assertIsArray($data['messages']);
-        $this->assertSame(__('Ships to %1$s · %2$s', 'mollie-payments-for-woocommerce'), $data['messages']['shipsTo'] ?? null);
-        $this->assertSame(__('Change', 'mollie-payments-for-woocommerce'), $data['messages']['change'] ?? null);
         $this->assertSame(
             'Express checkout could not be started. Please reload the page and try again.',
             $data['messages']['reload'] ?? null,
             'WordPress refuses a request whose login changed in another tab before the route runs: the script shows the route\'s own refusal text.'
         );
-        foreach (['shippingIncomplete', 'waitingForShipping'] as $gone) {
-            $this->assertArrayNotHasKey($gone, $data['messages'], "The blocked state renders nothing, so '{$gone}' is not sent.");
+        foreach (['shippingIncomplete', 'waitingForShipping', 'shipsTo', 'change'] as $gone) {
+            $this->assertArrayNotHasKey($gone, $data['messages'], "The component never waits for the shipping form and shows no form address, so '{$gone}' is not sent.");
         }
         foreach ($data['messages'] as $key => $message) {
             $this->assertIsString($message, "Message '{$key}' must be a string.");
@@ -448,9 +446,8 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *        when the checkout page loads
      *   When the block checkout page enqueues its scripts
      *   Then mollieExpressData is printed exactly when the cart is ready and its price does not depend
-     *        on an address the wallet gives later: nothing to ship, or a complete shipping address
-     *        with a chosen rate, and no taxes that follow the customer's address in a shop selling to
-     *        more than one country
+     *        on an address the wallet gives later: whatever the shipping form holds, and no taxes that
+     *        follow the customer's address in a shop selling to more than one country
      *   And an address saved on the customer's account changes nothing
      *   And the legacy Apple Pay and PayPal buttons step aside exactly then, and show as configured otherwise
      *
@@ -529,9 +526,9 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             'nothing ships, taxes on the shipping address, sells to one country, ships worldwide' => [false, 'shipping', $worldwide, 'guest, nothing typed', true],
             'ships, taxes on the shipping address, sells to one country, ships worldwide' => [true, 'shipping', $worldwide, 'customer, shipping address saved', false],
             'ships, taxes on the billing address, sells to one country, ships worldwide' => [true, 'billing', $worldwide, 'customer, shipping address saved', true],
-            // The form still has to be complete where the cart ships.
-            'ships, shop sells to one country, shipping form not complete (only a country typed)' => [true, 'shipping', $one, 'guest, only a country typed', false],
-            'ships, shop sells to one country, shipping form empty' => [true, 'shipping', $one, 'guest, nothing typed', false],
+            // The shipping form never decides: the wallet gives the address.
+            'ships, shop sells to one country, shipping form not complete (only a country typed)' => [true, 'shipping', $one, 'guest, only a country typed', true],
+            'ships, shop sells to one country, shipping form empty' => [true, 'shipping', $one, 'guest, nothing typed', true],
             'ships, shop sells to one country, customer with a saved address and a chosen rate' => [true, 'shipping', $one, 'customer, shipping address saved', true],
             'ships, shop sells to one country, returning guest whose session holds the address and a rate' => [true, 'shipping', $one, 'returning guest, address and rate in the session', true],
             'ships, many countries, taxes on the shop address, customer with a saved address and a rate' => [true, 'base', $many, 'customer, shipping address saved', true],
@@ -541,10 +538,10 @@ class ExpressAssetsTest extends ExpressFlowTestCase
 
     /**
      * Scenario: ownership is decided once per request, whoever asks first
-     *   Given a block checkout whose cart is ready, or not, when ownership is first asked
+     *   Given a block checkout whose cart holds a product, or is empty, when ownership is first asked
      *   When the page and the legacy buttons ask, in either order, and the cart changes in between
      *   Then both get the first answer: a page that was not owned stays without the Express Component
-     *        after the shopper completes the form, and one that was owned keeps it
+     *        after the shopper adds a product, and one that was owned keeps it
      *
      * @test
      * @dataProvider firstAskers
@@ -553,14 +550,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     {
         $this->bootExpressOwning(['wp_enqueue_scripts', self::OWNS_SURFACE]);
         $this->actAsGuest();
-        $this->cartWith(['simple']);
-        if ($readyAtFirst) {
-            $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
-            $this->chooseRate('standard');
-        } else {
-            $this->fillCheckoutForm([], ['country' => 'LU']);
-            $this->recalculate();
-        }
+        $this->cartWith($readyAtFirst ? ['simple'] : []);
 
         if ($asksFirst === 'the legacy buttons') {
             $first = $this->ownsTheCheckout();
@@ -770,13 +760,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      */
     private function changeTheCart(bool $wasReady): void
     {
-        if ($wasReady) {
-            WC()->cart->empty_cart();
-
-            return;
-        }
-        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
-        $this->chooseRate('standard');
+        $this->cartWith($wasReady ? [] : ['simple']);
     }
 
     private function ownsTheCheckout(): bool

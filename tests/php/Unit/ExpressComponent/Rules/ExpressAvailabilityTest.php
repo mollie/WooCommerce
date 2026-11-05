@@ -122,11 +122,11 @@ class ExpressAvailabilityTest extends TestCase
     }
 
     /**
-     * Scenario: a cart that ships waits for the checkout form only where the wallet needs it
-     *   Given the checkout is otherwise available and the cart holds a normal product
+     * Scenario: a cart that ships waits for the checkout form only where a wallet is set to need it
+     *   Given a wallets table where every wallet takes its address from the checkout form (no real row does)
+     *   And the checkout is otherwise available and the cart holds a normal product
      *   When availability is resolved while the shipping destination or rate is missing
-     *   Then it is blocked with shipping_incomplete, not unavailable, if every visible wallet takes
-     *        its address from the checkout form
+     *   Then it is blocked with shipping_incomplete, not unavailable
      *   And it is available once the destination is complete and a rate is chosen
      *   And Apple Pay waits for the form like PayPal: it has no address sheet of its own here
      *   And a cart that needs no shipping is available whatever the form says
@@ -147,7 +147,7 @@ class ExpressAvailabilityTest extends TestCase
     ): void {
 
         $result = ExpressAvailability::resolve(
-            $this->settings(),
+            $this->settings('form'),
             $this->shop('live', true, $wallets),
             $this->cart($lines, $needsShipping, $destinationComplete, $rateChosen),
             'checkout'
@@ -183,7 +183,7 @@ class ExpressAvailabilityTest extends TestCase
      *   Given the checkout is otherwise available and the cart's price is final
      *   When availability is resolved for a cart whose total is zero
      *   Then it is unavailable with nothing_to_pay
-     *   And a cart that still waits for its shipping is blocked, not refused: its total is not final
+     *   And a cart that ships is refused the same way: its total is the cart's without shipping, so it is final
      *   And a cart whose total is not known is not refused for it
      *
      * @dataProvider totals
@@ -220,7 +220,7 @@ class ExpressAvailabilityTest extends TestCase
         return [
             'nothing ships, total zero' => [0, false, false, 'unavailable', 'nothing_to_pay'],
             'ships, form complete, total zero' => [0, true, true, 'unavailable', 'nothing_to_pay'],
-            'ships, form incomplete, total zero so far' => [0, true, false, 'blocked', 'shipping_incomplete'],
+            'ships, form incomplete, total zero' => [0, true, false, 'unavailable', 'nothing_to_pay'],
             'one cent to pay' => [1, false, false, 'available', null],
             'total not known' => [null, false, false, 'available', null],
         ];
@@ -291,7 +291,7 @@ class ExpressAvailabilityTest extends TestCase
             'taxes off, ships, form complete' => [[false], true, true, false, 'billing', $two, false, 1000, 'available', null],
             'taxes on the shop address, many countries' => [[false], true, true, true, 'base', $two, false, 1000, 'available', null],
             'one country, one rate, nothing ships' => [[false], false, false, true, 'billing', $one, false, 1000, 'available', null],
-            'one country, one rate, ships, form incomplete' => [[false], true, false, true, 'billing', $one, false, 1000, 'blocked', 'shipping_incomplete'],
+            'one country, one rate, ships, form incomplete' => [[false], true, false, true, 'billing', $one, false, 1000, 'available', null],
             'regional rates, nothing ships' => [[false], false, false, true, 'billing', $one, true, 1000, 'available', null],
             'regional rates, ships, form complete' => [[false], true, true, true, 'shipping', $one, true, 1000, 'available', null],
             'two countries on the billing address, ships, form complete' => [[false], true, true, true, 'billing', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
@@ -305,14 +305,24 @@ class ExpressAvailabilityTest extends TestCase
         ];
     }
 
-    private function settings(): ExpressSettings
+    /**
+     * @param string|null $addressFrom Sets every wallet's addressFrom: no real row uses 'form' any more,
+     *        the switch is what the blocked cases test.
+     */
+    private function settings(?string $addressFrom = null): ExpressSettings
     {
         $config = self::config();
+        $wallets = $config['wallets'];
+        if ($addressFrom !== null) {
+            foreach ($wallets as $wallet => $row) {
+                $wallets[$wallet]['addressFrom'] = $addressFrom;
+            }
+        }
 
         return new ExpressSettings(
             supportedSurfaces: $config['surfaces'],
             allowedModes: $config['allowedModes'],
-            wallets: $config['wallets']
+            wallets: $wallets
         );
     }
 

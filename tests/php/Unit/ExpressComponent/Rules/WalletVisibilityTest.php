@@ -147,10 +147,13 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
-     * Scenario: every wallet waits for the checkout form, Apple Pay included
-     *   Given Apple Pay and PayPal visible and a cart that ships
+     * Scenario: a wallet set to take its address from the checkout form waits for it
+     *   Given a wallets table where Apple Pay and PayPal take the shipping address from the checkout form
+     *   And both visible and a cart that ships
      *   When the buttons map is built while the shipping destination or rate is missing
-     *   Then neither is shown: both take the shipping address from the checkout form
+     *   Then neither is shown
+     *
+     * No real row uses 'form' since the shipping callback; the switch stays in config/express.php.
      *   And with the form complete, or nothing to ship, both are shown
      *
      * @dataProvider carts
@@ -173,7 +176,7 @@ class WalletVisibilityTest extends TestCase
         );
 
         $buttons = WalletVisibility::buttons(
-            $this->settings(),
+            $this->settings('form'),
             $this->shop(true, $both, $both, $both, $both),
             $cart
         );
@@ -204,7 +207,7 @@ class WalletVisibilityTest extends TestCase
      *   When the buttons map is built for a cart that ships while the form is incomplete
      *   Then Apple Pay is shown and PayPal is not
      *
-     * No real row uses 'wallet' today; this keeps the rule working if one is switched back.
+     * Every real row is 'wallet'; PayPal is set to 'form' here so the two sources are told apart.
      *
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons
      */
@@ -213,6 +216,7 @@ class WalletVisibilityTest extends TestCase
         $config = self::config();
         $wallets = $config['wallets'];
         $wallets['applepay']['addressFrom'] = 'wallet';
+        $wallets['paypal']['addressFrom'] = 'form';
         $settings = new ExpressSettings(
             supportedSurfaces: $config['surfaces'],
             allowedModes: $config['allowedModes'],
@@ -232,16 +236,18 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
-     * Scenario: the real wallets table takes every shipping address from the checkout form
+     * Scenario: the real wallets table takes every shipping address from the wallet
      *   Given config/express.php
-     *   Then every wallet row has addressFrom 'form'
+     *   Then every wallet row has addressFrom 'wallet', so a cart that ships never waits for the checkout form
      *
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons
+     * @group REQ-H2
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
      */
-    public function testEveryWalletTakesItsAddressFromTheCheckoutForm(): void
+    public function testEveryWalletTakesItsAddressFromTheWallet(): void
     {
         foreach (self::config()['wallets'] as $wallet => $row) {
-            self::assertSame('form', $row['addressFrom'], "Wallet '{$wallet}' must wait for the checkout form.");
+            self::assertSame('wallet', $row['addressFrom'], "Wallet '{$wallet}' must take its address from the wallet.");
         }
     }
 
@@ -263,14 +269,24 @@ class WalletVisibilityTest extends TestCase
         }
     }
 
-    private function settings(): ExpressSettings
+    /**
+     * @param string|null $addressFrom Sets every wallet's addressFrom: no real row uses 'form' any more,
+     *        the switch is what is under test.
+     */
+    private function settings(?string $addressFrom = null): ExpressSettings
     {
         $config = self::config();
+        $wallets = $config['wallets'];
+        if ($addressFrom !== null) {
+            foreach ($wallets as $wallet => $row) {
+                $wallets[$wallet]['addressFrom'] = $addressFrom;
+            }
+        }
 
         return new ExpressSettings(
             supportedSurfaces: $config['surfaces'],
             allowedModes: $config['allowedModes'],
-            wallets: $config['wallets']
+            wallets: $wallets
         );
     }
 

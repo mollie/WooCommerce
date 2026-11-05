@@ -17,6 +17,7 @@ use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionBudget;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressShippingSnapshot;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\SDK\IdempotencyKey;
 use Mollie\WooCommerce\SDK\MollieApi;
@@ -35,12 +36,14 @@ final class StartExpressSession
         private ExpressFactsBuilder $expressFacts,
         private ExpressOrderFactsBuilder $orderFacts,
         private ExpressSessionStore $store,
+        private ExpressShippingSnapshot $snapshot,
         private ExpressSessionBudget $budget,
         private ExpressUrls $urls,
         private MollieApi $mollie,
         private Clock $clock,
         private EventLog $log,
-        private int $reuseMarginSeconds
+        private int $reuseMarginSeconds,
+        private int $sessionLifetimeSeconds
     ) {
     }
 
@@ -94,13 +97,21 @@ final class StartExpressSession
         $customer = $this->store->customerKey();
         $ref = $this->store->expressRef($fingerprint, $attempt);
 
+        // A cart that ships has no shipping line: Mollie asks the store for the options, with the secret of this session.
+        $ships = $cart->needsShipping();
+        $secret = $ships ? $this->snapshot->secretFor($ref) : '';
+        if (!$this->saveSnapshot($secret)) {
+            return $this->refuse($surface, 'shipping_unavailable', 503);
+        }
+
         $payload = SessionPayload::build(
             $cart,
             SessionLines::fromCart($cart),
             $this->urls->returnUrl($ref),
             $this->urls->webhookUrl(),
             ['express_ref' => $ref],
-            SessionPayload::requiredCustomerDetails()
+            SessionPayload::requiredCustomerDetails($ships),
+            $ships ? $this->urls->shippingCallbackUrl($secret) : null
         );
         $key = IdempotencyKey::for(self::INTENT, [
             'customer' => $customer,
@@ -116,6 +127,7 @@ final class StartExpressSession
                 throw MollieCallFailed::fromThrowable(new \UnexpectedValueException('', 0));
             }
         } catch (MollieCallFailed $failure) {
+            $this->forgetSnapshot($secret);
             $this->log->error('express.session.failed', [
                 'surface' => $surface,
                 'kind' => $failure->kind(),
@@ -127,6 +139,7 @@ final class StartExpressSession
                 : ExpressSessionResult::refused('mollie_unavailable', 503);
         }
 
+        $this->bindSnapshot($secret, $session->id(), $expiresAt);
         $this->store->remember($session->id(), $session->clientAccessToken(), $expiresAt, $fingerprint, $account, $ref, $attempt);
         $total = $cart->total();
         $this->log->info('express.session.created', [
@@ -139,6 +152,26 @@ final class StartExpressSession
         ]);
 
         return ExpressSessionResult::started($session->clientAccessToken(), $session->expiresAt());
+    }
+
+    /** A cart that ships has a secret; one that ships nothing has none, and nothing to save. */
+    private function saveSnapshot(string $secret): bool
+    {
+        return $secret === '' || $this->snapshot->save($secret, $this->sessionLifetimeSeconds);
+    }
+
+    private function bindSnapshot(string $secret, string $sessionId, int $expiresAt): void
+    {
+        if ($secret !== '') {
+            $this->snapshot->attachSession($secret, $sessionId, $expiresAt);
+        }
+    }
+
+    private function forgetSnapshot(string $secret): void
+    {
+        if ($secret !== '') {
+            $this->snapshot->forget($secret);
+        }
     }
 
     private function orderSettled(string $ref): bool

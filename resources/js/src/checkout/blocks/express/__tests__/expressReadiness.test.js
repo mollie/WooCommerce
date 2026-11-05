@@ -1,16 +1,15 @@
 /* eslint-env jest */
 /**
- * expressReadiness — which of its three states the Express Component shows.
+ * expressReadiness — which of its two states the Express Component shows.
  *
  * A pure function over what the block checkout already knows. It is a convenience, not a control:
  * every rule here is enforced again by POST express/session and POST express/order.
  *
- *   hidden   the cart cannot be paid this way (empty, or holds a subscription): render nothing
- *   blocked  the cart ships and the checkout form cannot price it yet: show the message and our own
- *            placeholder, request no session, mount nothing
+ *   hidden   the cart cannot be paid this way (empty, a subscription, or nothing to pay): render nothing
  *   ready    request a session and mount the component
  *
- * Every wallet waits for the form, Apple Pay included, so readiness does not depend on the wallet.
+ * The wallet supplies the shipping address and the store prices the options for it, so the
+ * shipping form never decides readiness (@REQ-H2).
  */
 /**
  * Internal dependencies
@@ -18,175 +17,95 @@
 import { expressReadiness } from '../expressReadiness';
 
 const READY = { status: 'ready' };
-const BLOCKED = { status: 'blocked', reason: 'shipping_incomplete' };
 const HIDDEN = { status: 'hidden' };
 
-const completeAddress = {
-	first_name: 'Ada',
-	last_name: 'Lovelace',
-	address_1: 'Main street 1',
-	postcode: '1234',
-	city: 'Town',
-	country: 'LU',
-};
-
-const requiredForLu = [
-	'first_name',
-	'last_name',
-	'address_1',
-	'postcode',
-	'city',
-	'country',
-];
-
 /**
- * A cart that ships, with the shipping form complete and a rate chosen: ready.
+ * A cart, ready unless the overrides say otherwise.
  *
  * @param {Object} overrides Fields that differ from that cart.
  * @return {Object} The readiness input.
  */
-const shippable = ( overrides = {} ) => ( {
-	itemCount: 1,
-	hasSubscription: false,
-	needsShipping: true,
-	shippingAddress: completeAddress,
-	requiredShippingFields: requiredForLu,
-	hasSelectedRate: true,
-	hasShippingAmount: true,
-	isCalculating: false,
-	...overrides,
-} );
-
-/**
- * A cart with nothing to ship and an empty form.
- *
- * @param {Object} overrides Fields that differ from that cart.
- * @return {Object} The readiness input.
- */
-const virtual = ( overrides = {} ) => ( {
+const cart = ( overrides = {} ) => ( {
 	itemCount: 1,
 	hasSubscription: false,
 	needsShipping: false,
-	shippingAddress: {},
-	requiredShippingFields: requiredForLu,
-	hasSelectedRate: false,
-	hasShippingAmount: false,
-	isCalculating: false,
+	nothingToPay: false,
 	...overrides,
 } );
 
 describe( 'expressReadiness', () => {
 	/**
-	 * Scenario: the component shows the state the cart and the checkout form call for
-	 *   Given what the block checkout knows about the cart and the shipping form
+	 * Scenario: the component shows the state the cart calls for, whatever the shipping form holds
+	 *   Given what the block checkout knows about the cart
 	 *   When readiness is decided
-	 *   Then a cart with nothing to ship is ready whatever the form says
-	 *   And a cart that ships is blocked while a required field is missing, no rate is selected
-	 *       or the totals are still calculating, and ready once none of that holds
-	 *   And an empty cart or one with a subscription is hidden, which the form cannot fix
+	 *   Then a cart that ships is ready with an empty, half-filled or complete shipping form,
+	 *       with no rate selected and while the totals are calculating
+	 *   And an empty cart, one with a subscription, or one with nothing to pay is hidden
 	 */
 	test.each( [
-		[ 'no shipping needed, form empty', virtual(), READY ],
+		[ 'nothing to ship', cart(), READY ],
 		[
-			'no shipping needed, no rate',
-			virtual( { hasSelectedRate: false } ),
-			READY,
-		],
-		[
-			'shipping needed, form complete and a rate selected',
-			shippable(),
+			'shipping needed, empty form',
+			cart( { needsShipping: true } ),
 			READY,
 		],
 		[
 			'shipping needed, a required field missing',
-			shippable( {
-				shippingAddress: { ...completeAddress, postcode: '' },
-			} ),
-			BLOCKED,
-		],
-		[
-			'shipping needed, a required field only whitespace',
-			shippable( {
-				shippingAddress: { ...completeAddress, city: '   ' },
-			} ),
-			BLOCKED,
-		],
-		[
-			'shipping needed, a required field absent',
-			shippable( { shippingAddress: { country: 'LU' } } ),
-			BLOCKED,
-		],
-		[
-			'shipping needed, no rate selected',
-			shippable( { hasSelectedRate: false } ),
-			BLOCKED,
-		],
-		[
-			'shipping needed, totals calculating',
-			shippable( { isCalculating: true } ),
-			BLOCKED,
-		],
-		[
-			// A country on its own gets a rate out of WooCommerce, which once priced a session for an
-			// address the shopper had not finished (owner, 2026-09-24).
-			'shipping needed, a rate chosen but no shipping cost worked out yet',
-			shippable( { hasShippingAmount: false } ),
-			BLOCKED,
-		],
-		[
-			'shipping needed, a field the country does not require is empty',
-			shippable( {
-				shippingAddress: { ...completeAddress, state: '' },
-				requiredShippingFields: requiredForLu,
+			cart( {
+				needsShipping: true,
+				shippingAddress: { country: 'LU', postcode: '' },
 			} ),
 			READY,
 		],
 		[
-			// The store refuses it too (nothing_to_pay): there is no payment to make.
-			'nothing to ship and nothing to pay',
-			virtual( { nothingToPay: true } ),
-			HIDDEN,
+			'shipping needed, no rate selected',
+			cart( { needsShipping: true, hasSelectedRate: false } ),
+			READY,
 		],
 		[
-			'shipping priced and nothing to pay',
-			shippable( { nothingToPay: true } ),
-			HIDDEN,
+			'shipping needed, no shipping cost worked out yet',
+			cart( { needsShipping: true, hasShippingAmount: false } ),
+			READY,
 		],
 		[
-			'nothing to pay so far, but the shipping is not priced yet',
-			shippable( { nothingToPay: true, hasShippingAmount: false } ),
-			BLOCKED,
+			'shipping needed, totals calculating',
+			cart( { needsShipping: true, isCalculating: true } ),
+			READY,
 		],
-		[ 'empty cart', virtual( { itemCount: 0 } ), HIDDEN ],
+		[ 'nothing to pay', cart( { nothingToPay: true } ), HIDDEN ],
+		[
+			'nothing to pay, shipping needed',
+			cart( { needsShipping: true, nothingToPay: true } ),
+			HIDDEN,
+		],
+		[ 'empty cart', cart( { itemCount: 0 } ), HIDDEN ],
+		[
+			'empty cart that ships',
+			cart( { itemCount: 0, needsShipping: true } ),
+			HIDDEN,
+		],
 		[
 			'subscription in the cart',
-			virtual( { hasSubscription: true } ),
+			cart( { hasSubscription: true } ),
 			HIDDEN,
 		],
 		[
-			'empty cart that would also be blocked',
-			shippable( { itemCount: 0, hasSelectedRate: false } ),
+			'subscription in a cart that ships',
+			cart( { hasSubscription: true, needsShipping: true } ),
 			HIDDEN,
 		],
-		[
-			'subscription in a cart whose shipping is incomplete',
-			shippable( { hasSubscription: true, shippingAddress: {} } ),
-			HIDDEN,
-		],
-	] )( '%s', ( _name, input, expected ) => {
+	] )( '@REQ-H2 %s', ( _name, input, expected ) => {
 		expect( expressReadiness( input ) ).toEqual( expected );
 	} );
 
 	/**
 	 * Scenario: deciding readiness changes nothing it is given
-	 *   Given the block's cart and form data
+	 *   Given the block's cart data
 	 *   When readiness is decided
 	 *   Then the input is left exactly as it was
 	 */
 	test( 'does not mutate its input', () => {
-		const input = shippable( {
-			shippingAddress: { ...completeAddress, postcode: '' },
-		} );
+		const input = cart( { needsShipping: true } );
 		const before = JSON.stringify( input );
 
 		expressReadiness( input );

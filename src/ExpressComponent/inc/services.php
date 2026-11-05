@@ -9,6 +9,8 @@ use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactory;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionBudget;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressShippingSnapshot;
+use Mollie\WooCommerce\ExpressComponent\Flow\PriceShippingOptions;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\ExpressComponent\Entry\ExpressAssets;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
@@ -56,6 +58,15 @@ return static function (): array {
         ExpressSessionStore::class => static function (): ExpressSessionStore {
             return new ExpressSessionStore();
         },
+        ExpressShippingSnapshot::class => static function (): ExpressShippingSnapshot {
+            return new ExpressShippingSnapshot();
+        },
+        PriceShippingOptions::class => static function (ContainerInterface $container): PriceShippingOptions {
+            return new PriceShippingOptions(
+                $container->get(ExpressShippingSnapshot::class),
+                $container->get(EventLog::class)
+            );
+        },
         ExpressSessionBudget::class => static function (ContainerInterface $container): ExpressSessionBudget {
             $config = $container->get('express.config');
 
@@ -77,12 +88,14 @@ return static function (): array {
                 $container->get(ExpressFactsBuilder::class),
                 $container->get(ExpressOrderFactsBuilder::class),
                 $container->get(ExpressSessionStore::class),
+                $container->get(ExpressShippingSnapshot::class),
                 $container->get(ExpressSessionBudget::class),
                 $container->get(ExpressUrls::class),
                 $container->get(MollieApi::class),
                 $container->get(Clock::class),
                 $container->get(EventLog::class),
-                (int) $container->get('express.config')['sessionReuseMarginSeconds']
+                (int) $container->get('express.config')['sessionReuseMarginSeconds'],
+                (int) $container->get('express.config')['sessionLifetimeSeconds']
             );
         },
         PendingExpressOrders::class => static function (): PendingExpressOrders {
@@ -173,6 +186,8 @@ return static function (): array {
             return new ExpressRoutes(
                 $container->get(StartExpressSession::class),
                 $container->get(StartExpressOrder::class),
+                $container->get(PriceShippingOptions::class),
+                $container->get(ExpressShippingSnapshot::class),
                 $container->get(EventLog::class)
             );
         },

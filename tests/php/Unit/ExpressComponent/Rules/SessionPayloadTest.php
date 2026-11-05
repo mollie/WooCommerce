@@ -79,20 +79,31 @@ class SessionPayloadTest extends TestCase
     }
 
     /**
-     * Scenario: the wallet is always asked for the contact details and the billing address
+     * Scenario: the wallet is always asked for the contact details and the billing address, and for where to ship when something ships
      *   Given the store may or may not already hold the shopper's email and billing address
-     *   When the required customer details are decided
+     *   When the required customer details are decided for a cart that ships, or one that ships nothing
      *   Then email and billing-address are asked for either way
-     *   And shipping-address is never asked for
+     *   And shipping-address is asked for only when something ships, which Mollie requires once shipping is set
      *
-     * The session's amount is fixed at creation, so a shipping address from the sheet could not be priced.
-     *
+     * @dataProvider shippingCarts
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\SessionPayload::requiredCustomerDetails
      * @group REQ-C2
+     * @param list<string> $expected
      */
-    public function testAlwaysAsksTheWalletForContactAndBilling(): void
+    public function testAsksTheWalletForContactBillingAndShippingWhenSomethingShips(bool $needsShipping, array $expected): void
     {
-        self::assertSame(['email', 'billing-address'], SessionPayload::requiredCustomerDetails());
+        self::assertSame($expected, SessionPayload::requiredCustomerDetails($needsShipping));
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: list<string>}>
+     */
+    public function shippingCarts(): array
+    {
+        return [
+            'a cart that ships' => [true, ['email', 'billing-address', 'shipping-address']],
+            'a cart that ships nothing' => [false, ['email', 'billing-address']],
+        ];
     }
 
     private function cart(): CartFacts

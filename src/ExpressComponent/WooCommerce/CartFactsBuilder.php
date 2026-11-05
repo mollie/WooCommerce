@@ -31,7 +31,7 @@ class CartFactsBuilder
         $currency = get_woocommerce_currency();
         $needsShipping = $cart->needs_shipping();
         $chosenRates = $needsShipping ? $this->chosenRates() : null;
-        $countries = $this->taxCountries($needsShipping);
+        [$taxEnabled, $taxBasedOn, $countries, $ratesVary] = $this->taxFacts($needsShipping);
 
         return new CartFacts(
             lines: $this->lines($cart, $customer, $currency),
@@ -49,10 +49,10 @@ class CartFactsBuilder
                 $customer->get_shipping_postcode(),
                 $customer->get_shipping_city(),
             ]),
-            taxEnabled: wc_tax_enabled(),
-            taxBasedOn: $this->taxBasedOn(),
+            taxEnabled: $taxEnabled,
+            taxBasedOn: $taxBasedOn,
             taxCountries: $countries,
-            ratesVaryWithinCountry: $this->ratesVaryWithinCountry($countries)
+            ratesVaryWithinCountry: $ratesVary
         );
     }
 
@@ -61,14 +61,26 @@ class CartFactsBuilder
      */
     public function taxVerdict(): string
     {
-        $countries = $this->taxCountries(true);
+        [$taxEnabled, $taxBasedOn, $countries, $ratesVary] = $this->taxFacts(true);
 
-        return TaxCompatibility::decide(
-            wc_tax_enabled(),
-            $this->taxBasedOn(),
+        return TaxCompatibility::decide($taxEnabled, $taxBasedOn, $countries, $ratesVary);
+    }
+
+    /**
+     * @return array{0: bool, 1: string, 2: list<string>, 3: bool}
+     */
+    private function taxFacts(bool $cartShips): array
+    {
+        $taxEnabled = wc_tax_enabled();
+        $taxBasedOn = $this->taxBasedOn();
+        $countries = $this->taxCountries($cartShips);
+
+        return [
+            $taxEnabled,
+            $taxBasedOn,
             $countries,
-            $this->ratesVaryWithinCountry($countries)
-        );
+            $this->ratesVaryWithinCountry($taxEnabled, $taxBasedOn, $countries),
+        ];
     }
 
     private function taxBasedOn(): string
@@ -99,12 +111,13 @@ class CartFactsBuilder
 
     /**
      * A rate of the only country the taxes can follow (or of any country) that names a state, a postcode or a city.
+     * The rate table is read only when the taxes follow the customer's address: otherwise the answer cannot matter.
      *
      * @param list<string> $countries
      */
-    private function ratesVaryWithinCountry(array $countries): bool
+    private function ratesVaryWithinCountry(bool $taxEnabled, string $taxBasedOn, array $countries): bool
     {
-        if (count($countries) !== 1) {
+        if (!TaxCompatibility::followsCustomerAddress($taxEnabled, $taxBasedOn) || count($countries) !== 1) {
             return false;
         }
         foreach (array_merge([''], \WC_Tax::get_tax_class_slugs()) as $taxClass) {

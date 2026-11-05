@@ -13,6 +13,11 @@ final class TaxCompatibility
     public const REGIONAL = 'regional';
     public const INCOMPATIBLE = 'incompatible';
 
+    public static function followsCustomerAddress(bool $taxEnabled, string $taxBasedOn): bool
+    {
+        return $taxEnabled && $taxBasedOn !== 'base';
+    }
+
     /**
      * An empty country list is a fact that could not be read: it counts as incompatible.
      *
@@ -25,7 +30,7 @@ final class TaxCompatibility
         bool $ratesVaryWithinCountry
     ): string {
 
-        if (!$taxEnabled || $taxBasedOn === 'base') {
+        if (!self::followsCustomerAddress($taxEnabled, $taxBasedOn)) {
             return self::COMPATIBLE;
         }
         if (count($taxCountries) !== 1) {

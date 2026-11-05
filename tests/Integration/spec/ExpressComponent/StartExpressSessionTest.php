@@ -438,6 +438,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         // Then
         $this->assertSame(409, $response->get_status());
         $this->assertSame('tax_depends_on_address', ((array) $response->get_data())['code']);
+        $this->assertSame('tax_depends_on_address', $this->loggedEvents('express.session.refused')[0]['context']['reason'] ?? null);
         $this->assertSame([], $this->fakeMollie()->requests('POST'));
     }
 

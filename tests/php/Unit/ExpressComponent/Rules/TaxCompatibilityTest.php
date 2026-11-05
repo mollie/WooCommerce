@@ -45,6 +45,36 @@ class TaxCompatibilityTest extends TestCase
     }
 
     /**
+     * Scenario: only taxes that follow the customer's address can change the price after the session is priced
+     *   Given taxes on or off and the address they are based on
+     *   When the rule asks whether they follow the customer's address
+     *   Then it is yes only with taxes on and a basis other than the shop address
+     *
+     * @dataProvider addressBases
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility::followsCustomerAddress
+     * @group REQ-NEW-EXPRESS-TAX
+     */
+    public function testKnowsWhenTheTaxesFollowTheCustomerAddress(bool $taxEnabled, string $taxBasedOn, bool $expected): void
+    {
+
+        self::assertSame($expected, TaxCompatibility::followsCustomerAddress($taxEnabled, $taxBasedOn));
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: string, 2: bool}>
+     */
+    public function addressBases(): array
+    {
+        return [
+            'taxes off, billing address' => [false, 'billing', false],
+            'taxes off, shop address' => [false, 'base', false],
+            'taxes on the shop address' => [true, 'base', false],
+            'taxes on the billing address' => [true, 'billing', true],
+            'taxes on the shipping address' => [true, 'shipping', true],
+        ];
+    }
+
+    /**
      * @return array<string, array{0: bool, 1: string, 2: array<int, string>, 3: bool, 4: string}>
      */
     public function taxSettings(): array
@@ -61,6 +91,7 @@ class TaxCompatibilityTest extends TestCase
             'billing address, two countries and rates differ' => [true, 'billing', ['DE', 'IT'], true, 'incompatible'],
             'billing address, one country, rates differ' => [true, 'billing', ['DE'], true, 'regional'],
             'shipping address, one country, rates differ' => [true, 'shipping', ['DE'], true, 'regional'],
+            'billing address, countries could not be read' => [true, 'billing', [], false, 'incompatible'],
         ];
     }
 }

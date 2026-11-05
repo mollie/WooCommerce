@@ -19,7 +19,7 @@ final class CartFacts
      * @param string $destination The one the shipping rates were calculated for.
      * @param string $taxBasedOn 'base', 'billing' or 'shipping': the address the taxes follow.
      * @param list<string> $taxCountries Countries whose address the taxes can follow (shipping or selling countries); empty when they could not be read.
-     * @param bool $ratesVaryWithinCountry The tax rates of the only such country differ by state, postcode or city.
+     * @param bool $ratesVaryWithinCountry The tax rates of the only such country differ by state, postcode or city; false when the taxes do not follow the customer's address, where it cannot matter.
      */
     public function __construct(
         private array $lines,

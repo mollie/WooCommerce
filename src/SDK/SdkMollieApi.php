@@ -13,6 +13,7 @@ use Mollie\WooCommerce\Shared\Values\ExpressSession;
 use Mollie\WooCommerce\Shared\Values\MollieAddress;
 use Mollie\WooCommerce\Shared\Values\Money;
 use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
+use Mollie\WooCommerce\Shared\Values\ShippingFee;
 use UnexpectedValueException;
 
 final class SdkMollieApi implements MollieApi
@@ -106,7 +107,8 @@ final class SdkMollieApi implements MollieApi
             expressRef: $this->expressRef($payment->metadata ?? null),
             billingAddress: $this->address($payment->billingAddress ?? null),
             shippingAddress: $this->address($payment->shippingAddress ?? null),
-            wallet: $wallet !== '' ? $wallet : null
+            wallet: $wallet !== '' ? $wallet : null,
+            shippingFee: $this->shippingFee($payment)
         );
     }
 
@@ -150,6 +152,28 @@ final class SdkMollieApi implements MollieApi
         $ref = is_object($metadata) ? ($metadata->express_ref ?? null) : (is_array($metadata) ? ($metadata['express_ref'] ?? null) : null);
 
         return is_string($ref) && $ref !== '' ? $ref : null;
+    }
+
+    private function shippingFee(object $payment): ?ShippingFee
+    {
+        $lines = $payment->lines ?? null;
+        if (!is_array($lines)) {
+            return null;
+        }
+        foreach ($lines as $line) {
+            $line = is_array($line) ? (object) $line : $line;
+            if (!is_object($line) || ($line->type ?? '') !== 'shipping_fee' || !isset($line->totalAmount->value, $line->totalAmount->currency)) {
+                continue;
+            }
+
+            return new ShippingFee(
+                (string) ($line->reference ?? ''),
+                (string) ($line->description ?? ''),
+                Money::fromDecimal((string) $line->totalAmount->value, (string) $line->totalAmount->currency)
+            );
+        }
+
+        return null;
     }
 
     /**

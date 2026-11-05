@@ -249,25 +249,21 @@ class FirstSightTest extends TestCase
     }
 
     /**
-     * Scenario: only an order that ships keeps its shipping address from the wallet's
+     * Scenario: an order that ships takes the wallet's shipping address, one that ships nothing takes none
      *   Given a matched payment carrying a shipping address
-     *   When the order needs shipping, the verdict carries no shipping fields, even if it holds none:
-     *        that order was quoted a shipping cost for the address it already has
-     *   And only an order with nothing to ship and no address of its own takes the wallet's, which
-     *        in practice never arrives: the wallet is not asked where to ship
+     *   When the order needs shipping, the verdict carries the wallet's shipping fields, whether or not
+     *        the order held an address before: the shopper chose it in the sheet
+     *   And when the order ships nothing, the verdict carries no shipping fields
      *
      * @dataProvider shippingCases
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\FirstSight::decide
      * @group REQ-C3
      */
-    public function testOnlyAnOrderThatShipsKeepsItsShippingAddress(
+    public function testOnlyAnOrderThatShipsTakesTheWalletsShippingAddress(
         bool $needsShipping,
         bool $holdsShipping,
         bool $expectShippingFields
     ): void {
-        $this->markTestIncomplete('REQ-C3 changed by feat:express:shipping-callback');
-
-
         $shipping = $this->mollieAddress(['city' => 'Rotterdam']);
 
         $verdict = FirstSight::decide(
@@ -289,10 +285,66 @@ class FirstSightTest extends TestCase
     public function shippingCases(): array
     {
         return [
-            'needs shipping, address held' => [true, true, false],
-            'needs shipping, no address held' => [true, false, false],
+            'needs shipping, address held' => [true, true, true],
+            'needs shipping, no address held' => [true, false, true],
             'nothing to ship, address held' => [false, true, false],
-            'nothing to ship, no address held' => [false, false, true],
+            'nothing to ship, no address held' => [false, false, false],
+        ];
+    }
+
+    /**
+     * Scenario: a billing address without a postal address falls back to the shipping address
+     *   Given a matched payment whose billing address holds an email only (PayPal) and a shipping address
+     *   When the first sight is decided
+     *   Then the billing fields are the shipping address's, with the wallet's email
+     *   And a full billing address is written as sent
+     *
+     * @dataProvider billingFromTheWallet
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\FirstSight::decide
+     * @group REQ-D5
+     * @group REQ-C2
+     * @param array<string, string> $billing
+     * @param array<string, string> $shipping
+     * @param array<string, string> $expected Mollie fields of the expected billing address.
+     */
+    public function testBillingFallsBackToTheShippingAddressWhenTheWalletSendsOnlyAnEmail(
+        array $billing,
+        array $shipping,
+        array $expected
+    ): void {
+        $verdict = FirstSight::decide(
+            $this->payment([
+                'billingAddress' => MollieAddress::fromArray($billing),
+                'shippingAddress' => $shipping === [] ? null : MollieAddress::fromArray($shipping),
+            ]),
+            $this->order(),
+            $this->wallets(),
+            self::REGISTERED
+        );
+
+        self::assertSame(AddressMapping::toWooCommerce($expected), $verdict->billing());
+    }
+
+    /**
+     * @return array<string, array{0: array<string, string>, 1: array<string, string>, 2: array<string, string>}>
+     */
+    public function billingFromTheWallet(): array
+    {
+        $shipping = $this->mollieAddress(['email' => 'ship@example.org', 'city' => 'Utrecht']);
+        $full = $this->mollieAddress(['email' => 'bill@example.org', 'city' => 'Rotterdam']);
+
+        return [
+            'email only: shipping fields, the wallet email' => [
+                ['email' => 'bill@example.org'],
+                $shipping,
+                array_merge($shipping, ['email' => 'bill@example.org']),
+            ],
+            'a full billing address is written as sent' => [$full, $shipping, $full],
+            'email only and no shipping address: the email alone' => [
+                ['email' => 'bill@example.org'],
+                [],
+                ['email' => 'bill@example.org'],
+            ],
         ];
     }
 

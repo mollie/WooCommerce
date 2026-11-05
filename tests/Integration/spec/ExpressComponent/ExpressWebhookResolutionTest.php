@@ -574,6 +574,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     /**
      * Scenario: a mismatched payment is refused and the order's state is untouched
      *   Given a pending express order and a paid payment differing in ref, origin or amount
+     *   Or, for a cart that ships, a payment with no shipping_fee line or one the amount does not include
      *   When the webhook arrives
      *   Then 200, status and meta unchanged, unmatched logged with the reason
      *   And an order the ref found gets one note
@@ -582,6 +583,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      * @dataProvider mismatches
      * @group REQ-G5
      * @group REQ-D7
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
      */
     public function it_refuses_a_mismatched_payment_and_touches_nothing(string $case, string $expectedReason, int $newNotes): void
     {
@@ -589,6 +591,15 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $outcome = ['status' => 'paid', 'method' => 'paypal'];
         if ($case === 'amount') {
             $outcome['amount'] = ['currency' => 'EUR', 'value' => $this->decimal((float) $order->get_total() + 0.01)];
+        }
+        if ($case === 'no shipping fee') {
+            // The amount is the order total, which only a cart that ships nothing may pay.
+            $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
+            $outcome['shippingFee'] = null;
+        }
+        if ($case === 'fee not added') {
+            $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
+            $outcome['amount'] = ['currency' => 'EUR', 'value' => $this->decimal((float) $order->get_total())];
         }
         $payment = $this->fakeMollie()->completeSession($sessionId, $outcome);
         switch ($case) {
@@ -615,6 +626,9 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $unmatched = $this->loggedEvents('express.webhook.unmatched');
         $this->assertCount(1, $unmatched);
         $this->assertSame($expectedReason, $unmatched[0]['context']['reason'] ?? null);
+        if (in_array($case, ['no shipping fee', 'fee not added'], true)) {
+            $this->assertRememberedWithOneNoteAndOneError($order, $notes, $payment, $expectedReason);
+        }
     }
 
     /**
@@ -627,6 +641,8 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             'a ref no order carries' => ['unknown ref', 'unknown_ref', 0],
             'an order not created via mollie_express' => ['not express', 'not_express', 1],
             'an amount that differs from the order total' => ['amount', 'amount_mismatch', 1],
+            'a cart that ships, paid without a shipping_fee line' => ['no shipping fee', 'amount_mismatch', 1],
+            'a shipping_fee line the amount does not add up to' => ['fee not added', 'amount_mismatch', 1],
         ];
     }
 
@@ -1161,29 +1177,33 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the wallet's billing address replaces the store's, and the shipping address does not move
-     *   Given an express order whose billing and shipping came from the guest's checkout form, or from the account
-     *   And the paid payment carries a different billing and a different shipping address
+     * Scenario: the shipping option chosen in the wallet becomes the order's shipping line, once
+     *   Given an express order of a cart that ships, created with no shipping line, for a guest or a customer
+     *   And a paid payment whose shipping_fee line names the 'express' rate, at the amount raised by it
+     *   And the wallet's shipping address and a billing address different from the order's
      *   When Mollie calls the webhook
-     *   Then the order's billing address and email are the wallet's
-     *   And its shipping address is exactly as it was, because that is what priced the shipping
-     *   And the order is paid
+     *   Then the order has one shipping line for that rate: method and instance, label, net cost and its VAT
+     *   And the order total equals the payment amount, and the order is paid
+     *   And the shipping address is the wallet's, the billing address and email are the wallet's
+     *   When Mollie calls the webhook again for the same payment
+     *   Then the order still has that one shipping line and the same total
      *
      * @test
-     * @dataProvider heldAddresses
-     * @group REQ-C2
+     * @dataProvider shoppers
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
      * @group REQ-C3
      * @group REQ-D5
+     * @group REQ-C2
      */
-    public function it_takes_the_wallets_billing_address_and_leaves_the_shipping_one(string $source): void
+    public function it_writes_the_chosen_shipping_line_and_the_wallets_shipping_address_once(string $shopper): void
     {
-        $this->markTestIncomplete('REQ-C3 changed by feat:express:shipping-callback');
-
-        [$order, , $sessionId] = $source === 'account' ? $this->expressOrderForTheAccount() : $this->expressOrder();
-        $this->assertTrue($order->needs_shipping_address(), 'The scenario needs an order with something to ship.');
-        $billingBefore = $order->get_address('billing');
-        $shipping = $order->get_address('shipping');
-        $this->assertNotSame('', $billingBefore['address_1']);
+        [$order, , $sessionId] = $shopper === 'account' ? $this->expressOrderForTheAccount() : $this->expressOrder();
+        $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
+        $this->assertCount(0, $order->get_items('shipping'), 'The order is created before the shipping option is known.');
+        $totalBefore = (float) $order->get_total();
+        $this->chooseRate('express');
+        $gross = (float) WC()->cart->get_shipping_total() + (float) WC()->cart->get_shipping_tax();
+        $this->assertGreaterThan(0, $gross);
         $walletEmail = 'other.CANARY7f3a@example.org';
         $payment = $this->fakeMollie()->completeSession($sessionId, [
             'status' => 'paid',
@@ -1191,63 +1211,44 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             'billingAddress' => CanaryData::mollieAddress(['city' => 'Rotterdam', 'email' => $walletEmail]),
             'shippingAddress' => CanaryData::mollieAddress(['city' => 'Utrecht']),
         ]);
+        $this->assertSame($this->decimal($totalBefore + $gross), $payment['amount']['value'], 'The payment is the order plus the option.');
 
         $this->assertSame(200, $this->deliverWebhook($payment['id']));
 
         $after = $this->fresh($order);
-        $this->assertSame('Rotterdam', $after->get_billing_city(), 'The wallet chose this billing address.');
-        $this->assertSame($walletEmail, $after->get_billing_email(), 'The wallet chose this contact.');
-        $this->assertNotSame($billingBefore['city'], $after->get_billing_city());
-        $this->assertSame($shipping, $after->get_address('shipping'), 'The shipping address priced the order.');
+        $lines = array_values($after->get_items('shipping'));
+        $this->assertCount(1, $lines);
+        [$methodId, $instanceId] = explode(':', $this->rates['express']);
+        $this->assertSame($methodId, $lines[0]->get_method_id());
+        $this->assertSame($instanceId, (string) $lines[0]->get_instance_id());
+        $this->assertSame($lines[0]->get_name(), $lines[0]->get_method_title());
+        $this->assertNotSame('', $lines[0]->get_name());
+        $this->assertSame($this->decimal(round($gross / 1.21, 2)), $this->decimal((float) $lines[0]->get_total()));
+        $this->assertSame($this->decimal($gross), $this->decimal((float) $lines[0]->get_total() + (float) $lines[0]->get_total_tax()));
+        $this->assertGreaterThan(0, (float) $lines[0]->get_total_tax());
+        $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
         $this->assertTrue($after->is_paid());
+        $this->assertSame('Utrecht', $after->get_shipping_city());
+        $this->assertSame(CanaryData::STREET, $after->get_shipping_address_1());
+        $this->assertSame('Rotterdam', $after->get_billing_city());
+        $this->assertSame($walletEmail, $after->get_billing_email());
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        $again = $this->fresh($order);
+        $this->assertCount(1, $again->get_items('shipping'));
+        $this->assertSame($payment['amount']['value'], $this->formattedTotal($again));
     }
 
     /**
      * @return array<string, array{0: string}>
      */
-    public function heldAddresses(): array
+    public function shoppers(): array
     {
         return [
-            'a guest who filled the checkout form' => ['form'],
+            'a guest' => ['guest'],
             'a logged-in customer with an account address' => ['account'],
         ];
-    }
-
-    /**
-     * Scenario: an order that needs shipping never takes the wallet's shipping address, even when it holds none
-     *   Given an express order with something to ship whose shipping address is empty
-     *   And the paid payment carries a shipping address from the wallet
-     *   When Mollie calls the webhook
-     *   Then the order's shipping address is still empty: its shipping cost was not calculated for the wallet's
-     *   And the order is paid
-     *
-     * @test
-     * @group REQ-C3
-     */
-    public function it_never_writes_the_wallets_shipping_address_on_an_order_that_needs_shipping(): void
-    {
-        $this->markTestIncomplete('REQ-C3 changed by feat:express:shipping-callback');
-
-        [$order, , $sessionId] = $this->expressOrder();
-        foreach (['first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country', 'phone'] as $field) {
-            $order->{"set_shipping_{$field}"}('');
-        }
-        $order->save();
-        $before = $this->fresh($order);
-        $this->assertTrue($before->needs_shipping_address(), 'The scenario needs an order with something to ship.');
-        $this->assertSame('', $before->get_shipping_address_1());
-        $shipping = $before->get_address('shipping');
-        $payment = $this->fakeMollie()->completeSession($sessionId, [
-            'status' => 'paid',
-            'method' => 'applepay',
-            'shippingAddress' => CanaryData::mollieAddress(['city' => 'Utrecht']),
-        ]);
-
-        $this->assertSame(200, $this->deliverWebhook($payment['id']));
-
-        $after = $this->fresh($order);
-        $this->assertSame($shipping, $after->get_address('shipping'));
-        $this->assertTrue($after->is_paid());
     }
 
     /**
@@ -1622,6 +1623,17 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $service->shouldReceive('getPaymentIdFromRequest')->andReturn($paymentId);
 
         return $service;
+    }
+
+    private function ships(WC_Order $order): bool
+    {
+        foreach ($order->get_items() as $item) {
+            if ($item->get_product() instanceof \WC_Product && $item->get_product()->needs_shipping()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function fresh(WC_Order $order): WC_Order

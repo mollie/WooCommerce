@@ -126,12 +126,10 @@ final class StartExpressOrder
             'rule' => 'StartOrderDecision',
             'verdict' => $decision instanceof Refuse ? $decision->code() : 'admit',
             'inputs' => sprintf(
-                'order=%d needs_payment=%d needs_shipping=%d shipping_complete=%d rate_chosen=%d',
+                'order=%d needs_payment=%d needs_shipping=%d',
                 $existing !== null ? 1 : 0,
                 $existing !== null && $existing->needsPayment() ? 1 : 0,
-                $cart->needsShipping() ? 1 : 0,
-                $cart->shippingDestinationComplete() ? 1 : 0,
-                $cart->shippingRateChosen() ? 1 : 0
+                $cart->needsShipping() ? 1 : 0
             ),
         ]);
     }
@@ -151,7 +149,8 @@ final class StartExpressOrder
             }
             $mode = $this->expressFacts->shopFacts()->mode();
             [$wallet, $gatewayId] = $this->provisionalWallet();
-            $order = $this->factory->create($this->orderFacts->shopperDetails());
+            $order = $this->factory->create();
+            $this->writer->dropShipping($order);
             $priced = StartOrderDecision::admitCreatedOrder($this->orderFacts->total($order), $total);
             if ($priced instanceof Refuse) {
                 $this->factory->delete($order);

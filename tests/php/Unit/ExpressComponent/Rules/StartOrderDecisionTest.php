@@ -75,8 +75,13 @@ class StartOrderDecisionTest extends TestCase
      *   Then it refuses with the reason of the first guard that fails
      *   And otherwise it admits the request
      *
+     * The checkout form is not read: a cart that ships is admitted with an empty form, the wallet
+     * supplies the address and the option.
+     *
      * @dataProvider requests
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision::admit
+     * @group REQ-H2
+     * @group REQ-B3
      */
     public function testDecidesWhatAnOrderRequestGets(
         bool $hasSession,
@@ -115,18 +120,18 @@ class StartOrderDecisionTest extends TestCase
             'no session was started' => [false, 0, false, null, $shipsReady, 'refuse:session_missing'],
             'the session expired a second ago' => [true, self::NOW - 1, true, null, $shipsReady, 'refuse:session_expired'],
             'the session expires this very second' => [true, self::NOW, true, null, $shipsReady, 'refuse:session_expired'],
-            'ships, destination incomplete' => [true, self::EXPIRES_AT, true, null, $shipsNoDestination, 'refuse:shipping_incomplete'],
-            'ships, no rate chosen' => [true, self::EXPIRES_AT, true, null, $shipsNoRate, 'refuse:shipping_incomplete'],
             'the checkout was priced differently' => [true, self::EXPIRES_AT, false, null, $shipsReady, 'refuse:cart_changed'],
             'the order for this session was paid' => [true, self::EXPIRES_AT, true, false, $shipsReady, 'refuse:order_not_payable'],
             // Admitted.
             'an order carries the ref and still needs payment' => [true, self::EXPIRES_AT, true, true, $shipsReady, 'admit'],
             'everything holds, ships' => [true, self::EXPIRES_AT, true, null, $shipsReady, 'admit'],
+            'ships, form destination incomplete' => [true, self::EXPIRES_AT, true, null, $shipsNoDestination, 'admit'],
+            'ships, no rate chosen in the form' => [true, self::EXPIRES_AT, true, null, $shipsNoRate, 'admit'],
             'everything holds, nothing to ship, form empty' => [true, self::EXPIRES_AT, true, null, $virtual, 'admit'],
             // Precedence: the first guard that fails names the reason.
             'expired and repriced: expired' => [true, self::NOW - 1, false, null, $shipsReady, 'refuse:session_expired'],
             'expired with an order: expired' => [true, self::NOW - 1, true, true, $shipsReady, 'refuse:session_expired'],
-            'shipping incomplete and repriced: shipping_incomplete' => [true, self::EXPIRES_AT, false, null, $shipsNoRate, 'refuse:shipping_incomplete'],
+            'form incomplete and repriced: cart_changed' => [true, self::EXPIRES_AT, false, null, $shipsNoRate, 'refuse:cart_changed'],
             'repriced with an order: cart_changed' => [true, self::EXPIRES_AT, false, true, $shipsReady, 'refuse:cart_changed'],
             'repriced with a paid order: cart_changed' => [true, self::EXPIRES_AT, false, false, $shipsReady, 'refuse:cart_changed'],
         ];

@@ -132,10 +132,11 @@ final class ResolveExpressPayment
                     'rule' => 'FirstSight',
                     'verdict' => $firstSight->gatewayId() !== null ? 'gateway' : 'unmatched',
                     'inputs' => sprintf(
-                        'method=%s wallet=%s gateway=%s',
+                        'method=%s wallet=%s gateway=%s shipping_line=%s',
                         (string) $payment->method(),
                         $this->matchedWalletKey((string) $firstSight->gatewayId()),
-                        (string) $firstSight->gatewayId()
+                        (string) $firstSight->gatewayId(),
+                        $firstSight->shippingLine() !== null ? 'added' : 'none'
                     ),
                 ]);
                 $this->writer->recordFirstSight($fresh, $firstSight);

@@ -12,6 +12,8 @@ final class ExpressOrderFacts
      * @param ?string $trackedPaymentId The payment the order already follows.
      * @param list<string> $processed
      * @param bool $webhookNeedsPayment WebhookGuards::needsPayment().
+     * @param bool $holdsShippingLine The order already has a shipping line.
+     * @param float $shippingTaxRate Percent the order's shipping is taxed at.
      */
     public function __construct(
         private int $orderId,
@@ -25,7 +27,9 @@ final class ExpressOrderFacts
         private ?string $cancelledBy = null,
         private array $processed = [],
         private bool $webhookNeedsPayment = false,
-        private bool $cancelled = false
+        private bool $cancelled = false,
+        private bool $holdsShippingLine = false,
+        private float $shippingTaxRate = 0.0
     ) {
     }
 
@@ -90,5 +94,18 @@ final class ExpressOrderFacts
     public function cancelled(): bool
     {
         return $this->cancelled;
+    }
+
+    public function holdsShippingLine(): bool
+    {
+        return $this->holdsShippingLine;
+    }
+
+    /**
+     * @return float Percent, e.g. 21.0; 0.0 when the order's shipping carries no tax.
+     */
+    public function shippingTaxRate(): float
+    {
+        return $this->shippingTaxRate;
     }
 }

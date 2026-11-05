@@ -12,16 +12,11 @@ use Mollie\WooCommerce\Payment\MolliePaymentAttempt;
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\Payment\Rules\WebhookGuards;
 use Mollie\WooCommerce\Shared\Values\Money;
-use WC_Customer;
 use WC_Order;
+use WC_Tax;
 
 class ExpressOrderFactsBuilder
 {
-    private const BILLING_FIELDS = [
-        'first_name', 'last_name', 'company', 'email', 'phone', 'address_1', 'address_2', 'postcode', 'city', 'state',
-        'country',
-    ];
-
     private const SHIPPING_FIELDS = [
         'first_name', 'last_name', 'company', 'phone', 'address_1', 'address_2', 'postcode', 'city', 'state', 'country',
     ];
@@ -83,12 +78,31 @@ class ExpressOrderFactsBuilder
             trackedPaymentId: $tracked !== '' ? $tracked : null,
             needsPayment: $order->needs_payment(),
             holdsShipping: $this->holdsShipping($order),
-            needsShipping: $order->needs_shipping_address(),
+            needsShipping: $this->shipsItems($order),
             cancelledBy: $record->cancelledBy(),
             processed: $record->processed(),
             webhookNeedsPayment: $this->webhookNeedsPayment($order),
-            cancelled: $order->has_status('cancelled')
+            cancelled: $order->has_status('cancelled'),
+            holdsShippingLine: $order->get_items('shipping') !== [],
+            shippingTaxRate: $this->shippingTaxRate($order)
         );
+    }
+
+    /**
+     * The order's own tax lines say which rates applied to it; those that also tax shipping are the rate the
+     * shipping option's price includes. Zero when none does.
+     */
+    private function shippingTaxRate(WC_Order $order): float
+    {
+        $rate = 0.0;
+        foreach ($order->get_taxes() as $tax) {
+            $row = WC_Tax::_get_tax_rate($tax->get_rate_id(), OBJECT);
+            if (is_object($row) && (int) $row->tax_rate_shipping === 1) {
+                $rate += (float) $row->tax_rate;
+            }
+        }
+
+        return $rate;
     }
 
     private function webhookNeedsPayment(WC_Order $order): bool
@@ -109,22 +123,6 @@ class ExpressOrderFactsBuilder
         } catch (InvalidArgumentException $unusable) {
             return null;
         }
-    }
-
-    /**
-     * @return array{billing: array<string, string>, shipping: array<string, string>}
-     */
-    public function shopperDetails(): array
-    {
-        $customer = function_exists('WC') && WC()->customer instanceof WC_Customer ? WC()->customer : null;
-        if ($customer === null) {
-            return ['billing' => [], 'shipping' => []];
-        }
-
-        return [
-            'billing' => $this->fields($customer, 'billing', self::BILLING_FIELDS),
-            'shipping' => $this->fields($customer, 'shipping', self::SHIPPING_FIELDS),
-        ];
     }
 
     /**
@@ -150,6 +148,25 @@ class ExpressOrderFactsBuilder
         }));
     }
 
+    /**
+     * By its items, not by WC_Order::needs_shipping_address(): that one asks for a shipping line, and the
+     * express order has none until the first webhook adds the option the shopper chose.
+     */
+    private function shipsItems(WC_Order $order): bool
+    {
+        if (!wc_shipping_enabled()) {
+            return false;
+        }
+        foreach ($order->get_items() as $item) {
+            $product = $item instanceof \WC_Order_Item_Product ? $item->get_product() : null;
+            if ($product instanceof \WC_Product && $product->needs_shipping()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function holdsShipping(WC_Order $order): bool
     {
         // WooCommerce may default the country, so it alone does not count.
@@ -161,22 +178,5 @@ class ExpressOrderFactsBuilder
         }
 
         return false;
-    }
-
-    /**
-     * @param list<string> $names
-     * @return array<string, string>
-     */
-    private function fields(WC_Customer $customer, string $type, array $names): array
-    {
-        $fields = [];
-        foreach ($names as $name) {
-            $getter = [$customer, "get_{$type}_{$name}"];
-            if (is_callable($getter)) {
-                $fields[$name] = (string) $getter();
-            }
-        }
-
-        return $fields;
     }
 }

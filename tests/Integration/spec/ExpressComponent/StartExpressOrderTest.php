@@ -86,7 +86,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
      *   And exactly one order exists for this session
      *   And it is pending, created via mollie_express, with the provisional PayPal payment method
      *   And it carries the session's express_ref, session id and expiry in its meta
-     *   And its total and line items equal the cart's
+     *   And its line items equal the cart's and its total is the cart's without shipping, as the session was priced
      *
      * @test
      * @group REQ-B3
@@ -95,7 +95,7 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     {
         $this->readyGuestCheckout();
         $session = $this->startedSession();
-        $cartTotal = $this->cartTotal();
+        $cartTotal = $this->cartTotalWithoutShipping();
         $cartLines = $this->cartLines();
         $before = $this->allOrderIds();
 
@@ -118,93 +118,43 @@ class StartExpressOrderTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: a cart that ships becomes an order shipped to the form's address with the chosen rate
-     *   Given a guest whose checkout form ships to LU and who chose the 'express' rate
-     *   And a session priced for that
-     *   When the order is requested
-     *   Then the order's shipping address is the form's
-     *   And its only shipping line is the chosen rate
-     *   And its total, which includes that rate, equals the cart total
+     * Scenario: a cart that ships is submitted with an empty checkout form
+     *   Given a guest whose cart ships and whose checkout form holds no address and no rate
+     *   And a session started for that cart, the last two items in stock
+     *   When the wallet's submit posts to the order route
+     *   Then it is answered ok=true, never shipping_incomplete
+     *   And exactly one pending order exists for the session, with no shipping line and no address
+     *   And the order holds the stock
      *
      * @test
+     * @group REQ-H2
      * @group REQ-B3
-     * @group REQ-C3
      */
-    public function it_ships_to_the_form_address_with_the_chosen_rate_as_its_shipping_line(): void
+    public function it_creates_a_pending_order_holding_stock_for_a_cart_that_ships_with_an_empty_form(): void
     {
-        $this->markTestIncomplete('REQ-C3 changed by feat:express:shipping-callback');
-
-        $this->readyGuestCheckout();
-        $this->chooseRate('express');
-        $session = $this->startedSession();
-        $cartTotal = $this->cartTotal();
-
-        $this->assertAnsweredOk($this->startOrder());
-
-        $order = $this->onlyOrderFor($session['ref']);
-        $shipping = $this->shipping('LU');
-        $this->assertSame($shipping['address_1'], $order->get_shipping_address_1());
-        $this->assertSame($shipping['postcode'], $order->get_shipping_postcode());
-        $this->assertSame($shipping['city'], $order->get_shipping_city());
-        $this->assertSame($shipping['country'], $order->get_shipping_country());
-        $shippingLines = array_values($order->get_items('shipping'));
-        $this->assertCount(1, $shippingLines);
-        [$methodId, $instanceId] = explode(':', $this->rates['express']);
-        $this->assertSame($methodId, $shippingLines[0]->get_method_id());
-        $this->assertSame($instanceId, (string) $shippingLines[0]->get_instance_id());
-        $this->assertGreaterThan(0, (float) $order->get_shipping_total());
-        $this->assertSame($cartTotal, $this->formattedTotal($order));
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // Refusals
-    // ──────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Scenario: a cart that ships cannot be submitted while the shipping details are incomplete
-     *   Given a guest whose session was started for a complete, priced checkout
-     *   When the checkout form's shipping destination is emptied, or moved to where no rate ships
-     *   And the order is requested
-     *   Then it is answered ok=false with code shipping_incomplete and the message that the order
-     *        contains items to ship and the shipping details must be filled in
-     *   And no order is created
-     *
-     * @test
-     * @dataProvider incompleteShipping
-     */
-    public function it_refuses_a_shipping_cart_while_the_form_is_incomplete(string $whatIsMissing): void
-    {
-        $this->markTestIncomplete('REQ-H2 changed by feat:express:shipping-callback');
-
-        $this->readyGuestCheckout();
-        $this->startedSession();
-        if ($whatIsMissing === 'destination') {
-            $this->fillCheckoutForm($this->billing(), array_merge($this->shipping('LU'), ['postcode' => '', 'address_1' => '', 'city' => '']));
-        } else {
-            // WooCommerce picks a rate by itself whenever one exists, so "no rate" is a destination without rates.
-            $this->fillCheckoutForm($this->billing(), $this->shipping('MT'));
-        }
+        $product = $this->simpleProduct();
+        $this->changeProduct($product->get_id(), static function (\WC_Product $product): void {
+            $product->set_manage_stock(true);
+            $product->set_stock_quantity(2);
+            $product->set_stock_status('instock');
+        });
+        $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple'], 2);
+        $this->fillCheckoutForm([], []);
         $this->recalculate();
-        $before = $this->allOrderIds();
+        $this->assertTrue(WC()->cart->needs_shipping(), 'The scenario needs a cart that ships.');
+        $session = $this->startedSession();
+        $this->reloadCartAsTheNextRequestWould();
 
         $response = $this->startOrder();
 
-        $this->assertRefused($response, 'shipping_incomplete');
-        $message = (string) ((array) $response->get_data())['message'];
-        $this->assertStringContainsString('items to ship', $message);
-        $this->assertStringContainsString('shipping details', $message);
-        $this->assertSame($before, $this->allOrderIds());
-    }
-
-    /**
-     * @return array<string, array{0: string}>
-     */
-    public function incompleteShipping(): array
-    {
-        return [
-            'the shipping destination was emptied' => ['destination'],
-            'no rate can be chosen for the destination' => ['rate'],
-        ];
+        $this->assertAnsweredOk($response);
+        $order = $this->onlyOrderFor($session['ref']);
+        $this->assertSame('pending', $order->get_status());
+        $this->assertCount(0, $order->get_items('shipping'));
+        $this->assertSame('', $order->get_shipping_address_1());
+        $this->assertSame(2, $this->unexpiredHeldQuantity($order->get_id()));
     }
 
     /**
@@ -945,6 +895,16 @@ class StartExpressOrderTest extends ExpressFlowTestCase
             $contents[$key]['data'] = wc_get_product((int) ($item['variation_id'] ?: $item['product_id']));
         }
         WC()->cart->set_cart_contents($contents);
+    }
+
+    private function unexpiredHeldQuantity(int $orderId): int
+    {
+        global $wpdb;
+
+        return (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COALESCE(SUM(stock_quantity), 0) FROM {$wpdb->wc_reserved_stock} WHERE order_id = %d AND expires > NOW()",
+            $orderId
+        ));
     }
 
     private function simpleProduct(): \WC_Product

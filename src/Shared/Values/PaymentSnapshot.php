@@ -7,6 +7,7 @@ namespace Mollie\WooCommerce\Shared\Values;
 /**
  * expressRef is metadata.express_ref, inherited from the express session.
  * wallet is details.wallet: Mollie reports Apple Pay and Google Pay both as creditcard.
+ * shippingFee is the payment's shipping_fee line: the option the shopper chose in the wallet.
  */
 final class PaymentSnapshot
 {
@@ -19,7 +20,8 @@ final class PaymentSnapshot
         private ?string $expressRef = null,
         private ?MollieAddress $billingAddress = null,
         private ?MollieAddress $shippingAddress = null,
-        private ?string $wallet = null
+        private ?string $wallet = null,
+        private ?ShippingFee $shippingFee = null
     ) {
     }
 
@@ -66,5 +68,10 @@ final class PaymentSnapshot
     public function wallet(): ?string
     {
         return $this->wallet;
+    }
+
+    public function shippingFee(): ?ShippingFee
+    {
+        return $this->shippingFee;
     }
 }

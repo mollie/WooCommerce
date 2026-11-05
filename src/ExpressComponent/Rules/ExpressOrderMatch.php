@@ -77,11 +77,26 @@ final class ExpressOrderMatch
         return self::refuse($tracked !== '' ? 'other_payment' : 'not_payable');
     }
 
+    /**
+     * The order is made before the wallet's shipping option is known: for a cart that ships, the payment
+     * pays the order plus its shipping_fee line, and no line means no payment of this order. Once the order
+     * holds its shipping line, its total is the whole price.
+     */
     private static function sameAmount(PaymentSnapshot $payment, ExpressOrderFacts $order): bool
     {
         $total = $order->total();
+        if ($total === null) {
+            return false;
+        }
+        if (!$order->needsShipping() || $order->holdsShippingLine()) {
+            return $total->isSameAs($payment->amount());
+        }
+        $fee = $payment->shippingFee();
+        if ($fee === null || $fee->amount()->currency() !== $total->currency()) {
+            return false;
+        }
 
-        return $total !== null && $total->isSameAs($payment->amount());
+        return $total->add($fee->amount())->isSameAs($payment->amount());
     }
 
     private static function refuse(string $reason): Refuse

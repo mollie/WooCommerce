@@ -265,10 +265,6 @@ class ExpressRoutes
                 'Express checkout could not be started. Please reload the page and try again.',
                 'mollie-payments-for-woocommerce'
             ),
-            'shipping_incomplete' => __(
-                'Your order contains items to ship. Please fill in the shipping details to use express checkout.',
-                'mollie-payments-for-woocommerce'
-            ),
             'session_missing', 'session_expired' => __(
                 'Express checkout has expired. Please try again.',
                 'mollie-payments-for-woocommerce'

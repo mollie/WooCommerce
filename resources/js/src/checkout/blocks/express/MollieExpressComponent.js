@@ -128,7 +128,6 @@ export default function MollieExpressComponent( {
 	const live = useSelect( ( select ) => readCart( select ), [] );
 	const settled = useSettled( live.status, live.fingerprint );
 	const [ failedAt, setFailedAt ] = useState( null );
-	const [ refusedShippingAt, setRefusedShippingAt ] = useState( null );
 	const [ attempt, setAttempt ] = useState( 0 );
 	const [ idle, setIdle ] = useState( false );
 	const [ notice, setNotice ] = useState( '' );
@@ -143,7 +142,6 @@ export default function MollieExpressComponent( {
 		onClick,
 		onClose,
 		onError,
-		fingerprint: settled.fingerprint,
 	};
 
 	const managerRef = useRef( null );
@@ -154,10 +152,8 @@ export default function MollieExpressComponent( {
 		);
 	}
 
-	// The order route can still refuse a submit for the shipping form: not retried at this price.
-	const blocked = refusedShippingAt === settled.fingerprint;
 	const failed = failedAt === settled.fingerprint;
-	const ready = settled.status === 'ready' && ! blocked && ! failed && ! idle;
+	const ready = settled.status === 'ready' && ! failed && ! idle;
 
 	async function submit( event ) {
 		// First and synchronously: without defer() Mollie creates the payment before this handler answers.
@@ -185,10 +181,6 @@ export default function MollieExpressComponent( {
 		current.onClose?.();
 		if ( answer.code === 'network' ) {
 			current.onError?.( message );
-		}
-		if ( answer.code === 'shipping_incomplete' ) {
-			setRefusedShippingAt( current.fingerprint );
-			return;
 		}
 		setNotice( message );
 		if ( REMOUNT_AFTER.includes( answer.code ) ) {
@@ -300,11 +292,7 @@ export default function MollieExpressComponent( {
 
 	useEffect( () => () => managerRef.current.unmount(), [] );
 
-	if ( settled.status === 'hidden' || ( failed && ! blocked ) ) {
-		return null;
-	}
-
-	if ( blocked ) {
+	if ( settled.status === 'hidden' || failed ) {
 		return null;
 	}
 

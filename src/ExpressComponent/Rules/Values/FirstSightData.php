@@ -11,6 +11,7 @@ final class FirstSightData
      * @param string|null $unmatchedMethod Mollie method no gateway matches; noted on the order.
      * @param array<string, string> $billing
      * @param array<string, string>|null $shipping Null when not written.
+     * @param ShippingLine|null $shippingLine Null when the order gets no shipping line.
      */
     public function __construct(
         private string $paymentId,
@@ -18,7 +19,8 @@ final class FirstSightData
         private ?string $gatewayId,
         private ?string $unmatchedMethod,
         private array $billing,
-        private ?array $shipping
+        private ?array $shipping,
+        private ?ShippingLine $shippingLine = null
     ) {
     }
 
@@ -56,5 +58,10 @@ final class FirstSightData
     public function shipping(): ?array
     {
         return $this->shipping;
+    }
+
+    public function shippingLine(): ?ShippingLine
+    {
+        return $this->shippingLine;
     }
 }

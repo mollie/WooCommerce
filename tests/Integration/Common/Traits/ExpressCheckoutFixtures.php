@@ -213,6 +213,20 @@ trait ExpressCheckoutFixtures
     {
         WC()->session->set('chosen_shipping_methods', [$this->rates[$name]]);
         $this->recalculate();
+        $this->walletSelects($name);
+    }
+
+    /**
+     * The option the shopper picks in the wallet is the rate chosen in the cart, at its price with VAT.
+     */
+    private function walletSelects(string $name): void
+    {
+        $rate = WC()->shipping()->get_packages()[0]['rates'][$this->rates[$name]] ?? null;
+        if ($rate === null) {
+            return;
+        }
+        $gross = (float) $rate->get_cost() + array_sum($rate->get_taxes());
+        $this->fakeMollie()->selectShippingOption($this->rates[$name], $rate->get_label(), $this->decimal($gross));
     }
 
     private function recalculate(): void

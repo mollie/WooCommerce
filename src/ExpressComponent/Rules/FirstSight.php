@@ -11,6 +11,7 @@ use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
 
 /**
  * The wallet's billing and contact details win over the order's: the shopper chose them in the sheet.
+ * An order that ships also takes the wallet's shipping address and the shipping option it chose.
  */
 final class FirstSight
 {
@@ -29,7 +30,7 @@ final class FirstSight
         $gatewayId = self::walletGateway($method, $payment->wallet(), $wallets, $registeredGatewayIds);
 
         $shipping = null;
-        if (!$order->needsShipping() && !$order->holdsShipping()) {
+        if ($order->needsShipping()) {
             $shipping = self::address($payment->shippingAddress());
             $shipping = $shipping === [] ? null : $shipping;
         }
@@ -39,8 +40,9 @@ final class FirstSight
             $payment->mode(),
             $gatewayId,
             $gatewayId === null ? $method : null,
-            self::address($payment->billingAddress()),
-            $shipping
+            self::billing($payment),
+            $shipping,
+            ShippingLineFromPayment::decide($order, $payment)
         );
     }
 
@@ -67,6 +69,24 @@ final class FirstSight
         }
 
         return null;
+    }
+
+    /**
+     * PayPal sends an email as its whole billing address: the shipping address fills in the rest.
+     *
+     * @return array<string, string>
+     */
+    private static function billing(PaymentSnapshot $payment): array
+    {
+        $billing = $payment->billingAddress();
+        $fields = $billing === null ? [] : $billing->fields();
+        $shipping = $payment->shippingAddress();
+        $hasPostalAddress = isset($fields['streetAndNumber']) || isset($fields['postalCode']);
+        if (!$hasPostalAddress && $shipping !== null) {
+            $fields = array_merge($shipping->fields(), $fields);
+        }
+
+        return AddressMapping::toWooCommerce($fields);
     }
 
     /**

@@ -122,30 +122,6 @@ class SettingsModule implements ServiceModule, ExecutableModule
         $pluginUrl = $container->get('shared.plugin_url');
         // Add settings link to plugins page
         add_filter('plugin_action_links_' . $this->plugin_basename, [$this, 'addPluginActionLinks']);
-        //add campaign to signup URL Todo REMOVE after 10th Dec 2025
-        add_filter('gettext', static function ($translated, $text, $domain) {
-            $dateNow = new \DateTime();
-            $endDateCampaign = new \DateTime('2025-12-10');
-            if ($endDateCampaign < $dateNow) {
-                return $translated;
-            }
-            if ($domain !== 'mollie-payments-for-woocommerce') {
-                return $translated;
-            }
-            if ($text !== "Don’t have a Mollie account yet? <a href='%s' target='_blank'>Get started with Mollie today.</a>") {
-                return $translated;
-            }
-            return __('Don’t have a Mollie account yet? Create one now. Limited time only! Pay ZERO processing fees for your first month. <a href="%s" target="_blank">Get started with Mollie today.</a> ', 'mollie-payments-for-woocommerce');
-        }, 10, 3);
-        /*add_filter('mollie-payments-for-woocommerce_signup_url', static function ($url) {
-                    $dateNow = new \DateTime();
-                    $endDateCampaign = new \DateTime('2026-01-01');
-                    if ($endDateCampaign < $dateNow) {
-                        return $url;
-                    }
-        
-                    return 'https://my.mollie.com/dashboard/signup?utm_campaign=GLO_Q4__Woo-Signup-tracker&utm_medium=referral&utm_source={woodashboard}&campaign_name=GLO_Q4__Woo-Signup-tracker';
-                });*/
         //init settings with advanced and components defaults if not exists
         $optionName = $container->get('settings.option_name');
         $defaultAdvancedOptions = $container->get('settings.advanced_default_options');

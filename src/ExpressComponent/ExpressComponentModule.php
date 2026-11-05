@@ -109,6 +109,11 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         if (!current_user_can('manage_woocommerce')) {
             return;
         }
+        // The verdict reads the tax-rate table: not on every admin page.
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        if (!$screen instanceof \WP_Screen || !function_exists('wc_get_screen_ids') || !in_array($screen->id, wc_get_screen_ids(), true)) {
+            return;
+        }
         $facts = $container->get(ExpressFactsBuilder::class);
         assert($facts instanceof ExpressFactsBuilder);
         if (!$facts->anyWalletTurnedOn()) {

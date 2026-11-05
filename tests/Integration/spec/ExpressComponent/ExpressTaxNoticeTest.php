@@ -28,6 +28,7 @@ class ExpressTaxNoticeTest extends ExpressFlowTestCase
     public function tearDown(): void
     {
         $this->tearDownExpressCheckout();
+        unset($GLOBALS['current_screen']);
 
         parent::tearDown();
     }
@@ -83,11 +84,10 @@ class ExpressTaxNoticeTest extends ExpressFlowTestCase
         remove_all_actions('admin_notices');
         $this->bootExpress();
         wp_set_current_user($isAdministrator ? $this->administrator() : 0);
+        $this->openAdminScreen('woocommerce_page_wc-settings');
 
         // When
-        ob_start();
-        do_action('admin_notices');
-        $page = (string) ob_get_clean();
+        $page = $this->adminNotices();
 
         // Then
         $pattern = '/<div\b[^>]*class="notice (notice-error|notice-warning)"[^>]*>(?:(?!<\/div>).)*page=wc-settings&(?:amp;|#038;)?tab=tax/s';
@@ -99,6 +99,57 @@ class ExpressTaxNoticeTest extends ExpressFlowTestCase
         }
         $this->assertSame(1, $found, 'Exactly one tax notice is expected.');
         $this->assertSame($expectedLevel, $matches[1][0]);
+        $this->assertSame(
+            $expectedLevel === 'notice-error',
+            str_contains($matches[0][0], 'data-mollie-error'),
+            'Only the error notice carries data-mollie-error, as AdminNotice::renderNotice builds it.'
+        );
+    }
+
+    /**
+     * Scenario: the tax-rate table is not read on an admin page that has nothing to do with the shop
+     *   Given a wallet's express switch is on and the shop's taxes depend on the address
+     *   When an administrator opens an admin page outside WooCommerce (admin_notices)
+     *   Then no tax notice is shown
+     *
+     * @test
+     * @group REQ-NEW-EXPRESS-TAX
+     */
+    public function it_shows_no_tax_notice_outside_the_woocommerce_screens(): void
+    {
+        // Given
+        $this->setOptionForTest('woocommerce_calc_taxes', 'yes');
+        $this->setOptionForTest('woocommerce_tax_based_on', 'billing');
+        $this->setOptionForTest('woocommerce_allowed_countries', 'specific');
+        $this->setOptionForTest('woocommerce_specific_allowed_countries', ['DE', 'IT']);
+        $this->setGatewaySettingsForTest('paypal', ['mollie_paypal_button_enabled_checkout' => 'yes']);
+        remove_all_actions('admin_notices');
+        $this->bootExpress();
+        wp_set_current_user($this->administrator());
+        $this->openAdminScreen('dashboard');
+
+        // When
+        $page = $this->adminNotices();
+
+        // Then
+        $this->assertStringNotContainsString('page=wc-settings', $page);
+    }
+
+    private function openAdminScreen(string $id): void
+    {
+        // The admin screen API is not loaded outside wp-admin.
+        require_once ABSPATH . 'wp-admin/includes/class-wp-screen.php';
+        require_once ABSPATH . 'wp-admin/includes/screen.php';
+        require_once WC_ABSPATH . 'includes/admin/wc-admin-functions.php';
+        set_current_screen($id);
+    }
+
+    private function adminNotices(): string
+    {
+        ob_start();
+        do_action('admin_notices');
+
+        return (string) ob_get_clean();
     }
 
     /**

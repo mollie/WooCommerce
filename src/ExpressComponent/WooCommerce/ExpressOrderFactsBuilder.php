@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingTaxRate;
 use Mollie\WooCommerce\Payment\MolliePaymentAttempt;
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\Payment\Rules\WebhookGuards;
@@ -84,25 +85,40 @@ class ExpressOrderFactsBuilder
             webhookNeedsPayment: $this->webhookNeedsPayment($order),
             cancelled: $order->has_status('cancelled'),
             holdsShippingLine: $order->get_items('shipping') !== [],
-            shippingTaxRate: $this->shippingTaxRate($order)
+            shippingTaxRates: $this->shippingTaxRates($order)
         );
     }
 
     /**
-     * The order's own tax lines say which rates applied to it; those that also tax shipping are the rate the
-     * shipping option's price includes. Zero when none does.
+     * The order's own tax lines say which rates applied to it; those that also tax shipping are the rates the
+     * shipping option's price includes, in WooCommerce's order: by priority, then by rate order. Empty when
+     * none does.
+     *
+     * @return list<ShippingTaxRate>
      */
-    private function shippingTaxRate(WC_Order $order): float
+    private function shippingTaxRates(WC_Order $order): array
     {
-        $rate = 0.0;
+        $rows = [];
         foreach ($order->get_taxes() as $tax) {
             $row = WC_Tax::_get_tax_rate($tax->get_rate_id(), OBJECT);
             if (is_object($row) && (int) $row->tax_rate_shipping === 1) {
-                $rate += (float) $row->tax_rate;
+                $rows[] = $row;
             }
         }
+        usort(
+            $rows,
+            static fn (object $a, object $b): int => [(int) $a->tax_rate_priority, (int) $a->tax_rate_order]
+                <=> [(int) $b->tax_rate_priority, (int) $b->tax_rate_order]
+        );
 
-        return $rate;
+        return array_map(
+            static fn (object $row): ShippingTaxRate => new ShippingTaxRate(
+                (int) $row->tax_rate_id,
+                (float) $row->tax_rate,
+                (int) $row->tax_rate_compound === 1
+            ),
+            $rows
+        );
     }
 
     private function webhookNeedsPayment(WC_Order $order): bool

@@ -12,7 +12,6 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingLine;
 use WC_Order;
 use WC_Order_Item_Shipping;
-use WC_Tax;
 
 /**
  * Writes only what differs and notes only once, so a retried webhook changes nothing.
@@ -116,41 +115,36 @@ final class ExpressOrderWriter
     }
 
     /**
-     * The option the shopper chose in the wallet, as it was paid: cost and VAT as the rule split them, no
-     * recalculation, so the total is exactly what Mollie took.
+     * The option the shopper chose in the wallet, as it was paid: cost and tax per rate as the rule split them,
+     * no recalculation, so the total is exactly what Mollie took.
      */
     private function addShippingLine(WC_Order $order, ShippingLine $line): void
     {
         [$methodId, $instanceId] = array_pad(explode(':', $line->rateId(), 2), 2, '');
-        $taxItem = $this->shippingTaxItem($order);
+        $taxItems = [];
+        foreach ($order->get_taxes() as $taxItem) {
+            $taxItems[(int) $taxItem->get_rate_id()] = $taxItem;
+        }
+        $taxes = [];
+        foreach ($line->taxes() as $rateId => $tax) {
+            if (!isset($taxItems[$rateId])) {
+                continue;
+            }
+            $taxes[$rateId] = $tax->toDecimal();
+            $taxItems[$rateId]->set_shipping_tax_total($tax->toDecimal());
+        }
         $net = $line->net()->toDecimal();
-        $tax = $line->tax()->toDecimal();
 
         $item = new WC_Order_Item_Shipping();
         $item->set_method_title($line->label());
         $item->set_method_id($methodId);
         $item->set_instance_id($instanceId);
         $item->set_total($net);
-        if ($taxItem !== null && $line->tax()->minorUnits() > 0) {
-            $item->set_taxes(['total' => [$taxItem->get_rate_id() => $tax]]);
-            $taxItem->set_shipping_tax_total($tax);
-        }
+        $item->set_taxes(['total' => $taxes]);
         $order->add_item($item);
         $order->set_shipping_total($net);
-        $order->set_shipping_tax($tax);
+        $order->set_shipping_tax($line->tax()->toDecimal());
         $order->set_total(wc_format_decimal((float) $order->get_total('edit') + (float) $line->gross()->toDecimal(), wc_get_price_decimals()));
-    }
-
-    private function shippingTaxItem(WC_Order $order): ?\WC_Order_Item_Tax
-    {
-        foreach ($order->get_taxes() as $taxItem) {
-            $row = WC_Tax::_get_tax_rate($taxItem->get_rate_id(), OBJECT);
-            if (is_object($row) && (int) $row->tax_rate_shipping === 1) {
-                return $taxItem;
-            }
-        }
-
-        return null;
     }
 
     /**

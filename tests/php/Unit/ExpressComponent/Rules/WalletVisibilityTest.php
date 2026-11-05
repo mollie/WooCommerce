@@ -12,7 +12,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility;
 use Mollie\WooCommerceTests\TestCase;
 
 /**
- * Which wallets the Express Component offers, and when a wallet waits for the checkout form.
+ * Which wallets the Express Component offers.
  * Uses the real wallet rows in config/express.php; only "shown" is asserted.
  *
  * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility
@@ -144,95 +144,6 @@ class WalletVisibilityTest extends TestCase
         );
 
         $this->assertShownExactly(self::WALLETS, $buttons);
-    }
-
-    /**
-     * Scenario: a wallet set to take its address from the checkout form waits for it
-     *   Given a wallets table where Apple Pay and PayPal take the shipping address from the checkout form
-     *   And both visible and a cart that ships
-     *   When the buttons map is built while the shipping destination or rate is missing
-     *   Then neither is shown
-     *
-     * No real row uses 'form' since the shipping callback; the switch stays in config/express.php.
-     *   And with the form complete, or nothing to ship, both are shown
-     *
-     * @dataProvider carts
-     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons
-     * @param array<int, string> $expectedShown
-     */
-    public function testHidesFormWalletsWhileTheCheckoutFormIsIncomplete(
-        bool $needsShipping,
-        bool $destinationComplete,
-        bool $rateChosen,
-        array $expectedShown
-    ): void {
-
-        $both = ['applepay', 'paypal'];
-        $cart = new CartFacts(
-            lines: [new CartLine(productId: 1, quantity: 1, isSubscription: false)],
-            needsShipping: $needsShipping,
-            shippingDestinationComplete: $destinationComplete,
-            shippingRateChosen: $rateChosen
-        );
-
-        $buttons = WalletVisibility::buttons(
-            $this->settings('form'),
-            $this->shop(true, $both, $both, $both, $both),
-            $cart
-        );
-
-        $this->assertShownExactly($expectedShown, $buttons);
-    }
-
-    /**
-     * @return array<string, array{0: bool, 1: bool, 2: bool, 3: array<int, string>}>
-     */
-    public function carts(): array
-    {
-        $both = ['applepay', 'paypal'];
-
-        return [
-            'ships, destination incomplete' => [true, false, true, []],
-            'ships, no rate chosen' => [true, true, false, []],
-            'ships, neither' => [true, false, false, []],
-            'ships, form complete' => [true, true, true, $both],
-            'nothing to ship, form empty' => [false, false, false, $both],
-        ];
-    }
-
-    /**
-     * Scenario: a wallet with its own address sheet does not wait for the checkout form
-     *   Given a wallets table where Apple Pay takes its address from its own sheet ('wallet')
-     *   And PayPal takes it from the form
-     *   When the buttons map is built for a cart that ships while the form is incomplete
-     *   Then Apple Pay is shown and PayPal is not
-     *
-     * Every real row is 'wallet'; PayPal is set to 'form' here so the two sources are told apart.
-     *
-     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons
-     */
-    public function testKeepsAWalletWithItsOwnSheetWhileTheFormIsIncomplete(): void
-    {
-        $config = self::config();
-        $wallets = $config['wallets'];
-        $wallets['applepay']['addressFrom'] = 'wallet';
-        $wallets['paypal']['addressFrom'] = 'form';
-        $settings = new ExpressSettings(
-            supportedSurfaces: $config['surfaces'],
-            allowedModes: $config['allowedModes'],
-            wallets: $wallets
-        );
-        $both = ['applepay', 'paypal'];
-        $cart = new CartFacts(
-            lines: [new CartLine(productId: 1, quantity: 1, isSubscription: false)],
-            needsShipping: true,
-            shippingDestinationComplete: false,
-            shippingRateChosen: false
-        );
-
-        $buttons = WalletVisibility::buttons($settings, $this->shop(true, $both, $both, $both, $both), $cart);
-
-        $this->assertShownExactly(['applepay'], $buttons);
     }
 
     /**

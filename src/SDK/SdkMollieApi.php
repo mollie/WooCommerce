@@ -154,6 +154,10 @@ final class SdkMollieApi implements MollieApi
         return is_string($ref) && $ref !== '' ? $ref : null;
     }
 
+    /**
+     * The payment's shipping_fee line, or null when it has none or none that can be used: no reference, an
+     * amount that cannot be read, or a negative one. A cart that ships is then refused as an amount mismatch.
+     */
     private function shippingFee(object $payment): ?ShippingFee
     {
         $lines = $payment->lines ?? null;
@@ -162,18 +166,29 @@ final class SdkMollieApi implements MollieApi
         }
         foreach ($lines as $line) {
             $line = is_array($line) ? (object) $line : $line;
-            if (!is_object($line) || ($line->type ?? '') !== 'shipping_fee' || !isset($line->totalAmount->value, $line->totalAmount->currency)) {
+            if (!is_object($line) || ($line->type ?? '') !== 'shipping_fee') {
                 continue;
             }
 
-            return new ShippingFee(
-                (string) ($line->reference ?? ''),
-                (string) ($line->description ?? ''),
-                Money::fromDecimal((string) $line->totalAmount->value, (string) $line->totalAmount->currency)
-            );
+            return $this->usableShippingFee($line);
         }
 
         return null;
+    }
+
+    private function usableShippingFee(object $line): ?ShippingFee
+    {
+        $reference = (string) ($line->reference ?? '');
+        if ($reference === '' || !isset($line->totalAmount->value, $line->totalAmount->currency)) {
+            return null;
+        }
+        try {
+            $amount = Money::fromDecimal((string) $line->totalAmount->value, (string) $line->totalAmount->currency);
+        } catch (InvalidArgumentException $unreadable) {
+            return null;
+        }
+
+        return $amount->minorUnits() < 0 ? null : new ShippingFee($reference, (string) ($line->description ?? ''), $amount);
     }
 
     /**

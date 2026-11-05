@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\ExpressComponent\Rules;
 
-use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
 
@@ -16,7 +15,7 @@ final class WalletVisibility
     /**
      * @return array<string, bool> Keyed by wallet.
      */
-    public static function buttons(ExpressSettings $settings, ShopFacts $shop, ?CartFacts $cart = null): array
+    public static function buttons(ExpressSettings $settings, ShopFacts $shop): array
     {
         $buttons = [];
         foreach ($settings->wallets() as $wallet => $row) {
@@ -26,18 +25,9 @@ final class WalletVisibility
                 && in_array($row['mollieMethod'], $shop->activeMollieMethods(), true)
                 && in_array($gatewayId, $shop->expressCheckoutGatewayIds(), true)
                 // One session has one amount for every wallet, so it cannot carry one wallet's fee.
-                && !in_array($gatewayId, $shop->surchargedGatewayIds(), true)
-                && !self::waitsForTheCheckoutForm($row['addressFrom'], $cart);
+                && !in_array($gatewayId, $shop->surchargedGatewayIds(), true);
         }
 
         return $buttons;
-    }
-
-    private static function waitsForTheCheckoutForm(string $addressFrom, ?CartFacts $cart): bool
-    {
-        return $cart !== null
-            && $addressFrom === 'form'
-            && $cart->needsShipping()
-            && !($cart->shippingDestinationComplete() && $cart->shippingRateChosen());
     }
 }

@@ -574,7 +574,8 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     /**
      * Scenario: a mismatched payment is refused and the order's state is untouched
      *   Given a pending express order and a paid payment differing in ref, origin or amount
-     *   Or, for a cart that ships, a payment with no shipping_fee line or one the amount does not include
+     *   Or, for a cart that ships, a payment with no shipping_fee line, one the amount does not include,
+     *     or one that cannot be used (no reference, a negative or an unreadable amount)
      *   When the webhook arrives
      *   Then 200, status and meta unchanged, unmatched logged with the reason
      *   And an order the ref found gets one note
@@ -601,6 +602,15 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
             $outcome['amount'] = ['currency' => 'EUR', 'value' => $this->decimal((float) $order->get_total())];
         }
+        $unusable = [
+            'fee without reference' => ['reference' => '', 'description' => 'Express', 'value' => '4.95'],
+            'negative fee' => ['reference' => 'flat_rate:1', 'description' => 'Express', 'value' => '-4.95'],
+            'unreadable fee' => ['reference' => 'flat_rate:1', 'description' => 'Express', 'value' => 'four'],
+        ];
+        if (isset($unusable[$case])) {
+            $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
+            $outcome['shippingFee'] = $unusable[$case];
+        }
         $payment = $this->fakeMollie()->completeSession($sessionId, $outcome);
         switch ($case) {
             case 'no ref':
@@ -626,7 +636,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $unmatched = $this->loggedEvents('express.webhook.unmatched');
         $this->assertCount(1, $unmatched);
         $this->assertSame($expectedReason, $unmatched[0]['context']['reason'] ?? null);
-        if (in_array($case, ['no shipping fee', 'fee not added'], true)) {
+        if (in_array($case, ['no shipping fee', 'fee not added'], true) || isset($unusable[$case])) {
             $this->assertRememberedWithOneNoteAndOneError($order, $notes, $payment, $expectedReason);
         }
     }
@@ -643,6 +653,9 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             'an amount that differs from the order total' => ['amount', 'amount_mismatch', 1],
             'a cart that ships, paid without a shipping_fee line' => ['no shipping fee', 'amount_mismatch', 1],
             'a shipping_fee line the amount does not add up to' => ['fee not added', 'amount_mismatch', 1],
+            'a shipping_fee line without a reference' => ['fee without reference', 'amount_mismatch', 1],
+            'a shipping_fee line with a negative amount' => ['negative fee', 'amount_mismatch', 1],
+            'a shipping_fee line with an unreadable amount' => ['unreadable fee', 'amount_mismatch', 1],
         ];
     }
 
@@ -1249,6 +1262,132 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             'a guest' => ['guest'],
             'a logged-in customer with an account address' => ['account'],
         ];
+    }
+
+    /**
+     * Scenario: the shipping option is booked on the order at the store's own tax rates
+     *   Given a store whose shipping is taxed at one rate, at no rate, at two rates or at a compound rate,
+     *     with prices entered with or without tax
+     *   And an express order of a cart that ships, paid with the 'express' option chosen in the wallet
+     *   When Mollie calls the webhook
+     *   Then the shipping line's cost plus its tax is the option's price, each rate holds the share
+     *     WooCommerce gives it of a price that includes tax, and each tax line carries that share
+     *   And the order's shipping tax and total tax add up, and its total equals the payment amount
+     *
+     * @test
+     * @dataProvider shippingTaxes
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
+     * @param array<string, string> $luRate Overrides of the fixture's 21% rate for LU.
+     * @param list<array<string, mixed>> $extraRates More LU rates.
+     */
+    public function it_books_the_shipping_option_at_the_stores_tax_rates(string $pricesIncludeTax, array $luRate, array $extraRates): void
+    {
+        // Given
+        $this->setOptionForTest('woocommerce_prices_include_tax', $pricesIncludeTax);
+        \WC_Tax::_update_tax_rate($this->taxRateIds[0], $luRate);
+        foreach ($extraRates as $rate) {
+            $this->taxRateIds[] = \WC_Tax::_insert_tax_rate($rate + [
+                'tax_rate_country' => 'LU',
+                'tax_rate_name' => 'Extra',
+                'tax_rate_shipping' => 1,
+                'tax_rate_order' => 0,
+                'tax_rate_class' => '',
+            ]);
+        }
+        \WC_Cache_Helper::invalidate_cache_group('taxes');
+        [$order, , $sessionId] = $this->expressOrder();
+        $this->chooseRate('express');
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $gross = (float) $payment['lines'][0]['totalAmount']['value'];
+
+        // When
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        // Then
+        $after = $this->fresh($order);
+        $this->assertTrue($after->is_paid());
+        $lines = array_values($after->get_items('shipping'));
+        $this->assertCount(1, $lines);
+        $this->assertSame($this->decimal($gross), $this->decimal((float) $lines[0]->get_total() + (float) $lines[0]->get_total_tax()));
+        $expected = array_map(
+            fn (float $tax): string => $this->decimal(round($tax, 2)),
+            \WC_Tax::calc_inclusive_tax($gross, $this->shippingTaxRatesOf($after))
+        );
+        $booked = [];
+        foreach ($after->get_taxes() as $taxItem) {
+            if ((float) $taxItem->get_shipping_tax_total() !== 0.0 || isset($expected[$taxItem->get_rate_id()])) {
+                $booked[$taxItem->get_rate_id()] = $this->decimal((float) $taxItem->get_shipping_tax_total());
+            }
+        }
+        ksort($expected);
+        ksort($booked);
+        $this->assertSame($expected, $booked);
+        $this->assertSame(
+            $expected,
+            array_map(fn ($tax): string => $this->decimal((float) $tax), $this->sortedByKey($lines[0]->get_taxes()['total'] ?? []))
+        );
+        $this->assertSame($this->decimal((float) $lines[0]->get_total_tax()), $this->decimal((float) $after->get_shipping_tax()));
+        $this->assertSame(
+            $this->decimal((float) $after->get_cart_tax() + (float) $after->get_shipping_tax()),
+            $this->decimal((float) $after->get_total_tax())
+        );
+        $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: array<string, string>, 2: list<array<string, mixed>>}>
+     */
+    public function shippingTaxes(): array
+    {
+        return [
+            '9% VAT, prices include tax' => ['yes', ['tax_rate' => '9.0000'], []],
+            '9% VAT, prices exclude tax' => ['no', ['tax_rate' => '9.0000'], []],
+            'shipping not taxed' => ['yes', ['tax_rate_shipping' => '0'], []],
+            'two regular rates, 5% and 7%' => [
+                'yes',
+                ['tax_rate' => '5.0000'],
+                [['tax_rate' => '7.0000', 'tax_rate_priority' => 2, 'tax_rate_compound' => 0]],
+            ],
+            'a 5% compound rate on 10%' => [
+                'no',
+                ['tax_rate' => '10.0000'],
+                [['tax_rate' => '5.0000', 'tax_rate_priority' => 2, 'tax_rate_compound' => 1]],
+            ],
+        ];
+    }
+
+    /**
+     * The order's rates that tax shipping, in the shape WC_Tax::calc_inclusive_tax() takes.
+     *
+     * @return array<int, array{rate: float, label: string, shipping: string, compound: string}>
+     */
+    private function shippingTaxRatesOf(WC_Order $order): array
+    {
+        $rates = [];
+        foreach ($order->get_taxes() as $taxItem) {
+            $row = \WC_Tax::_get_tax_rate($taxItem->get_rate_id(), OBJECT);
+            if (is_object($row) && (int) $row->tax_rate_shipping === 1) {
+                $rates[(int) $row->tax_rate_id] = [
+                    'rate' => (float) $row->tax_rate,
+                    'label' => (string) $row->tax_rate_name,
+                    'shipping' => 'yes',
+                    'compound' => (int) $row->tax_rate_compound === 1 ? 'yes' : 'no',
+                ];
+            }
+        }
+
+        return $rates;
+    }
+
+    /**
+     * @param array<int|string, mixed> $values
+     * @return array<int|string, mixed>
+     */
+    private function sortedByKey(array $values): array
+    {
+        ksort($values);
+
+        return $values;
     }
 
     /**

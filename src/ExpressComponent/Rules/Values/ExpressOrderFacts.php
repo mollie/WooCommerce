@@ -13,7 +13,7 @@ final class ExpressOrderFacts
      * @param list<string> $processed
      * @param bool $webhookNeedsPayment WebhookGuards::needsPayment().
      * @param bool $holdsShippingLine The order already has a shipping line.
-     * @param float $shippingTaxRate Percent the order's shipping is taxed at.
+     * @param list<ShippingTaxRate> $shippingTaxRates The order's rates that also tax shipping, in priority order.
      */
     public function __construct(
         private int $orderId,
@@ -29,7 +29,7 @@ final class ExpressOrderFacts
         private bool $webhookNeedsPayment = false,
         private bool $cancelled = false,
         private bool $holdsShippingLine = false,
-        private float $shippingTaxRate = 0.0
+        private array $shippingTaxRates = []
     ) {
     }
 
@@ -102,10 +102,10 @@ final class ExpressOrderFacts
     }
 
     /**
-     * @return float Percent, e.g. 21.0; 0.0 when the order's shipping carries no tax.
+     * @return list<ShippingTaxRate> Empty when the order's shipping carries no tax.
      */
-    public function shippingTaxRate(): float
+    public function shippingTaxRates(): array
     {
-        return $this->shippingTaxRate;
+        return $this->shippingTaxRates;
     }
 }

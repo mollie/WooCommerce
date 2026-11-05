@@ -8,11 +8,14 @@ use Mollie\WooCommerce\Shared\Values\Money;
 
 final class ShippingLine
 {
+    /**
+     * @param array<int, Money> $taxes Tax per tax rate id, in the currency of the gross.
+     */
     public function __construct(
         private string $rateId,
         private string $label,
         private Money $gross,
-        private Money $net
+        private array $taxes
     ) {
     }
 
@@ -33,11 +36,24 @@ final class ShippingLine
 
     public function net(): Money
     {
-        return $this->net;
+        return Money::fromMinorUnits($this->gross->minorUnits() - $this->tax()->minorUnits(), $this->gross->currency());
     }
 
     public function tax(): Money
     {
-        return Money::fromMinorUnits($this->gross->minorUnits() - $this->net->minorUnits(), $this->gross->currency());
+        $minor = 0;
+        foreach ($this->taxes as $tax) {
+            $minor += $tax->minorUnits();
+        }
+
+        return Money::fromMinorUnits($minor, $this->gross->currency());
+    }
+
+    /**
+     * @return array<int, Money> Tax per tax rate id.
+     */
+    public function taxes(): array
+    {
+        return $this->taxes;
     }
 }

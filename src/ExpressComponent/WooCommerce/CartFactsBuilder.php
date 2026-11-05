@@ -194,6 +194,8 @@ class CartFactsBuilder
 
     /**
      * WooCommerce's own hash includes the cart total, shipping too: a change of the shipping rate would change it.
+     * The coupons are part of it: a free-shipping coupon moves the options but not the total, and the saved cart
+     * the callback prices must be the one in front of the shopper.
      */
     private function cartHash(WC_Cart $cart): string
     {
@@ -203,7 +205,10 @@ class CartFactsBuilder
             $items[(string) $key] = $item;
         }
 
-        return hash('sha256', (string) wp_json_encode($items) . $this->totalWithoutShipping($cart));
+        $coupons = array_map('strval', $cart->get_applied_coupons());
+        sort($coupons);
+
+        return hash('sha256', (string) wp_json_encode([$items, $coupons]) . $this->totalWithoutShipping($cart));
     }
 
     /**

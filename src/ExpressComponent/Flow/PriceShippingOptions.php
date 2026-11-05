@@ -29,7 +29,10 @@ final class PriceShippingOptions
         $started = microtime(true);
         $this->log->step(self::FLOW . '.started', ['entry' => 'shipping_callback']);
 
-        $found = $this->snapshot->ratesFor($secret, $address);
+        // A country that is not two letters is no address: a catch-all zone must not answer for it.
+        $found = $address['country'] === ''
+            ? ['rates' => [], 'failed' => true]
+            : $this->snapshot->ratesFor($secret, $address);
         $verdict = ShippingOptions::decide($found['rates'], $found['failed']);
         $refusal = $verdict->refusalType();
 

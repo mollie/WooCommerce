@@ -100,7 +100,7 @@ final class StartExpressSession
         // A cart that ships has no shipping line: Mollie asks the store for the options, with the secret of this session.
         $ships = $cart->needsShipping();
         $secret = $ships ? $this->snapshot->secretFor($ref) : '';
-        if (!$this->saveSnapshot($secret)) {
+        if (!$this->snapshot->save($secret, $this->sessionLifetimeSeconds)) {
             return $this->refuse($surface, 'shipping_unavailable', 503);
         }
 
@@ -127,7 +127,7 @@ final class StartExpressSession
                 throw MollieCallFailed::fromThrowable(new \UnexpectedValueException('', 0));
             }
         } catch (MollieCallFailed $failure) {
-            $this->forgetSnapshot($secret);
+            $this->snapshot->forget($secret);
             $this->log->error('express.session.failed', [
                 'surface' => $surface,
                 'kind' => $failure->kind(),
@@ -139,7 +139,7 @@ final class StartExpressSession
                 : ExpressSessionResult::refused('mollie_unavailable', 503);
         }
 
-        $this->bindSnapshot($secret, $session->id(), $expiresAt);
+        $this->snapshot->attachSession($secret, $session->id(), $expiresAt);
         $this->store->remember($session->id(), $session->clientAccessToken(), $expiresAt, $fingerprint, $account, $ref, $attempt);
         $total = $cart->total();
         $this->log->info('express.session.created', [
@@ -152,26 +152,6 @@ final class StartExpressSession
         ]);
 
         return ExpressSessionResult::started($session->clientAccessToken(), $session->expiresAt());
-    }
-
-    /** A cart that ships has a secret; one that ships nothing has none, and nothing to save. */
-    private function saveSnapshot(string $secret): bool
-    {
-        return $secret === '' || $this->snapshot->save($secret, $this->sessionLifetimeSeconds);
-    }
-
-    private function bindSnapshot(string $secret, string $sessionId, int $expiresAt): void
-    {
-        if ($secret !== '') {
-            $this->snapshot->attachSession($secret, $sessionId, $expiresAt);
-        }
-    }
-
-    private function forgetSnapshot(string $secret): void
-    {
-        if ($secret !== '') {
-            $this->snapshot->forget($secret);
-        }
     }
 
     private function orderSettled(string $ref): bool

@@ -60,4 +60,51 @@ class AdmissionTest extends TestCase
             'an unknown entry point, even with a verified nonce' => ['express.unknown', true, true, 'unknown_entry_point'],
         ];
     }
+
+    /**
+     * Scenario: Mollie's shipping callback is admitted by its secret, its session and its event
+     *   Given whether the secret was sent, matches a saved cart, and the session is the saved one
+     *   When admission of the callback is decided
+     *   Then only a known secret, the saved session and the shipping-address-changed event are admitted
+     *   And everything else is refused with 403 and the first reason that fails
+     *
+     * @dataProvider callbacks
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\Admission::admitShippingCallback
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
+     */
+    public function testAdmitsTheShippingCallbackOnlyWithItsSecretSessionAndEvent(
+        bool $secretPresent,
+        bool $secretMatches,
+        bool $sessionMatches,
+        string $event,
+        ?string $expectedRefusal
+    ): void {
+
+        $decision = Admission::admitShippingCallback($secretPresent, $secretMatches, $sessionMatches, $event);
+
+        if ($expectedRefusal === null) {
+            self::assertInstanceOf(Admit::class, $decision);
+            return;
+        }
+        self::assertInstanceOf(Refuse::class, $decision);
+        self::assertSame($expectedRefusal, $decision->code());
+        self::assertSame(403, $decision->httpStatus());
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: bool, 2: bool, 3: string, 4: ?string}>
+     */
+    public function callbacks(): array
+    {
+        $event = 'shipping-address-changed';
+
+        return [
+            'secret, session and event' => [true, true, true, $event, null],
+            'no secret' => [false, false, false, $event, 'secret_missing'],
+            'a secret no saved cart has' => [true, false, true, $event, 'secret_invalid'],
+            'another session' => [true, true, false, $event, 'session_mismatch'],
+            'another event' => [true, true, true, 'payment-changed', 'event_unsupported'],
+            'no event' => [true, true, true, '', 'event_unsupported'],
+        ];
+    }
 }

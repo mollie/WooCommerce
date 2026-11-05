@@ -25,10 +25,15 @@ class ExpressShippingSnapshot
     }
 
     /**
-     * @return bool Whether a cart that ships was saved.
+     * A cart that ships nothing has no secret and nothing to save, bind or forget.
+     *
+     * @return bool Whether the cart was saved, or there was nothing to save.
      */
     public function save(string $secret, int $lifetimeSeconds): bool
     {
+        if ($secret === '') {
+            return true;
+        }
         $cart = function_exists('WC') ? WC()->cart : null;
         if (!$cart instanceof \WC_Cart) {
             return false;
@@ -53,7 +58,7 @@ class ExpressShippingSnapshot
      */
     public function attachSession(string $secret, string $sessionId, int $expiresAt): void
     {
-        $saved = $this->read($secret);
+        $saved = $secret === '' ? null : $this->read($secret);
         if ($saved === null) {
             return;
         }
@@ -63,6 +68,9 @@ class ExpressShippingSnapshot
 
     public function forget(string $secret): void
     {
+        if ($secret === '') {
+            return;
+        }
         delete_transient($this->name($secret));
     }
 

@@ -313,6 +313,34 @@ describe( 'what the express area shows', () => {
 	} );
 
 	/**
+	 * Scenario: the session is asked for the page the store printed
+	 *   Given the store printed the cart or the checkout as the page's surface
+	 *   When the express area renders
+	 *   Then the session request carries that surface
+	 */
+	it.each( [ 'cart', 'checkout' ] )(
+		'@REQ-A1 asks for a session for the %s the store printed',
+		async ( surface ) => {
+			data.surface = surface;
+			try {
+				await openTheCheckout( {
+					needsShipping: false,
+					address: ADDRESS,
+					rateSelected: false,
+				} );
+
+				expect( postToStore ).toHaveBeenCalledWith(
+					data,
+					SESSION_ROUTE,
+					{ surface }
+				);
+			} finally {
+				delete data.surface;
+			}
+		}
+	);
+
+	/**
 	 * Scenario: the shopper edits the shipping form of an owned checkout
 	 *   Given a checkout that loaded with a cart that ships and a complete form
 	 *   When the shopper clears a field, or picks another address and rate

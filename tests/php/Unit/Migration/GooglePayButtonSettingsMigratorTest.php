@@ -33,7 +33,7 @@ class GooglePayButtonSettingsMigratorTest extends TestCase
      *   Then the Google Pay checkout switch is on and its cart switch off where Google Pay is enabled
      *   And both are off where it is disabled or never saved
      *   And the stored Apple Pay and PayPal switches are unchanged
-     *   And the migration belongs to a version after 8.2.0, so the update ladder runs it
+     *   And the migration belongs to a version after 8.2.0 and no later than the plugin's, so the update ladder runs it
      *
      * @test
      * @dataProvider googlePayBefore
@@ -87,6 +87,18 @@ class GooglePayButtonSettingsMigratorTest extends TestCase
             version_compare($migrator->targetVersion(), '8.2.0', '>'),
             'Target ' . $migrator->targetVersion() . ' must come after 8.2.0.'
         );
+        self::assertTrue(
+            version_compare($migrator->targetVersion(), $this->pluginVersion(), '<='),
+            'Target ' . $migrator->targetVersion() . ' must not come after the plugin version ' . $this->pluginVersion() . ', or the update ladder skips it.'
+        );
+    }
+
+    private function pluginVersion(): string
+    {
+        $header = (string) file_get_contents(dirname(__DIR__, 4) . '/mollie-payments-for-woocommerce.php');
+        self::assertSame(1, preg_match('/^\s*\*\s*Version:\s*(\S+)/m', $header, $match), 'The plugin header names its version.');
+
+        return $match[1];
     }
 
     /**

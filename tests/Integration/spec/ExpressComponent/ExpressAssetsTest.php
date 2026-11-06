@@ -182,8 +182,8 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: nothing of the Express Component loads where Express does not own a block checkout
-     *   Given one of: the block cart, a product page, the classic checkout, a page holding the checkout
+     * Scenario: nothing of the Express Component loads where Express does not own the page
+     *   Given one of: the block cart with no wallet's cart button on, a product page, the classic checkout, a page holding the checkout
      *         block that is not the store's checkout page, the order-received page, test mode, no
      *         wallet with its checkout button on, or a site on plain HTTP
      *   When that page enqueues its scripts
@@ -201,6 +201,11 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         switch ($shop) {
             case 'test mode':
                 $this->useTestMode();
+                break;
+            case 'no cart button':
+                foreach (self::PAGE_SWITCHES as $wallet => $switches) {
+                    $this->setGatewaySettingsForTest($wallet, [$switches['cart'] => 'no']);
+                }
                 break;
             case 'no wallet button':
                 $this->setGatewaySettingsForTest('paypal', [self::PAYPAL_CHECKOUT => 'no']);
@@ -230,7 +235,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     public function pagesExpressDoesNotOwn(): array
     {
         return [
-            'block cart' => ['block cart', 'owned'],
+            'block cart with no wallet\'s cart button on' => ['block cart', 'no cart button'],
             'product page' => ['product', 'owned'],
             'classic checkout' => ['classic checkout', 'owned'],
             // Legacy buttons step aside only where is_checkout() holds: two express offers otherwise.
@@ -1007,6 +1012,8 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *   Given Apple Pay and PayPal enabled, with every legacy cart and checkout switch on
      *   When the block cart, the classic cart, or the block cart of a shop in test mode renders
      *   Then on the block cart the component loads and both legacy buttons answer off
+     *   And with only PayPal's cart button on, the block cart still hides the legacy Apple Pay button:
+     *        one express offer per page
      *   And on the classic cart and where the component cannot run nothing of it loads
      *        and both legacy buttons answer as configured
      *
@@ -1021,6 +1028,9 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         $this->setGatewaySettingsForTest('paypal', ['enabled' => 'yes', self::PAYPAL_CART => 'yes', self::PAYPAL_CHECKOUT => 'yes']);
         if ($shop === 'test mode') {
             $this->useTestMode();
+        }
+        if ($shop === 'only PayPal on the cart') {
+            $this->setGatewaySettingsForTest('applepay', [self::APPLE_PAY_CART => 'no']);
         }
 
         // When
@@ -1040,6 +1050,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             'block cart, the component can run' => ['block cart', 'live', true],
             'classic cart' => ['classic cart', 'live', false],
             'block cart in test mode' => ['block cart', 'test mode', false],
+            'block cart with only PayPal\'s cart button on' => ['block cart', 'only PayPal on the cart', true],
         ];
     }
 }

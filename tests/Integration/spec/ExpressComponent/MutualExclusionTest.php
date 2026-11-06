@@ -228,6 +228,43 @@ class MutualExclusionTest extends ExpressFlowTestCase
     }
 
     /**
+     * @scenario Where Express owns the checkout, the product page and the classic cart keep their legacy buttons
+     *   Given a live, HTTPS shop where Express owns the checkout
+     *   And the Apple Pay express flag and both PayPal page settings on
+     *   When each legacy method is asked on the classic cart, the checkout and another page such as the product page
+     *   Then both answer off on the checkout
+     *   And both answer as configured on the classic cart and on the other page
+     *   And Express owns neither the classic cart nor the product page
+     *
+     * @test
+     * @group REQ-A3
+     * @group REQ-A6
+     */
+    public function it_keeps_legacy_buttons_as_configured_off_the_owned_checkout(): void
+    {
+        // Given
+        $this->configureLegacyButtons();
+        $this->useHttps(true);
+        $this->bootExpress();
+
+        // When
+        $values = $this->legacyValues();
+
+        // Then
+        $this->assertTrue(mollieWooCommerceExpressOwnsSurface('checkout'), 'Precondition: Express can run here.');
+        $this->assertFalse(mollieWooCommerceExpressOwnsSurface('cart'), 'A cart without the cart block is not owned.');
+        $this->assertFalse(mollieWooCommerceExpressOwnsSurface('product'));
+        $this->assertSame(
+            [
+                'cart' => self::AS_CONFIGURED['cart'],
+                'checkout' => ['applepay' => false, 'paypal' => false],
+                'other' => self::AS_CONFIGURED['other'],
+            ],
+            $values
+        );
+    }
+
+    /**
      * Scenario: Express unable to run leaves the legacy buttons exactly as configured
      *   Given a live, HTTPS shop with both legacy buttons configured on, where Express owns the checkout
      *   When the shop switches to test mode, or the site is not HTTPS

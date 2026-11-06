@@ -49,7 +49,8 @@ class WalletVisibilityTest extends TestCase
 
         $buttons = WalletVisibility::buttons(
             $this->settings(),
-            $this->shop($isHttps, $registered, $enabled, $active, $expressOn)
+            $this->shop($isHttps, $registered, $enabled, $active, $expressOn),
+            'checkout'
         );
 
         $this->assertShownExactly($expectedShown, $buttons);
@@ -80,7 +81,7 @@ class WalletVisibilityTest extends TestCase
             surchargedGatewayIds: $this->column($surcharged, 'gatewayId')
         );
 
-        $this->assertShownExactly($expectedShown, WalletVisibility::buttons($this->settings(), $shop));
+        $this->assertShownExactly($expectedShown, WalletVisibility::buttons($this->settings(), $shop, 'checkout'));
     }
 
     /**
@@ -140,7 +141,8 @@ class WalletVisibilityTest extends TestCase
     {
         $buttons = WalletVisibility::buttons(
             $this->settings(),
-            $this->shop(true, self::WALLETS, self::WALLETS, self::WALLETS, self::WALLETS)
+            $this->shop(true, self::WALLETS, self::WALLETS, self::WALLETS, self::WALLETS),
+            'checkout'
         );
 
         $this->assertShownExactly(self::WALLETS, $buttons);
@@ -239,7 +241,7 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
-     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, cartSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
      */
     private static function config(): array
     {

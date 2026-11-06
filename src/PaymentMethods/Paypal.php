@@ -49,7 +49,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                     'mollie-payments-for-woocommerce'
                 ),
                 'description' => __(
-                    'Enable the PayPal button to be used in the cart page.',
+                    'Enable the PayPal button to be used in the cart page. On the block cart, Mollie express checkout shows the button where it can run; otherwise the classic PayPal button is shown.',
                     'mollie-payments-for-woocommerce'
                 ),
                 'default' => 'no',
@@ -110,16 +110,11 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
 
     public function isExpressCheckoutEnabled(): bool
     {
-        if (is_cart()) {
-            return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
+        $surface = is_cart() ? 'cart' : (is_checkout() ? 'checkout' : null);
+        if ($surface === null || mollieWooCommerceExpressOwnsSurface($surface)) {
+            return false;
         }
-        if (is_checkout()) {
-            if (mollieWooCommerceExpressOwnsSurface('checkout')) {
-                return false;
-            }
-            return $this->getProperty('mollie_paypal_button_enabled_checkout') === 'yes';
-        }
-        return false;
+        return $this->getProperty('mollie_paypal_button_enabled_' . $surface) === 'yes';
     }
 
     protected function blocksExpressData(ContainerInterface $container): ?array

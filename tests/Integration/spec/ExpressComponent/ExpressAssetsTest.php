@@ -32,7 +32,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
 
     private const V1_URL = 'https://js.mollie.com/v1/mollie.js';
 
-    private const ALLOWED_KEYS = ['buttons', 'locale', 'messages', 'nonce', 'restUrl'];
+    private const ALLOWED_KEYS = ['buttons', 'locale', 'messages', 'nonce', 'restUrl', 'surface'];
 
     private const WALLETS = ['applepay', 'googlepay', 'paypal'];
 
@@ -44,6 +44,19 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     private const APPLE_PAY_EXPRESS = 'mollie_apple_pay_button_enabled_express_checkout';
 
     private const PAYPAL_CHECKOUT = 'mollie_paypal_button_enabled_checkout';
+
+    private const APPLE_PAY_CART = 'mollie_apple_pay_button_enabled_cart';
+
+    private const PAYPAL_CART = 'mollie_paypal_button_enabled_cart';
+
+    /**
+     * Each wallet's switch per page, by the option names merchants already have (Google Pay's are new).
+     */
+    private const PAGE_SWITCHES = [
+        'applepay' => ['cart' => self::APPLE_PAY_CART, 'checkout' => self::APPLE_PAY_EXPRESS],
+        'paypal' => ['cart' => self::PAYPAL_CART, 'checkout' => self::PAYPAL_CHECKOUT],
+        'googlepay' => ['cart' => 'mollie_googlepay_button_enabled_cart', 'checkout' => 'mollie_googlepay_button_enabled_checkout'],
+    ];
 
     private const OWNS_SURFACE = 'mollie_wc_express_owns_surface';
 
@@ -181,6 +194,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      * @dataProvider pagesExpressDoesNotOwn
      * @group REQ-A1
      * @group REQ-A2
+     * @group REQ-A6
      */
     public function it_loads_nothing_where_express_does_not_own_the_block_checkout(string $page, string $shop): void
     {
@@ -229,15 +243,15 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the cart is totalled for ownership only on the block checkout
+     * Scenario: the cart is totalled for ownership only on the block checkout and the block cart
      *   Given a guest with a cart priced at page load
      *   When a page enqueues its scripts
-     *   Then WooCommerce totals the cart for that only on the store's block checkout page
+     *   Then WooCommerce totals the cart for that only on the store's block checkout and block cart pages
      *
      * @test
      * @dataProvider pagesThatTotalTheCart
      */
-    public function it_totals_the_cart_for_ownership_only_on_the_block_checkout(string $page, bool $totals): void
+    public function it_totals_the_cart_for_ownership_only_on_the_block_checkout_and_cart(string $page, bool $totals): void
     {
         $this->bootExpressOwning(['wp_enqueue_scripts', self::OWNS_SURFACE]);
         $this->actAsGuest();
@@ -251,7 +265,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
 
         $this->openPage($page, false);
 
-        $this->assertSame($totals, $calculated > 0, $totals ? 'Ownership is decided from the totalled cart.' : 'Only the block checkout may total the cart.');
+        $this->assertSame($totals, $calculated > 0, $totals ? 'Ownership is decided from the totalled cart.' : 'Only the block checkout and the block cart may total the cart.');
     }
 
     /**
@@ -261,7 +275,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     {
         return [
             'block checkout' => ['block checkout', true],
-            'block cart' => ['block cart', false],
+            'block cart' => ['block cart', true],
             'product page' => ['product', false],
             'classic checkout' => ['classic checkout', false],
             'a page with the checkout block that is not the checkout page' => ['stray checkout block', false],
@@ -410,7 +424,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     {
         $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
         $this->flushMollieMethodsCache();
-        $this->setGatewaySettingsForTest('googlepay', ['enabled' => $enabled]);
+        $this->setGatewaySettingsForTest('googlepay', ['enabled' => $enabled, 'mollie_googlepay_button_enabled_checkout' => 'yes']);
 
         $this->openPage('block checkout');
         $data = $this->localizedExpressData();
@@ -652,6 +666,11 @@ class ExpressAssetsTest extends ExpressFlowTestCase
                 $this->setOptionForTest('woocommerce_cart_page_id', $pageId);
                 $args = ['page_id' => $pageId];
                 break;
+            case 'classic cart':
+                $pageId = $this->page('Classic cart', '<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->');
+                $this->setOptionForTest('woocommerce_cart_page_id', $pageId);
+                $args = ['page_id' => $pageId];
+                break;
             case 'product':
                 $productId = (int) wc_get_product_id_by_sku(ProductPresets::get()['simple']['sku']);
                 $this->assertGreaterThan(0, $productId, "The 'simple' preset product does not exist.");
@@ -792,6 +811,21 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         ];
     }
 
+    /**
+     * What each legacy express button answers on the cart page now open.
+     *
+     * @return array{applepay: bool, paypal: bool}
+     */
+    private function legacyCartButtons(): array
+    {
+        $this->assertTrue(is_cart(), 'The legacy buttons must be asked on the cart page.');
+
+        return [
+            'applepay' => (new Applepay())->isExpressCheckoutEnabled(),
+            'paypal' => (new Paypal())->isExpressCheckoutEnabled(),
+        ];
+    }
+
     private function forgetPageType(): void
     {
         foreach (['is_cart_page', 'is_checkout_page'] as $property) {
@@ -905,5 +939,107 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         }
 
         return $offered;
+    }
+
+    /**
+     * @scenario Each wallet shows on the page its own switch is on, Google Pay included
+     *   Given Apple Pay, PayPal and Google Pay enabled and active at Mollie, every page switch off
+     *   And one wallet with only its cart switch on, or only its checkout switch on
+     *   When the block cart or the block checkout enqueues its scripts
+     *   Then the component offers that wallet, and only it, on the page whose switch is on
+     *   And loads nothing on the other page
+     *
+     * @test
+     * @dataProvider walletPageSwitches
+     * @group REQ-A1
+     */
+    public function it_offers_each_wallet_only_on_the_page_its_switch_is_on(string $wallet, string $switchOn, string $page, bool $offered): void
+    {
+        // Given
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        foreach (self::PAGE_SWITCHES as $name => $switches) {
+            $this->setGatewaySettingsForTest($name, [
+                'enabled' => 'yes',
+                $switches['cart'] => $name === $wallet && $switchOn === 'cart' ? 'yes' : 'no',
+                $switches['checkout'] => $name === $wallet && $switchOn === 'checkout' ? 'yes' : 'no',
+            ]);
+        }
+
+        // When
+        $this->openPage($page);
+        $data = $this->localizedExpressData();
+
+        // Then
+        if (!$offered) {
+            $this->assertNull($data, "Nothing may load on the {$page} with only the {$switchOn} switch of {$wallet} on.");
+
+            return;
+        }
+        $this->assertIsArray($data, "The component must load on the {$page} with the {$switchOn} switch of {$wallet} on.");
+        $this->assertIsArray($data['buttons']);
+        $expected = [];
+        foreach (self::WALLETS as $name) {
+            $expected[$name] = $name === $wallet;
+        }
+        $this->assertSame($expected, $this->offered($data['buttons']), 'Offered wallets are wrong in ' . wp_json_encode($data['buttons']));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: string, 3: bool}>
+     */
+    public function walletPageSwitches(): array
+    {
+        $cases = [];
+        foreach (array_keys(self::PAGE_SWITCHES) as $wallet) {
+            foreach (['cart', 'checkout'] as $switchOn) {
+                foreach (['block cart' => 'cart', 'block checkout' => 'checkout'] as $page => $surface) {
+                    $cases["{$wallet}, {$switchOn} switch on, {$page}"] = [$wallet, $switchOn, $page, $switchOn === $surface];
+                }
+            }
+        }
+
+        return $cases;
+    }
+
+    /**
+     * @scenario The legacy buttons step aside on the cart exactly where the component shows
+     *   Given Apple Pay and PayPal enabled, with every legacy cart and checkout switch on
+     *   When the block cart, the classic cart, or the block cart of a shop in test mode renders
+     *   Then on the block cart the component loads and both legacy buttons answer off
+     *   And on the classic cart and where the component cannot run nothing of it loads
+     *        and both legacy buttons answer as configured
+     *
+     * @test
+     * @dataProvider cartPages
+     * @group REQ-A3
+     */
+    public function it_hides_legacy_buttons_on_the_cart_only_where_express_owns_it(string $page, string $shop, bool $owned): void
+    {
+        // Given
+        $this->setGatewaySettingsForTest('applepay', ['enabled' => 'yes', self::APPLE_PAY_CART => 'yes', self::APPLE_PAY_EXPRESS => 'yes']);
+        $this->setGatewaySettingsForTest('paypal', ['enabled' => 'yes', self::PAYPAL_CART => 'yes', self::PAYPAL_CHECKOUT => 'yes']);
+        if ($shop === 'test mode') {
+            $this->useTestMode();
+        }
+
+        // When
+        $this->openPage($page);
+
+        // Then
+        $this->assertSame($owned, $this->localizedExpressData() !== null, $owned ? 'The component must load here.' : 'The component must not load here.');
+        $this->assertSame(['applepay' => !$owned, 'paypal' => !$owned], $this->legacyCartButtons());
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: bool}>
+     */
+    public function cartPages(): array
+    {
+        return [
+            'block cart, the component can run' => ['block cart', 'live', true],
+            'classic cart' => ['classic cart', 'live', false],
+            'block cart in test mode' => ['block cart', 'test mode', false],
+        ];
     }
 }

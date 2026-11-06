@@ -114,7 +114,7 @@ trait ExpressCheckoutFixtures
      */
     private function startSession(array $extra = []): WP_REST_Response
     {
-        $response = $this->restRequest('POST', '/mollie/v1/express/session', array_merge(['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)], $extra));
+        $response = $this->restRequest('POST', '/mollie/v1/express/session', array_merge(['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION), 'surface' => 'checkout'], $extra));
         $this->shownToken = (string) (((array) $response->get_data())['clientAccessToken'] ?? $this->shownToken);
 
         return $response;

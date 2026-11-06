@@ -63,7 +63,7 @@ class ApplePaySettingsRenderingTest extends ExpressFlowTestCase
         return [
             'cart' => [
                 'mollie_apple_pay_button_enabled_cart',
-                'Enable the Apple Pay direct buy button on the Cart page',
+                'Enable the Apple Pay direct buy button on the Cart page. On the block cart, Mollie express checkout shows the button where it can run; otherwise the classic Apple Pay button is shown.',
             ],
             'product' => [
                 'mollie_apple_pay_button_enabled_product',

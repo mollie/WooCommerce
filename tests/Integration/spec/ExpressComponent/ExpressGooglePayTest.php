@@ -73,12 +73,13 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the settings page shows one express checkbox, off on a fresh install
+     * Scenario: the settings page shows the express checkboxes, off on a fresh install
      *   Given Google Pay is activated at Mollie
      *   And the shop has never saved Google Pay settings
      *   When the plugin boots
-     *   Then the settings form has one field, the enabled checkbox, labelled for express checkout
-     *   And it is off, although the general enabled default is on
+     *   Then the settings form has the enabled checkbox, labelled for express checkout,
+     *        and one checkbox per page Express shows on, the cart and the checkout
+     *   And all are off, although the general enabled default is on
      *
      * @test
      * @group REQ-A2
@@ -94,11 +95,14 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
         $gateway = WC()->payment_gateways()->payment_gateways()[self::GATEWAY] ?? null;
         $this->assertInstanceOf(\WC_Payment_Gateway::class, $gateway, 'Google Pay must be a registered gateway.');
         $fields = $gateway->get_form_fields();
-        $this->assertSame(['enabled'], array_keys($fields));
-        $this->assertSame('checkbox', $fields['enabled']['type']);
-        $this->assertSame('Show Google Pay in express checkout on the checkout page', $fields['enabled']['label']);
-        $this->assertSame('no', $fields['enabled']['default']);
-        $this->assertSame('no', $gateway->get_option('enabled'));
+        $switches = ['enabled', 'mollie_googlepay_button_enabled_cart', 'mollie_googlepay_button_enabled_checkout'];
+        $this->assertSame($switches, array_keys($fields));
+        $this->assertSame('Enable Google Pay for Mollie express checkout', $fields['enabled']['label']);
+        foreach ($switches as $switch) {
+            $this->assertSame('checkbox', $fields[$switch]['type'], "{$switch} must be a checkbox.");
+            $this->assertSame('no', $fields[$switch]['default'], "{$switch} must default to off.");
+            $this->assertSame('no', $gateway->get_option($switch), "{$switch} must read off.");
+        }
     }
 
     /**

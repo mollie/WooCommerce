@@ -1195,4 +1195,62 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         $this->filters[] = ['pre_http_request', $filter, 2];
     }
 
+    /**
+     * @scenario A session opens for the page the shopper is on, the cart or the checkout, and for no other
+     *   Given a guest ready to pay, PayPal enabled and active at Mollie
+     *   And PayPal's express switches set for the page asked: only the cart switch on for the cart,
+     *        only the checkout switch on for the checkout, both on for any other surface
+     *   When the browser posts a valid nonce with that surface to the session route
+     *   Then a session opens for the cart and for the checkout, each through its own switch
+     *   And the product page, an unknown surface or no surface at all is refused
+     *   And nothing is sent to Mollie for a refused surface
+     *
+     * @test
+     * @dataProvider surfacesAsked
+     * @param string|null $surface null sends no surface
+     * @group REQ-A1
+     * @group REQ-NG2
+     */
+    public function it_opens_a_session_only_for_the_cart_or_the_checkout(?string $surface, string $cartSwitch, string $checkoutSwitch, bool $opens): void
+    {
+        // Given
+        $this->setGatewaySettingsForTest('paypal', [
+            'enabled' => 'yes',
+            'mollie_paypal_button_enabled_cart' => $cartSwitch,
+            'mollie_paypal_button_enabled_checkout' => $checkoutSwitch,
+        ]);
+        $this->readyGuestCheckout();
+        $params = ['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)];
+        if ($surface !== null) {
+            $params['surface'] = $surface;
+        }
+
+        // When
+        $response = $this->restRequest('POST', self::ROUTE, $params);
+
+        // Then
+        if ($opens) {
+            $this->assertNotSame('', $this->token($response));
+            $this->assertNotSame([], $this->fakeMollie()->requests('POST'));
+
+            return;
+        }
+        $this->assertGreaterThanOrEqual(400, $response->get_status(), "Surface '" . (string) $surface . "' must be refused.");
+        $this->assertLessThan(500, $response->get_status());
+        $this->assertSame([], $this->fakeMollie()->requests('POST'));
+    }
+
+    /**
+     * @return array<string, array{0: ?string, 1: string, 2: string, 3: bool}>
+     */
+    public function surfacesAsked(): array
+    {
+        return [
+            'the cart, through its cart switch' => ['cart', 'yes', 'no', true],
+            'the checkout, through its checkout switch' => ['checkout', 'no', 'yes', true],
+            'the product page' => ['product', 'yes', 'yes', false],
+            'an unknown surface' => ['minicart', 'yes', 'yes', false],
+            'no surface' => [null, 'yes', 'yes', false],
+        ];
+    }
 }

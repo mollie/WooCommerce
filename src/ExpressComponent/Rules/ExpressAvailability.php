@@ -30,7 +30,7 @@ final class ExpressAvailability
         if (!$shop->isHttps()) {
             return ExpressAvailabilityResult::unavailable('not_https');
         }
-        if (!in_array(true, WalletVisibility::buttons($settings, $shop), true)) {
+        if (!in_array(true, WalletVisibility::buttons($settings, $shop, $surface), true)) {
             return ExpressAvailabilityResult::unavailable('no_wallet_visible');
         }
         if ($cart === null) {

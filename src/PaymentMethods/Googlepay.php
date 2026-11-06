@@ -45,9 +45,27 @@ class Googlepay extends AbstractPaymentMethod implements PaymentMethodI
     {
         return [
             'enabled' => array_merge($generalFormFields['enabled'], [
-                'label' => __('Show Google Pay in express checkout on the checkout page', 'mollie-payments-for-woocommerce'),
+                'label' => __('Enable Google Pay for Mollie express checkout', 'mollie-payments-for-woocommerce'),
                 'default' => 'no',
             ]),
+            'mollie_googlepay_button_enabled_cart' => [
+                'type' => 'checkbox',
+                'title' => __('Display on cart page', 'mollie-payments-for-woocommerce'),
+                'description' => __(
+                    'On the block cart, Mollie express checkout shows the Google Pay button where it can run.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'default' => 'no',
+            ],
+            'mollie_googlepay_button_enabled_checkout' => [
+                'type' => 'checkbox',
+                'title' => __('Display on checkout page', 'mollie-payments-for-woocommerce'),
+                'description' => __(
+                    'On the block checkout, Mollie express checkout shows the Google Pay button where it can run.',
+                    'mollie-payments-for-woocommerce'
+                ),
+                'default' => 'no',
+            ],
         ];
     }
 

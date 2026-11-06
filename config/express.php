@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 /**
  * @var array{
- *     wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>,
+ *     wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, cartSetting: string, addressFrom: string}>,
  *     surfaces: array<int, string>,
  *     allowedModes: array<int, string>,
  *     sessionLifetimeSeconds: int,
@@ -18,8 +18,8 @@ declare(strict_types=1);
  * } $express
  */
 $express = [
-    // A wallet shows when its gateway exists, is enabled, is active at Mollie, has `checkoutSetting` on
-    // and carries no surcharge.
+    // A wallet shows on a surface when its gateway exists, is enabled, is active at Mollie, has that
+    // surface's switch on (`checkoutSetting`, `cartSetting`) and carries no surcharge.
     // addressFrom: 'wallet' takes the address from the wallet's own sheet and the store prices the options for it
     // (shipping callback); 'form' would wait for the checkout's shipping form.
     // mollieMethod is the id in Mollie's methods API; a payment shows as method paidAs, or as a creditcard with details.wallet paidWallet.
@@ -30,6 +30,7 @@ $express = [
             'paidAs' => 'applepay',
             'paidWallet' => 'applepay',
             'checkoutSetting' => 'mollie_apple_pay_button_enabled_express_checkout',
+            'cartSetting' => 'mollie_apple_pay_button_enabled_cart',
             'addressFrom' => 'wallet',
         ],
         'paypal' => [
@@ -37,17 +38,20 @@ $express = [
             'mollieMethod' => 'paypal',
             'paidAs' => 'paypal',
             'checkoutSetting' => 'mollie_paypal_button_enabled_checkout',
+            'cartSetting' => 'mollie_paypal_button_enabled_cart',
             'addressFrom' => 'wallet',
         ],
         'googlepay' => [
             'gatewayId' => 'mollie_wc_gateway_googlepay',
             'mollieMethod' => 'googlepay',
             'paidWallet' => 'googlepay',
-            'checkoutSetting' => 'enabled', // its only setting: the method exists only for express
+            'checkoutSetting' => 'mollie_googlepay_button_enabled_checkout',
+            'cartSetting' => 'mollie_googlepay_button_enabled_cart',
             'addressFrom' => 'wallet',
         ],
     ],
-    'surfaces' => ['checkout'],
+    // The block checkout and the block cart; never the product page or the classic cart.
+    'surfaces' => ['checkout', 'cart'],
     // Sessions may have no test mode.
     'allowedModes' => ['live'],
     // A floor, not Mollie's number: raise it only against a measured expiry.

@@ -221,9 +221,11 @@ export default function MollieExpressComponent( {
 				fail();
 				return;
 			}
+			// The store printed the page's surface; the cart and the checkout share this one registration.
 			const session = await postToStore(
 				latest.current.data,
-				SESSION_ROUTE
+				SESSION_ROUTE,
+				{ surface: latest.current.data.surface }
 			);
 			if ( cancelled ) {
 				return;

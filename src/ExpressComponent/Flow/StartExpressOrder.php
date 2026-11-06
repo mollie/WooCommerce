@@ -197,9 +197,12 @@ final class StartExpressOrder
     {
         $settings = $this->expressFacts->settings();
         $wallets = $settings->wallets();
-        foreach (WalletVisibility::buttons($settings, $this->expressFacts->shopFacts()) as $wallet => $visible) {
-            if ($visible) {
-                return [$wallet, $wallets[$wallet]['gatewayId']];
+        $shop = $this->expressFacts->shopFacts();
+        // The order does not know the page it came from: any wallet offered somewhere will do.
+        foreach ($settings->supportedSurfaces() as $surface) {
+            $visible = array_keys(array_filter(WalletVisibility::buttons($settings, $shop, $surface)));
+            if ($visible !== []) {
+                return [$visible[0], $wallets[$visible[0]]['gatewayId']];
             }
         }
         throw new \RuntimeException('No express wallet is visible.');

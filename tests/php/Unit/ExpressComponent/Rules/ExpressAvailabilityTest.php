@@ -64,14 +64,14 @@ class ExpressAvailabilityTest extends TestCase
         return [
             'everything holds on the checkout' => ['checkout', 'live', true, self::ALL_WALLETS, 'available', null],
             'one wallet is enough' => ['checkout', 'live', true, ['paypal'], 'available', null],
-            'the cart is not a v1 surface' => ['cart', 'live', true, self::ALL_WALLETS, 'unavailable', 'surface_not_supported'],
+            'the product page is not a surface' => ['product', 'live', true, self::ALL_WALLETS, 'unavailable', 'surface_not_supported'],
             'the product page is not a v1 surface' => ['product', 'live', true, self::ALL_WALLETS, 'unavailable', 'surface_not_supported'],
             'test mode is not allowed' => ['checkout', 'test', true, self::ALL_WALLETS, 'unavailable', 'mode_not_allowed'],
             'the site is not HTTPS' => ['checkout', 'live', false, self::ALL_WALLETS, 'unavailable', 'not_https'],
             // No wallet has its express button turned on (or exists, is enabled, is active): the merchant asked for nothing.
             'no wallet is visible' => ['checkout', 'live', true, [], 'unavailable', 'no_wallet_visible'],
             // The order is fixed: each row fails every later check too, and must report only the first.
-            'an unsupported surface is reported before the mode' => ['cart', 'test', false, [], 'unavailable', 'surface_not_supported'],
+            'an unsupported surface is reported before the mode' => ['product', 'test', false, [], 'unavailable', 'surface_not_supported'],
             'the mode is reported before HTTPS' => ['checkout', 'test', false, [], 'unavailable', 'mode_not_allowed'],
             'HTTPS is reported before the wallets' => ['checkout', 'live', false, [], 'unavailable', 'not_https'],
         ];
@@ -365,7 +365,7 @@ class ExpressAvailabilityTest extends TestCase
     }
 
     /**
-     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, cartSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
      */
     private static function config(): array
     {

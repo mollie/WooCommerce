@@ -13,6 +13,7 @@ final class ShopFacts
      * @param list<string> $activeMollieMethods Active on the merchant's Mollie profile.
      * @param list<string> $expressCheckoutGatewayIds Express button on the checkout turned on.
      * @param list<string> $surchargedGatewayIds The merchant set a surcharge on the payment method.
+     * @param list<string> $expressCartGatewayIds Express button on the cart turned on.
      */
     public function __construct(
         private string $mode,
@@ -21,7 +22,8 @@ final class ShopFacts
         private array $enabledGatewayIds,
         private array $activeMollieMethods,
         private array $expressCheckoutGatewayIds,
-        private array $surchargedGatewayIds = []
+        private array $surchargedGatewayIds = [],
+        private array $expressCartGatewayIds = []
     ) {
     }
 
@@ -65,6 +67,23 @@ final class ShopFacts
     public function expressCheckoutGatewayIds(): array
     {
         return $this->expressCheckoutGatewayIds;
+    }
+
+    /**
+     * Gateways whose express button is turned on for the surface; none for a surface without a switch.
+     *
+     * @return list<string>
+     */
+    public function expressGatewayIds(string $surface): array
+    {
+        if ($surface === 'checkout') {
+            return $this->expressCheckoutGatewayIds;
+        }
+        if ($surface === 'cart') {
+            return $this->expressCartGatewayIds;
+        }
+
+        return [];
     }
 
     /**

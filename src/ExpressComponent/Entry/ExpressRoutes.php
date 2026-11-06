@@ -37,7 +37,10 @@ class ExpressRoutes
 
     private const ERROR_TYPE_BASE = 'https://docs.mollie.com/reference/errors/';
 
-    private const SURFACE = 'checkout';
+    /**
+     * The pages a session can start from; the product page is not one.
+     */
+    private const SURFACES = ['checkout', 'cart'];
 
     public function __construct(
         private StartExpressSession $startSession,
@@ -61,6 +64,12 @@ class ExpressRoutes
                         'type' => 'string',
                         'required' => false,
                         'sanitize_callback' => 'sanitize_text_field',
+                    ],
+                    // Not required: WordPress checks arguments before the nonce, and a request without one must meet the nonce first.
+                    'surface' => [
+                        'type' => 'string',
+                        'required' => false,
+                        'enum' => self::SURFACES,
                     ],
                 ],
             ],
@@ -167,7 +176,14 @@ class ExpressRoutes
      */
     public function admitSession(WP_REST_Request $request)
     {
-        return $this->admit(Admission::EXPRESS_SESSION, $request, 'express.session.refused', ['surface' => self::SURFACE]);
+        $surface = $this->surface($request);
+
+        return $this->admit(
+            Admission::EXPRESS_SESSION,
+            $request,
+            'express.session.refused',
+            $surface === null ? [] : ['surface' => $surface]
+        );
     }
 
     /**
@@ -175,8 +191,12 @@ class ExpressRoutes
      */
     public function startSession(WP_REST_Request $request)
     {
+        $surface = $this->surface($request);
+        if ($surface === null) {
+            return new WP_Error('rest_missing_callback_param', self::messageFor('mollie_unavailable'), ['status' => 400, 'params' => ['surface']]);
+        }
         $result = FormPaymentMethod::setAsideDuring(
-            fn (): ExpressSessionResult => $this->startSession->start(self::SURFACE, $this->callerAddress())
+            fn (): ExpressSessionResult => $this->startSession->start($surface, $this->callerAddress())
         );
         if (!$result->isStarted()) {
             return new WP_Error($result->code(), self::messageFor($result->code()), ['status' => $result->httpStatus()]);
@@ -242,6 +262,16 @@ class ExpressRoutes
             self::messageFor('mollie_express_forbidden'),
             ['status' => $decision->httpStatus()]
         );
+    }
+
+    /**
+     * The page the shopper started from, as WordPress checked it against the route's list.
+     */
+    private function surface(WP_REST_Request $request): ?string
+    {
+        $surface = $request->get_param('surface');
+
+        return is_string($surface) && in_array($surface, self::SURFACES, true) ? $surface : null;
     }
 
     private function admission(string $entryPoint, WP_REST_Request $request): Admit|Refuse

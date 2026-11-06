@@ -73,7 +73,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
             'mollie_apple_pay_button_enabled_cart' => [
                 'title' => __('Enable Apple Pay Button on Cart page', 'mollie-payments-for-woocommerce'),
                 'description' => __(
-                    'Enable the Apple Pay direct buy button on the Cart page',
+                    'Enable the Apple Pay direct buy button on the Cart page. On the block cart, Mollie express checkout shows the button where it can run; otherwise the classic Apple Pay button is shown.',
                     'mollie-payments-for-woocommerce'
                 ),
                 'type' => 'checkbox',
@@ -100,7 +100,8 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
 
     public function isExpressCheckoutEnabled(): bool
     {
-        if (is_checkout() && mollieWooCommerceExpressOwnsSurface('checkout')) {
+        $surface = is_cart() ? 'cart' : (is_checkout() ? 'checkout' : null);
+        if ($surface !== null && mollieWooCommerceExpressOwnsSurface($surface)) {
             return false;
         }
 

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Activation\Migrations;
 
 /**
- * A settings row never saved is left alone; a page switch already stored is kept.
+ * Only an enabled Google Pay gets its page switches stored; a disabled or never saved one is left
+ * alone so the switches stay never saved. A page switch already stored is kept.
  */
 class GooglePayButtonSettingsMigrator implements MigratorInterface
 {
@@ -23,13 +24,13 @@ class GooglePayButtonSettingsMigrator implements MigratorInterface
     public function migrate(): void
     {
         $settings = get_option(self::OPTION, false);
-        if (!is_array($settings)) {
+        if (!is_array($settings) || ($settings['enabled'] ?? 'no') !== 'yes') {
             return;
         }
 
         $settings += [
-            self::CHECKOUT => ($settings['enabled'] ?? 'no') === 'yes' ? 'yes' : 'no',
-            self::CART => 'no',
+            self::CHECKOUT => 'yes',
+            self::CART => 'yes',
         ];
 
         update_option(self::OPTION, $settings);

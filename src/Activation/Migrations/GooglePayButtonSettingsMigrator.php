@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Activation\Migrations;
 
 /**
- * Only an enabled Google Pay gets its page switches stored; a disabled or never saved one is left
- * alone so the switches stay never saved. A page switch already stored is kept.
+ * Only an enabled Google Pay gets page switches; otherwise they stay never saved, so their default applies.
  */
 class GooglePayButtonSettingsMigrator implements MigratorInterface
 {

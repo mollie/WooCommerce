@@ -1,25 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules;
 
 final class AddressMapping
 {
-    private const FIELDS = [
-        'first_name' => 'givenName',
-        'last_name' => 'familyName',
-        'company' => 'organizationName',
-        'email' => 'email',
-        'phone' => 'phone',
-        'address_1' => 'streetAndNumber',
-        'address_2' => 'streetAdditional',
-        'postcode' => 'postalCode',
-        'city' => 'city',
-        'state' => 'region',
-        'country' => 'country',
-    ];
-
+    private const FIELDS = ['first_name' => 'givenName', 'last_name' => 'familyName', 'company' => 'organizationName', 'email' => 'email', 'phone' => 'phone', 'address_1' => 'streetAndNumber', 'address_2' => 'streetAdditional', 'postcode' => 'postalCode', 'city' => 'city', 'state' => 'region', 'country' => 'country'];
     /**
      * @param array<string, mixed> $mollieFields
      * @return array<string, string> Without the billing_/shipping_ prefix.
@@ -37,7 +23,6 @@ final class AddressMapping
                 $wooCommerce[$wooField] = $value;
             }
         }
-
         return $wooCommerce;
     }
 }

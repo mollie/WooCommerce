@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 /**
@@ -11,7 +10,6 @@ namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 final class FormPaymentMethod
 {
     private const SESSION_KEY = 'chosen_payment_method';
-
     /**
      * @template T
      * @param callable(): T $work
@@ -23,7 +21,6 @@ final class FormPaymentMethod
         if ($session === null) {
             return $work();
         }
-
         $chosen = $session->get(self::SESSION_KEY);
         $session->set(self::SESSION_KEY, '');
         try {

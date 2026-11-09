@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use Mollie\WooCommerce\Shared\Data;
 use WC_Order;
-
 /**
  * Class StoreCustomerMiddleware
  *
@@ -14,13 +12,12 @@ use WC_Order;
  *
  * @package Mollie\WooCommerce\Payment\Request\Middleware
  */
-class StoreCustomerMiddleware implements RequestMiddlewareInterface
+class StoreCustomerMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * @var Data The data helper instance.
      */
     private Data $dataHelper;
-
     /**
      * StoreCustomerMiddleware constructor.
      *
@@ -30,7 +27,6 @@ class StoreCustomerMiddleware implements RequestMiddlewareInterface
     {
         $this->dataHelper = $dataHelper;
     }
-
     /**
      * Invoke the middleware.
      *

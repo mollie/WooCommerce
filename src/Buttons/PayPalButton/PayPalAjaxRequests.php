@@ -1,23 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
-use Inpsyde\PaymentGateway\PaymentGateway;
+use Mollie\Inpsyde\PaymentGateway\PaymentGateway;
 use Mollie\WooCommerce\Gateway\Surcharge;
 use Mollie\WooCommerce\Notice\NoticeInterface;
 use Mollie\WooCommerce\Shared\GatewaySurchargeHandler;
-use Psr\Log\LoggerInterface as Logger;
+use Mollie\Psr\Log\LoggerInterface as Logger;
 use WC_Data_Exception;
-
 class PayPalAjaxRequests
 {
     /**
      * Product types of WooCommerce Subscriptions
      */
     private const SUBSCRIPTION_PRODUCT_TYPES = ['subscription', 'variable-subscription', 'subscription_variation'];
-
     /**
      * @var mixed
      */
@@ -30,7 +27,6 @@ class PayPalAjaxRequests
      * @var Logger
      */
     protected $logger;
-
     /**
      * PayPalAjaxRequests constructor.
      *
@@ -42,7 +38,6 @@ class PayPalAjaxRequests
         $this->notice = $notice;
         $this->logger = $logger;
     }
-
     /**
      * Adds all the Ajax actions to perform the whole workflow
      */
@@ -53,7 +48,6 @@ class PayPalAjaxRequests
             add_action('wp_ajax_nopriv_' . $action, $handler);
         }
     }
-
     /**
      * Get the array of AJAX action handlers
      *
@@ -61,13 +55,8 @@ class PayPalAjaxRequests
      */
     public function getHandlers(): array
     {
-        return [
-            PropertiesDictionary::CREATE_ORDER => [$this, 'createWcOrder'],
-            PropertiesDictionary::CREATE_ORDER_CART => [$this, 'createWcOrderFromCart'],
-            PropertiesDictionary::UPDATE_AMOUNT => [$this, 'updateAmount'],
-        ];
+        return [\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER => [$this, 'createWcOrder'], \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::CREATE_ORDER_CART => [$this, 'createWcOrderFromCart'], \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::UPDATE_AMOUNT => [$this, 'updateAmount']];
     }
-
     /**
      * Creates the order from the product detail page and process the payment
      * On error returns an array of errors to be handled by the script
@@ -84,49 +73,32 @@ class PayPalAjaxRequests
             return;
         }
         $payPalRequestDataObject->orderData('productDetail');
-
         $product = $this->purchasableProduct($payPalRequestDataObject);
         if (!$product) {
             // wp_send_json_error() ends the request
             wp_send_json_error($this->paymentNotCreatedMessage());
         }
-
         $order = wc_create_order();
-        $order->add_product(
-            $product,
-            (int) $payPalRequestDataObject->productQuantity()
-        );
-
+        $order->add_product($product, (int) $payPalRequestDataObject->productQuantity());
         $surcharge = new Surcharge();
         $surchargeHandler = new GatewaySurchargeHandler($surcharge);
         $order = $surchargeHandler->addSurchargeFeeProductPage($order, 'mollie_wc_gateway_paypal');
-
         $orderId = $order->get_id();
         $order->calculate_totals();
         $this->updateOrderPostMeta($orderId, $order);
-
         $result = $this->processOrderPayment($orderId);
-
-        if (
-            isset($result['result'])
-            && 'success' === $result['result']
-        ) {
+        if (isset($result['result']) && 'success' === $result['result']) {
             wp_send_json_success($result);
         } else {
             $message = sprintf(
-            /* translators: Placeholder 1: Payment method title */
-                __(
-                    'Could not create %s payment.',
-                    'mollie-payments-for-woocommerce'
-                ),
+                /* translators: Placeholder 1: Payment method title */
+                __('Could not create %s payment.', 'mollie-payments-for-woocommerce'),
                 'PayPal'
             );
-
             $this->logger->debug($message, ['error']);
             wp_send_json_error($message);
         }
     }
-
     /**
      * Creates the order from the cart page and process the payment
      * On error returns an array of errors to be handled by the script
@@ -144,13 +116,11 @@ class PayPalAjaxRequests
         if (!$this->cartHasOnlyVirtualProducts()) {
             wp_send_json_error($this->paymentNotCreatedMessage());
         }
-
         $lockKey = 'mollie_paypal_cart_order_lock';
         if (WC()->session->get($lockKey)) {
             wp_send_json_error('Duplicate request');
         }
-        WC()->session->set($lockKey, true);
-
+        WC()->session->set($lockKey, \true);
         $result = [];
         try {
             $payPalRequestDataObject = $this->payPalDataObjectHttp();
@@ -166,27 +136,18 @@ class PayPalAjaxRequests
         } finally {
             WC()->session->__unset($lockKey);
         }
-
-        if (
-            isset($result['result'])
-            && 'success' === $result['result']
-        ) {
+        if (isset($result['result']) && 'success' === $result['result']) {
             wp_send_json_success($result);
         } else {
             $message = sprintf(
-            /* translators: Placeholder 1: Payment method title */
-                __(
-                    'Could not create %s payment.',
-                    'mollie-payments-for-woocommerce'
-                ),
+                /* translators: Placeholder 1: Payment method title */
+                __('Could not create %s payment.', 'mollie-payments-for-woocommerce'),
                 'PayPal'
             );
-
             $this->notice->addNotice($message, 'error');
             wp_send_json_error($message);
         }
     }
-
     public function updateAmount()
     {
         if (!$this->isNonceValid()) {
@@ -198,68 +159,47 @@ class PayPalAjaxRequests
         if (!$product) {
             wp_send_json_error('product not purchasable');
         }
-        $order = new WCOrderCalculator();
+        $order = new \Mollie\WooCommerce\Buttons\PayPalButton\WCOrderCalculator();
         $order->set_currency(get_woocommerce_currency());
         $order->set_prices_include_tax('yes' === get_option('woocommerce_prices_include_tax'));
-        $order->add_product(
-            $product,
-            (int) $payPalRequestDataObject->productQuantity()
-        );
-
+        $order->add_product($product, (int) $payPalRequestDataObject->productQuantity());
         $updatedAmount = $order->calculate_totals();
-
         wp_send_json_success($updatedAmount);
     }
-
     /**
      * Applies the purchasability rules of WC_Cart::add_to_cart() to the requested
      * product (publication status, stock, quantity, rules of other plugins), and
      * accepts only the products the product page button is shown for
      * (PayPalExpressButton): products without shipping that are not subscriptions.
      */
-    protected function purchasableProduct(PayPalDataObjectHttp $payPalRequestDataObject): ?\WC_Product
+    protected function purchasableProduct(\Mollie\WooCommerce\Buttons\PayPalButton\PayPalDataObjectHttp $payPalRequestDataObject): ?\WC_Product
     {
         if ($payPalRequestDataObject->hasErrors()) {
             return null;
         }
-
         $productId = absint($payPalRequestDataObject->productId());
         $quantity = (int) $payPalRequestDataObject->productQuantity();
         if ($productId <= 0 || $quantity < 1) {
             return null;
         }
-
         $product = wc_get_product($productId);
         if (!$product instanceof \WC_Product || $product->is_type('variable')) {
             return null;
         }
-
         if (!$product->is_virtual() || $product->is_type(self::SUBSCRIPTION_PRODUCT_TYPES)) {
             return null;
         }
-
         // For variations this also covers the parent's publication status
         if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->has_enough_stock($quantity)) {
             return null;
         }
-
         if ($product->is_sold_individually() && $quantity > 1) {
             return null;
         }
-
         $isVariation = $product->is_type('variation');
-        $passedValidation = apply_filters(
-            'woocommerce_add_to_cart_validation',
-            true,
-            $isVariation ? $product->get_parent_id() : $productId,
-            $quantity,
-            $isVariation ? $productId : 0,
-            $isVariation && $product instanceof \WC_Product_Variation ? $product->get_variation_attributes() : []
-        );
-
+        $passedValidation = apply_filters('woocommerce_add_to_cart_validation', \true, $isVariation ? $product->get_parent_id() : $productId, $quantity, $isVariation ? $productId : 0, $isVariation && $product instanceof \WC_Product_Variation ? $product->get_variation_attributes() : []);
         return $passedValidation ? $product : null;
     }
-
     /**
      * The cart button is only shown for carts without products that need shipping
      * (PayPalExpressButton, and the block express button)
@@ -268,42 +208,34 @@ class PayPalAjaxRequests
     {
         $cart = WC()->cart;
         if (!$cart instanceof \WC_Cart || $cart->is_empty()) {
-            return false;
+            return \false;
         }
-
         foreach ($cart->get_cart_contents() as $item) {
             $product = $item['data'] ?? null;
             if (!$product instanceof \WC_Product || !$product->is_virtual()) {
-                return false;
+                return \false;
             }
         }
-
-        return true;
+        return \true;
     }
-
     protected function paymentNotCreatedMessage(): string
     {
         return sprintf(
-        /* translators: Placeholder 1: Payment method title */
-            __(
-                'Could not create %s payment.',
-                'mollie-payments-for-woocommerce'
-            ),
+            /* translators: Placeholder 1: Payment method title */
+            __('Could not create %s payment.', 'mollie-payments-for-woocommerce'),
             'PayPal'
         );
     }
-
     /**
      * Data Object to collect and validate all needed data collected
      * through HTTP
      *
      * @return PayPalDataObjectHttp
      */
-    protected function PayPalDataObjectHttp(): PayPalDataObjectHttp
+    protected function PayPalDataObjectHttp(): \Mollie\WooCommerce\Buttons\PayPalButton\PayPalDataObjectHttp
     {
-        return new PayPalDataObjectHttp($this->logger);
+        return new \Mollie\WooCommerce\Buttons\PayPalButton\PayPalDataObjectHttp($this->logger);
     }
-
     /**
      * Update order post meta
      *
@@ -317,13 +249,8 @@ class PayPalAjaxRequests
         $order->update_meta_data('_payment_method_title', 'PayPal');
         $order->update_meta_data('_mollie_payment_method_button', 'PayPalButton');
         //this saves the order
-        $order->update_status(
-            'pending',
-            'PayPal Button order',
-            true
-        );
+        $order->update_status('pending', 'PayPal Button order', \true);
     }
-
     /**
      * Process order payment with PayPal gateway
      *
@@ -336,7 +263,6 @@ class PayPalAjaxRequests
     {
         return $this->gateway->process_payment($orderId);
     }
-
     /**
      * Handles the order creation in cart page
      *
@@ -351,21 +277,17 @@ class PayPalAjaxRequests
         $order = wc_get_order($orderId);
         return [$cart, $order];
     }
-
     /**
      * Checks if the nonce in the data object is valid
      *
      */
     protected function isNonceValid(): bool
     {
-        $nonce = filter_input(INPUT_POST, 'nonce', FILTER_SANITIZE_SPECIAL_CHARS);
+        $nonce = filter_input(\INPUT_POST, 'nonce', \FILTER_SANITIZE_SPECIAL_CHARS);
         if (!$nonce) {
-            return false;
+            return \false;
         }
-        $verifyNonce = wp_verify_nonce(
-            $nonce,
-            'mollie_PayPal_button'
-        );
+        $verifyNonce = wp_verify_nonce($nonce, 'mollie_PayPal_button');
         return $verifyNonce === 1 || $verifyNonce === 2;
     }
 }

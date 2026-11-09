@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules;
 
 /**
@@ -11,20 +10,8 @@ namespace Mollie\WooCommerce\ExpressComponent\Rules;
  */
 final class SessionReuse
 {
-    public static function fits(
-        string $sessionFingerprint,
-        string $sessionAccount,
-        int $sessionExpiresAt,
-        string $fingerprint,
-        string $account,
-        int $now,
-        int $marginSeconds,
-        bool $orderSettled
-    ): bool {
-
-        return !$orderSettled
-            && $sessionFingerprint === $fingerprint
-            && $sessionAccount === $account
-            && $sessionExpiresAt - $now > $marginSeconds;
+    public static function fits(string $sessionFingerprint, string $sessionAccount, int $sessionExpiresAt, string $fingerprint, string $account, int $now, int $marginSeconds, bool $orderSettled): bool
+    {
+        return !$orderSettled && $sessionFingerprint === $fingerprint && $sessionAccount === $account && $sessionExpiresAt - $now > $marginSeconds;
     }
 }

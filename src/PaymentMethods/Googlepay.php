@@ -1,37 +1,20 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\PaymentMethods;
 
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressDefaults;
-use Psr\Container\ContainerInterface;
-
+use Mollie\Psr\Container\ContainerInterface;
 /**
  * Only for the Express Component: Mollie takes no standalone Google Pay payment, so it is never
  * offered at checkout.
  */
-class Googlepay extends AbstractPaymentMethod implements PaymentMethodI
+class Googlepay extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod implements \Mollie\WooCommerce\PaymentMethods\PaymentMethodI
 {
     public function getConfig(): array
     {
-        return [
-            'id' => 'googlepay',
-            'defaultTitle' => 'Google Pay',
-            'settingsDescription' => '',
-            'defaultDescription' => '',
-            'paymentFields' => false,
-            'instructions' => false,
-            'supports' => [
-                'products',
-                'refunds',
-            ],
-            'filtersOnBuild' => false,
-            'confirmationDelayed' => false,
-            'docs' => 'https://www.mollie.com/payments/googlepay',
-        ];
+        return ['id' => 'googlepay', 'defaultTitle' => 'Google Pay', 'settingsDescription' => '', 'defaultDescription' => '', 'paymentFields' => \false, 'instructions' => \false, 'supports' => ['products', 'refunds'], 'filtersOnBuild' => \false, 'confirmationDelayed' => \false, 'docs' => 'https://www.mollie.com/payments/googlepay'];
     }
-
     // Replace translatable strings after the 'after_setup_theme' hook
     public function initializeTranslations(): void
     {
@@ -39,44 +22,18 @@ class Googlepay extends AbstractPaymentMethod implements PaymentMethodI
             return;
         }
         $this->config['defaultTitle'] = __('Google Pay', 'mollie-payments-for-woocommerce');
-        $this->translationsInitialized = true;
+        $this->translationsInitialized = \true;
     }
-
     public function getFormFields($generalFormFields): array
     {
-        return [
-            'enabled' => array_merge($generalFormFields['enabled'], [
-                'label' => __('Enable Google Pay for Mollie express checkout', 'mollie-payments-for-woocommerce'),
-                'default' => 'no',
-            ]),
-            'mollie_googlepay_button_enabled_cart' => [
-                'type' => 'checkbox',
-                'title' => __('Display on cart page', 'mollie-payments-for-woocommerce'),
-                'description' => __(
-                    'On the block cart, Mollie express checkout shows the Google Pay button where it can run.',
-                    'mollie-payments-for-woocommerce'
-                ),
-                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_googlepay') ? 'yes' : 'no',
-            ],
-            'mollie_googlepay_button_enabled_checkout' => [
-                'type' => 'checkbox',
-                'title' => __('Display on checkout page', 'mollie-payments-for-woocommerce'),
-                'description' => __(
-                    'On the block checkout, Mollie express checkout shows the Google Pay button where it can run.',
-                    'mollie-payments-for-woocommerce'
-                ),
-                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_googlepay') ? 'yes' : 'no',
-            ],
-        ];
+        return ['enabled' => array_merge($generalFormFields['enabled'], ['label' => __('Enable Google Pay for Mollie express checkout', 'mollie-payments-for-woocommerce'), 'default' => 'no']), 'mollie_googlepay_button_enabled_cart' => ['type' => 'checkbox', 'title' => __('Display on cart page', 'mollie-payments-for-woocommerce'), 'description' => __('On the block cart, Mollie express checkout shows the Google Pay button where it can run.', 'mollie-payments-for-woocommerce'), 'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_googlepay') ? 'yes' : 'no'], 'mollie_googlepay_button_enabled_checkout' => ['type' => 'checkbox', 'title' => __('Display on checkout page', 'mollie-payments-for-woocommerce'), 'description' => __('On the block checkout, Mollie express checkout shows the Google Pay button where it can run.', 'mollie-payments-for-woocommerce'), 'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_googlepay') ? 'yes' : 'no']];
     }
-
     public function availabilityCallback(ContainerInterface $container): callable
     {
-        return static fn (): bool => false;
+        return static fn(): bool => \false;
     }
-
     public function registerBlocks(ContainerInterface $container): bool
     {
-        return false;
+        return \false;
     }
 }

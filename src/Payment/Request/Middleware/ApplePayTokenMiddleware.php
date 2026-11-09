@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
-
 /**
  * Middleware to handle Apple Pay token in the request.
  */
-class ApplePayTokenMiddleware implements RequestMiddlewareInterface
+class ApplePayTokenMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * Invoke the middleware.

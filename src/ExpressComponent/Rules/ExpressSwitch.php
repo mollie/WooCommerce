@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules;
 
 /**
@@ -17,7 +16,6 @@ final class ExpressSwitch
         if ($stored === null) {
             return $onByDefault;
         }
-
-        return in_array(strtolower($stored), ['yes', 'true', '1'], true);
+        return in_array(strtolower($stored), ['yes', 'true', '1'], \true);
     }
 }

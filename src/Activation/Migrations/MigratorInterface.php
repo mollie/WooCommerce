@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Activation\Migrations;
 
 interface MigratorInterface
@@ -12,6 +11,5 @@ interface MigratorInterface
      * stored plugin version < targetVersion() <= current plugin version.
      */
     public function targetVersion(): string;
-
     public function migrate(): void;
 }

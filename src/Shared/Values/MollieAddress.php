@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Shared\Values;
 
 final class MollieAddress
@@ -12,7 +11,6 @@ final class MollieAddress
     private function __construct(private array $fields)
     {
     }
-
     /**
      * @param array<string, mixed> $fields
      */
@@ -24,10 +22,8 @@ final class MollieAddress
                 $kept[(string) $name] = (string) $value;
             }
         }
-
         return new self($kept);
     }
-
     /**
      * @return array<string, string>
      */

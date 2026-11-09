@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
 /**
@@ -9,18 +8,13 @@ namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
  */
 final class ShippingTaxRate
 {
-    public function __construct(
-        private int $rateId,
-        private float $percent,
-        private bool $compound
-    ) {
+    public function __construct(private int $rateId, private float $percent, private bool $compound)
+    {
     }
-
     public function rateId(): int
     {
         return $this->rateId;
     }
-
     /**
      * @return float Percent, e.g. 21.0.
      */
@@ -28,7 +22,6 @@ final class ShippingTaxRate
     {
         return $this->percent;
     }
-
     public function compound(): bool
     {
         return $this->compound;

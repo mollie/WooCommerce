@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules;
 
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
-
 /**
  * HTTPS is checked by ExpressAvailability, not per wallet.
  */
@@ -20,14 +18,8 @@ final class WalletVisibility
         $buttons = [];
         foreach ($settings->wallets() as $wallet => $row) {
             $gatewayId = $row['gatewayId'];
-            $buttons[$wallet] = in_array($gatewayId, $shop->registeredGatewayIds(), true)
-                && in_array($gatewayId, $shop->enabledGatewayIds(), true)
-                && in_array($row['mollieMethod'], $shop->activeMollieMethods(), true)
-                && in_array($gatewayId, $shop->expressCheckoutGatewayIds(), true)
-                // One session has one amount for every wallet, so it cannot carry one wallet's fee.
-                && !in_array($gatewayId, $shop->surchargedGatewayIds(), true);
+            $buttons[$wallet] = in_array($gatewayId, $shop->registeredGatewayIds(), \true) && in_array($gatewayId, $shop->enabledGatewayIds(), \true) && in_array($row['mollieMethod'], $shop->activeMollieMethods(), \true) && in_array($gatewayId, $shop->expressCheckoutGatewayIds(), \true) && !in_array($gatewayId, $shop->surchargedGatewayIds(), \true);
         }
-
         return $buttons;
     }
 }

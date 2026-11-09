@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility;
@@ -12,7 +11,6 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartLine;
 use Mollie\WooCommerce\Shared\Values\Money;
 use WC_Cart;
 use WC_Customer;
-
 /**
  * Reads the server-side cart. A REST request loads neither cart nor totals, so both are loaded here.
  */
@@ -26,44 +24,20 @@ class CartFactsBuilder
             return null;
         }
         $cart->calculate_totals();
-
         $currency = get_woocommerce_currency();
         $needsShipping = $cart->needs_shipping();
         $chosenRates = $needsShipping ? $this->chosenRates() : null;
         [$taxEnabled, $taxBasedOn, $countries, $ratesVary] = $this->taxFacts($needsShipping);
-
-        return new CartFacts(
-            lines: $this->lines($cart, $customer, $currency),
-            needsShipping: $needsShipping,
-            shippingDestinationComplete: $customer->has_full_shipping_address(),
-            shippingRateChosen: $chosenRates !== null,
-            total: $this->money($this->totalWithoutShipping($cart), $currency),
-            fees: $this->fees($cart, $customer, $currency),
-            coupons: $this->coupons($cart, $currency),
-            cartHash: $this->cartHash($cart),
-            destination: implode('|', [
-                $customer->get_shipping_country(),
-                $customer->get_shipping_state(),
-                $customer->get_shipping_postcode(),
-                $customer->get_shipping_city(),
-            ]),
-            taxEnabled: $taxEnabled,
-            taxBasedOn: $taxBasedOn,
-            taxCountries: $countries,
-            ratesVaryWithinCountry: $ratesVary
-        );
+        return new CartFacts(lines: $this->lines($cart, $customer, $currency), needsShipping: $needsShipping, shippingDestinationComplete: $customer->has_full_shipping_address(), shippingRateChosen: $chosenRates !== null, total: $this->money($this->totalWithoutShipping($cart), $currency), fees: $this->fees($cart, $customer, $currency), coupons: $this->coupons($cart, $currency), cartHash: $this->cartHash($cart), destination: implode('|', [$customer->get_shipping_country(), $customer->get_shipping_state(), $customer->get_shipping_postcode(), $customer->get_shipping_city()]), taxEnabled: $taxEnabled, taxBasedOn: $taxBasedOn, taxCountries: $countries, ratesVaryWithinCountry: $ratesVary);
     }
-
     /**
      * The verdict for the merchant notice, read from the shop's settings alone: no cart is needed.
      */
     public function taxVerdict(): string
     {
-        [$taxEnabled, $taxBasedOn, $countries, $ratesVary] = $this->taxFacts(true);
-
+        [$taxEnabled, $taxBasedOn, $countries, $ratesVary] = $this->taxFacts(\true);
         return TaxCompatibility::decide($taxEnabled, $taxBasedOn, $countries, $ratesVary);
     }
-
     /**
      * @return array{0: bool, 1: string, 2: list<string>, 3: bool}
      */
@@ -72,20 +46,12 @@ class CartFactsBuilder
         $taxEnabled = wc_tax_enabled();
         $taxBasedOn = $this->taxBasedOn();
         $countries = $this->taxCountries($cartShips);
-
-        return [
-            $taxEnabled,
-            $taxBasedOn,
-            $countries,
-            $this->ratesVaryWithinCountry($taxEnabled, $taxBasedOn, $countries),
-        ];
+        return [$taxEnabled, $taxBasedOn, $countries, $this->ratesVaryWithinCountry($taxEnabled, $taxBasedOn, $countries)];
     }
-
     private function taxBasedOn(): string
     {
         return (string) get_option('woocommerce_tax_based_on', 'shipping');
     }
-
     /**
      * The countries whose address the taxes can follow: where the shop ships to when the taxes follow the
      * shipping address of a cart that ships, where it sells to otherwise. Empty when WooCommerce does not
@@ -98,15 +64,9 @@ class CartFactsBuilder
         if (!function_exists('WC') || !WC()->countries instanceof \WC_Countries) {
             return [];
         }
-        $followsShipping = $cartShips
-            && $this->taxBasedOn() === 'shipping'
-            && get_option('woocommerce_ship_to_countries') !== 'disabled';
-
-        return array_keys(
-            $followsShipping ? WC()->countries->get_shipping_countries() : WC()->countries->get_allowed_countries()
-        );
+        $followsShipping = $cartShips && $this->taxBasedOn() === 'shipping' && get_option('woocommerce_ship_to_countries') !== 'disabled';
+        return array_keys($followsShipping ? WC()->countries->get_shipping_countries() : WC()->countries->get_allowed_countries());
     }
-
     /**
      * A rate of the only country the taxes can follow (or of any country) that names a state, a postcode or a city.
      * The rate table is read only when the taxes follow the customer's address: otherwise the answer cannot matter.
@@ -116,22 +76,20 @@ class CartFactsBuilder
     private function ratesVaryWithinCountry(bool $taxEnabled, string $taxBasedOn, array $countries): bool
     {
         if (!TaxCompatibility::followsCustomerAddress($taxEnabled, $taxBasedOn) || count($countries) !== 1) {
-            return false;
+            return \false;
         }
         foreach (array_merge([''], \WC_Tax::get_tax_class_slugs()) as $taxClass) {
             foreach (\WC_Tax::get_rates_for_tax_class($taxClass) as $rate) {
-                if (!in_array((string) $rate->tax_rate_country, ['', $countries[0]], true)) {
+                if (!in_array((string) $rate->tax_rate_country, ['', $countries[0]], \true)) {
                     continue;
                 }
                 if ((string) $rate->tax_rate_state !== '' || (int) $rate->postcode_count > 0 || (int) $rate->city_count > 0) {
-                    return true;
+                    return \true;
                 }
             }
         }
-
-        return false;
+        return \false;
     }
-
     /**
      * @return list<CartLine>
      */
@@ -143,19 +101,10 @@ class CartFactsBuilder
             if (!$product instanceof \WC_Product) {
                 continue;
             }
-            $lines[] = new CartLine(
-                productId: (int) $product->get_id(),
-                quantity: (int) $item['quantity'],
-                isSubscription: $this->isSubscription($product),
-                name: $product->get_name(),
-                subtotal: $this->money((float) $item['line_subtotal'] + (float) $item['line_subtotal_tax'], $currency),
-                vatRate: $product->is_taxable() ? $this->vatRate($product->get_tax_class(), $customer) : '0.00'
-            );
+            $lines[] = new CartLine(productId: (int) $product->get_id(), quantity: (int) $item['quantity'], isSubscription: $this->isSubscription($product), name: $product->get_name(), subtotal: $this->money((float) $item['line_subtotal'] + (float) $item['line_subtotal_tax'], $currency), vatRate: $product->is_taxable() ? $this->vatRate($product->get_tax_class(), $customer) : '0.00');
         }
-
         return $lines;
     }
-
     /**
      * @return list<CartFee>
      */
@@ -163,18 +112,10 @@ class CartFactsBuilder
     {
         $fees = [];
         foreach ($cart->get_fees() as $fee) {
-            $fees[] = new CartFee(
-                (string) $fee->name,
-                $this->money((float) $fee->total + (float) ($fee->tax ?? 0), $currency),
-                !empty($fee->taxable) && (float) ($fee->tax ?? 0) !== 0.0
-                    ? $this->vatRate((string) ($fee->tax_class ?? ''), $customer)
-                    : '0.00'
-            );
+            $fees[] = new CartFee((string) $fee->name, $this->money((float) $fee->total + (float) ($fee->tax ?? 0), $currency), !empty($fee->taxable) && (float) ($fee->tax ?? 0) !== 0.0 ? $this->vatRate((string) ($fee->tax_class ?? ''), $customer) : '0.00');
         }
-
         return $fees;
     }
-
     /**
      * @return list<CartCoupon>
      */
@@ -183,15 +124,10 @@ class CartFactsBuilder
         $taxes = $cart->get_coupon_discount_tax_totals();
         $coupons = [];
         foreach ($cart->get_coupon_discount_totals() as $code => $amount) {
-            $coupons[] = new CartCoupon(
-                (string) $code,
-                $this->money((float) $amount + (float) ($taxes[$code] ?? 0), $currency)
-            );
+            $coupons[] = new CartCoupon((string) $code, $this->money((float) $amount + (float) ($taxes[$code] ?? 0), $currency));
         }
-
         return $coupons;
     }
-
     /**
      * WooCommerce's own hash includes the cart total, shipping too: a change of the shipping rate would change it.
      * The coupons are part of it: a free-shipping coupon moves the options but not the total, and the saved cart
@@ -204,13 +140,10 @@ class CartFactsBuilder
             unset($item['data']);
             $items[(string) $key] = $item;
         }
-
         $coupons = array_map('strval', $cart->get_applied_coupons());
         sort($coupons);
-
         return hash('sha256', (string) wp_json_encode([$items, $coupons]) . $this->totalWithoutShipping($cart));
     }
-
     /**
      * The session is priced without shipping: Mollie adds the option the shopper picks in the wallet.
      */
@@ -218,7 +151,6 @@ class CartFactsBuilder
     {
         return (float) $cart->get_total('edit') - (float) $cart->get_shipping_total() - (float) $cart->get_shipping_tax();
     }
-
     /**
      * Null when any package has no chosen rate.
      *
@@ -233,7 +165,6 @@ class CartFactsBuilder
         if ($packages === []) {
             return null;
         }
-
         $rates = [];
         foreach ($packages as $index => $package) {
             $rateId = (string) ($chosen[$index] ?? '');
@@ -243,19 +174,15 @@ class CartFactsBuilder
             }
             $rates[$rateId] = (string) $rate->get_label();
         }
-
         return $rates;
     }
-
     private function vatRate(string $taxClass, WC_Customer $customer): string
     {
         if (!wc_tax_enabled()) {
             return '0.00';
         }
-
         return $this->sumOfRates(\WC_Tax::get_rates($taxClass, $customer));
     }
-
     /**
      * @param array<int|string, array<string, mixed>> $rates
      */
@@ -265,23 +192,19 @@ class CartFactsBuilder
         foreach ($rates as $rate) {
             $sum += (float) ($rate['rate'] ?? 0);
         }
-
         return number_format($sum, 2, '.', '');
     }
-
     private function isSubscription(\WC_Product $product): bool
     {
         return class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($product);
     }
-
     /**
      * @param float|int|string $amount
      */
     private function money($amount, string $currency): Money
     {
-        return WooCommerceAmount::toMoney($amount, $currency);
+        return \Mollie\WooCommerce\ExpressComponent\WooCommerce\WooCommerceAmount::toMoney($amount, $currency);
     }
-
     private function cart(): ?WC_Cart
     {
         if (!function_exists('WC')) {
@@ -293,10 +216,8 @@ class CartFactsBuilder
             wc_load_cart();
             $cart = WC()->cart;
         }
-
         return $cart instanceof WC_Cart ? $cart : null;
     }
-
     private function customer(): ?WC_Customer
     {
         return function_exists('WC') && WC()->customer instanceof WC_Customer ? WC()->customer : null;

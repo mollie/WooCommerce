@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Entry;
 
 use Automattic\WooCommerce\StoreApi\Utilities\RateLimits;
@@ -21,88 +20,30 @@ use WC_Geolocation;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
-
 class ExpressRoutes
 {
     /**
      * The 'woocommerce' prefix binds a guest's nonce to their WooCommerce session.
      */
     public const NONCE_ACTION = 'woocommerce-mollie-express-session';
-
     public const SESSION_ROUTE = 'express/session';
-
     public const ORDER_ROUTE = 'express/order';
-
     public const SHIPPING_ROUTE = 'express/shipping';
-
     private const ERROR_TYPE_BASE = 'https://docs.mollie.com/reference/errors/';
-
     private const SURFACE = 'checkout';
-
-    public function __construct(
-        private StartExpressSession $startSession,
-        private StartExpressOrder $startOrder,
-        private PriceShippingOptions $priceShipping,
-        private ExpressShippingSnapshot $snapshot,
-        private EventLog $log
-    ) {
+    public function __construct(private StartExpressSession $startSession, private StartExpressOrder $startOrder, private PriceShippingOptions $priceShipping, private ExpressShippingSnapshot $snapshot, private EventLog $log)
+    {
     }
-
     public function register(): void
     {
         $this->registerShippingRoute();
-        register_rest_route(RestApi::ROUTE_NAMESPACE, self::SESSION_ROUTE, [
-            [
-                'methods' => 'POST',
-                'callback' => [$this, 'startSession'],
-                'permission_callback' => [$this, 'admitSession'],
-                'args' => [
-                    'nonce' => [
-                        'type' => 'string',
-                        'required' => false,
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                ],
-            ],
-        ]);
-
-        register_rest_route(RestApi::ROUTE_NAMESPACE, self::ORDER_ROUTE, [
-            [
-                'methods' => 'POST',
-                'callback' => [$this, 'startOrder'],
-                'permission_callback' => [$this, 'admitOrder'],
-                'args' => [
-                    'nonce' => [
-                        'type' => 'string',
-                        'required' => false,
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                    'token' => [
-                        'type' => 'string',
-                        'required' => false,
-                        'sanitize_callback' => 'sanitize_text_field',
-                    ],
-                ],
-            ],
-        ]);
+        register_rest_route(RestApi::ROUTE_NAMESPACE, self::SESSION_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'startSession'], 'permission_callback' => [$this, 'admitSession'], 'args' => ['nonce' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field']]]]);
+        register_rest_route(RestApi::ROUTE_NAMESPACE, self::ORDER_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'startOrder'], 'permission_callback' => [$this, 'admitOrder'], 'args' => ['nonce' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field'], 'token' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field']]]]);
     }
-
     private function registerShippingRoute(): void
     {
-        register_rest_route(RestApi::ROUTE_NAMESPACE, self::SHIPPING_ROUTE, [
-            [
-                'methods' => 'POST',
-                'callback' => [$this, 'priceShippingOptions'],
-                'permission_callback' => [$this, 'admitShipping'],
-                'args' => [
-                    'secret' => ['type' => 'string', 'required' => false, 'sanitize_callback' => 'sanitize_text_field'],
-                    'event' => ['type' => 'string', 'required' => false, 'sanitize_callback' => 'sanitize_text_field'],
-                    'sessionId' => ['type' => 'string', 'required' => false, 'sanitize_callback' => 'sanitize_text_field'],
-                ],
-            ],
-        ]);
+        register_rest_route(RestApi::ROUTE_NAMESPACE, self::SHIPPING_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'priceShippingOptions'], 'permission_callback' => [$this, 'admitShipping'], 'args' => ['secret' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field'], 'event' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field'], 'sessionId' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field']]]]);
     }
-
     /**
      * Mollie's call: no cookie, no nonce. The secret in the URL, the session id and the event admit it.
      *
@@ -111,36 +52,24 @@ class ExpressRoutes
     public function admitShipping(WP_REST_Request $request)
     {
         $secret = (string) $request->get_param('secret');
-        $decision = Admission::admitShippingCallback(
-            $secret !== '',
-            $this->snapshot->exists($secret),
-            $this->snapshot->isBoundTo($secret, (string) $request->get_param('sessionId')),
-            (string) $request->get_param('event')
-        );
-
+        $decision = Admission::admitShippingCallback($secret !== '', $this->snapshot->exists($secret), $this->snapshot->isBoundTo($secret, (string) $request->get_param('sessionId')), (string) $request->get_param('event'));
         // Neither the secret nor the address is logged.
-        return $decision instanceof Refuse ? $this->forbidden($decision, 'express.shipping.refused') : true;
+        return $decision instanceof Refuse ? $this->forbidden($decision, 'express.shipping.refused') : \true;
     }
-
     public function priceShippingOptions(WP_REST_Request $request): WP_REST_Response
     {
         $this->loadWooCommerceSession();
         $verdict = $this->priceShipping->price((string) $request->get_param('secret'), $this->walletAddress($request));
         $refusal = $verdict->refusalType();
-
-        $response = $refusal === null
-            ? new WP_REST_Response(['options' => $verdict->options()], 200)
-            : new WP_REST_Response([
-                'type' => self::ERROR_TYPE_BASE . $refusal,
-                'status' => 422,
-                // For Mollie's log only: nothing of the address.
-                'detail' => 'The store cannot ship to this address.',
-            ], 422);
+        $response = $refusal === null ? new WP_REST_Response(['options' => $verdict->options()], 200) : new WP_REST_Response([
+            'type' => self::ERROR_TYPE_BASE . $refusal,
+            'status' => 422,
+            // For Mollie's log only: nothing of the address.
+            'detail' => 'The store cannot ship to this address.',
+        ], 422);
         $response->header('Cache-Control', 'no-store, private');
-
         return $response;
     }
-
     /**
      * Mollie sends a partial address. Input is parsed here, at the edge: a country that is not two letters
      * is no address the store can price.
@@ -151,17 +80,10 @@ class ExpressRoutes
     {
         $given = $request->get_param('shippingAddress');
         $given = is_array($given) ? $given : [];
-        $text = static fn (string $field): string => sanitize_text_field((string) ($given[$field] ?? ''));
+        $text = static fn(string $field): string => sanitize_text_field((string) ($given[$field] ?? ''));
         $country = strtoupper($text('country'));
-
-        return [
-            'country' => preg_match('/^[A-Z]{2}$/', $country) === 1 ? $country : '',
-            'state' => $text('region'),
-            'postcode' => $text('postalCode'),
-            'city' => $text('city'),
-        ];
+        return ['country' => preg_match('/^[A-Z]{2}$/', $country) === 1 ? $country : '', 'state' => $text('region'), 'postcode' => $text('postalCode'), 'city' => $text('city')];
     }
-
     /**
      * @return true|WP_Error
      */
@@ -169,28 +91,19 @@ class ExpressRoutes
     {
         return $this->admit(Admission::EXPRESS_SESSION, $request, 'express.session.refused', ['surface' => self::SURFACE]);
     }
-
     /**
      * @return WP_REST_Response|WP_Error
      */
     public function startSession(WP_REST_Request $request)
     {
-        $result = FormPaymentMethod::setAsideDuring(
-            fn (): ExpressSessionResult => $this->startSession->start(self::SURFACE, $this->callerAddress())
-        );
+        $result = FormPaymentMethod::setAsideDuring(fn(): ExpressSessionResult => $this->startSession->start(self::SURFACE, $this->callerAddress()));
         if (!$result->isStarted()) {
             return new WP_Error($result->code(), self::messageFor($result->code()), ['status' => $result->httpStatus()]);
         }
-
-        $response = new WP_REST_Response([
-            'clientAccessToken' => $result->clientAccessToken(),
-            'expiresAt' => $result->expiresAt(),
-        ], 200);
+        $response = new WP_REST_Response(['clientAccessToken' => $result->clientAccessToken(), 'expiresAt' => $result->expiresAt()], 200);
         $response->header('Cache-Control', 'no-store, private');
-
         return $response;
     }
-
     /**
      * @return true|WP_Error
      */
@@ -198,26 +111,18 @@ class ExpressRoutes
     {
         return $this->admit(Admission::EXPRESS_ORDER, $request, 'express.order.refused');
     }
-
     public function startOrder(WP_REST_Request $request): WP_REST_Response
     {
-        $result = FormPaymentMethod::setAsideDuring(fn (): ExpressOrderResult => $this->startOrder->start((string) $request->get_param('token')));
+        $result = FormPaymentMethod::setAsideDuring(fn(): ExpressOrderResult => $this->startOrder->start((string) $request->get_param('token')));
         if ($result->isOk()) {
-            $data = ['ok' => true];
+            $data = ['ok' => \true];
         } else {
-            $data = [
-                'ok' => false,
-                'code' => $result->code(),
-                'message' => $result->reason() ?? self::messageFor($result->code()),
-            ];
+            $data = ['ok' => \false, 'code' => $result->code(), 'message' => $result->reason() ?? self::messageFor($result->code())];
         }
-
         $response = new WP_REST_Response($data, $result->httpStatus());
         $response->header('Cache-Control', 'no-store, private');
-
         return $response;
     }
-
     /**
      * @param array<string, string> $fields
      * @return true|WP_Error
@@ -225,10 +130,8 @@ class ExpressRoutes
     private function admit(string $entryPoint, WP_REST_Request $request, string $event, array $fields = [])
     {
         $decision = $this->admission($entryPoint, $request);
-
-        return $decision instanceof Refuse ? $this->forbidden($decision, $event, $fields) : true;
+        return $decision instanceof Refuse ? $this->forbidden($decision, $event, $fields) : \true;
     }
-
     /**
      * @param array<string, string> $fields
      */
@@ -236,66 +139,28 @@ class ExpressRoutes
     {
         // Anyone can cause this: info, not a warning.
         $this->log->info($event, $fields + ['reason' => $decision->code()]);
-
-        return new WP_Error(
-            'mollie_express_forbidden',
-            self::messageFor('mollie_express_forbidden'),
-            ['status' => $decision->httpStatus()]
-        );
+        return new WP_Error('mollie_express_forbidden', self::messageFor('mollie_express_forbidden'), ['status' => $decision->httpStatus()]);
     }
-
     private function admission(string $entryPoint, WP_REST_Request $request): Admit|Refuse
     {
         // REST does not load the WooCommerce session that guest nonces are bound to.
         $this->loadWooCommerceSession();
-
         $nonce = (string) $request->get_param('nonce');
-
-        return Admission::admit(
-            $entryPoint,
-            $nonce !== '',
-            $nonce !== '' && wp_verify_nonce($nonce, self::NONCE_ACTION) !== false
-        );
+        return Admission::admit($entryPoint, $nonce !== '', $nonce !== '' && wp_verify_nonce($nonce, self::NONCE_ACTION) !== \false);
     }
-
     public static function messageFor(string $code): string
     {
         return match ($code) {
-            'mollie_express_forbidden' => __(
-                'Express checkout could not be started. Please reload the page and try again.',
-                'mollie-payments-for-woocommerce'
-            ),
-            'session_missing', 'session_expired' => __(
-                'Express checkout has expired. Please try again.',
-                'mollie-payments-for-woocommerce'
-            ),
-            'cart_changed', 'session_replaced' => __(
-                'Your order changed after express checkout was started. Please try again.',
-                'mollie-payments-for-woocommerce'
-            ),
-            'try_again' => __(
-                'Express checkout is busy with this order. Please try again in a moment.',
-                'mollie-payments-for-woocommerce'
-            ),
-            'budget_exhausted' => __(
-                'Express checkout was started too often. Please wait a few minutes, or use the regular checkout.',
-                'mollie-payments-for-woocommerce'
-            ),
-            'order_not_payable' => __(
-                'This express checkout was already completed. Please check your email for the order confirmation.',
-                'mollie-payments-for-woocommerce'
-            ),
-            'session_refused', 'mollie_unavailable' => __(
-                'Express checkout is not available right now. Please use the regular checkout.',
-                'mollie-payments-for-woocommerce'
-            ),
-            default => __(
-                'Express checkout is not available for this order. Please use the regular checkout.',
-                'mollie-payments-for-woocommerce'
-            ),
+            'mollie_express_forbidden' => __('Express checkout could not be started. Please reload the page and try again.', 'mollie-payments-for-woocommerce'),
+            'session_missing', 'session_expired' => __('Express checkout has expired. Please try again.', 'mollie-payments-for-woocommerce'),
+            'cart_changed', 'session_replaced' => __('Your order changed after express checkout was started. Please try again.', 'mollie-payments-for-woocommerce'),
+            'try_again' => __('Express checkout is busy with this order. Please try again in a moment.', 'mollie-payments-for-woocommerce'),
+            'budget_exhausted' => __('Express checkout was started too often. Please wait a few minutes, or use the regular checkout.', 'mollie-payments-for-woocommerce'),
+            'order_not_payable' => __('This express checkout was already completed. Please check your email for the order confirmation.', 'mollie-payments-for-woocommerce'),
+            'session_refused', 'mollie_unavailable' => __('Express checkout is not available right now. Please use the regular checkout.', 'mollie-payments-for-woocommerce'),
+            default => __('Express checkout is not available for this order. Please use the regular checkout.', 'mollie-payments-for-woocommerce'),
         };
     }
-
     /**
      * The forwarded address counts only when the shop enabled the Store API's proxy support.
      */
@@ -305,10 +170,8 @@ class ExpressRoutes
             return WC_Geolocation::get_ip_address();
         }
         $address = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'] ?? ''));
-
-        return filter_var($address, FILTER_VALIDATE_IP) !== false ? $address : '';
+        return filter_var($address, \FILTER_VALIDATE_IP) !== \false ? $address : '';
     }
-
     private function loadWooCommerceSession(): void
     {
         if (!function_exists('WC') || !did_action('woocommerce_init')) {

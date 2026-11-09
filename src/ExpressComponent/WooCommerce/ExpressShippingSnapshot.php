@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use Mollie\WooCommerce\Shared\Values\Money;
-
 /**
  * Mollie's shipping callback carries no cookie, so the store has no cart for it. The cart is saved when the
  * session is created, in a transient named after the hash of the session's secret, and read back when Mollie asks.
@@ -14,7 +12,6 @@ use Mollie\WooCommerce\Shared\Values\Money;
 class ExpressShippingSnapshot
 {
     private const PREFIX = 'mollie_express_shipping_';
-
     /**
      * Derived, not random: a retry of the session call sends the same body under the same idempotency key.
      * The expressRef is itself unguessable and per session.
@@ -23,7 +20,6 @@ class ExpressShippingSnapshot
     {
         return substr(hash_hmac('sha256', 'shipping|' . $expressRef, wp_salt('auth')), 0, 32);
     }
-
     /**
      * A cart that ships nothing has no secret and nothing to save, bind or forget.
      *
@@ -32,11 +28,11 @@ class ExpressShippingSnapshot
     public function save(string $secret, int $lifetimeSeconds): bool
     {
         if ($secret === '') {
-            return true;
+            return \true;
         }
         $cart = function_exists('WC') ? WC()->cart : null;
         if (!$cart instanceof \WC_Cart) {
-            return false;
+            return \false;
         }
         $items = [];
         foreach ($cart->get_cart() as $key => $item) {
@@ -44,15 +40,8 @@ class ExpressShippingSnapshot
             unset($item['data']);
             $items[(string) $key] = $item;
         }
-
-        return $this->store($secret, [
-            'hash' => hash('sha256', $secret),
-            'items' => $items,
-            'coupons' => array_values(array_map('strval', $cart->get_applied_coupons())),
-            'sessionId' => '',
-        ], $lifetimeSeconds);
+        return $this->store($secret, ['hash' => hash('sha256', $secret), 'items' => $items, 'coupons' => array_values(array_map('strval', $cart->get_applied_coupons())), 'sessionId' => ''], $lifetimeSeconds);
     }
-
     /**
      * Binds the saved cart to the session Mollie created, for as long as that session lives.
      */
@@ -65,7 +54,6 @@ class ExpressShippingSnapshot
         $saved['sessionId'] = $sessionId;
         $this->store($secret, $saved, max(60, $expiresAt - time() + 60));
     }
-
     public function forget(string $secret): void
     {
         if ($secret === '') {
@@ -73,21 +61,17 @@ class ExpressShippingSnapshot
         }
         delete_transient($this->name($secret));
     }
-
     /** False for a secret that was never saved, has expired, or is wrong. */
     public function exists(string $secret): bool
     {
         return $this->read($secret) !== null;
     }
-
     /** Whether the cart saved under this secret was saved for this Mollie session. */
     public function isBoundTo(string $secret, string $sessionId): bool
     {
         $saved = $this->read($secret);
-
         return $saved !== null && $saved['sessionId'] !== '' && $sessionId !== '' && hash_equals($saved['sessionId'], $sessionId);
     }
-
     /**
      * The rates WooCommerce charges the saved cart for the address, VAT included, in WooCommerce's order.
      * The cart is loaded into this request's own cart, so free shipping, coupons and the plugins that hook the
@@ -102,35 +86,31 @@ class ExpressShippingSnapshot
         $cart = function_exists('WC') ? WC()->cart : null;
         $customer = function_exists('WC') ? WC()->customer : null;
         if ($saved === null || !$cart instanceof \WC_Cart || !$customer instanceof \WC_Customer) {
-            return ['rates' => [], 'failed' => true];
+            return ['rates' => [], 'failed' => \true];
         }
         $contents = $this->contents($saved['items']);
         if ($contents === null) {
-            return ['rates' => [], 'failed' => true];
+            return ['rates' => [], 'failed' => \true];
         }
-
         // WooCommerce saves a session only for a request that carries its cookie; Mollie's call carries none.
         try {
-            $cart->empty_cart(false);
+            $cart->empty_cart(\false);
             $cart->set_cart_contents($contents);
             $cart->set_applied_coupons($saved['coupons']);
             $customer->set_shipping_location($address['country'], $address['state'], $address['postcode'], $address['city']);
             $cart->calculate_totals();
             $packages = WC()->shipping()->get_packages();
-
             // Mollie takes one list of options for the whole order: several shipments have no single price.
             if (count($packages) !== 1) {
-                return ['rates' => [], 'failed' => true];
+                return ['rates' => [], 'failed' => \true];
             }
-
-            return ['rates' => $this->rates($packages[array_key_first($packages)]['rates'] ?? []), 'failed' => false];
+            return ['rates' => $this->rates($packages[array_key_first($packages)]['rates'] ?? []), 'failed' => \false];
         } catch (\Throwable) {
-            return ['rates' => [], 'failed' => true];
+            return ['rates' => [], 'failed' => \true];
         } finally {
-            $cart->empty_cart(false);
+            $cart->empty_cart(\false);
         }
     }
-
     /**
      * @param array<string, array<string, mixed>> $items
      * @return array<string, array<string, mixed>>|null Null when a product can no longer be read: that price cannot be computed.
@@ -146,10 +126,8 @@ class ExpressShippingSnapshot
             $values['data'] = $product;
             $contents[$key] = apply_filters('woocommerce_get_cart_item_from_session', $values, $values, $key);
         }
-
         return $contents;
     }
-
     /**
      * @param array<int|string, mixed> $rates
      * @return list<array{id: string, label: string, amount: Money}>
@@ -162,16 +140,10 @@ class ExpressShippingSnapshot
             if (!$rate instanceof \WC_Shipping_Rate) {
                 continue;
             }
-            $priced[] = [
-                'id' => (string) $id,
-                'label' => (string) $rate->get_label(),
-                'amount' => WooCommerceAmount::toMoney((float) $rate->get_cost() + array_sum($rate->get_taxes()), $currency),
-            ];
+            $priced[] = ['id' => (string) $id, 'label' => (string) $rate->get_label(), 'amount' => \Mollie\WooCommerce\ExpressComponent\WooCommerce\WooCommerceAmount::toMoney((float) $rate->get_cost() + array_sum($rate->get_taxes()), $currency)];
         }
-
         return $priced;
     }
-
     /**
      * @param array<string, mixed> $saved
      */
@@ -179,7 +151,6 @@ class ExpressShippingSnapshot
     {
         return set_transient($this->name($secret), $saved, $lifetimeSeconds);
     }
-
     /**
      * @return array{hash: string, items: array<string, array<string, mixed>>, coupons: list<string>, sessionId: string}|null
      */
@@ -195,10 +166,8 @@ class ExpressShippingSnapshot
         if (!hash_equals((string) $saved['hash'], hash('sha256', $secret))) {
             return null;
         }
-
         return $saved;
     }
-
     private function name(string $secret): string
     {
         return self::PREFIX . substr(hash('sha256', $secret), 0, 40);

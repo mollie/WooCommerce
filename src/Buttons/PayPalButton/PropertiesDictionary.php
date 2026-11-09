@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 class PropertiesDictionary
@@ -9,18 +8,11 @@ class PropertiesDictionary
     /**
      * @var string[]
      */
-    public const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS = [
-        PropertiesDictionary::NONCE,
-        PropertiesDictionary::PRODUCT_ID,
-        self::PRODUCT_QUANTITY,
-    ];
+    public const CREATE_ORDER_SINGLE_PROD_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::NONCE, \Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::PRODUCT_ID, self::PRODUCT_QUANTITY];
     /**
      * @var string[]
      */
-    public const CREATE_ORDER_CART_REQUIRED_FIELDS = [
-        PropertiesDictionary::NONCE,
-    ];
-
+    public const CREATE_ORDER_CART_REQUIRED_FIELDS = [\Mollie\WooCommerce\Buttons\PayPalButton\PropertiesDictionary::NONCE];
     /**
      * @var string
      */

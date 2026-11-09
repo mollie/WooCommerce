@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Components;
 
 class StylesPropertiesDictionary
@@ -14,7 +13,6 @@ class StylesPropertiesDictionary
      * @var string
      */
     public const INVALID_STYLE_KEY = 'invalid';
-
     /**
      * @var string
      */
@@ -55,7 +53,6 @@ class StylesPropertiesDictionary
      * @var string
      */
     public const INPUT_PLACEHOLDER = '::placeholder';
-
     /**
      * @var string
      */
@@ -64,28 +61,12 @@ class StylesPropertiesDictionary
      * @var string
      */
     public const INVALID_BACKGROUND_COLOR = 'invalid_backgroundColor';
-
     /**
      * @var string[]
      */
-    public const STYLES_OPTIONS_KEYS_MAP = [
-        self::BACKGROUND_COLOR,
-        self::TEXT_COLOR,
-        self::FONT_SIZE,
-        self::FONT_WEIGHT,
-        self::LETTER_SPACING,
-        self::LINE_HEIGHT,
-        self::PADDING,
-        self::TEXT_ALIGN,
-        self::TEXT_TRANSFORM,
-        self::INPUT_PLACEHOLDER,
-    ];
-
+    public const STYLES_OPTIONS_KEYS_MAP = [self::BACKGROUND_COLOR, self::TEXT_COLOR, self::FONT_SIZE, self::FONT_WEIGHT, self::LETTER_SPACING, self::LINE_HEIGHT, self::PADDING, self::TEXT_ALIGN, self::TEXT_TRANSFORM, self::INPUT_PLACEHOLDER];
     /**
      * @var string[]
      */
-    public const INVALID_STYLES_OPTIONS_KEYS_MAP = [
-        self::INVALID_TEXT_COLOR,
-        self::INVALID_BACKGROUND_COLOR,
-    ];
+    public const INVALID_STYLES_OPTIONS_KEYS_MAP = [self::INVALID_TEXT_COLOR, self::INVALID_BACKGROUND_COLOR];
 }

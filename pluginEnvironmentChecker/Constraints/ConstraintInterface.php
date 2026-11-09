@@ -1,10 +1,9 @@
 <?php
 
-namespace Inpsyde\EnvironmentChecker\Constraints;
+namespace Mollie\Inpsyde\EnvironmentChecker\Constraints;
 
-use Inpsyde\EnvironmentChecker\Exception\ConstraintFailedExceptionInterface;
+use Mollie\Inpsyde\EnvironmentChecker\Exception\ConstraintFailedExceptionInterface;
 use RuntimeException;
-
 /**
  * Interface ConstraintInterface
  *
@@ -12,11 +11,11 @@ use RuntimeException;
  */
 interface ConstraintInterface
 {
-	/**
-	 * Validates a value.
-	 *
-	 * @throws RuntimeException                                    If problem validating.
-	 * @throws ConstraintFailedExceptionInterface                  If validation failed. Must extend {@see RuntimeException}.
-	 */
+    /**
+     * Validates a value.
+     *
+     * @throws RuntimeException                                    If problem validating.
+     * @throws ConstraintFailedExceptionInterface                  If validation failed. Must extend {@see RuntimeException}.
+     */
     public function check();
 }

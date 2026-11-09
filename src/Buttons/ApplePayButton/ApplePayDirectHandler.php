@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\ApplePayButton;
 
 use Mollie\WooCommerce\Notice\AdminNotice;
-
 class ApplePayDirectHandler
 {
     /**
@@ -47,7 +45,8 @@ class ApplePayDirectHandler
                     '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server">',
                     '</a>'
                 );
-                echo (new AdminNotice())->renderNotice('notice-error', '<p>' . $message . '</p>'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
+                echo (new AdminNotice())->renderNotice('notice-error', '<p>' . $message . '</p>');
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
             });
             return;
         }
@@ -60,7 +59,8 @@ class ApplePayDirectHandler
                     '<a href="https://developer.apple.com/documentation/apple_pay_on_the_web/setting_up_your_server" target="_blank">',
                     '</a>'
                 );
-                echo (new AdminNotice())->renderNotice('notice-error', '<p>' . $message . '</p>'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
+                echo (new AdminNotice())->renderNotice('notice-error', '<p>' . $message . '</p>');
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderNotice()
             });
         }
         if ($buttonEnabledProduct) {
@@ -106,10 +106,10 @@ class ApplePayDirectHandler
     {
         ?>
         <div id="mollie-applepayDirect-button">
-            <?php
-            wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
-            ?>
+            <?php 
+        wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
+        ?>
         </div>
-        <?php
+        <?php 
     }
 }

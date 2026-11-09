@@ -81,6 +81,7 @@ class SharedDataDictionary
         'mollie-payments-for-woocommerce_removeOptionsAndTransients',
         'mollie-plugin-version',
         'mollie-new-install',
+        'mollie_express_default_on',
         'mollie_wc_is_phone_required_flag',
         '_transient_mollie-wc-ideal_issuers_live',
         '_transient_mollie-wc-ideal_issuers_test',
@@ -104,6 +105,8 @@ class SharedDataDictionary
     public const DB_VERSION_PARAM_NAME = 'mollie-db-version';
     public const PLUGIN_VERSION_PARAM_NAME = 'mollie-plugin-version';
     public const NEW_INSTALL_PARAM_NAME = 'mollie-new-install';
+    /** Written 'yes' once at a fresh install; nothing changes it after. */
+    public const EXPRESS_DEFAULT_ON_PARAM_NAME = 'mollie_express_default_on';
     public const PENDING_PAYMENT_DB_TABLE_NAME = 'mollie_pending_payment';
     public const DB_VERSION = '1.0';
 

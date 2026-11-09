@@ -448,6 +448,40 @@ class MutualExclusionTest extends ExpressFlowTestCase
         ];
     }
 
+    /**
+     * Scenario: on a new install a wallet's express button shows as soon as its method is enabled
+     *   Given a live, HTTPS shop installed new, where no express switch was ever saved
+     *   And the Apple Pay and PayPal payment methods disabled
+     *   When the plugin is asked whether Express owns the checkout
+     *   Then it does not
+     *   And once the merchant enables PayPal, with no other step, it does
+     *
+     * @test
+     * @group REQ-A7
+     * @group REQ-NEW-EXPRESS-DEFAULTS
+     */
+    public function it_shows_a_wallet_once_its_method_is_enabled_on_a_new_install(): void
+    {
+        // Given
+        $this->setOptionForTest('mollie_express_default_on', 'yes');
+        $this->setWalletSettings('applepay', [
+            'enabled' => 'no',
+            self::APPLE_PAY_EXPRESS => null,
+            'mollie_apple_pay_button_enabled_cart' => null,
+        ]);
+        $this->setWalletSettings('paypal', ['enabled' => 'no', self::PAYPAL_CHECKOUT => null, self::PAYPAL_CART => null]);
+        $this->useHttps(true);
+        $this->bootExpress();
+        $this->assertFalse(mollieWooCommerceExpressOwnsSurface('checkout'), 'With every wallet disabled, no express button shows.');
+
+        // When
+        $this->setWalletSettings('paypal', ['enabled' => 'yes']);
+        $this->bootExpress();
+
+        // Then
+        $this->assertTrue(mollieWooCommerceExpressOwnsSurface('checkout'));
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────

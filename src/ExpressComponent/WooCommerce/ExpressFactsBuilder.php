@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use Mollie\WooCommerce\Gateway\Surcharge;
+use Mollie\WooCommerce\ExpressComponent\Rules\ExpressSwitch;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
 use Mollie\WooCommerce\Settings\Settings;
 
 /**
  * Express has no option of its own: it reads each wallet's gateway settings, afresh on every call.
+ * A cart or checkout switch never saved reads as ExpressDefaults says.
  */
 class ExpressFactsBuilder
 {
@@ -102,22 +104,36 @@ class ExpressFactsBuilder
                 continue;
             }
             $settingsOption = $gatewayId . '_settings';
+            $stored = (array) get_option($settingsOption, []);
             if (mollieWooCommerceIsGatewayEnabled($settingsOption, 'enabled')) {
                 $enabled[] = $gatewayId;
             }
-            if (mollieWooCommerceIsGatewayEnabled($settingsOption, $row['checkoutSetting'])) {
+            $onByDefault = ExpressDefaults::onByDefault($gatewayId);
+            if (ExpressSwitch::effective($this->storedSwitch($stored, $row['checkoutSetting']), $onByDefault)) {
                 $expressOnCheckout[] = $gatewayId;
             }
-            if (mollieWooCommerceIsGatewayEnabled($settingsOption, $row['cartSetting'])) {
+            if (ExpressSwitch::effective($this->storedSwitch($stored, $row['cartSetting']), $onByDefault)) {
                 $expressOnCart[] = $gatewayId;
             }
-            $surcharge = ((array) get_option($settingsOption, []))['payment_surcharge'] ?? '';
+            $surcharge = $stored['payment_surcharge'] ?? '';
             if ($surcharge !== '' && $surcharge !== Surcharge::NO_FEE) {
                 $surcharged[] = $gatewayId;
             }
         }
 
         return [$registered, $enabled, $expressOnCheckout, $surcharged, $expressOnCart];
+    }
+
+    /**
+     * The saved value of a switch, null when it was never saved.
+     *
+     * @param array<array-key, mixed> $stored
+     */
+    private function storedSwitch(array $stored, string $key): ?string
+    {
+        $value = $stored[$key] ?? null;
+
+        return is_scalar($value) ? (string) $value : null;
     }
 
     /**

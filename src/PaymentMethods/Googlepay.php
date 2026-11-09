@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressDefaults;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -55,7 +56,7 @@ class Googlepay extends AbstractPaymentMethod implements PaymentMethodI
                     'On the block cart, Mollie express checkout shows the Google Pay button where it can run.',
                     'mollie-payments-for-woocommerce'
                 ),
-                'default' => 'no',
+                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_googlepay') ? 'yes' : 'no',
             ],
             'mollie_googlepay_button_enabled_checkout' => [
                 'type' => 'checkbox',
@@ -64,7 +65,7 @@ class Googlepay extends AbstractPaymentMethod implements PaymentMethodI
                     'On the block checkout, Mollie express checkout shows the Google Pay button where it can run.',
                     'mollie-payments-for-woocommerce'
                 ),
-                'default' => 'no',
+                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_googlepay') ? 'yes' : 'no',
             ],
         ];
     }

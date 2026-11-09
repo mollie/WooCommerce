@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressDefaults;
 use Psr\Container\ContainerInterface;
 
 class Applepay extends AbstractPaymentMethod implements PaymentMethodI
@@ -77,7 +78,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
                     'mollie-payments-for-woocommerce'
                 ),
                 'type' => 'checkbox',
-                'default' => 'no',
+                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_applepay') ? 'yes' : 'no',
             ],
             'mollie_apple_pay_button_enabled_product' => [
                 'title' => __('Enable Apple Pay Button on Product page', 'mollie-payments-for-woocommerce'),
@@ -92,7 +93,7 @@ class Applepay extends AbstractPaymentMethod implements PaymentMethodI
                 'title' => __('Enable Apple Pay Express Button on Checkout page', 'mollie-payments-for-woocommerce'),
                 'description' => __('Enable the Apple Pay direct buy button on the Express Buttons section of the Checkout page. On the block checkout, Mollie express checkout shows the button where it can run; otherwise the classic Apple Pay button is shown.', 'mollie-payments-for-woocommerce'),
                 'type' => 'checkbox',
-                'default' => 'no',
+                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_applepay') ? 'yes' : 'no',
             ],
         ];
         return array_merge($notice, $generalFormFields, $paymentMethodFormFieds);

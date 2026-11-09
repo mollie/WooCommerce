@@ -73,18 +73,19 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the settings page shows the express checkboxes, off on a fresh install
+     * Scenario: the settings page shows the express checkboxes, Google Pay off and its page switches on
      *   Given Google Pay is activated at Mollie
      *   And the shop has never saved Google Pay settings
      *   When the plugin boots
      *   Then the settings form has the enabled checkbox, labelled for express checkout,
      *        and one checkbox per page Express shows on, the cart and the checkout
-     *   And all are off, although the general enabled default is on
+     *   And the enabled checkbox is off, although the general enabled default is on
+     *   And the cart and checkout switches are on, new install or not: nobody chose them before
      *
      * @test
-     * @group REQ-A2
+     * @group REQ-NEW-EXPRESS-DEFAULTS
      */
-    public function it_shows_one_express_checkbox_off_by_default(): void
+    public function it_shows_google_pay_off_with_its_page_switches_on_by_default(): void
     {
         $this->googlePayAtMollie(true);
         $this->setOptionForTest(self::GATEWAY . '_settings', []);
@@ -95,13 +96,17 @@ class ExpressGooglePayTest extends ExpressFlowTestCase
         $gateway = WC()->payment_gateways()->payment_gateways()[self::GATEWAY] ?? null;
         $this->assertInstanceOf(\WC_Payment_Gateway::class, $gateway, 'Google Pay must be a registered gateway.');
         $fields = $gateway->get_form_fields();
-        $switches = ['enabled', 'mollie_googlepay_button_enabled_cart', 'mollie_googlepay_button_enabled_checkout'];
-        $this->assertSame($switches, array_keys($fields));
+        $switches = [
+            'enabled' => 'no',
+            'mollie_googlepay_button_enabled_cart' => 'yes',
+            'mollie_googlepay_button_enabled_checkout' => 'yes',
+        ];
+        $this->assertSame(array_keys($switches), array_keys($fields));
         $this->assertSame('Enable Google Pay for Mollie express checkout', $fields['enabled']['label']);
-        foreach ($switches as $switch) {
+        foreach ($switches as $switch => $expected) {
             $this->assertSame('checkbox', $fields[$switch]['type'], "{$switch} must be a checkbox.");
-            $this->assertSame('no', $fields[$switch]['default'], "{$switch} must default to off.");
-            $this->assertSame('no', $gateway->get_option($switch), "{$switch} must read off.");
+            $this->assertSame($expected, $fields[$switch]['default'], "{$switch} must default to {$expected}.");
+            $this->assertSame($expected, $gateway->get_option($switch), "{$switch} must read {$expected}.");
         }
     }
 

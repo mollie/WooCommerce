@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressDefaults;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Psr\Container\ContainerInterface;
 
@@ -52,7 +53,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                     'Enable the PayPal button to be used in the cart page. On the block cart, Mollie express checkout shows the button where it can run; otherwise the classic PayPal button is shown.',
                     'mollie-payments-for-woocommerce'
                 ),
-                'default' => 'no',
+                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_paypal') ? 'yes' : 'no',
             ],
             'mollie_paypal_button_enabled_product' => [
                 'type' => 'checkbox',
@@ -76,7 +77,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                     'Enable the PayPal button to be used in the Express Buttons section of the checkout page. On the block checkout, Mollie express checkout shows the button where it can run; otherwise the classic PayPal button is shown.',
                     'mollie-payments-for-woocommerce'
                 ),
-                'default' => 'no',
+                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_paypal') ? 'yes' : 'no',
             ],
             'color' => [
                 'type' => 'select',

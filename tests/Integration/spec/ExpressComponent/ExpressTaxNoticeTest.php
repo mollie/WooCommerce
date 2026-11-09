@@ -79,7 +79,19 @@ class ExpressTaxNoticeTest extends ExpressFlowTestCase
                 'tax_rate_class' => '',
             ]);
         }
-        $this->setGatewaySettingsForTest('paypal', ['mollie_paypal_button_enabled_checkout' => $switchOn ? 'yes' : 'no']);
+        // Every other switch saved off: a cart or checkout switch never saved can read on by default.
+        $this->setGatewaySettingsForTest('paypal', [
+            'mollie_paypal_button_enabled_checkout' => $switchOn ? 'yes' : 'no',
+            'mollie_paypal_button_enabled_cart' => 'no',
+        ]);
+        $this->setGatewaySettingsForTest('applepay', [
+            'mollie_apple_pay_button_enabled_express_checkout' => 'no',
+            'mollie_apple_pay_button_enabled_cart' => 'no',
+        ]);
+        $this->setGatewaySettingsForTest('googlepay', [
+            'mollie_googlepay_button_enabled_checkout' => 'no',
+            'mollie_googlepay_button_enabled_cart' => 'no',
+        ]);
         // Earlier boots left their own admin_notices callbacks behind.
         remove_all_actions('admin_notices');
         $this->bootExpress();

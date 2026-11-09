@@ -168,8 +168,15 @@ class CancelUnpaidScheduleTest extends ExpressFlowTestCase
 
     private function expressOff(): void
     {
-        $this->setGatewaySettingsForTest('paypal', ['mollie_paypal_button_enabled_checkout' => 'no']);
-        $this->setGatewaySettingsForTest('applepay', ['mollie_apple_pay_button_enabled_express_checkout' => 'no']);
+        // Saved off: a cart or checkout switch never saved can read on by default.
+        $this->setGatewaySettingsForTest('paypal', [
+            'mollie_paypal_button_enabled_checkout' => 'no',
+            'mollie_paypal_button_enabled_cart' => 'no',
+        ]);
+        $this->setGatewaySettingsForTest('applepay', [
+            'mollie_apple_pay_button_enabled_express_checkout' => 'no',
+            'mollie_apple_pay_button_enabled_cart' => 'no',
+        ]);
     }
 
     /**

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Mollie\WooCommerce\Activation\Migrations;
 
 /**
- * Only an enabled Google Pay gets page switches; otherwise they stay never saved, so their default applies.
+ * An enabled Google Pay showed on the checkout only: it stays on there and is off on the cart until the merchant
+ * switches it on. Otherwise the page switches stay never saved, so their default applies.
  */
 class GooglePayButtonSettingsMigrator implements MigratorInterface
 {
@@ -29,7 +30,7 @@ class GooglePayButtonSettingsMigrator implements MigratorInterface
 
         $settings += [
             self::CHECKOUT => 'yes',
-            self::CART => 'yes',
+            self::CART => 'no',
         ];
 
         update_option(self::OPTION, $settings);

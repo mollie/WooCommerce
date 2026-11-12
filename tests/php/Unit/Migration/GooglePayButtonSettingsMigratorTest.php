@@ -30,7 +30,8 @@ class GooglePayButtonSettingsMigratorTest extends TestCase
      *   Given a store on 8.2.0 with Apple Pay and PayPal page switches stored
      *   And Google Pay enabled, disabled, or never saved
      *   When the Google Pay button settings migration runs
-     *   Then the Google Pay checkout and cart switches are on where Google Pay is enabled, and a switch already stored is kept
+     *   Then where Google Pay is enabled its checkout switch is on and its cart switch is off, until the merchant
+     *        switches the cart on, and a switch already stored is kept
      *   And nothing is written where it is disabled or never saved, so the switches stay never saved
      *   And the stored Apple Pay and PayPal switches are unchanged
      *   And the migration belongs to a version after 8.2.0 and no later than the plugin's, so the update ladder runs it
@@ -110,8 +111,9 @@ class GooglePayButtonSettingsMigratorTest extends TestCase
     public function googlePayBefore(): array
     {
         return [
-            'enabled' => [['enabled' => 'yes', 'title' => 'Google Pay'], ['yes', 'yes']],
-            'enabled, cart already saved off' => [['enabled' => 'yes', self::CART => 'no'], ['yes', 'no']],
+            'enabled' => [['enabled' => 'yes', 'title' => 'Google Pay'], ['yes', 'no']],
+            'enabled, cart already saved on' => [['enabled' => 'yes', self::CART => 'yes'], ['yes', 'yes']],
+            'enabled, checkout already saved off' => [['enabled' => 'yes', self::CHECKOUT => 'no'], ['no', 'no']],
             'disabled' => [['enabled' => 'no', 'title' => 'Google Pay'], [null, null]],
             'never saved' => [null, [null, null]],
         ];

@@ -1297,6 +1297,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         \WC_Cache_Helper::invalidate_cache_group('taxes');
         [$order, , $sessionId] = $this->expressOrder();
         $this->chooseRate('express');
+        $shippingRates = \WC_Tax::get_shipping_tax_rates();
         $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
         $gross = (float) $payment['lines'][0]['totalAmount']['value'];
 
@@ -1311,7 +1312,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $this->assertSame($this->decimal($gross), $this->decimal((float) $lines[0]->get_total() + (float) $lines[0]->get_total_tax()));
         $expected = array_map(
             fn (float $tax): string => $this->decimal(round($tax, 2)),
-            \WC_Tax::calc_inclusive_tax($gross, $this->shippingTaxRatesOf($after))
+            \WC_Tax::calc_inclusive_tax($gross, $shippingRates)
         );
         $booked = [];
         foreach ($after->get_taxes() as $taxItem) {
@@ -1357,26 +1358,122 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * The order's rates that tax shipping, in the shape WC_Tax::calc_inclusive_tax() takes.
+     * Scenario: the shipping option is taxed with the rates of the shipping tax class, not of every class in the cart
+     *   Given LU with a 21% standard rate and a rate of another tax class, both taxing shipping
+     *   And the "Shipping tax class" setting: Standard, or the class of the cart's items
+     *   And an express order of items of those classes, paid with the 5.00 'standard' option chosen in the wallet
+     *   When Mollie calls the webhook
+     *   Then the shipping line's cost and tax are what WooCommerce charges that cart for shipping:
+     *     the rates of one tax class, the setting's or the items' (standard first)
+     *   And the rate of that class gets its tax line even when no item of the order has it
+     *   And the order's total equals the payment amount
      *
-     * @return array<int, array{rate: float, label: string, shipping: string, compound: string}>
+     * @test
+     * @dataProvider shippingTaxClasses
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
      */
-    private function shippingTaxRatesOf(WC_Order $order): array
-    {
-        $rates = [];
-        foreach ($order->get_taxes() as $taxItem) {
-            $row = \WC_Tax::_get_tax_rate($taxItem->get_rate_id(), OBJECT);
-            if (is_object($row) && (int) $row->tax_rate_shipping === 1) {
-                $rates[(int) $row->tax_rate_id] = [
-                    'rate' => (float) $row->tax_rate,
-                    'label' => (string) $row->tax_rate_name,
-                    'shipping' => 'yes',
-                    'compound' => (int) $row->tax_rate_compound === 1 ? 'yes' : 'no',
-                ];
+    public function it_taxes_the_shipping_option_with_the_shipping_tax_class(
+        bool $withStandardItem,
+        string $otherClass,
+        string $otherPercent,
+        string $shippingTaxClass,
+        bool $formFilled,
+        string $taxedBy,
+        string $expectedTax
+    ): void {
+
+        // Given
+        $this->setOptionForTest('woocommerce_shipping_tax_class', $shippingTaxClass);
+        $classCreated = !in_array($otherClass, \WC_Tax::get_tax_class_slugs(), true);
+        if ($classCreated) {
+            \WC_Tax::create_tax_class(ucwords(str_replace('-', ' ', $otherClass)), $otherClass);
+        }
+        $otherRateId = \WC_Tax::_insert_tax_rate([
+            'tax_rate_country' => 'LU',
+            'tax_rate' => $otherPercent,
+            'tax_rate_name' => 'VAT ' . $otherClass,
+            'tax_rate_priority' => 1,
+            'tax_rate_compound' => 0,
+            'tax_rate_shipping' => 1,
+            'tax_rate_order' => 0,
+            'tax_rate_class' => $otherClass,
+        ]);
+        $this->taxRateIds[] = $otherRateId;
+        \WC_Cache_Helper::invalidate_cache_group('taxes');
+        $product = new \WC_Product_Simple();
+        $product->set_name('Item of class ' . $otherClass);
+        $product->set_regular_price('10');
+        $product->set_tax_class($otherClass);
+        $product->save();
+        $expected = [($taxedBy === 'standard' ? $this->taxRateIds[0] : $otherRateId) => $expectedTax];
+        $gross = $this->decimal(5.0 + (float) $expectedTax);
+
+        try {
+            if (!$formFilled) {
+                $this->setOptionForTest('woocommerce_default_customer_address', '');
+                $this->newShopper();
+            }
+            $this->boot();
+            $this->actAsGuest();
+            $this->cartWith($withStandardItem ? ['simple'] : [], 1);
+            $this->withoutCookieWarnings(static function () use ($product): void {
+                WC()->cart->add_to_cart($product->get_id(), 1);
+            });
+            if ($formFilled) {
+                $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+                $this->chooseRate('standard');
+                $charged = array_map(
+                    fn ($tax): string => $this->decimal(round((float) $tax, 2)),
+                    WC()->cart->get_shipping_taxes()
+                );
+                $this->assertSame($expected, $charged, 'WooCommerce must charge this for shipping, or the scenario proves nothing.');
+            }
+            $this->fakeMollie()->selectShippingOption($this->rates['standard'], 'Standard', $gross);
+            [$order, , $sessionId] = $this->submittedOrder();
+            $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+
+            // When
+            $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+            // Then
+            $after = $this->fresh($order);
+            $this->assertTrue($after->is_paid());
+            $lines = array_values($after->get_items('shipping'));
+            $this->assertCount(1, $lines);
+            $this->assertSame('5.00', $this->decimal((float) $lines[0]->get_total()));
+            $this->assertSame($expected, array_map(
+                fn ($tax): string => $this->decimal((float) $tax),
+                array_filter($lines[0]->get_taxes()['total'] ?? [], static fn ($tax): bool => (float) $tax !== 0.0)
+            ));
+            $booked = [];
+            foreach ($after->get_taxes() as $taxItem) {
+                if ((float) $taxItem->get_shipping_tax_total() !== 0.0) {
+                    $booked[$taxItem->get_rate_id()] = $this->decimal((float) $taxItem->get_shipping_tax_total());
+                }
+            }
+            $this->assertSame($expected, $booked);
+            $this->assertSame($expectedTax, $this->decimal((float) $after->get_shipping_tax()));
+            $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
+        } finally {
+            $product->delete(true);
+            if ($classCreated) {
+                \WC_Tax::delete_tax_class_by('slug', $otherClass);
             }
         }
+    }
 
-        return $rates;
+    /**
+     * @return array<string, array{0: bool, 1: string, 2: string, 3: string, 4: bool, 5: string, 6: string}>
+     */
+    public function shippingTaxClasses(): array
+    {
+        return [
+            'standard and reduced items, shipping class Standard' => [true, 'reduced-rate', '10.0000', '', true, 'standard', '1.05'],
+            'standard and reduced items, class from the items' => [true, 'reduced-rate', '10.0000', 'inherit', true, 'standard', '1.05'],
+            'a reduced item only, class from the items' => [false, 'reduced-rate', '10.0000', 'inherit', true, 'other', '0.50'],
+            'a zero-rated item only, shipping class Standard' => [false, 'zero-rate', '0.0000', '', true, 'standard', '1.05'],
+            'a zero-rated item only, empty form: no item has the rate' => [false, 'zero-rate', '0.0000', '', false, 'standard', '1.05'],
+        ];
     }
 
     /**

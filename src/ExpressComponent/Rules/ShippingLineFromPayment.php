@@ -12,9 +12,9 @@ use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
 
 /**
  * The shipping option the shopper chose in the wallet, as the line the order gets once.
- * Mollie records no tax on it: the option's price includes tax, split here per shipping tax rate of the order
- * the way WooCommerce splits a price that includes tax (compound rates first, then the regular rates in
- * proportion).
+ * Mollie records no tax on it: the option's price includes tax, split here per rate that taxes the order's
+ * shipping the way WooCommerce splits a price that includes tax (compound rates first, then the regular rates
+ * in proportion).
  */
 final class ShippingLineFromPayment
 {

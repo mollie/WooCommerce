@@ -265,13 +265,71 @@ class ExpressAvailabilityTest extends TestCase
             taxEnabled: $taxEnabled,
             taxBasedOn: $taxBasedOn,
             taxCountries: $taxCountries,
-            ratesVaryWithinCountry: $ratesVaryWithinCountry
+            ratesVaryWithinCountry: $ratesVaryWithinCountry,
+            taxableCountry: 'DE'
         );
 
         $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
 
         self::assertSame($expectedStatus, $result->status());
         self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * Scenario: a cart priced for no country, or for another one, is not offered where taxes follow one country's address
+     *   Given the checkout is otherwise available
+     *   And taxes on, following the customer's address, in a shop where that address can be in Germany only
+     *   When availability is resolved for a cart whose taxes were calculated for Germany, for no country
+     *        or for another country
+     *   Then it is available only when the cart was priced for Germany
+     *   And it is unavailable with tax_depends_on_address otherwise, regional rates or not
+     *   And with taxes off or on the shop address the country the cart was priced for does not matter
+     *
+     * @dataProvider taxableCountryCases
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @group REQ-NEW-EXPRESS-TAX
+     */
+    public function testRefusesACartThatIsNotPricedForTheCountryItsTaxesFollow(
+        bool $taxEnabled,
+        string $taxBasedOn,
+        bool $ratesVaryWithinCountry,
+        string $taxableCountry,
+        string $expectedStatus,
+        ?string $expectedReason
+    ): void {
+
+        $cart = new CartFacts(
+            lines: [new CartLine(productId: 100, quantity: 1, isSubscription: false)],
+            needsShipping: false,
+            shippingDestinationComplete: false,
+            shippingRateChosen: false,
+            total: Money::fromMinorUnits(1000, 'EUR'),
+            taxEnabled: $taxEnabled,
+            taxBasedOn: $taxBasedOn,
+            taxCountries: ['DE'],
+            ratesVaryWithinCountry: $ratesVaryWithinCountry,
+            taxableCountry: $taxableCountry
+        );
+
+        $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
+
+        self::assertSame($expectedStatus, $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: string, 2: bool, 3: string, 4: string, 5: ?string}>
+     */
+    public function taxableCountryCases(): array
+    {
+        return [
+            'priced for the only country' => [true, 'billing', false, 'DE', 'available', null],
+            'priced for no country' => [true, 'billing', false, '', 'unavailable', 'tax_depends_on_address'],
+            'priced for another country' => [true, 'shipping', false, 'AT', 'unavailable', 'tax_depends_on_address'],
+            'regional rates, priced for no country' => [true, 'billing', true, '', 'unavailable', 'tax_depends_on_address'],
+            'taxes off, priced for no country' => [false, 'billing', false, '', 'available', null],
+            'taxes on the shop address, priced for no country' => [true, 'base', false, '', 'available', null],
+        ];
     }
 
     /**

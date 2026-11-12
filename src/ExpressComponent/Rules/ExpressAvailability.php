@@ -61,6 +61,16 @@ final class ExpressAvailability
         ) {
             return ExpressAvailabilityResult::unavailable('tax_depends_on_address');
         }
+        if (
+            !TaxCompatibility::cartPricedForTaxCountry(
+                $cart->taxEnabled(),
+                $cart->taxBasedOn(),
+                $cart->taxCountries(),
+                $cart->taxableCountry()
+            )
+        ) {
+            return ExpressAvailabilityResult::unavailable('tax_depends_on_address');
+        }
         $total = $cart->total();
         if ($total !== null && $total->minorUnits() <= 0) {
             return ExpressAvailabilityResult::unavailable('nothing_to_pay');

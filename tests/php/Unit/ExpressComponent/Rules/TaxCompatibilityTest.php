@@ -61,6 +61,51 @@ class TaxCompatibilityTest extends TestCase
     }
 
     /**
+     * Scenario: taxes that follow one country's address are known beforehand only for a cart priced for that country
+     *   Given the shop's tax settings and the country the cart's taxes were calculated for
+     *   When the rule asks whether the cart is priced for the country its taxes follow
+     *   Then it is no when taxes follow the customer's address in one country and the cart was priced
+     *        for another country or for none
+     *   And it is yes in every other case: the rule on many countries answers for those
+     *
+     * @dataProvider taxableCountries
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility::cartPricedForTaxCountry
+     * @param array<int, string> $taxCountries
+     * @group REQ-NEW-EXPRESS-TAX
+     */
+    public function testKnowsWhenTheCartIsPricedForTheCountryItsTaxesFollow(
+        bool $taxEnabled,
+        string $taxBasedOn,
+        array $taxCountries,
+        string $taxableCountry,
+        bool $expected
+    ): void {
+
+        self::assertSame(
+            $expected,
+            TaxCompatibility::cartPricedForTaxCountry($taxEnabled, $taxBasedOn, $taxCountries, $taxableCountry)
+        );
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: string, 2: array<int, string>, 3: string, 4: bool}>
+     */
+    public function taxableCountries(): array
+    {
+        return [
+            'billing address, priced for the only country' => [true, 'billing', ['AT'], 'AT', true],
+            'shipping address, priced for the only country' => [true, 'shipping', ['AT'], 'AT', true],
+            'billing address, priced for no country' => [true, 'billing', ['AT'], '', false],
+            'shipping address, priced for no country' => [true, 'shipping', ['AT'], '', false],
+            'billing address, priced for another country' => [true, 'billing', ['AT'], 'DE', false],
+            'taxes off, priced for no country' => [false, 'billing', ['AT'], '', true],
+            'taxes on the shop address, priced for no country' => [true, 'base', ['AT'], '', true],
+            'many countries, priced for none' => [true, 'billing', ['AT', 'DE'], '', true],
+            'countries could not be read' => [true, 'billing', [], '', true],
+        ];
+    }
+
+    /**
      * @return array<string, array{0: bool, 1: string, 2: bool}>
      */
     public function addressBases(): array

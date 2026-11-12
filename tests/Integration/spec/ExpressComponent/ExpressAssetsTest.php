@@ -468,6 +468,8 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *        on an address the wallet gives later: whatever the shipping form holds, and no taxes that
      *        follow the customer's address in a shop selling to more than one country
      *   And an address saved on the customer's account changes nothing
+     *   And where taxes follow one country's address, a new guest is owned only when the store's default
+     *        customer location prices the cart for that country
      *   And the legacy Apple Pay and PayPal buttons step aside exactly then, and show as configured otherwise
      *
      * @test
@@ -552,6 +554,10 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             'ships, shop sells to one country, returning guest whose session holds the address and a rate' => [true, 'shipping', $one, 'returning guest, address and rate in the session', true],
             'ships, many countries, taxes on the shop address, customer with a saved address and a rate' => [true, 'base', $many, 'customer, shipping address saved', true],
             'ships, many countries, taxes on the shipping address, customer with a saved address and a rate' => [true, 'shipping', $many, 'customer, shipping address saved', false],
+            // A guest is priced for the default customer location: with none, the cart carries no taxes yet.
+            'nothing ships, taxes on the billing address, one country, no default location' => [false, 'billing', $one, 'guest, no default location', false],
+            'ships, taxes on the shipping address, one country, no default location' => [true, 'shipping', $one, 'guest, no default location', false],
+            'nothing ships, taxes on the shop address, many countries, no default location' => [false, 'base', $many, 'guest, no default location', true],
         ];
     }
 
@@ -726,13 +732,23 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             return;
         }
 
+        if (in_array($shopper, ['guest, nothing typed', 'guest, no default location'], true)) {
+            // A new visitor holds what WooCommerce gives one: the store's default customer location, or none.
+            $this->setOptionForTest(
+                'woocommerce_default_customer_address',
+                $shopper === 'guest, nothing typed' ? 'base' : ''
+            );
+            $this->newShopper();
+            $this->actAsGuest();
+            $this->cartWith(['simple']);
+            $this->recalculate();
+
+            return;
+        }
+
         $this->actAsGuest();
         $this->cartWith(['simple']);
         switch ($shopper) {
-            case 'guest, nothing typed':
-                $this->fillCheckoutForm([], []);
-                $this->recalculate();
-                break;
             case 'guest, only a country typed':
                 $this->fillCheckoutForm([], ['country' => 'LU']);
                 $this->recalculate();

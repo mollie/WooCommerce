@@ -50,7 +50,8 @@ class CartFactsBuilder
             taxEnabled: $taxEnabled,
             taxBasedOn: $taxBasedOn,
             taxCountries: $countries,
-            ratesVaryWithinCountry: $ratesVary
+            ratesVaryWithinCountry: $ratesVary,
+            taxableCountry: (string) ($customer->get_taxable_address()[0] ?? '')
         );
     }
 

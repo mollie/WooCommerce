@@ -581,6 +581,63 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         $this->assertSame([], $this->fakeMollie()->requests('POST'));
     }
 
+    /**
+     * Scenario: a guest whose cart is priced for no country is refused where taxes follow one country's address
+     *   Given taxes on, based on the customer's billing address, and a shop that sells to Austria only
+     *   And a guest who typed no address, so the cart is priced for the store's default customer location
+     *   When a session is requested
+     *   Then a session is created when the default location is Austria: the cart carries Austria's VAT
+     *   And it is answered 409 with tax_depends_on_address when there is no default location, or the shop
+     *       base is a country the shop does not sell to, prices entered with or without VAT: the cart
+     *       carries no VAT, and the wallet's Austrian address would add it
+     *   And nothing is sent to Mollie for a refused cart
+     *
+     * @test
+     * @dataProvider defaultCustomerLocations
+     * @group REQ-NEW-EXPRESS-TAX
+     */
+    public function it_refuses_a_session_for_a_cart_that_is_not_priced_for_the_only_tax_country(
+        string $baseCountry,
+        string $defaultLocation,
+        string $pricesIncludeTax,
+        int $status,
+        ?string $code
+    ): void {
+
+        // Given
+        $this->setOptionForTest('woocommerce_tax_based_on', 'billing');
+        $this->setOptionForTest('woocommerce_allowed_countries', 'specific');
+        $this->setOptionForTest('woocommerce_specific_allowed_countries', ['AT']);
+        $this->setOptionForTest('woocommerce_default_country', $baseCountry);
+        $this->setOptionForTest('woocommerce_default_customer_address', $defaultLocation);
+        $this->setOptionForTest('woocommerce_prices_include_tax', $pricesIncludeTax);
+        $this->newShopper();
+        $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+
+        // When
+        $response = $this->startSession();
+
+        // Then
+        $this->assertSame($status, $response->get_status());
+        $this->assertSame($code, ((array) $response->get_data())['code'] ?? null);
+        $this->assertCount($code === null ? 1 : 0, $this->fakeMollie()->requests('POST', 'sessions'));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: string, 3: int, 4: ?string}>
+     */
+    public function defaultCustomerLocations(): array
+    {
+        return [
+            'the default location is the shop base, Austria' => ['AT', 'base', 'no', 200, null],
+            'no default location' => ['AT', '', 'no', 409, 'tax_depends_on_address'],
+            'the shop base is not a selling country' => ['DE', 'base', 'no', 409, 'tax_depends_on_address'],
+            'no default location, prices include VAT' => ['AT', '', 'yes', 409, 'tax_depends_on_address'],
+        ];
+    }
+
     private function shopSellingToGermanyAndItalyWithTaxesOn(string $taxBasedOn): void
     {
         $this->setOptionForTest('woocommerce_calc_taxes', 'yes');

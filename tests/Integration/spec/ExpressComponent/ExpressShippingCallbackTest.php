@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerceTests\Integration\spec\ExpressComponent;
 
+use Mollie\WooCommerce\ExpressComponent\Rules\PricingFingerprint;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\CartFactsBuilder;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressShippingSnapshot;
 use Mollie\WooCommerceTests\Integration\Common\ExpressFlowTestCase;
 use Mollie\WooCommerceTests\Integration\Common\Traits\ExpressCheckoutFixtures;
 use WP_REST_Response;
@@ -78,6 +82,67 @@ class ExpressShippingCallbackTest extends ExpressFlowTestCase
             );
         }
         $this->assertSame(200, $this->mollieAsks($session, 'AT')->get_status(), 'The secret must outlive one call.');
+    }
+
+    /**
+     * Scenario: the options carry VAT when taxes follow the billing address, which Mollie's call does not have
+     *   Given taxes based on the customer's billing address, a shop that sells to Austria only
+     *         and no default customer location
+     *   And a guest who gave an Austrian billing address, and the session started for the cart
+     *   When Mollie posts shipping-address-changed for an Austrian address, with no cookie
+     *   Then the option's amount is the rate with Austria's VAT: the wallet's address is the billing location too
+     *
+     * @test
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
+     */
+    public function it_prices_the_options_with_vat_when_taxes_follow_the_billing_address(): void
+    {
+        // Given
+        $this->setOptionForTest('woocommerce_tax_based_on', 'billing');
+        $this->setOptionForTest('woocommerce_allowed_countries', 'specific');
+        $this->setOptionForTest('woocommerce_specific_allowed_countries', ['AT']);
+        $this->setOptionForTest('woocommerce_default_customer_address', '');
+        $session = $this->startedGuestSession(['country' => 'AT'] + $this->billing());
+
+        // When
+        $response = $this->mollieAsks($session, 'AT');
+
+        // Then
+        $this->assertSame(200, $response->get_status(), wp_json_encode($response->get_data()));
+        $options = (array) ((array) $response->get_data())['options'];
+        $this->assertSame([$this->rates['austria']], array_column($options, 'reference'));
+        $this->assertSame(['currency' => 'EUR', 'value' => '10.89'], $options[0]['amount'], 'Flat rate 9.00 plus 21% VAT.');
+    }
+
+    /**
+     * Scenario: a cart saved by an earlier attempt that never finished does not block the next one
+     *   Given a guest with a cart that ships
+     *   And an earlier request saved that cart for the shipping callback and stopped before its session
+     *       was remembered (an overlapping request, or one cut by a timeout)
+     *   When the checkout asks for a session again, for the same cart
+     *   Then the session is created: a cart already saved as it is counts as saved
+     *
+     * @test
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
+     */
+    public function it_starts_a_session_for_a_cart_an_earlier_attempt_already_saved(): void
+    {
+        // Given
+        $container = $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple'], 2);
+        $store = $container->get(ExpressSessionStore::class);
+        $snapshot = $container->get(ExpressShippingSnapshot::class);
+        $facts = $container->get(CartFactsBuilder::class)->fromCart();
+        $secret = $snapshot->secretFor($store->expressRef(PricingFingerprint::of($facts), $store->nextAttempt()));
+        $this->assertTrue($snapshot->save($secret, 900), 'The earlier attempt must have saved the cart.');
+
+        // When
+        $response = $this->startSession();
+
+        // Then
+        $this->assertSame(200, $response->get_status(), wp_json_encode($response->get_data()));
+        $this->assertCount(1, $this->fakeMollie()->requests('POST', 'sessions'));
     }
 
     /**
@@ -212,13 +277,17 @@ class ExpressShippingCallbackTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
+     * @param array<string, string> $billing What the guest typed as billing address; nothing by default.
      * @return array{id: string, callbackUrl: string}
      */
-    private function startedGuestSession(): array
+    private function startedGuestSession(array $billing = []): array
     {
         $this->bootExpress();
         $this->actAsGuest();
         $this->cartWith(['simple'], 2);
+        if ($billing !== []) {
+            $this->fillCheckoutForm($billing, []);
+        }
         $session = $this->startedSession();
         $payload = $this->sessionPayloads();
         $callbackUrl = (string) (end($payload)['shipping']['callbackUrl'] ?? '');

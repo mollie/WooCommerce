@@ -12,189 +12,167 @@ Accept all major payment methods in WooCommerce today. Credit cards, iDEAL and m
 
 == Description ==
 
-https://www.youtube.com/watch?v=33sQNKelKW4
+= Special Offer - limited time only! =
 
-Quickly integrate all major payment methods in WooCommerce, wherever you need them. Mollie Payments for WooCommerce adds the critical success factor: an easy-to-install, easy-to-use, customizable payments gateway that is as flexible as WooCommerce itself.
+Sign up with Mollie and **pay zero transaction fees on your first €50,000 in processing volume**, or until 31 December 2026 - whichever comes first.
 
-> **Effortless payments for your customers, designed for growth**
+Select your country/currency to claim your offer:
 
-No need to spend weeks on paperwork or security compliance procedures. Enjoy enhanced conversions as we support shopper's favorite payment methods and ensure their utmost safety. We made payments intuitive and safe for merchants and their customers.
+- [Euro countries (EUR)](https://my.mollie.com/campaigns/signup/woocommerce2026?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=woocommerce&utm_medium=partner_listing&utm_content=plugin_page_cta_eur)
+- [United Kingdom (GBP)](https://my.mollie.com/campaigns/signup/woocommerce2026uk?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=woocommerce&utm_medium=partner_listing&utm_content=plugin_page_cta_gbp)
+- [Switzerland (CHF)](https://my.mollie.com/campaigns/signup/woocommerce2026ch?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=woocommerce&utm_medium=partner_listing&utm_content=plugin_page_cta_chf)
+- [Poland (PLN)](https://my.mollie.com/campaigns/signup/woocommerce2026pl?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=woocommerce&utm_medium=partner_listing&utm_content=plugin_page_cta_pln)
+- [Sweden (SEK)](https://my.mollie.com/campaigns/signup/woocommerce2026se?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=woocommerce&utm_medium=partner_listing&utm_content=plugin_page_cta_sek)
+- [Denmark (DKK)](https://my.mollie.com/campaigns/signup/woocommerce2026dk?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=woocommerce&utm_medium=partner_listing&utm_content=plugin_page_cta_dkk)
 
-= Payment methods =
+*\*Offer valid only when you sign up through the dedicated link for your country/currency. 0% transaction fees apply to the first €50,000 in processing volume processed before 31 December 2026, whichever limit is reached first. Available to new Mollie customers only. Standard transaction fees apply once either limit is reached. T&Cs apply.*
 
-Credit & Debit Cards:
+= What you get with Mollie for WooCommerce =
 
-* VISA (International)
-* MasterCard (International)
-* American Express (International)
-* Cartes Bancaires (France)
-* CartaSi (Italy)
-* V Pay (International)
-* Maestro (International)
+Everything you need to take payments in your store, all with one plugin.
 
-European and local payment methods:
+* **Local payments, shown locally:** Offer 35+ local and global payment methods and show the right options based on your customer's country, using the rules you set.
+* **A checkout built to convert:** Keep shoppers in your store, with secure embedded card fields and redirects only where the chosen payment method requires them.
+* **Express checkout:** Let eligible shoppers pay with wallets such as Apple Pay directly from product and cart pages.
+* **Built natively for WooCommerce:** Full support for WooCommerce Blocks and WooCommerce Subscriptions for recurring payments.
+* **One dashboard for your money:** Manage payments, refunds, chargebacks and cancellations, access insights and simplify accounting in one place.
+* **Transparent pricing:** Pay only for successful transactions, with no lock-in contracts or hidden fees.
+* **Support in your language:** Get help from people who understand your local market.
 
-* Bancomat Pay (Italy)
-* Bancontact (Belgium)
-* Belfius (Belgium)
-* Blik (Poland)
-* EPS (Austria)
-* Gift cards (Netherlands)
-* iDEAL (Netherlands)
-* KBC/CBC payment button (Belgium)
-* Klarna
-* MB Way (Portugal)
-* Multibanco (Portugal)
-* PaybyBank
-* Payconiq (Belgium, Luxembourg)
-* Przelewy24 (Poland)
-* Satispay (EU)
-* SEPA – Direct Debit (EU)
-* Swish (Sweden)
-* TWINT (Switzerland)
-* Vouchers (Netherlands, Belgium)
+= How WooCommerce businesses use Mollie =
 
-International payment methods:
+#### HomeWizard | Expanded into 28 countries with a lean team
 
-* Apple Pay (International)
-* PayPal (International)
-* Paysafecard (International)
+"With WooCommerce and Mollie, rolling out to a new country is as simple as checking a few boxes. That ease of use is everything for our growth." — Maurice van Wieringen, HomeWizard. [Read the story.](https://www.mollie.com/success-stories/homewizard-mollie-woocommerce-success)
 
-Pay after delivery payment methods:
+#### Ernest Wright | Sells to customers in 80 countries
 
-* Alma (France, Belgium)
-* Billie – Pay by Invoice for Businesses
-* iDEAL in3 – Pay in 3 installments, 0% interest
-* Riverty (Netherlands, Belgium, Germany, Austria)
+"Mollie is very modern, but also has a personal touch. And the personal touches for me are much more important than the last penny." — Paul Jacobs, co-owner, Ernest Wright. [Read the story.](https://www.mollie.com/success-stories/ernest-wright)
 
-= Get started with Mollie =
+#### Berry Boards | Moved every payment method to one provider
 
-1. Create a Mollie account
+"I thought it’d just be better to get everything under one provider so I don't have to worry about integrating so many different things. With Mollie, you can simply add and remove payment options with a click." — Mick Berry, founder and CEO, Berry Boards. [Read the story.](https://www.mollie.com/success-stories/berry-boards)
 
-New WooCommerce merchants can benefit from our limited-time offer: pay ZERO processing fees for your first month with Mollie when you sign up through the dedicated campaign link for your country/currency.  
+= Fewer steps between browsing and buying =
 
-Select your country/currency to claim the offer:  
+Every extra step at checkout is a chance for customers to drop off. Mollie keeps payments familiar and inside your store, so more of them complete their order.
 
-- [Euro countries (EUR)](https://my.mollie.com/campaigns/signup/woocommerce2026?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=wordpressorg&utm_medium=plugin_listing&utm_content=plugin_page_cta_eur)
-- [United Kingdom (GBP)](https://my.mollie.com/campaigns/signup/woocommerce2026uk?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=wordpressorg&utm_medium=plugin_listing&utm_content=plugin_page_cta_gbp) 
-- [Switzerland & Liechtenstein (CHF)](https://my.mollie.com/campaigns/signup/woocommerce2026ch?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=wordpressorg&utm_medium=plugin_listing&utm_content=plugin_page_cta_chf)  
-- [Poland (PLN)](https://my.mollie.com/campaigns/signup/woocommerce2026pl?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=wordpressorg&utm_medium=plugin_listing&utm_content=plugin_page_cta_pln) 
-- [Sweden (SEK)](https://my.mollie.com/campaigns/signup/woocommerce2026se?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=wordpressorg&utm_medium=plugin_listing&utm_content=plugin_page_cta_sek)  
-- [Denmark (DKK)](https://my.mollie.com/campaigns/signup/woocommerce2026dk?utm_campaign=CoMarketingCampaignWooCommerce2026&utm_source=wordpressorg&utm_medium=plugin_listing&utm_content=plugin_page_cta_dkk) 
+* **Buy in a few taps:** Express wallets like Apple Pay fill in customers' saved payment and shipping details, so they can complete checkout straight from your product or cart pages.
+* **Familiar ways to pay:** Customers see the local payment methods they know best, based on rules you set for each country.
+* **No unnecessary redirects:** Payment choice and card entry stay in your checkout, and customers only leave if their payment method requires it.
+* **Subscribers who stay subscribed:** With native WooCommerce Subscriptions support, customers pay once and renew automatically on a securely stored card or SEPA Direct Debit mandate, without re-entering their details.
 
-Offer valid only when you sign up through the dedicated link for your country/currency. T&Cs apply.  
+= One partner as you grow =
 
-2. Install **Mollie Payments for WooCommerce** on your WordPress website
-3. Activate Mollie in your WooCommerce webshop and enter your Mollie API key
-4. In your Mollie Dashboard, go to Settings > Website profiles and select the payment methods you want to offer
-5. Go to your WordPress Admin Panel. Open WooCommerce > Settings > Payments to check if your preferred methods are enabled
+Mollie supports businesses across Europe and the UK, so adding a new market doesn't mean adding a new provider.
 
-Once your Mollie account has been approved, you can start accepting payments. 
+* **Expand without the hassle:** Switch on new payment methods in your Mollie Dashboard as you enter new countries, with no changes to your WooCommerce setup.
+* **Manage your money in one place:** Handle payments, refunds and chargebacks, and choose daily, weekly or monthly payouts, from the dashboard or the Mollie app. Eligible businesses can access flexible financing through Mollie Capital to help fund their growth.
 
-> **Our pricing is always per transaction. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.**
+Since 2004, Mollie's mission has been to make payments and money management simple for every business, from a first online sale to a presence across Europe. Today, more than 250,000 businesses use Mollie to get paid and manage their money.
 
-= Features =
+= Technical details and setup =
 
-* Support for all available Mollie payment methods
-* Compatible with WooCommerce Subscriptions for recurring payments (Apple Pay, credit card, iDEAL, and more via SEPA Direct Debit)
-* Transparent pricing. No startup fees, no monthly fees, and no gateway fees. No hidden fees, period.
-* Edit the order, title and description of every payment method in WooCommerce checkout
-* Support for full and partial payment refunds
-* Configurable pay outs: daily, weekly, monthly - whatever you prefer
-* [Powerful dashboard](https://www.mollie.com/en/features/dashboard) on mollie.com to easily keep track of your payments
-* Fast in-house support. You will always be helped by someone who knows our products intimately
-* Multiple translations: English, Dutch, German, French, Italian, Spanish
-* Event log for debugging purposes
-* WordPress Multisite support
-* Works well with multilingual plugins like WPML/Polylang
+Everything you need to install, configure and run Mollie in your WooCommerce store.
 
-= Join the Mollie Community =
+#### Install and connect
 
-Become part of Mollie's growing community and gain access to our comprehensive support network, including a [Discord Developer Community](https://discord.gg/y2rbjqszbs) to stay connected and informed.
+https://www.youtube.com/watch?v=DnBhqwR-dl8
 
-> **Your success is our mission. With Mollie, simplify your payments and focus on growing your business.**
+1. [Create your Mollie account.](https://my.mollie.com/dashboard/signup)
+2. Install the Mollie Payments for WooCommerce plugin.
+3. Connect your store using your test API key, then test your checkout.
+4. Add your live API key and activate your payment methods to start selling.
 
-Feel free to contact info@mollie.com if you have any questions or comments about this plugin.
+For full written instructions, see the [Mollie for WooCommerce setup guide](https://docs.mollie.com/docs/woo-get-started).
 
-= More about Mollie =
+#### Payment methods supported in the plugin
 
-Mollie offers a single platform for businesses to get paid and manage their money. One that makes payments, reconciliation, reporting, fraud prevention, and financing simple for all – from startups to enterprises.
+* **Cards:** Visa, Mastercard, American Express
+* **Wallets:** Apple Pay, PayPal
+* **Pay later:** Alma, Billie, Billink, in3, Klarna, Riverty
+* **Local and bank payments:** Bancontact, BANCOMAT Pay, Belfius Pay Button, Bizum, BLIK, EPS, iDEAL, KBC Payment Button, MB Way, MobilePay, Multibanco, Pay by Bank, PostePay, Przelewy24, Satispay, SEPA Bank Transfer, SEPA Direct Debit, Swish, TWINT, Vipps, Wero
+* **Gift cards and vouchers:** Gift cards, vouchers, paysafecard
 
-Founded in 2004, Mollie’s mission is to make payments and money management effortless for every business in the UK and Europe. Their 800-strong team works from offices across the continent, including Amsterdam, Ghent, Lisbon, London, Maastricht, Milan, Munich, and Paris. 
+#### How the plugin is built
 
-Today, more than 250,000 businesses use Mollie to drive revenue, reduce costs, and manage funds.
+* **Checkout:** Native integration with the WooCommerce Blocks API, plus support for the classic shortcode checkout
+* **Card security:** Card fields run in secure iframes served from Mollie's domain, so card data never reaches your server and your PCI DSS scope stays smaller
+* **Recurring payments:** Native WooCommerce Subscriptions support, using stored card tokens and SEPA Direct Debit mandates
+* **Multilingual and multisite:** Compatible with WPML and Polylang, with WordPress Multisite support
+* **Debugging:** Built-in event log for troubleshooting payment issues
+
+Join Mollie’s [developer community](https://discord.gg/y2rbjqszbs) on Discord to stay up to date and share tips with other WooCommerce developers.
 
 == Frequently Asked Questions ==
 
-= I can't install the plugin, the plugin is displayed incorrectly =
+= Why can’t I install the plugin, or why does it display incorrectly? =
 
-Please temporarily enable the [WordPress Debug Mode](https://codex.wordpress.org/Debugging_in_WordPress). Edit your `wp-config.php` and set the constants `WP_DEBUG` and `WP_DEBUG_LOG` to `true` and try
-it again. When the plugin triggers an error, WordPress will log the error to the log file `/wp-content/debug.log`. Please check this file for errors. When done, don't forget to turn off
-the WordPress debug mode by setting the two constants `WP_DEBUG` and `WP_DEBUG_LOG` back to `false`.
+Please temporarily enable WordPress Debug Mode. Edit your `wp-config.php` and set the constants `WP_DEBUG` and `WP_DEBUG_LOG` to `true`, then try again. When the plugin triggers an error, WordPress will log it to `/wp-content/debug.log`. Please check this file for errors. Once you’re done, turn the two constants back to `false`.
 
-= I get a white screen when opening ... =
+= Why do I see a white screen when activating or opening the plugin? =
 
-Most of the time a white screen means a PHP error. Because PHP won't show error messages on default for security reasons, the page is white. Please turn on the WordPress Debug Mode to turn on PHP error messages (see previous answer).
+A white screen usually means a PHP error. PHP doesn’t show error messages by default for security reasons, so the page appears blank. Turn on WordPress Debug Mode to see the underlying error (see the previous question).
 
-= The Mollie payment gateways aren't displayed in my checkout =
+= Why aren’t Mollie’s payment methods showing at checkout? =
 
-* Please go to WooCommerce -> Settings -> Payments in your WordPress admin and scroll down to the Mollie settings section.
-* Check which payment gateways are disabled.
-* Go to the specific payment gateway settings page to find out why the payment gateway is disabled.
+Make sure the payment method is activated in your Mollie account. A payment method must be activated in your Mollie Dashboard before it can be enabled in WordPress. Then go to WooCommerce > Settings > Payments in your WordPress admin and scroll down to the Mollie settings section, and check which payment methods are disabled. Open the specific payment method’s settings page to find out why it’s disabled.
 
-= The order status is not getting updated after successfully completing the payment =
+= Why isn’t my order status updating after a successful payment? =
 
-* Please check the Mollie log file located in `/wp-content/uploads/wc-logs/` or `/wp-content/plugin/woocommerce/logs` for debug info. Please search for the correct order number and check if Mollie has called the shop Webhook to report the payment status.
-* Do you have maintenance mode enabled? Please make sure to whitelist the 'wc-api' endpoint otherwise Mollie can't report the payment status to your website.
-* Please check your Mollie dashboard to check if there are failed webhook reports. Mollie tried to report the payment status to your website but something went wrong.
-* Contact info@mollie.com with your Mollie partner ID and the order number. We can investigate the specific payment and check whether Mollie successfully reported the payment state to your webshop.
+Check the Mollie log file, located at `/wp-content/uploads/wc-logs/` or `/wp-content/plugin/woocommerce/logs`, for debug information. Search for the order number and check whether Mollie called your webshop’s webhook to report the payment status. If you have maintenance mode enabled, make sure the wc-api endpoint is whitelisted, otherwise Mollie can’t report the payment status to your site. Check your Mollie Dashboard for failed webhook reports, which shows if Mollie tried to report the payment status but something went wrong. If none of this resolves it, contact info@mollie.com with your Mollie partner ID and the order number, and we’ll check whether Mollie successfully reported the payment status to your webshop.
 
-= Payment gateways and mails aren't always translated =
+= Why aren’t payment methods and emails always shown in my language? =
 
-This plugin uses [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/mollie-payments-for-woocommerce) for translations. WordPress will automatically add those translations to your website if they hit 100% completion at least once. If you are not seeing the Mollie plugin as translated on your website, the plugin is probably not translated (completely) into your language (you can view the status on the above URL).
+This plugin is translated through [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/mollie-payments-for-woocommerce/). WordPress automatically adds a language’s translations to your site once they reach 100% completion. If the plugin isn’t appearing in your language, it likely hasn’t been fully translated yet, you can check the current status on translate.wordpress.org.
 
-You can either download and use the incomplete translations or help us get the translation to 100% by translating it.
+You can either download the incomplete translation yourself or help us complete it. Go to the plugin’s page on translate.wordpress.org, click the percentage in the “Stable” column for your language, scroll down to “Export”, and choose “All current” and “MO – Machine Object”. Upload the file to plugins/languages/mollie-payments-for-woocommerce/, and repeat for any other languages you use. If you’d like to help translate the plugin instead, see the [translating strings instructions](https://make.wordpress.org/polyglots/handbook/tools/glotpress-translate-wordpress-org/#translating-strings) on make.wordpress.org.
 
-To download translations manually:
-1. Go to [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/mollie-payments-for-woocommerce/)
-2. Click on the percentage in the "Stable" column for your language.
-3. Scroll down to "Export".
-4. Choose "All current" and "MO - Machine Object"
-5. Upload this file to plugins/languages/mollie-payments-for-woocommerce/.
-6. Repeat this for all your translations.
+= Can I add payment fees to specific payment methods? =
 
-If you want to help translate the plugin, read the instructions in the [Translate strings instructions](https://make.wordpress.org/polyglots/handbook/tools/glotpress-translate-wordpress-org/#translating-strings).
+Yes, directly in the plugin. Go to WooCommerce > Settings > Mollie Settings, select Edit next to the payment method, and choose a Payment Surcharge: a fixed fee, a percentage, or a combination of both. Check your local legislation before adding a payment surcharge.
 
-= Can I add payment fees to payment methods? =
+= Can I show different payment methods based on my customer’s country? =
 
-Yes, you can with a separate plugin. At the moment we have tested and can recommend [Payment Gateway Based Fees and Discounts for WooCommerce](https://wordpress.org/plugins/checkout-fees-for-woocommerce/). Other plugins might also work. For more specific information, also see [helpful snippets](https://github.com/mollie/WooCommerce/wiki/Helpful-snippets#add-payment-fee-to-payment-methods).
+Yes. Go to WooCommerce > Settings > Mollie Settings, select Edit next to the payment method, and use the “Sell to specific countries” field to choose which countries see it. By default, Mollie displays all your active payment methods in every country.
 
-= Can I set up payment methods to show based on customers country? =
+= Why do orders paid by bank transfer or direct debit get the status “on-hold”? =
 
-Yes, you can with a separate plugin. At the moment we have tested and can recommend [WooCommerce - Country Based Payments](https://wordpress.org/plugins/woocommerce-country-based-payments/). Other plugins might also work.
+These payment methods take longer than a few hours to complete. The order status is set to “on-hold” to stop WooCommerce’s “Hold stock (minutes)” setting from cancelling the order. Stock is also reserved for these orders and restored automatically if the payment fails or is cancelled. You can change the initial order status for these payment methods on their individual settings page.
 
-= Why do orders with payment method BankTransfer and Direct Debit get the status 'on-hold'? =
+= Does this plugin work with the WooCommerce Blocks checkout? =
 
-These payment methods take longer than a few hours to complete. The order status is set to 'on-hold' to prevent the WooCommerce setting 'Hold stock (minutes)' (https://woocommerce.com/document/configuring-woocommerce-settings/products/#inventory) will
-cancel the order. The order stock is also reduced to reserve stock for these orders. The stock is restored if the payment fails or is cancelled. You can change the initial order status for these payment methods on their setting page.
+Yes. The plugin has native support for WooCommerce Blocks, built on the Blocks API, so you get the checkout experience WooCommerce is moving towards without relying on a workaround.
+
+= Does this plugin support WooCommerce Subscriptions? =
+
+Yes, natively. Card customers renew on securely stored tokens, and customers who first pay through a supported method can be set up on a SEPA Direct Debit mandate for future charges, with no separate subscriptions add-on to configure.
+
+= Can I offer Apple Pay on my product and cart pages, not just at checkout? =
+
+Yes. Eligible customers can pay with Apple Pay directly from product and cart pages, using their saved payment and shipping details, without opening the full checkout form first. For full Apple Pay button configuration instructions, read the [guide](https://docs.mollie.com/docs/woo-set-up-payment-options#display-the-apple-pay-button).
+
+= Do I need a separate Mollie account to use this plugin? =
+
+Yes. You’ll need a Mollie account alongside the plugin itself. You can set one up during installation and connect it directly from your WordPress dashboard.
+
+= Can I test payments before going live? =
+
+Yes. Mollie supports test payments, so you can run your full checkout flow before switching your store over to live transactions.
+
+= Is there a cost to use this plugin? =
+
+The plugin itself is free. You only pay Mollie for successful transactions, with no setup fees or monthly fees. For current pricing details, see [mollie.com/pricing](https://www.mollie.com/pricing).
 
 = I have a different question about this plugin =
 
-Please contact info@mollie.com with your Mollie partner ID, please describe your problem as detailed as possible. Include screenshots where appropriate.
-Where possible, also include the Mollie log file. You can find the Mollie log files in `/wp-content/uploads/wc-logs/` or `/wp-content/plugin/woocommerce/logs`.
+Please contact info@mollie.com with your Mollie partner ID and a detailed description of your problem, including screenshots where appropriate. Where possible, also include the Mollie log file, found at `/wp-content/uploads/wc-logs/` or `/wp-content/plugin/woocommerce/logs`.
 
 == Screenshots ==
 
-1. The global Mollie settings are used by all the payment gateways. Please insert your Mollie API key to start.
-2. Change the title and description for every payment gateway. Some gateways have special options.
-3. The available payment gateways in the checkout.
-4. The order received page will display the payment status and customer details if available.
-5. The order received page for the gateway bank transfer will display payment instructions.
-6. Some payment methods support refunds. The 'Refund' button will be available when the payment method supports refunds.
-7. Within Mollie Dashboard, intuitive design meets clever engineering, allowing you to get more work done, in less time.
-8. Also in Mollie Dashboard, get your administration done quick. You’ll have a detailed overview of your current balance.
-9. Statistics with a double graph gives gives you extensive insights and data on how your business is performing.
-10. Mollie Checkout turns a standard payment form into a professional experience that drives conversions.
+1. Customers choose from local and global payment methods without leaving your checkout.
+2. Track payments, refunds, and chargebacks from one dashboard.
+3. Card details stay inside your checkout, with no unnecessary redirects.
 
 == Installation ==
 
@@ -208,10 +186,14 @@ Where possible, also include the Mollie log file. You can find the Mollie log fi
 
 = Automatic installation =
 
-1. Install the plugin via Plugins -> New plugin. Search for 'Mollie Payments for WooCommerce'.
-2. Activate the 'Mollie Payments for WooCommerce' plugin through the 'Plugins' menu in WordPress
-3. Set your Mollie API key at WooCommerce -> Settings -> Mollie Settings (or use the *Mollie Settings* link in the Plugins overview)
-4. You're done, the active payment methods should be visible in the checkout of your webshop.
+https://www.youtube.com/watch?v=DnBhqwR-dl8
+
+1. [Create your Mollie account.](https://my.mollie.com/dashboard/signup)
+2. Install the Mollie Payments for WooCommerce plugin.
+3. Connect your store using your test API key, then test your checkout.
+4. Add your live API key and activate your payment methods to start selling.
+
+For full written instructions, see the [Mollie for WooCommerce setup guide](https://docs.mollie.com/docs/woo-get-started).
 
 = Manual installation =
 

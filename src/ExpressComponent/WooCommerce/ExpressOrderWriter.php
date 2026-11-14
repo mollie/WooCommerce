@@ -11,6 +11,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingLine;
 use WC_Order;
 use WC_Order_Item_Shipping;
+use WC_Order_Item_Tax;
 /**
  * Writes only what differs and notes only once, so a retried webhook changes nothing.
  * Callers pass the order as OrderLock::withFreshOrder() read it.
@@ -99,8 +100,11 @@ final class ExpressOrderWriter
         }
         $taxes = [];
         foreach ($line->taxes() as $rateId => $tax) {
+            // The shipping tax class can be one no item has: its rate is not on the order yet.
             if (!isset($taxItems[$rateId])) {
-                continue;
+                $taxItems[$rateId] = new WC_Order_Item_Tax();
+                $taxItems[$rateId]->set_rate($rateId);
+                $order->add_item($taxItems[$rateId]);
             }
             $taxes[$rateId] = $tax->toDecimal();
             $taxItems[$rateId]->set_shipping_tax_total($tax->toDecimal());

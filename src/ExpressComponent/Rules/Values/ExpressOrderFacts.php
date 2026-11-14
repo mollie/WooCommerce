@@ -11,7 +11,7 @@ final class ExpressOrderFacts
      * @param list<string> $processed
      * @param bool $webhookNeedsPayment WebhookGuards::needsPayment().
      * @param bool $holdsShippingLine The order already has a shipping line.
-     * @param list<ShippingTaxRate> $shippingTaxRates The order's rates that also tax shipping, in priority order.
+     * @param list<ShippingTaxRate> $shippingTaxRates The rates WooCommerce taxes this order's shipping with, in its order; read only for a payment.
      */
     public function __construct(private int $orderId, private string $expressRef, private string $createdVia, private ?Money $total, private ?string $trackedPaymentId, private bool $needsPayment, private bool $holdsShipping, private bool $needsShipping, private ?string $cancelledBy = null, private array $processed = [], private bool $webhookNeedsPayment = \false, private bool $cancelled = \false, private bool $holdsShippingLine = \false, private array $shippingTaxRates = [])
     {

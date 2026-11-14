@@ -45,6 +45,9 @@ final class ExpressAvailability
         if (\Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility::decide($cart->taxEnabled(), $cart->taxBasedOn(), $cart->taxCountries(), $cart->ratesVaryWithinCountry()) === \Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility::INCOMPATIBLE) {
             return ExpressAvailabilityResult::unavailable('tax_depends_on_address');
         }
+        if (!\Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility::cartPricedForTaxCountry($cart->taxEnabled(), $cart->taxBasedOn(), $cart->taxCountries(), $cart->taxableCountry())) {
+            return ExpressAvailabilityResult::unavailable('tax_depends_on_address');
+        }
         $total = $cart->total();
         if ($total !== null && $total->minorUnits() <= 0) {
             return ExpressAvailabilityResult::unavailable('nothing_to_pay');

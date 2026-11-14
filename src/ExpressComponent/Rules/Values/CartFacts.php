@@ -18,8 +18,9 @@ final class CartFacts
      * @param string $taxBasedOn 'base', 'billing' or 'shipping': the address the taxes follow.
      * @param list<string> $taxCountries Countries whose address the taxes can follow (shipping or selling countries); empty when they could not be read.
      * @param bool $ratesVaryWithinCountry The tax rates of the only such country differ by state, postcode or city; false when the taxes do not follow the customer's address, where it cannot matter.
+     * @param string $taxableCountry The country the cart's taxes were calculated for; empty when the customer has none.
      */
-    public function __construct(private array $lines, private bool $needsShipping, private bool $shippingDestinationComplete, private bool $shippingRateChosen, private ?Money $total = null, private array $fees = [], private array $coupons = [], private ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\CartShipping $shipping = null, private string $cartHash = '', private string $destination = '', private bool $taxEnabled = \false, private string $taxBasedOn = 'base', private array $taxCountries = [], private bool $ratesVaryWithinCountry = \false)
+    public function __construct(private array $lines, private bool $needsShipping, private bool $shippingDestinationComplete, private bool $shippingRateChosen, private ?Money $total = null, private array $fees = [], private array $coupons = [], private ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\CartShipping $shipping = null, private string $cartHash = '', private string $destination = '', private bool $taxEnabled = \false, private string $taxBasedOn = 'base', private array $taxCountries = [], private bool $ratesVaryWithinCountry = \false, private string $taxableCountry = '')
     {
     }
     /**
@@ -89,5 +90,9 @@ final class CartFacts
     public function ratesVaryWithinCountry(): bool
     {
         return $this->ratesVaryWithinCountry;
+    }
+    public function taxableCountry(): string
+    {
+        return $this->taxableCountry;
     }
 }

@@ -98,6 +98,8 @@ class ExpressShippingSnapshot
             $cart->set_cart_contents($contents);
             $cart->set_applied_coupons($saved['coupons']);
             $customer->set_shipping_location($address['country'], $address['state'], $address['postcode'], $address['city']);
+            // Mollie sends no billing address: taxes that follow it would be those of no country.
+            $customer->set_billing_location($address['country'], $address['state'], $address['postcode'], $address['city']);
             $cart->calculate_totals();
             $packages = WC()->shipping()->get_packages();
             // Mollie takes one list of options for the whole order: several shipments have no single price.
@@ -149,7 +151,9 @@ class ExpressShippingSnapshot
      */
     private function store(string $secret, array $saved, int $lifetimeSeconds): bool
     {
-        return set_transient($this->name($secret), $saved, $lifetimeSeconds);
+        $name = $this->name($secret);
+        // WordPress answers false when the value is already stored: an earlier attempt saved this same cart.
+        return set_transient($name, $saved, $lifetimeSeconds) || get_transient($name) === $saved;
     }
     /**
      * @return array{hash: string, items: array<string, array<string, mixed>>, coupons: list<string>, sessionId: string}|null

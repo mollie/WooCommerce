@@ -136,9 +136,8 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
 {
     $gatewaySettings = get_option($gatewaySettingsName);
     $optionValue = checkIndexExistOrDefault($gatewaySettings, 'issuers_dropdown_shown', 'yes');
-    return $optionValue == 'yes';
+    return $optionValue === 'yes';
 }
-
 
 /**
  * Check if is a Mollie gateway
@@ -148,13 +147,8 @@ function mollieWooCommerceIsDropdownEnabled($gatewaySettingsName)
 */
 function mollieWooCommerceIsMollieGateway($gateway)
 {
-    if (
-        (is_string($gateway) && strpos($gateway, 'mollie_wc_gateway_') !== false)
-        || (is_object($gateway) && strpos($gateway->id, 'mollie_wc_gateway_') !== false)
-    ) {
-        return true;
-    }
-    return false;
+    $id = is_string($gateway) ? $gateway : (is_object($gateway) ? $gateway->id : '');
+    return strpos($id, 'mollie_wc_gateway_') === 0;
 }
 
 /**
@@ -174,4 +168,20 @@ function mollieWooCommerceFormatCurrencyValue($value, $currency)
     }
 
     return number_format($value, 2, '.', '');
+}
+
+/**
+ * Whether the Express Component owns the surface, so the legacy express buttons step aside.
+ *
+ * @param string $surface checkout, cart or product
+ *
+ * @return bool
+ */
+function mollieWooCommerceExpressOwnsSurface(string $surface): bool
+{
+    try {
+        return apply_filters('mollie_wc_express_owns_surface', false, $surface) === true;
+    } catch (\Throwable $throwable) {
+        return false;
+    }
 }

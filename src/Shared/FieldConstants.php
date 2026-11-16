@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Shared;
 
 class FieldConstants
@@ -13,4 +12,6 @@ class FieldConstants
     public const RIVERTY_PHONE = 'billing_phone_riverty';
     public const RIVERTY_BIRTHDATE = 'billing_birthdate_riverty';
     public const BIZUM_PHONE = 'billing_phone_bizum';
+    public const VIPPS_PHONE = 'billing_phone_vipps';
+    public const MOBILEPAY_PHONE = 'billing_phone_mobilepay';
 }

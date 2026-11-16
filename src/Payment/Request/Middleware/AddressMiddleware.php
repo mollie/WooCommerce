@@ -1,13 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
+use Mollie\libphonenumber\NumberParseException;
+use Mollie\libphonenumber\PhoneNumberFormat;
+use Mollie\libphonenumber\PhoneNumberUtil;
 use Mollie\WooCommerce\Shared\FieldConstants;
 use stdClass;
 use WC_Order;
-
 /**
  * Class AddressMiddleware
  *
@@ -15,13 +16,12 @@ use WC_Order;
  *
  * @package Mollie\WooCommerce\Payment\Request\Middleware
  */
-class AddressMiddleware implements RequestMiddlewareInterface
+class AddressMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     public const MAXIMAL_LENGTH_ADDRESS = 100;
     public const MAXIMAL_LENGTH_POSTALCODE = 20;
     public const MAXIMAL_LENGTH_CITY = 200;
     public const MAXIMAL_LENGTH_REGION = 200;
-
     /**
      * Invoke the middleware.
      *
@@ -40,32 +40,19 @@ class AddressMiddleware implements RequestMiddlewareInterface
             $shippingAddress = $this->createShippingAddress($order);
         }
         // Only add billingAddress if all required fields are set or on order API
-        if (
-            $context === 'order' || (
-            !empty($billingAddress->streetAndNumber)
-            && !empty($billingAddress->postalCode)
-            && !empty($billingAddress->city)
-            && !empty($billingAddress->country))
-        ) {
+        if ($context === 'order' || !empty($billingAddress->streetAndNumber) && !empty($billingAddress->postalCode) && !empty($billingAddress->city) && !empty($billingAddress->country)) {
             $requestData['billingAddress'] = $billingAddress;
         }
-        //set billingAddress email when no billing address is set for payment API
-        if (empty($requestData['billingAddress']) && $context === 'payment' && !empty($billingAddress->email)) {
-            $requestData['billingAddress'] = new stdClass();
-            $requestData['billingAddress']->email = $billingAddress->email;
+        //set billingAddress email or phone when no billing address is set for payment API and information available
+        if ($billingAddress instanceof stdClass && $this->shouldAddMinimalBillingAddress($requestData, $context, $billingAddress)) {
+            $requestData['billingAddress'] = $this->createMinimalBillingAddress($billingAddress);
         }
         // Only add shippingAddress if all required fields are set
-        if (
-            !empty($shippingAddress->streetAndNumber)
-            && !empty($shippingAddress->postalCode)
-            && !empty($shippingAddress->city)
-            && !empty($shippingAddress->country)
-        ) {
+        if (!empty($shippingAddress->streetAndNumber) && !empty($shippingAddress->postalCode) && !empty($shippingAddress->city) && !empty($shippingAddress->country)) {
             $requestData['shippingAddress'] = $shippingAddress;
         }
         return $next($requestData, $order, $context);
     }
-
     /**
      * Create the billing address object.
      *
@@ -76,67 +63,22 @@ class AddressMiddleware implements RequestMiddlewareInterface
     {
         // Setup billing and shipping objects
         $billingAddress = new stdClass();
-
         // Get user details
-        $billingAddress->givenName = (ctype_space(
-            $order->get_billing_first_name()
-        )) ? null : $order->get_billing_first_name();
-        $billingAddress->familyName = (ctype_space(
-            $order->get_billing_last_name()
-        )) ? null : $order->get_billing_last_name();
-        $billingAddress->email = (ctype_space($order->get_billing_email()))
-            ? null : $order->get_billing_email();
+        $billingAddress->givenName = ctype_space($order->get_billing_first_name()) ? null : $order->get_billing_first_name();
+        $billingAddress->familyName = ctype_space($order->get_billing_last_name()) ? null : $order->get_billing_last_name();
+        $billingAddress->email = ctype_space($order->get_billing_email()) ? null : $order->get_billing_email();
         // Create billingAddress object
-        $billingAddress->streetAndNumber = (ctype_space(
-            $order->get_billing_address_1()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_address_1(),
-                self::MAXIMAL_LENGTH_ADDRESS
-            );
-        $billingAddress->streetAdditional = (ctype_space(
-            $order->get_billing_address_2()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_address_2(),
-                self::MAXIMAL_LENGTH_ADDRESS
-            );
-        $billingAddress->postalCode = (ctype_space(
-            $order->get_billing_postcode()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_postcode(),
-                self::MAXIMAL_LENGTH_POSTALCODE
-            );
-        $billingAddress->city = (ctype_space($order->get_billing_city()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_city(),
-                self::MAXIMAL_LENGTH_CITY
-            );
-        $billingAddress->region = (ctype_space($order->get_billing_state()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_state(),
-                self::MAXIMAL_LENGTH_REGION
-            );
-        $billingAddress->country = (ctype_space($order->get_billing_country()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_billing_country(),
-                self::MAXIMAL_LENGTH_REGION
-            );
+        $billingAddress->streetAndNumber = ctype_space($order->get_billing_address_1()) ? null : $this->maximalFieldLengths($order->get_billing_address_1(), self::MAXIMAL_LENGTH_ADDRESS);
+        $billingAddress->streetAdditional = ctype_space($order->get_billing_address_2()) ? null : $this->maximalFieldLengths($order->get_billing_address_2(), self::MAXIMAL_LENGTH_ADDRESS);
+        $billingAddress->postalCode = ctype_space($order->get_billing_postcode()) ? null : $this->maximalFieldLengths($order->get_billing_postcode(), self::MAXIMAL_LENGTH_POSTALCODE);
+        $billingAddress->city = ctype_space($order->get_billing_city()) ? null : $this->maximalFieldLengths($order->get_billing_city(), self::MAXIMAL_LENGTH_CITY);
+        $billingAddress->region = ctype_space($order->get_billing_state()) ? null : $this->maximalFieldLengths($order->get_billing_state(), self::MAXIMAL_LENGTH_REGION);
+        $billingAddress->country = ctype_space($order->get_billing_country()) ? null : $this->maximalFieldLengths($order->get_billing_country(), self::MAXIMAL_LENGTH_REGION);
         $billingAddress->organizationName = $this->billingCompanyField($order);
         $phone = $this->getPhoneNumber($order);
-        $billingAddress->phone = (ctype_space($phone))
-            ? null
-            : $this->getFormattedPhoneNumber($phone, $billingAddress->country);
+        $billingAddress->phone = ctype_space($phone) ? null : $this->getFormattedPhoneNumber($phone, $billingAddress->country);
         return $billingAddress;
     }
-
     /**
      * Create the shipping address object.
      *
@@ -147,68 +89,50 @@ class AddressMiddleware implements RequestMiddlewareInterface
     {
         $shippingAddress = new stdClass();
         // Get user details
-        $shippingAddress->givenName = (ctype_space(
-            $order->get_shipping_first_name()
-        )) ? null : $order->get_shipping_first_name();
-        $shippingAddress->familyName = (ctype_space(
-            $order->get_shipping_last_name()
-        )) ? null : $order->get_shipping_last_name();
-        $shippingAddress->email = (ctype_space($order->get_billing_email()))
-            ? null
-            : $order->get_billing_email(); // WooCommerce doesn't have a shipping email
-
+        $shippingAddress->givenName = ctype_space($order->get_shipping_first_name()) ? null : $order->get_shipping_first_name();
+        $shippingAddress->familyName = ctype_space($order->get_shipping_last_name()) ? null : $order->get_shipping_last_name();
+        $shippingAddress->email = ctype_space($order->get_billing_email()) ? null : $order->get_billing_email();
+        // WooCommerce doesn't have a shipping email
         // Create shippingAddress object
-        $shippingAddress->streetAndNumber = (ctype_space(
-            $order->get_shipping_address_1()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_address_1(),
-                self::MAXIMAL_LENGTH_ADDRESS
-            );
-        $shippingAddress->streetAdditional = (ctype_space(
-            $order->get_shipping_address_2()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_address_2(),
-                self::MAXIMAL_LENGTH_ADDRESS
-            );
-        $shippingAddress->postalCode = (ctype_space(
-            $order->get_shipping_postcode()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_postcode(),
-                self::MAXIMAL_LENGTH_POSTALCODE
-            );
-        $shippingAddress->city = (ctype_space($order->get_shipping_city()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_city(),
-                self::MAXIMAL_LENGTH_CITY
-            );
-        $shippingAddress->region = (ctype_space($order->get_shipping_state()))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_state(),
-                self::MAXIMAL_LENGTH_REGION
-            );
-        $shippingAddress->country = (ctype_space(
-            $order->get_shipping_country()
-        ))
-            ? null
-            : $this->maximalFieldLengths(
-                $order->get_shipping_country(),
-                self::MAXIMAL_LENGTH_REGION
-            );
+        $shippingAddress->streetAndNumber = ctype_space($order->get_shipping_address_1()) ? null : $this->maximalFieldLengths($order->get_shipping_address_1(), self::MAXIMAL_LENGTH_ADDRESS);
+        $shippingAddress->streetAdditional = ctype_space($order->get_shipping_address_2()) ? null : $this->maximalFieldLengths($order->get_shipping_address_2(), self::MAXIMAL_LENGTH_ADDRESS);
+        $shippingAddress->postalCode = ctype_space($order->get_shipping_postcode()) ? null : $this->maximalFieldLengths($order->get_shipping_postcode(), self::MAXIMAL_LENGTH_POSTALCODE);
+        $shippingAddress->city = ctype_space($order->get_shipping_city()) ? null : $this->maximalFieldLengths($order->get_shipping_city(), self::MAXIMAL_LENGTH_CITY);
+        $shippingAddress->region = ctype_space($order->get_shipping_state()) ? null : $this->maximalFieldLengths($order->get_shipping_state(), self::MAXIMAL_LENGTH_REGION);
+        $shippingAddress->country = ctype_space($order->get_shipping_country()) ? null : $this->maximalFieldLengths($order->get_shipping_country(), self::MAXIMAL_LENGTH_REGION);
         $shippingPhone = $this->isPhoneValid($order->get_shipping_phone()) ? $order->get_shipping_phone() : '';
-        $shippingAddress->phone = (ctype_space($order->get_shipping_phone()))
-            ? null
-            : $this->getFormattedPhoneNumber($shippingPhone, $shippingAddress->country);
+        $shippingAddress->phone = ctype_space($order->get_shipping_phone()) ? null : $this->getFormattedPhoneNumber($shippingPhone, $shippingAddress->country);
         return $shippingAddress;
     }
-
+    /**
+     * Check if minimal billing address should be added.
+     *
+     * @param array<string, mixed> $requestData The request data.
+     * @param mixed $context The context.
+     * @param stdClass $billingAddress The billing address object.
+     * @return bool True if minimal billing address should be added.
+     */
+    private function shouldAddMinimalBillingAddress(array $requestData, $context, stdClass $billingAddress): bool
+    {
+        return empty($requestData['billingAddress']) && $context === 'payment' && (!empty($billingAddress->email) || !empty($billingAddress->phone));
+    }
+    /**
+     * Create minimal billing address with only email and/or phone.
+     *
+     * @param stdClass $billingAddress The billing address object.
+     * @return stdClass The minimal billing address object.
+     */
+    private function createMinimalBillingAddress(stdClass $billingAddress): stdClass
+    {
+        $minimalAddress = new stdClass();
+        if (!empty($billingAddress->email)) {
+            $minimalAddress->email = $billingAddress->email;
+        }
+        if (!empty($billingAddress->phone)) {
+            $minimalAddress->phone = $billingAddress->phone;
+        }
+        return $minimalAddress;
+    }
     /**
      * Get the phone number from the order or the posted field.
      *
@@ -217,21 +141,14 @@ class AddressMiddleware implements RequestMiddlewareInterface
      */
     protected function getPhoneNumber($order): string
     {
-        $phoneSources = [
-            $order->get_billing_phone(),
-            $order->get_shipping_phone(),
-            $this->getPostedPhoneNumber($order),
-        ];
-
+        $phoneSources = [$order->get_billing_phone(), $order->get_shipping_phone(), $this->getPostedPhoneNumber($order)];
         foreach ($phoneSources as $phone) {
             if (!empty($phone) && $this->isPhoneValid($phone)) {
                 return $phone;
             }
         }
-
         return '';
     }
-
     /**
      * Get the phone number from POST data.
      *
@@ -241,57 +158,68 @@ class AddressMiddleware implements RequestMiddlewareInterface
     private function getPostedPhoneNumber(WC_Order $order): string
     {
         $postedField = $this->getPhonePostedFieldName($order);
-
         //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $phoneFromSpecificField = wc_clean(wp_unslash($_POST[$postedField] ?? ''));
-
         if (!empty($phoneFromSpecificField)) {
             return $phoneFromSpecificField;
         }
-
         if ($postedField !== 'billing_phone') {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             return wc_clean(wp_unslash($_POST['billing_phone'] ?? ''));
         }
-
         return '';
     }
-
     /**
-     * Format the phone number in E.164.
+     * Format the phone number in E.164 using libphonenumber.
+     *
+     * A number already in international form (starting with '+') is trusted as
+     * explicit intent and only normalized. A national number is parsed using the
+     * address country as the region hint and must be valid for that region.
+     * Anything that cannot be turned into a valid E.164 number returns null so no
+     * invalid number is ever sent to the Mollie API — a null phone is acceptable
+     * for payment methods that do not require one.
      *
      * @param string $phone The phone number.
-     * @return string|null The formatted phone number.
+     * @param string|null $countryCode The ISO 3166-1 alpha-2 region hint.
+     * @return string|null The E.164 formatted phone number, or null.
      */
     protected function getFormattedPhoneNumber(string $phone, $countryCode): ?string
     {
-        //remove whitespaces and all non numerical characters except +
-        $phone = preg_replace('/[^0-9+]+/', '', $phone);
-        if (!is_string($phone) || strlen($phone) < 9) {
+        $phone = trim($phone);
+        if ($phone === '') {
             return null;
         }
-
-        if (strpos($phone, '00') === 0) {
-            $phone = '+' . substr($phone, 2);
+        $region = is_string($countryCode) && $countryCode !== '' ? strtoupper($countryCode) : null;
+        $isInternational = strpos($phone, '+') === 0;
+        $phoneUtil = PhoneNumberUtil::getInstance();
+        try {
+            $parsed = $phoneUtil->parse($phone, $region);
+        } catch (NumberParseException $exception) {
+            return null;
         }
-        if (strpos($phone, '0') === 0) {
-            $prefix = $this->countryCodeToPhonePrefix($countryCode);
-            if ($prefix) {
-                $phone = '+' . $prefix . substr($phone, 1);
-            }
+        // National numbers must be valid for the region hint; an international
+        // number is trusted as long as it parses.
+        if (!$isInternational && !$phoneUtil->isValidNumber($parsed)) {
+            return null;
         }
-
-        if (strlen($phone) <= 16) {
-            return $phone;
-        }
-        return null;
+        return $phoneUtil->format($parsed, PhoneNumberFormat::E164);
     }
-
-    private function isPhoneValid($billing_phone)
+    /**
+     * Loose pre-filter used only to pick a usable phone source (billing, shipping
+     * or POST). Authoritative validation happens in getFormattedPhoneNumber() via
+     * libphonenumber, so this must not drop formattable national numbers.
+     *
+     * @param mixed $billing_phone
+     * @return bool
+     */
+    private function isPhoneValid($billing_phone): bool
     {
-        return preg_match('/^\+[1-9]\d{10,13}$|^[1-9]\d{9,13}$|^06\d{9,13}$/', $billing_phone);
+        if (!is_string($billing_phone) || $billing_phone === '') {
+            return \false;
+        }
+        $digits = preg_replace('/\D+/', '', $billing_phone);
+        return is_string($digits) && strlen($digits) >= 8;
     }
-
     /**
      * Get the billing company field.
      *
@@ -303,12 +231,8 @@ class AddressMiddleware implements RequestMiddlewareInterface
         if (!trim($order->get_billing_company())) {
             return $this->getPaymentMethodCompanyField($order);
         }
-        return $this->maximalFieldLengths(
-            $order->get_billing_company(),
-            self::MAXIMAL_LENGTH_ADDRESS
-        );
+        return $this->maximalFieldLengths($order->get_billing_company(), self::MAXIMAL_LENGTH_ADDRESS);
     }
-
     /**
      * Check the company field.
      *
@@ -320,19 +244,18 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $method = $order->get_payment_method();
         $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
         $constantName = strtoupper($cleanMethod) . '_COMPANY';
-        $companyField = false;
+        $companyField = \false;
         if (defined(FieldConstants::class . '::' . $constantName)) {
             $companyField = constant(FieldConstants::class . '::' . $constantName);
         }
         if ($companyField) {
             //phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $fieldPosted = wc_clean(wp_unslash($_POST[$companyField] ?? ''));
-            $company = $fieldPosted ?: $order->get_billing_company() ?: $order->get_shipping_company();
+            $company = ($fieldPosted ?: $order->get_billing_company()) ?: $order->get_shipping_company();
             return $company ? $this->maximalFieldLengths($company, self::MAXIMAL_LENGTH_ADDRESS) : '';
         }
         return '';
     }
-
     /**
      * Method that shortens the field to a certain length.
      *
@@ -349,263 +272,8 @@ class AddressMiddleware implements RequestMiddlewareInterface
             $field = substr($field, 0, $maximalLength);
             $field = !$field ? null : $field;
         }
-
         return $field;
     }
-
-    /**
-     * Converts a country code to its corresponding phone prefix.
-     *
-     * @param string $countryCode The ISO 3166-1 alpha-2 country code.
-     * @return string|null The phone prefix associated with the country code, or null if not found.
-     */
-    private function countryCodeToPhonePrefix($countryCode): ?string
-    {
-        $phoneCodes = [
-            'AF' => '93',
-            'AL' => '355',
-            'DZ' => '213',
-            'AS' => '1684',
-            'AD' => '376',
-            'AO' => '244',
-            'AI' => '1264',
-            'AQ' => '672',
-            'AG' => '1268',
-            'AR' => '54',
-            'AM' => '374',
-            'AW' => '297',
-            'AU' => '61',
-            'AT' => '43',
-            'AZ' => '994',
-            'BS' => '1242',
-            'BH' => '973',
-            'BD' => '880',
-            'BB' => '1246',
-            'BY' => '375',
-            'BE' => '32',
-            'BZ' => '501',
-            'BJ' => '229',
-            'BM' => '1441',
-            'BT' => '975',
-            'BO' => '591',
-            'BA' => '387',
-            'BW' => '267',
-            'BR' => '55',
-            'IO' => '246',
-            'VG' => '1284',
-            'BN' => '673',
-            'BG' => '359',
-            'BF' => '226',
-            'BI' => '257',
-            'KH' => '855',
-            'CM' => '237',
-            'CA' => '1',
-            'CV' => '238',
-            'KY' => '1345',
-            'CF' => '236',
-            'TD' => '235',
-            'CL' => '56',
-            'CN' => '86',
-            'CX' => '61',
-            'CC' => '61',
-            'CO' => '57',
-            'KM' => '269',
-            'CK' => '682',
-            'CR' => '506',
-            'HR' => '385',
-            'CU' => '53',
-            'CW' => '599',
-            'CY' => '357',
-            'CZ' => '420',
-            'CD' => '243',
-            'DK' => '45',
-            'DJ' => '253',
-            'DM' => '1767',
-            'DO' => '1809',
-            'TL' => '670',
-            'EC' => '593',
-            'EG' => '20',
-            'SV' => '503',
-            'GQ' => '240',
-            'ER' => '291',
-            'EE' => '372',
-            'ET' => '251',
-            'FK' => '500',
-            'FO' => '298',
-            'FJ' => '679',
-            'FI' => '358',
-            'FR' => '33',
-            'PF' => '689',
-            'GA' => '241',
-            'GM' => '220',
-            'GE' => '995',
-            'DE' => '49',
-            'GH' => '233',
-            'GI' => '350',
-            'GR' => '30',
-            'GL' => '299',
-            'GD' => '1473',
-            'GU' => '1671',
-            'GT' => '502',
-            'GG' => '441481',
-            'GN' => '224',
-            'GW' => '245',
-            'GY' => '592',
-            'HT' => '509',
-            'HN' => '504',
-            'HK' => '852',
-            'HU' => '36',
-            'IS' => '354',
-            'IN' => '91',
-            'ID' => '62',
-            'IR' => '98',
-            'IQ' => '964',
-            'IE' => '353',
-            'IM' => '441624',
-            'IL' => '972',
-            'IT' => '39',
-            'CI' => '225',
-            'JM' => '1876',
-            'JP' => '81',
-            'JE' => '441534',
-            'JO' => '962',
-            'KZ' => '7',
-            'KE' => '254',
-            'KI' => '686',
-            'XK' => '383',
-            'KW' => '965',
-            'KG' => '996',
-            'LA' => '856',
-            'LV' => '371',
-            'LB' => '961',
-            'LS' => '266',
-            'LR' => '231',
-            'LY' => '218',
-            'LI' => '423',
-            'LT' => '370',
-            'LU' => '352',
-            'MO' => '853',
-            'MK' => '389',
-            'MG' => '261',
-            'MW' => '265',
-            'MY' => '60',
-            'MV' => '960',
-            'ML' => '223',
-            'MT' => '356',
-            'MH' => '692',
-            'MR' => '222',
-            'MU' => '230',
-            'YT' => '262',
-            'MX' => '52',
-            'FM' => '691',
-            'MD' => '373',
-            'MC' => '377',
-            'MN' => '976',
-            'ME' => '382',
-            'MS' => '1664',
-            'MA' => '212',
-            'MZ' => '258',
-            'MM' => '95',
-            'NA' => '264',
-            'NR' => '674',
-            'NP' => '977',
-            'NL' => '31',
-            'AN' => '599',
-            'NC' => '687',
-            'NZ' => '64',
-            'NI' => '505',
-            'NE' => '227',
-            'NG' => '234',
-            'NU' => '683',
-            'KP' => '850',
-            'MP' => '1670',
-            'NO' => '47',
-            'OM' => '968',
-            'PK' => '92',
-            'PW' => '680',
-            'PS' => '970',
-            'PA' => '507',
-            'PG' => '675',
-            'PY' => '595',
-            'PE' => '51',
-            'PH' => '63',
-            'PN' => '64',
-            'PL' => '48',
-            'PT' => '351',
-            'PR' => '1787',
-            'QA' => '974',
-            'CG' => '242',
-            'RE' => '262',
-            'RO' => '40',
-            'RU' => '7',
-            'RW' => '250',
-            'BL' => '590',
-            'SH' => '290',
-            'KN' => '1869',
-            'LC' => '1758',
-            'MF' => '590',
-            'PM' => '508',
-            'VC' => '1784',
-            'WS' => '685',
-            'SM' => '378',
-            'ST' => '239',
-            'SA' => '966',
-            'SN' => '221',
-            'RS' => '381',
-            'SC' => '248',
-            'SL' => '232',
-            'SG' => '65',
-            'SX' => '1721',
-            'SK' => '421',
-            'SI' => '386',
-            'SB' => '677',
-            'SO' => '252',
-            'ZA' => '27',
-            'KR' => '82',
-            'SS' => '211',
-            'ES' => '34',
-            'LK' => '94',
-            'SD' => '249',
-            'SR' => '597',
-            'SJ' => '47',
-            'SZ' => '268',
-            'SE' => '46',
-            'CH' => '41',
-            'SY' => '963',
-            'TW' => '886',
-            'TJ' => '992',
-            'TZ' => '255',
-            'TH' => '66',
-            'TG' => '228',
-            'TK' => '690',
-            'TO' => '676',
-            'TT' => '1868',
-            'TN' => '216',
-            'TR' => '90',
-            'TM' => '993',
-            'TC' => '1649',
-            'TV' => '688',
-            'VI' => '1340',
-            'UG' => '256',
-            'UA' => '380',
-            'AE' => '971',
-            'GB' => '44',
-            'US' => '1',
-            'UY' => '598',
-            'UZ' => '998',
-            'VU' => '678',
-            'VA' => '379',
-            'VE' => '58',
-            'VN' => '84',
-            'WF' => '681',
-            'EH' => '212',
-            'YE' => '967',
-            'ZM' => '260',
-            'ZW' => '263',
-        ];
-        return $phoneCodes[$countryCode] ?? null;
-    }
-
     /**
      * Each payment method has a different phone number field name or uses the default.
      *
@@ -617,11 +285,9 @@ class AddressMiddleware implements RequestMiddlewareInterface
         $method = $order->get_payment_method();
         $cleanMethod = str_replace('mollie_wc_gateway_', '', $method);
         $constantName = strtoupper($cleanMethod) . '_PHONE';
-
         if (defined(FieldConstants::class . '::' . $constantName)) {
             return constant(FieldConstants::class . '::' . $constantName);
         }
-
         return 'billing_phone';
     }
 }

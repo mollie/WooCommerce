@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Buttons\PayPalButton;
 
 class DataToPayPal
@@ -10,7 +9,6 @@ class DataToPayPal
      * @var string
      */
     protected $pluginUrl;
-
     /**
      * DataToPayPal constructor.
      */
@@ -22,29 +20,24 @@ class DataToPayPal
      * Sets the appropriate data to send to PayPal script
      * Data differs between product page and cart page
      */
-    public function paypalbuttonScriptData($isBlock = false): array
+    public function paypalbuttonScriptData($isBlock = \false): array
     {
-        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings', false);
+        $paypalSettings = get_option('mollie_wc_gateway_paypal_settings', \false);
         $minAmount = 0;
         if ($paypalSettings) {
-            $minAmount = isset($paypalSettings['mollie_paypal_button_minimum_amount'])
-            && $paypalSettings['mollie_paypal_button_minimum_amount'] > 0
-                ? $paypalSettings['mollie_paypal_button_minimum_amount'] : 0;
+            $minAmount = isset($paypalSettings['mollie_paypal_button_minimum_amount']) && $paypalSettings['mollie_paypal_button_minimum_amount'] > 0 ? $paypalSettings['mollie_paypal_button_minimum_amount'] : 0;
         }
-
+        if ($isBlock) {
+            return $this->dataForBlockCartPage($minAmount);
+        }
         if (is_product()) {
             return $this->dataForProductPage($minAmount);
         }
         if (is_cart()) {
             return $this->dataForCartPage($minAmount);
         }
-        if ($isBlock) {
-            return $this->dataForBlockCartPage($minAmount);
-        }
-
         return [];
     }
-
     /**
      * Url for the button image selected in settings
      */
@@ -53,7 +46,6 @@ class DataToPayPal
         $whichPayPalButton = $this->whichPayPalButton();
         return $this->pluginUrl . $whichPayPalButton;
     }
-
     /**
      * Build the name of the button from the settings to return the chosen one
      *
@@ -66,17 +58,17 @@ class DataToPayPal
             return "";
         }
         $colorSetting = isset($paypalSettings['color']) ? $paypalSettings['color'] : "en-checkout-pill-golden";
-        $dataArray = explode('-', $colorSetting);//[0]lang [1]folder [2]first part filename [3] second part filename
+        $dataArray = explode('-', $colorSetting);
+        //[0]lang [1]folder [2]first part filename [3] second part filename
         $fixPath = 'public/images/PayPal_Buttons/';
-        $buildButtonName = sprintf('%s/%s/%s-%s.png', $dataArray[0], $dataArray[1], $dataArray[2], $dataArray[3]);
+        $buildButtonName = sprintf('%s/%s/%s-%s.png', $dataArray[0] ?? 'en', $dataArray[1] ?? 'checkout', $dataArray[2] ?? 'pill', $dataArray[3] ?? 'golden');
         $path = sprintf('%s%s', $fixPath, $buildButtonName);
-        if (file_exists(M4W_PLUGIN_DIR . '/' . $path)) {
+        if (file_exists(\M4W_PLUGIN_DIR . '/' . $path)) {
             return sprintf('%s%s', $fixPath, $buildButtonName);
         } else {
             return sprintf('%s/en/checkout/pill-golden.png', $fixPath);
         }
     }
-
     /**
      *
      * @param $minAmount
@@ -85,33 +77,20 @@ class DataToPayPal
      */
     protected function dataForProductPage($minAmount)
     {
-
         $product = wc_get_product(get_the_id());
         if (!$product) {
-            return false;
+            return \false;
         }
-        $isVariation = false;
+        $isVariation = \false;
         if ($product->get_type() === 'variable') {
-            $isVariation = true;
+            $isVariation = \true;
         }
         $productNeedShipping = mollieWooCommerceCheckIfNeedShipping($product);
         $productId = get_the_id();
         $productPrice = $product->get_price();
         $productStock = $product->get_stock_status();
-
-        return [
-            'product' => [
-                'needShipping' => $productNeedShipping,
-                'id' => $productId,
-                'price' => $productPrice,
-                'isVariation' => $isVariation,
-                'minFee' => $minAmount,
-                'stock' => $productStock,
-            ],
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-        ];
+        return ['product' => ['needShipping' => $productNeedShipping, 'id' => $productId, 'price' => $productPrice, 'isVariation' => $isVariation, 'minFee' => $minAmount, 'stock' => $productStock], 'ajaxUrl' => admin_url('admin-ajax.php')];
     }
-
     /**
      *
      * @param $minAmount
@@ -121,15 +100,8 @@ class DataToPayPal
     protected function dataForCartPage($minAmount)
     {
         $cart = WC()->cart;
-        return [
-            'product' => [
-                'needShipping' => $cart->needs_shipping(),
-                'minFee' => $minAmount,
-            ],
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-        ];
+        return ['product' => ['needShipping' => $cart->needs_shipping(), 'minFee' => $minAmount], 'ajaxUrl' => admin_url('admin-ajax.php')];
     }
-
     /**
      *
      * @param $minAmount
@@ -138,14 +110,8 @@ class DataToPayPal
      */
     protected function dataForBlockCartPage($minAmount): array
     {
-        $nonce = wp_nonce_field('mollie_PayPal_button');
-        $buttonMarkup = '<div id="mollie-PayPal-button" class="mol-PayPal">'
-            . $nonce . '<input type="image" src="' . esc_url($this->selectedPaypalButtonUrl())
-            . '" alt="PayPal Button"></div>';
-        return [
-                'minFee' => $minAmount,
-                'ajaxUrl' => admin_url('admin-ajax.php'),
-                'buttonMarkup' => $buttonMarkup,
-        ];
+        $nonce = wp_create_nonce('mollie_PayPal_button');
+        $buttonMarkup = '<div id="mollie-PayPal-button" class="mol-PayPal">' . '<input type="hidden" name="nonce" value="' . esc_attr($nonce) . '">' . '<input type="image" src="' . esc_url($this->selectedPaypalButtonUrl()) . '" alt="PayPal Button"></div>';
+        return ['minFee' => $minAmount, 'ajaxUrl' => admin_url('admin-ajax.php'), 'buttonImageUrl' => esc_url($this->selectedPaypalButtonUrl()), 'nonce' => $nonce];
     }
 }

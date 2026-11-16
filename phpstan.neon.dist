@@ -1,0 +1,31 @@
+parameters:
+  level: 5
+  dynamicConstantNames:
+    - M4W_PLUGIN_DIR
+    - M4W_FILE
+    - M4W_PLUGIN_URL
+  paths:
+    - mollie-payments-for-woocommerce.php
+    - lib/
+    - inc/
+    - src/
+  excludePaths:
+    - '*/node_modules/*'
+  bootstrapFiles:
+    - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+    - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+    - vendor/php-stubs/woocommerce-subscriptions-stubs/woocommerce-subscriptions-stubs.php
+  ignoreErrors:
+    # apply_filters is variadic in WordPress but the stubs only declare 2 required params
+    - '#^Function apply_filters invoked with [0-9]+ parameters, [0-9]+ required\.$#'
+    # CustomOrdersTableController is an internal WooCommerce class not in stubs
+    - '#^(Class Automattic\\WooCommerce\\Internal\\DataStores\\Orders\\CustomOrdersTableController not found|Call to method custom_orders_table_usage_is_enabled\(\) on an unknown class)#'
+    # Vendored PSR container uses a namespaced path
+    - '#(unknown class|Call to method .+ on an unknown class|has unknown class) Mollie\\WooCommerce\\Vendor\\Psr\\Container\\ContainerInterface#'
+    # WC()->cart and WC()->customer are typed as non-nullable in stubs but can be null at runtime
+    - '#^(Property WooCommerce::\$cart \(WC_Cart\) in isset\(\) is not nullable|Left side of && is always true)\.$#'
+    # M4W_PLUGIN_DIR constant is defined at runtime in the main plugin file
+    - '#^Constant M4W_PLUGIN_DIR not found\.$#'
+    # WooCommerce Store API helpers are conditionally declared inside WC Blocks — not always present in stubs
+    - '#^Function woocommerce_store_api_register_(update_callback|endpoint_data) not found\.$#'
+

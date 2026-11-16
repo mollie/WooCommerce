@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
-
 /**
  * Middleware to handle Apple Pay token in the request.
  */
-class ApplePayTokenMiddleware implements RequestMiddlewareInterface
+class ApplePayTokenMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * Invoke the middleware.
@@ -29,9 +27,9 @@ class ApplePayTokenMiddleware implements RequestMiddlewareInterface
         }
         $encodedApplePayToken = wp_json_encode($applePayToken);
         if ($context === 'order') {
-            $requestData['payment']['applePayToken'] = $encodedApplePayToken;
+            $requestData['payment']['applePayPaymentToken'] = $encodedApplePayToken;
         } elseif ($context === 'payment') {
-            $requestData['applePayToken'] = $encodedApplePayToken;
+            $requestData['applePayPaymentToken'] = $encodedApplePayToken;
         }
         return $next($requestData, $order, $context);
     }

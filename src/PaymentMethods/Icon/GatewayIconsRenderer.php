@@ -2,15 +2,13 @@
 
 namespace Mollie\WooCommerce\PaymentMethods\Icon;
 
-use Inpsyde\PaymentGateway\GatewayIconsRendererInterface;
-use Inpsyde\PaymentGateway\IconProviderInterface;
+use Mollie\Inpsyde\PaymentGateway\GatewayIconsRendererInterface;
+use Mollie\Inpsyde\PaymentGateway\IconProviderInterface;
 use Mollie\WooCommerce\PaymentMethods\PaymentMethodI;
-
 class GatewayIconsRenderer implements GatewayIconsRendererInterface
 {
     private PaymentMethodI $paymentMethod;
     private IconProviderInterface $iconProvider;
-
     public function __construct(PaymentMethodI $paymentMethod, IconProviderInterface $paymentMethodIconProvider)
     {
         $this->paymentMethod = $paymentMethod;
@@ -25,13 +23,9 @@ class GatewayIconsRenderer implements GatewayIconsRendererInterface
             $icons = $this->iconProvider->provideIcons();
             $html = '';
             foreach ($icons as $icon) {
-                $url = apply_filters(
-                    $this->paymentMethod->id() . '_icon_url',
-                    $icon->src()
-                );
+                $url = apply_filters($this->paymentMethod->id() . '_icon_url', $icon->src());
                 $html .= "<img src='{$url}' alt='{$icon->alt()}' class='mollie-gateway-icon' />";
             }
-
             return $html;
         }
         return '';

@@ -76,7 +76,7 @@ class AddressMiddleware implements \Mollie\WooCommerce\Payment\Request\Middlewar
         $billingAddress->country = ctype_space($order->get_billing_country()) ? null : $this->maximalFieldLengths($order->get_billing_country(), self::MAXIMAL_LENGTH_REGION);
         $billingAddress->organizationName = $this->billingCompanyField($order);
         $phone = $this->getPhoneNumber($order);
-        $billingAddress->phone = ctype_space($phone) ? null : $this->getFormatedPhoneNumber($phone, $billingAddress->country);
+        $billingAddress->phone = ctype_space($phone) ? null : $this->getFormattedPhoneNumber($phone, $billingAddress->country);
         return $billingAddress;
     }
     /**
@@ -101,7 +101,7 @@ class AddressMiddleware implements \Mollie\WooCommerce\Payment\Request\Middlewar
         $shippingAddress->region = ctype_space($order->get_shipping_state()) ? null : $this->maximalFieldLengths($order->get_shipping_state(), self::MAXIMAL_LENGTH_REGION);
         $shippingAddress->country = ctype_space($order->get_shipping_country()) ? null : $this->maximalFieldLengths($order->get_shipping_country(), self::MAXIMAL_LENGTH_REGION);
         $shippingPhone = $this->isPhoneValid($order->get_shipping_phone()) ? $order->get_shipping_phone() : '';
-        $shippingAddress->phone = ctype_space($order->get_shipping_phone()) ? null : $this->getFormatedPhoneNumber($shippingPhone, $shippingAddress->country);
+        $shippingAddress->phone = ctype_space($order->get_shipping_phone()) ? null : $this->getFormattedPhoneNumber($shippingPhone, $shippingAddress->country);
         return $shippingAddress;
     }
     /**
@@ -183,7 +183,7 @@ class AddressMiddleware implements \Mollie\WooCommerce\Payment\Request\Middlewar
      * @param string|null $countryCode The ISO 3166-1 alpha-2 region hint.
      * @return string|null The E.164 formatted phone number, or null.
      */
-    protected function getFormatedPhoneNumber(string $phone, $countryCode): ?string
+    protected function getFormattedPhoneNumber(string $phone, $countryCode): ?string
     {
         $phone = trim($phone);
         if ($phone === '') {
@@ -206,7 +206,7 @@ class AddressMiddleware implements \Mollie\WooCommerce\Payment\Request\Middlewar
     }
     /**
      * Loose pre-filter used only to pick a usable phone source (billing, shipping
-     * or POST). Authoritative validation happens in getFormatedPhoneNumber() via
+     * or POST). Authoritative validation happens in getFormattedPhoneNumber() via
      * libphonenumber, so this must not drop formattable national numbers.
      *
      * @param mixed $billing_phone

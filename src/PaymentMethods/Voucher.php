@@ -91,7 +91,7 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
     }
     public function getFormFields($generalFormFields): array
     {
-        $paymentMethodFormFieds = ['mealvoucher_category_default' => [
+        $paymentMethodFormFields = ['mealvoucher_category_default' => [
             'title' => __('Select the default products categories', 'mollie-payments-for-woocommerce'),
             'type' => 'multiselect',
             'options' => [self::MEAL => __('Meal', 'mollie-payments-for-woocommerce'), self::ECO => __('Eco', 'mollie-payments-for-woocommerce'), self::GIFT => __('Gift', 'mollie-payments-for-woocommerce'), self::SPORT_CULTURE => __('Sport & Culture', 'mollie-payments-for-woocommerce')],
@@ -109,7 +109,7 @@ class Voucher extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMethod i
         if (isset($generalFormFields['hide_order_lines'])) {
             unset($generalFormFields['hide_order_lines']);
         }
-        return array_merge($generalFormFields, $paymentMethodFormFieds);
+        return array_merge($generalFormFields, $paymentMethodFormFields);
     }
     /**
      * todo: refactor to a service

@@ -39,7 +39,7 @@ class Banktransfer extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMet
     {
         unset($generalFormFields['activate_expiry_days_setting']);
         unset($generalFormFields['order_dueDate']);
-        $paymentMethodFormFieds = ['activate_expiry_days_setting' => ['title' => __('Activate expiry time setting', 'mollie-payments-for-woocommerce'), 'label' => __('Enable expiry time for payments', 'mollie-payments-for-woocommerce'), 'description' => __('Enable this option if you want to be able to set the time after which the payment will expire. This will turn all transactions into payments instead of orders', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'order_dueDate' => [
+        $paymentMethodFormFields = ['activate_expiry_days_setting' => ['title' => __('Activate expiry time setting', 'mollie-payments-for-woocommerce'), 'label' => __('Enable expiry time for payments', 'mollie-payments-for-woocommerce'), 'description' => __('Enable this option if you want to be able to set the time after which the payment will expire. This will turn all transactions into payments instead of orders', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no'], 'order_dueDate' => [
             'title' => __('Expiry time', 'mollie-payments-for-woocommerce'),
             'type' => 'number',
             /* translators: Placeholder 1: Default expiry days. */
@@ -47,7 +47,7 @@ class Banktransfer extends \Mollie\WooCommerce\PaymentMethods\AbstractPaymentMet
             'default' => self::EXPIRY_DEFAULT_DAYS,
             'custom_attributes' => ['min' => self::EXPIRY_MIN_DAYS, 'max' => self::EXPIRY_MAX_DAYS, 'step' => 1],
         ], 'skip_mollie_payment_screen' => ['title' => __('Skip Mollie payment screen', 'mollie-payments-for-woocommerce'), 'label' => __('Skip Mollie payment screen when Bank Transfer is selected', 'mollie-payments-for-woocommerce'), 'description' => __('Enable this option if you want to skip redirecting your user to the Mollie payment screen, instead this will redirect your user directly to the WooCommerce order received page displaying instructions how to complete the Bank Transfer payment.', 'mollie-payments-for-woocommerce'), 'type' => 'checkbox', 'default' => 'no']];
-        return array_merge($generalFormFields, $paymentMethodFormFieds);
+        return array_merge($generalFormFields, $paymentMethodFormFields);
     }
     public function filtersOnBuild(): void
     {

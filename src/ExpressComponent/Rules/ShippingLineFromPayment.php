@@ -12,9 +12,10 @@ use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
 
 /**
  * The shipping option the shopper chose in the wallet, as the line the order gets once.
- * Mollie records no tax on it: the option's price includes tax, split here per rate that taxes the order's
- * shipping the way WooCommerce splits a price that includes tax (compound rates first, then the regular rates
- * in proportion).
+ * Mollie records no tax on it. The tax is the one WooCommerce charged in the option when the shipping callback
+ * priced it, when that option at that price is still known. Otherwise the option's price, which includes tax, is
+ * split per rate that taxes the order's shipping the way WooCommerce splits a price that includes tax (compound
+ * rates first, then the regular rates in proportion).
  */
 final class ShippingLineFromPayment
 {
@@ -26,6 +27,11 @@ final class ShippingLineFromPayment
         }
 
         $gross = $fee->amount();
+        $priced = $order->pricedShipping();
+        if ($priced !== null && $priced->rateId() === $fee->reference() && $priced->gross()->isSameAs($gross)) {
+            return new ShippingLine($fee->reference(), $fee->label(), $gross, $priced->taxes());
+        }
+
         $taxes = [];
         foreach (self::split($gross->minorUnits(), $order->shippingTaxRates()) as $rateId => $minor) {
             $taxes[$rateId] = Money::fromMinorUnits((int) round($minor), $gross->currency());

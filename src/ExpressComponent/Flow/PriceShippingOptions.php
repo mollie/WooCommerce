@@ -35,6 +35,9 @@ final class PriceShippingOptions
             : $this->snapshot->ratesFor($secret, $address);
         $verdict = ShippingOptions::decide($found['rates'], $found['failed']);
         $refusal = $verdict->refusalType();
+        if ($refusal === null) {
+            $this->snapshot->rememberOffered($secret, $found['rates']);
+        }
 
         // The country code is the only part of the address that is logged.
         $this->log->step('rule.decided', [

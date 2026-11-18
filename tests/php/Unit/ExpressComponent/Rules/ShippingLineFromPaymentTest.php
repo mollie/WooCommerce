@@ -6,6 +6,7 @@ namespace Mollie\WooCommerceTests\Unit\ExpressComponent\Rules;
 
 use Mollie\WooCommerce\ExpressComponent\Rules\ShippingLineFromPayment;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\PricedShippingOption;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingTaxRate;
 use Mollie\WooCommerce\Shared\Values\Money;
 use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
@@ -27,6 +28,7 @@ class ShippingLineFromPaymentTest extends TestCase
      *   Then an order that ships and holds no line gets the rate id, label and gross amount of the
      *        payment's line, the tax split from the gross per shipping tax rate of the order, as WooCommerce
      *        splits a price that includes tax: compound rates first, regular rates in proportion
+     *   And when the shipping callback offered that option at that price, its tax is the one booked
      *   And an order that already holds a shipping line, ships nothing, or whose payment has no
      *        shipping_fee line gets none
      *
@@ -101,6 +103,31 @@ class ShippingLineFromPaymentTest extends TestCase
                 ['rate' => 'free_shipping:4', 'label' => 'Free', 'gross' => '0.00'],
                 ['rate' => 'free_shipping:4', 'label' => 'Free', 'gross' => '0.00', 'net' => '0.00', 'tax' => '0.00', 'taxes' => [1 => '0.00']],
             ],
+            'the callback offered the option untaxed: no tax, whatever the rates' => [
+                ['pricedShipping' => new PricedShippingOption('flat_rate:12', Money::fromDecimal('12.10', 'EUR'), [])],
+                $express,
+                ['rate' => 'flat_rate:12', 'label' => 'Express', 'gross' => '12.10', 'net' => '12.10', 'tax' => '0.00', 'taxes' => []],
+            ],
+            'the callback offered the option at another class: its tax per rate' => [
+                ['pricedShipping' => new PricedShippingOption('flat_rate:12', Money::fromDecimal('12.10', 'EUR'), [4 => Money::fromDecimal('1.10', 'EUR')])],
+                $express,
+                ['rate' => 'flat_rate:12', 'label' => 'Express', 'gross' => '12.10', 'net' => '11.00', 'tax' => '1.10', 'taxes' => [4 => '1.10']],
+            ],
+            'the callback offered the option at another price: the split' => [
+                ['pricedShipping' => new PricedShippingOption('flat_rate:12', Money::fromDecimal('7.50', 'EUR'), [])],
+                $express,
+                ['rate' => 'flat_rate:12', 'label' => 'Express', 'gross' => '12.10', 'net' => '10.00', 'tax' => '2.10', 'taxes' => [1 => '2.10']],
+            ],
+            'the callback offered another option: the split' => [
+                ['pricedShipping' => new PricedShippingOption('flat_rate:3', Money::fromDecimal('12.10', 'EUR'), [])],
+                $express,
+                ['rate' => 'flat_rate:12', 'label' => 'Express', 'gross' => '12.10', 'net' => '10.00', 'tax' => '2.10', 'taxes' => [1 => '2.10']],
+            ],
+            'the callback offered it in another currency: the split' => [
+                ['pricedShipping' => new PricedShippingOption('flat_rate:12', Money::fromDecimal('12.10', 'USD'), [])],
+                $express,
+                ['rate' => 'flat_rate:12', 'label' => 'Express', 'gross' => '12.10', 'net' => '10.00', 'tax' => '2.10', 'taxes' => [1 => '2.10']],
+            ],
             'a second webhook: the order holds its line' => [['holdsShippingLine' => true], $express, null],
             'ships nothing' => [['needsShipping' => false], $express, null],
             'ships, the payment has no shipping_fee line' => [[], null, null],
@@ -116,6 +143,7 @@ class ShippingLineFromPaymentTest extends TestCase
             'needsShipping' => true,
             'holdsShippingLine' => false,
             'shippingTaxRates' => [new ShippingTaxRate(1, 21.0, false)],
+            'pricedShipping' => null,
         ], $overrides);
 
         return new ExpressOrderFacts(
@@ -128,7 +156,8 @@ class ShippingLineFromPaymentTest extends TestCase
             holdsShipping: false,
             needsShipping: $values['needsShipping'],
             holdsShippingLine: $values['holdsShippingLine'],
-            shippingTaxRates: $values['shippingTaxRates']
+            shippingTaxRates: $values['shippingTaxRates'],
+            pricedShipping: $values['pricedShipping']
         );
     }
 

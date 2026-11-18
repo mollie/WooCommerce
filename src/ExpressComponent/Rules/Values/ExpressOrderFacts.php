@@ -14,6 +14,8 @@ final class ExpressOrderFacts
      * @param bool $webhookNeedsPayment WebhookGuards::needsPayment().
      * @param bool $holdsShippingLine The order already has a shipping line.
      * @param list<ShippingTaxRate> $shippingTaxRates The rates WooCommerce taxes this order's shipping with, in its order; read only for a payment.
+     * @param ?PricedShippingOption $pricedShipping The option the payment's shipping_fee names, as the shipping callback
+     *                                              priced it; null when the callback's record is gone or names none.
      */
     public function __construct(
         private int $orderId,
@@ -29,7 +31,8 @@ final class ExpressOrderFacts
         private bool $webhookNeedsPayment = false,
         private bool $cancelled = false,
         private bool $holdsShippingLine = false,
-        private array $shippingTaxRates = []
+        private array $shippingTaxRates = [],
+        private ?PricedShippingOption $pricedShipping = null
     ) {
     }
 
@@ -107,5 +110,10 @@ final class ExpressOrderFacts
     public function shippingTaxRates(): array
     {
         return $this->shippingTaxRates;
+    }
+
+    public function pricedShipping(): ?PricedShippingOption
+    {
+        return $this->pricedShipping;
     }
 }

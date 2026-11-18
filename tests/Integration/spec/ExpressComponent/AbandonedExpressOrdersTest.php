@@ -8,6 +8,7 @@ use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressShippingSnapshot;
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\Payment\Rules\Values\ProcessRecord;
 use Mollie\WooCommerce\Shared\Clock;
@@ -375,7 +376,7 @@ class AbandonedExpressOrdersTest extends ExpressFlowTestCase
 
         $candidates = array_map(
             static fn (WC_Order $order): int => $order->get_id(),
-            (new ExpressOrderFactsBuilder(new ExpressSessionStore(), new ProcessRecordStore()))->abandonCandidates(time(), 50)
+            (new ExpressOrderFactsBuilder(new ExpressSessionStore(), new ProcessRecordStore(), new ExpressShippingSnapshot()))->abandonCandidates(time(), 50)
         );
 
         $this->assertContains($expired, $candidates);

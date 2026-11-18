@@ -1477,6 +1477,175 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
+     * Scenario: an option whose shipping method charges no tax is booked without tax
+     *   Given LU with a 21% standard rate that taxes shipping
+     *   And the 'standard' flat rate (5.00) set to "Tax status: None"
+     *   And an express order of a standard item whose shipping callback offered that option at 5.00
+     *   And the payment of that option, 5.00 in the wallet
+     *   When Mollie calls the webhook
+     *   Then the shipping line costs 5.00 with no tax, as WooCommerce charged the cart
+     *   And the order's total equals the payment amount
+     *
+     * @test
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
+     */
+    public function it_books_an_option_of_an_untaxed_shipping_method_without_tax(): void
+    {
+        // Given
+        [, $instanceId] = explode(':', $this->rates['standard']);
+        $settings = (array) get_option("woocommerce_flat_rate_{$instanceId}_settings");
+        update_option("woocommerce_flat_rate_{$instanceId}_settings", ['tax_status' => 'none'] + $settings);
+        \WC_Cache_Helper::get_transient_version('shipping', true);
+
+        $this->boot();
+        $this->actAsGuest();
+        $this->cartWith(['simple'], 1);
+        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+        $this->chooseRate('standard');
+        $this->assertSame([], array_filter(WC()->cart->get_shipping_taxes()), 'WooCommerce must charge no shipping tax, or the scenario proves nothing.');
+        $this->assertSame('5.00', $this->decimal((float) WC()->cart->get_shipping_total()));
+        [$order, , $sessionId] = $this->submittedOrder();
+        $this->mollieAsksForShippingOptions($sessionId, 'LU');
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+
+        // When
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        // Then
+        $after = $this->fresh($order);
+        $this->assertTrue($after->is_paid());
+        $lines = array_values($after->get_items('shipping'));
+        $this->assertCount(1, $lines);
+        $this->assertSame('5.00', $this->decimal((float) $lines[0]->get_total()));
+        $this->assertSame('0.00', $this->decimal((float) $lines[0]->get_total_tax()));
+        $this->assertSame('0.00', $this->decimal((float) $after->get_shipping_tax()));
+        $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
+    }
+
+    /**
+     * Scenario: a virtual item does not change the class the shipping is taxed with
+     *   Given LU with a 21% standard rate and a 10% reduced rate, both taxing shipping
+     *   And the "Shipping tax class" setting: the class of the cart's items
+     *   And an express order of a shipped reduced item and a virtual standard item, paid with the 5.00 option
+     *   And the shipping callback offered that option, or what it offered is gone
+     *   When Mollie calls the webhook
+     *   Then the shipping line is taxed at the reduced rate only, as WooCommerce charged the cart: 5.00 + 0.50
+     *   And the order's total equals the payment amount
+     *
+     * @test
+     * @dataProvider offeredOrGone
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
+     */
+    public function it_takes_the_shipping_tax_class_from_the_items_that_ship(bool $offeredByTheCallback): void
+    {
+        // Given
+        $this->setOptionForTest('woocommerce_shipping_tax_class', 'inherit');
+        $classCreated = !in_array('reduced-rate', \WC_Tax::get_tax_class_slugs(), true);
+        if ($classCreated) {
+            \WC_Tax::create_tax_class('Reduced Rate', 'reduced-rate');
+        }
+        $reducedRateId = \WC_Tax::_insert_tax_rate([
+            'tax_rate_country' => 'LU',
+            'tax_rate' => '10.0000',
+            'tax_rate_name' => 'VAT reduced',
+            'tax_rate_priority' => 1,
+            'tax_rate_compound' => 0,
+            'tax_rate_shipping' => 1,
+            'tax_rate_order' => 0,
+            'tax_rate_class' => 'reduced-rate',
+        ]);
+        $this->taxRateIds[] = $reducedRateId;
+        \WC_Cache_Helper::invalidate_cache_group('taxes');
+        $shipped = new \WC_Product_Simple();
+        $shipped->set_name('Shipped reduced item');
+        $shipped->set_regular_price('10');
+        $shipped->set_tax_class('reduced-rate');
+        $shipped->save();
+        $virtual = new \WC_Product_Simple();
+        $virtual->set_name('Virtual standard item');
+        $virtual->set_regular_price('10');
+        $virtual->set_virtual(true);
+        $virtual->save();
+        $expected = [$reducedRateId => '0.50'];
+
+        try {
+            $this->boot();
+            $this->actAsGuest();
+            $this->cartWith([], 1);
+            $this->withoutCookieWarnings(static function () use ($shipped, $virtual): void {
+                WC()->cart->add_to_cart($shipped->get_id(), 1);
+                WC()->cart->add_to_cart($virtual->get_id(), 1);
+            });
+            $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+            $this->chooseRate('standard');
+            $charged = array_map(
+                fn ($tax): string => $this->decimal(round((float) $tax, 2)),
+                array_filter(WC()->cart->get_shipping_taxes())
+            );
+            $this->assertSame($expected, $charged, 'WooCommerce must charge this for shipping, or the scenario proves nothing.');
+            [$order, , $sessionId] = $this->submittedOrder();
+            if ($offeredByTheCallback) {
+                $this->mollieAsksForShippingOptions($sessionId, 'LU');
+            }
+            $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+
+            // When
+            $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+            // Then
+            $after = $this->fresh($order);
+            $this->assertTrue($after->is_paid());
+            $lines = array_values($after->get_items('shipping'));
+            $this->assertCount(1, $lines);
+            $this->assertSame('5.00', $this->decimal((float) $lines[0]->get_total()));
+            $this->assertSame($expected, array_map(
+                fn ($tax): string => $this->decimal((float) $tax),
+                array_filter($lines[0]->get_taxes()['total'] ?? [], static fn ($tax): bool => (float) $tax !== 0.0)
+            ));
+            $this->assertSame('0.50', $this->decimal((float) $after->get_shipping_tax()));
+            $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
+        } finally {
+            $shipped->delete(true);
+            $virtual->delete(true);
+            if ($classCreated) {
+                \WC_Tax::delete_tax_class_by('slug', 'reduced-rate');
+            }
+        }
+    }
+
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public function offeredOrGone(): array
+    {
+        return [
+            'the callback offered the option' => [true],
+            'what the callback offered is gone' => [false],
+        ];
+    }
+
+    /**
+     * Mollie asks the session's shipping callback for the options to an address in that country: to the URL it
+     * was given, with no cookie and no nonce.
+     */
+    private function mollieAsksForShippingOptions(string $sessionId, string $country): void
+    {
+        $payloads = $this->sessionPayloads();
+        $url = (string) (end($payloads)['shipping']['callbackUrl'] ?? '');
+        $this->assertNotSame('', $url, 'The session must carry shipping.callbackUrl.');
+        $this->newShopper();
+        $this->actAsGuest();
+        parse_str((string) wp_parse_url($url, PHP_URL_QUERY), $query);
+        $route = '/' . ltrim(substr((string) strtok($url, '?'), strlen(rest_url())), '/');
+        $response = $this->restRequest('POST', $route, $query + [
+            'event' => 'shipping-address-changed',
+            'sessionId' => $sessionId,
+            'shippingAddress' => ['country' => $country, 'postalCode' => '1234', 'city' => 'Cityville'],
+        ]);
+        $this->assertSame(200, $response->get_status(), 'The callback must offer options for that address.');
+    }
+
+    /**
      * @param array<int|string, mixed> $values
      * @return array<int|string, mixed>
      */

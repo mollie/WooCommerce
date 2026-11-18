@@ -367,6 +367,7 @@ class ComposerStaticInit2daee74d2c40f86ce6a079000f9a8708
         'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\ExpressOrderFacts' => __DIR__ . '/../..' . '/src/ExpressComponent/Rules/Values/ExpressOrderFacts.php',
         'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\ExpressSettings' => __DIR__ . '/../..' . '/src/ExpressComponent/Rules/Values/ExpressSettings.php',
         'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\FirstSightData' => __DIR__ . '/../..' . '/src/ExpressComponent/Rules/Values/FirstSightData.php',
+        'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\PricedShippingOption' => __DIR__ . '/../..' . '/src/ExpressComponent/Rules/Values/PricedShippingOption.php',
         'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\RememberedSession' => __DIR__ . '/../..' . '/src/ExpressComponent/Rules/Values/RememberedSession.php',
         'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\ShippingLine' => __DIR__ . '/../..' . '/src/ExpressComponent/Rules/Values/ShippingLine.php',
         'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\ShippingOptionsVerdict' => __DIR__ . '/../..' . '/src/ExpressComponent/Rules/Values/ShippingOptionsVerdict.php',

@@ -3,11 +3,13 @@
 declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\PricedShippingOption;
 use Mollie\WooCommerce\Shared\Values\Money;
 /**
  * Mollie's shipping callback carries no cookie, so the store has no cart for it. The cart is saved when the
  * session is created, in a transient named after the hash of the session's secret, and read back when Mollie asks.
- * Only the cart is kept: the address is Mollie's, one call at a time, and is never stored.
+ * The address is Mollie's, one call at a time, and is never stored. What the last call offered is kept per option,
+ * price and tax per rate, so the first webhook books the tax WooCommerce charged in the option the shopper paid.
  */
 class ExpressShippingSnapshot
 {
@@ -40,7 +42,7 @@ class ExpressShippingSnapshot
             unset($item['data']);
             $items[(string) $key] = $item;
         }
-        return $this->store($secret, ['hash' => hash('sha256', $secret), 'items' => $items, 'coupons' => array_values(array_map('strval', $cart->get_applied_coupons())), 'sessionId' => ''], $lifetimeSeconds);
+        return $this->store($secret, ['hash' => hash('sha256', $secret), 'items' => $items, 'coupons' => array_values(array_map('strval', $cart->get_applied_coupons())), 'sessionId' => '', 'expiresAt' => time() + $lifetimeSeconds, 'priced' => []], $lifetimeSeconds);
     }
     /**
      * Binds the saved cart to the session Mollie created, for as long as that session lives.
@@ -52,7 +54,8 @@ class ExpressShippingSnapshot
             return;
         }
         $saved['sessionId'] = $sessionId;
-        $this->store($secret, $saved, max(60, $expiresAt - time() + 60));
+        $saved['expiresAt'] = max(time() + 60, $expiresAt + 60);
+        $this->store($secret, $saved, $saved['expiresAt'] - time());
     }
     public function forget(string $secret): void
     {
@@ -78,7 +81,7 @@ class ExpressShippingSnapshot
      * cart see what they would see at checkout; it is emptied again and never saved.
      *
      * @param array{country: string, state: string, postcode: string, city: string} $address
-     * @return array{rates: list<array{id: string, label: string, amount: Money}>, failed: bool}
+     * @return array{rates: list<array{id: string, label: string, amount: Money, taxes: array<int, Money>}>, failed: bool}
      */
     public function ratesFor(string $secret, array $address): array
     {
@@ -114,6 +117,40 @@ class ExpressShippingSnapshot
         }
     }
     /**
+     * Keeps what this call offered, replacing what an earlier call offered for another address.
+     *
+     * @param list<array{id: string, label: string, amount: Money, taxes: array<int, Money>}> $rates
+     */
+    public function rememberOffered(string $secret, array $rates): void
+    {
+        $saved = $this->read($secret);
+        if ($saved === null || $saved['expiresAt'] <= time()) {
+            return;
+        }
+        $priced = [];
+        foreach ($rates as $rate) {
+            $priced[$rate['id']] = ['gross' => $rate['amount']->minorUnits(), 'currency' => $rate['amount']->currency(), 'taxes' => array_map(static fn(Money $tax): int => $tax->minorUnits(), $rate['taxes'])];
+        }
+        $saved['priced'] = $priced;
+        $this->store($secret, $saved, $saved['expiresAt'] - time());
+    }
+    /**
+     * The option as the last call offered it; null when that call offered no such option or the record is gone.
+     */
+    public function offered(string $secret, string $rateId): ?PricedShippingOption
+    {
+        $option = $this->read($secret)['priced'][$rateId] ?? null;
+        if (!is_array($option)) {
+            return null;
+        }
+        $currency = (string) $option['currency'];
+        $taxes = [];
+        foreach ($option['taxes'] as $taxRateId => $minor) {
+            $taxes[(int) $taxRateId] = Money::fromMinorUnits((int) $minor, $currency);
+        }
+        return new PricedShippingOption($rateId, Money::fromMinorUnits((int) $option['gross'], $currency), $taxes);
+    }
+    /**
      * @param array<string, array<string, mixed>> $items
      * @return array<string, array<string, mixed>>|null Null when a product can no longer be read: that price cannot be computed.
      */
@@ -132,7 +169,7 @@ class ExpressShippingSnapshot
     }
     /**
      * @param array<int|string, mixed> $rates
-     * @return list<array{id: string, label: string, amount: Money}>
+     * @return list<array{id: string, label: string, amount: Money, taxes: array<int, Money>}>
      */
     private function rates(array $rates): array
     {
@@ -142,7 +179,11 @@ class ExpressShippingSnapshot
             if (!$rate instanceof \WC_Shipping_Rate) {
                 continue;
             }
-            $priced[] = ['id' => (string) $id, 'label' => (string) $rate->get_label(), 'amount' => \Mollie\WooCommerce\ExpressComponent\WooCommerce\WooCommerceAmount::toMoney((float) $rate->get_cost() + array_sum($rate->get_taxes()), $currency)];
+            $taxes = [];
+            foreach ($rate->get_taxes() as $taxRateId => $tax) {
+                $taxes[(int) $taxRateId] = \Mollie\WooCommerce\ExpressComponent\WooCommerce\WooCommerceAmount::toMoney((float) $tax, $currency);
+            }
+            $priced[] = ['id' => (string) $id, 'label' => (string) $rate->get_label(), 'amount' => \Mollie\WooCommerce\ExpressComponent\WooCommerce\WooCommerceAmount::toMoney((float) $rate->get_cost() + array_sum($rate->get_taxes()), $currency), 'taxes' => $taxes];
         }
         return $priced;
     }
@@ -156,7 +197,7 @@ class ExpressShippingSnapshot
         return set_transient($name, $saved, $lifetimeSeconds) || get_transient($name) === $saved;
     }
     /**
-     * @return array{hash: string, items: array<string, array<string, mixed>>, coupons: list<string>, sessionId: string}|null
+     * @return array{hash: string, items: array<string, array<string, mixed>>, coupons: list<string>, sessionId: string, expiresAt: int, priced: array<string, array{gross: int, currency: string, taxes: array<int, int>}>}|null
      */
     private function read(string $secret): ?array
     {
@@ -170,6 +211,9 @@ class ExpressShippingSnapshot
         if (!hash_equals((string) $saved['hash'], hash('sha256', $secret))) {
             return null;
         }
+        // Saved before the offered options were kept: no end is known, so nothing is added to it.
+        $saved['expiresAt'] = (int) ($saved['expiresAt'] ?? 0);
+        $saved['priced'] = is_array($saved['priced'] ?? null) ? $saved['priced'] : [];
         return $saved;
     }
     private function name(string $secret): string

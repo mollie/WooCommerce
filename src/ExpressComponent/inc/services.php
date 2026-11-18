@@ -84,7 +84,7 @@ return static function (): array {
             };
         },
         ExpressOrderFactsBuilder::class => static function (ContainerInterface $container): ExpressOrderFactsBuilder {
-            return new ExpressOrderFactsBuilder($container->get(ExpressSessionStore::class), $container->get(ProcessRecordStore::class));
+            return new ExpressOrderFactsBuilder($container->get(ExpressSessionStore::class), $container->get(ProcessRecordStore::class), $container->get(ExpressShippingSnapshot::class));
         },
         ExpressOrderFactory::class => static function (ContainerInterface $container): ExpressOrderFactory {
             return new ExpressOrderFactory($container->get(PendingExpressOrders::class));

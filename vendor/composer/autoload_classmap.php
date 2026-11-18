@@ -295,6 +295,7 @@ return array(
     'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\ExpressOrderFacts' => $baseDir . '/src/ExpressComponent/Rules/Values/ExpressOrderFacts.php',
     'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\ExpressSettings' => $baseDir . '/src/ExpressComponent/Rules/Values/ExpressSettings.php',
     'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\FirstSightData' => $baseDir . '/src/ExpressComponent/Rules/Values/FirstSightData.php',
+    'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\PricedShippingOption' => $baseDir . '/src/ExpressComponent/Rules/Values/PricedShippingOption.php',
     'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\RememberedSession' => $baseDir . '/src/ExpressComponent/Rules/Values/RememberedSession.php',
     'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\ShippingLine' => $baseDir . '/src/ExpressComponent/Rules/Values/ShippingLine.php',
     'Mollie\\WooCommerce\\ExpressComponent\\Rules\\Values\\ShippingOptionsVerdict' => $baseDir . '/src/ExpressComponent/Rules/Values/ShippingOptionsVerdict.php',

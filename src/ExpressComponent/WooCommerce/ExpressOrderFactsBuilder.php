@@ -4,20 +4,23 @@ declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use InvalidArgumentException;
+use Mollie\WooCommerce\ExpressComponent\Rules\AddressMapping;
 use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressOrderFacts;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\PricedShippingOption;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingTaxRate;
 use Mollie\WooCommerce\Payment\MolliePaymentAttempt;
 use Mollie\WooCommerce\Payment\ProcessRecordStore;
 use Mollie\WooCommerce\Payment\Rules\WebhookGuards;
 use Mollie\WooCommerce\Shared\Values\Money;
+use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
 use WC_Order;
 use WC_Tax;
 class ExpressOrderFactsBuilder
 {
     private const SHIPPING_FIELDS = ['first_name', 'last_name', 'company', 'phone', 'address_1', 'address_2', 'postcode', 'city', 'state', 'country'];
-    public function __construct(private \Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore $store, private ProcessRecordStore $records)
+    public function __construct(private \Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore $store, private ProcessRecordStore $records, private \Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressShippingSnapshot $shippingSnapshot)
     {
     }
     public function rememberedSession(): ?RememberedSession
@@ -40,33 +43,94 @@ class ExpressOrderFactsBuilder
         }
         return $order;
     }
-    public function fromOrder(WC_Order $order): ExpressOrderFacts
+    /**
+     * @param PaymentSnapshot|null $paidBy The payment a webhook brought: only then are the shipping tax rates
+     *                                     and the option the shipping callback offered read.
+     */
+    public function fromOrder(WC_Order $order, ?PaymentSnapshot $paidBy = null): ExpressOrderFacts
     {
         $tracked = MolliePaymentAttempt::paymentId($order);
         if ($tracked === '') {
             $tracked = (string) $order->get_transaction_id();
         }
         $record = $this->records->read($order);
-        return new ExpressOrderFacts(orderId: $order->get_id(), expressRef: (string) $order->get_meta('_mollie_express_ref'), createdVia: $order->get_created_via(), total: $this->total($order), trackedPaymentId: $tracked !== '' ? $tracked : null, needsPayment: $order->needs_payment(), holdsShipping: $this->holdsShipping($order), needsShipping: $this->shipsItems($order), cancelledBy: $record->cancelledBy(), processed: $record->processed(), webhookNeedsPayment: $this->webhookNeedsPayment($order), cancelled: $order->has_status('cancelled'), holdsShippingLine: $order->get_items('shipping') !== [], shippingTaxRates: $this->shippingTaxRates($order));
+        return new ExpressOrderFacts(orderId: $order->get_id(), expressRef: (string) $order->get_meta('_mollie_express_ref'), createdVia: $order->get_created_via(), total: $this->total($order), trackedPaymentId: $tracked !== '' ? $tracked : null, needsPayment: $order->needs_payment(), holdsShipping: $this->holdsShipping($order), needsShipping: $this->shipsItems($order), cancelledBy: $record->cancelledBy(), processed: $record->processed(), webhookNeedsPayment: $this->webhookNeedsPayment($order), cancelled: $order->has_status('cancelled'), holdsShippingLine: $order->get_items('shipping') !== [], shippingTaxRates: $paidBy === null ? [] : $this->shippingTaxRates($order, $paidBy), pricedShipping: $paidBy === null ? null : $this->offeredOption($order, $paidBy));
     }
     /**
-     * The order's own tax lines say which rates applied to it; those that also tax shipping are the rates the
-     * shipping option's price includes, in WooCommerce's order: by priority, then by rate order. Empty when
-     * none does.
+     * The option the payment's shipping_fee names, as the shipping callback offered it for this order's session.
+     */
+    private function offeredOption(WC_Order $order, PaymentSnapshot $paidBy): ?PricedShippingOption
+    {
+        $fee = $paidBy->shippingFee();
+        $ref = (string) $order->get_meta('_mollie_express_ref');
+        if ($fee === null || $ref === '') {
+            return null;
+        }
+        return $this->shippingSnapshot->offered($this->shippingSnapshot->secretFor($ref), $fee->reference());
+    }
+    /**
+     * The rates the shipping option's price includes, found as WooCommerce finds them for shipping: the rates
+     * of one tax class, for the address the option was priced for. Empty when shipping is not taxed there.
      *
      * @return list<ShippingTaxRate>
      */
-    private function shippingTaxRates(WC_Order $order): array
+    private function shippingTaxRates(WC_Order $order, PaymentSnapshot $paidBy): array
     {
-        $rows = [];
-        foreach ($order->get_taxes() as $tax) {
-            $row = WC_Tax::_get_tax_rate($tax->get_rate_id(), \OBJECT);
-            if (is_object($row) && (int) $row->tax_rate_shipping === 1) {
-                $rows[] = $row;
+        $taxClass = $this->shippingTaxClass($order);
+        $location = $this->shippingTaxLocation($paidBy);
+        if (!wc_tax_enabled() || $taxClass === null || $location === null) {
+            return [];
+        }
+        $rates = [];
+        foreach (WC_Tax::find_shipping_rates($location + ['tax_class' => $taxClass]) as $rateId => $rate) {
+            $rates[] = new ShippingTaxRate((int) $rateId, (float) ($rate['rate'] ?? 0), ($rate['compound'] ?? 'no') === 'yes');
+        }
+        return $rates;
+    }
+    /**
+     * The "Shipping tax class" setting; when it follows the items, the class of the items whose shipping is
+     * taxed, as the cart finds it (WC_Cart::get_cart_item_tax_classes_for_shipping()): the standard class first,
+     * then the first in the order of the settings. Null when no such item is taxable. When a product can no longer
+     * be read, the classes of all taxable items, as WooCommerce takes them for an order.
+     */
+    private function shippingTaxClass(WC_Order $order): ?string
+    {
+        $setting = (string) get_option('woocommerce_shipping_tax_class');
+        if ($setting !== 'inherit') {
+            return $setting;
+        }
+        $classes = [];
+        foreach ($order->get_items() as $item) {
+            $product = $item instanceof \WC_Order_Item_Product ? $item->get_product() : null;
+            if (!$product instanceof \WC_Product) {
+                $classes = $order->get_items_tax_classes();
+                break;
+            }
+            if ($product->is_shipping_taxable()) {
+                $classes[] = $item->get_tax_class();
             }
         }
-        usort($rows, static fn(object $a, object $b): int => [(int) $a->tax_rate_priority, (int) $a->tax_rate_order] <=> [(int) $b->tax_rate_priority, (int) $b->tax_rate_order]);
-        return array_map(static fn(object $row): ShippingTaxRate => new ShippingTaxRate((int) $row->tax_rate_id, (float) $row->tax_rate, (int) $row->tax_rate_compound === 1), $rows);
+        $found = array_intersect(array_merge([''], WC_Tax::get_tax_class_slugs()), $classes);
+        return $found === [] ? null : (string) reset($found);
+    }
+    /**
+     * The shop's address when taxes are based on it, otherwise the address the wallet gave: the shipping
+     * callback priced the option for it, as shipping and as billing address. Null when the payment has none.
+     *
+     * @return array{country: string, state: string, postcode: string, city: string}|null
+     */
+    private function shippingTaxLocation(PaymentSnapshot $paidBy): ?array
+    {
+        if (get_option('woocommerce_tax_based_on') === 'base') {
+            $shop = WC()->countries;
+            return ['country' => (string) $shop->get_base_country(), 'state' => (string) $shop->get_base_state(), 'postcode' => (string) $shop->get_base_postcode(), 'city' => (string) $shop->get_base_city()];
+        }
+        $shipTo = $paidBy->shippingAddress();
+        $address = $shipTo === null ? [] : AddressMapping::toWooCommerce($shipTo->fields());
+        if (($address['country'] ?? '') === '') {
+            return null;
+        }
+        return ['country' => strtoupper($address['country']), 'state' => $address['state'] ?? '', 'postcode' => $address['postcode'] ?? '', 'city' => $address['city'] ?? ''];
     }
     private function webhookNeedsPayment(WC_Order $order): bool
     {

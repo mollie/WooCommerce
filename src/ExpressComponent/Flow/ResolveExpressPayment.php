@@ -90,7 +90,7 @@ final class ResolveExpressPayment
         $registeredGatewayIds = ($this->registeredGatewayIds)();
         $reason = null;
         $order = $this->lock->withFreshOrder($found->get_id(), function (WC_Order $fresh) use ($payment, $registeredGatewayIds, &$reason): ?WC_Order {
-            $facts = $this->orderFacts->fromOrder($fresh);
+            $facts = $this->orderFacts->fromOrder($fresh, $payment);
             $decision = $this->decide($payment, $facts);
             if ($decision instanceof Refuse) {
                 $reason = $decision->code();

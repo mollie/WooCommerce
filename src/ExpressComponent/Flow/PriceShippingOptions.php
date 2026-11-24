@@ -28,6 +28,9 @@ final class PriceShippingOptions
         $found = $address['country'] === '' ? ['rates' => [], 'failed' => \true] : $this->snapshot->ratesFor($secret, $address);
         $verdict = ShippingOptions::decide($found['rates'], $found['failed']);
         $refusal = $verdict->refusalType();
+        if ($refusal === null) {
+            $this->snapshot->rememberOffered($secret, $found['rates']);
+        }
         // The country code is the only part of the address that is logged.
         $this->log->step('rule.decided', ['rule' => 'ShippingOptions', 'verdict' => $refusal ?? 'offered', 'inputs' => sprintf('country=%s,rates=%d,failed=%d', $address['country'], count($found['rates']), $found['failed'] ? 1 : 0)]);
         $this->log->step(self::FLOW . '.finished', ['result' => $refusal === null ? 'offered' : 'unsupported', 'ms' => (int) round((microtime(\true) - $started) * 1000)]);

@@ -30,4 +30,18 @@ final class TaxCompatibility
         }
         return $ratesVaryWithinCountry ? self::REGIONAL : self::COMPATIBLE;
     }
+    /**
+     * Taxes that follow the address of one country are known beforehand only for a cart priced for that country.
+     * A guest without a default location is priced for no country: the wallet's address would add the taxes.
+     *
+     * @param list<string> $taxCountries
+     * @param string $taxableCountry The country the cart's taxes were calculated for; empty when there is none.
+     */
+    public static function cartPricedForTaxCountry(bool $taxEnabled, string $taxBasedOn, array $taxCountries, string $taxableCountry): bool
+    {
+        if (!self::followsCustomerAddress($taxEnabled, $taxBasedOn) || count($taxCountries) !== 1) {
+            return \true;
+        }
+        return $taxableCountry === $taxCountries[0];
+    }
 }

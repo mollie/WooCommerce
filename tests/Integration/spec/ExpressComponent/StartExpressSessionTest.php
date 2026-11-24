@@ -110,7 +110,6 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         $this->assertNotSame('', $payload['metadata']['express_ref']);
         $this->assertFalse(CanaryData::leakedIn((string) wp_json_encode($payload['metadata'])));
         $this->assertSame(CanaryData::WEBHOOK_SECRET, $this->webhookSecretIn($payload));
-        $this->assertNotContains('shipping-address', $payload['requiredCustomerDetails'] ?? []);
     }
 
     /**
@@ -135,31 +134,128 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the wallet is always asked for the contact details and the billing address
+     * Scenario: the wallet is always asked for the contact details and the billing address, and for where to ship
      *   Given a shopper whose checkout form holds an email and a billing address, or does not
-     *   When a session is started
-     *   Then requiredCustomerDetails asks for email and billing-address either way
-     *   And never for the shipping address, which the session's fixed amount was priced for
+     *   When a session is started for a cart that ships
+     *   Then requiredCustomerDetails asks for email, billing-address and shipping-address either way
+     *   And the form's own shipping address is not what the session is priced for
      *
      * @test
      * @dataProvider shoppers
      * @group REQ-C2
      */
-    public function it_always_asks_the_wallet_for_contact_and_billing(bool $loggedIn, bool $formFilled): void
+    public function it_always_asks_the_wallet_for_contact_billing_and_shipping(bool $loggedIn, bool $formFilled): void
     {
+        // Given
         $this->bootExpress();
         $loggedIn ? $this->actAsCustomer() : $this->actAsGuest();
         WC()->customer = new \WC_Customer(get_current_user_id(), true);
         $this->cartWith(['simple']);
-        $this->fillCheckoutForm($formFilled ? $this->billing() : [], $this->shipping('LU'));
-        $this->chooseRate('standard');
+        $this->fillCheckoutForm($formFilled ? $this->billing() : [], $formFilled ? $this->shipping('LU') : []);
 
-        $this->assertSame(200, $this->startSession()->get_status());
+        // When
+        $status = $this->startSession()->get_status();
 
+        // Then
+        $this->assertSame(200, $status);
         $details = $this->onlySessionPayload()['requiredCustomerDetails'] ?? [];
         sort($details);
-        $this->assertSame(['billing-address', 'email'], $details);
-        $this->assertNotContains('shipping-address', $details);
+        $this->assertSame(['billing-address', 'email', 'shipping-address'], $details);
+    }
+
+    /**
+     * Scenario: a cart that ships asks Mollie to call the store for the shipping options
+     *   Given a guest with an empty checkout form and a cart that ships, or one that ships nothing
+     *   When a session is started
+     *   Then a cart that ships has an https shipping.callbackUrl carrying a secret and no shipping_fee line
+     *   And its lines sum to the amount, which is the cart total without shipping
+     *   And the wallet is asked for email, billing-address and shipping-address
+     *   And a cart that ships nothing has no shipping object
+     *
+     * @test
+     * @dataProvider cartsThatShipOrNot
+     * @group REQ-H2
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
+     */
+    public function it_sends_a_shipping_callback_instead_of_a_shipping_line_for_a_cart_that_ships(bool $ships): void
+    {
+        // Given
+        $this->bootExpress();
+        $this->actAsGuest();
+        if (!$ships) {
+            $this->addTestFilter('woocommerce_cart_needs_shipping', '__return_false');
+        }
+        $this->cartWith(['simple'], 2);
+        $this->fillCheckoutForm([], []);
+
+        // When
+        $response = $this->startSession();
+
+        // Then
+        $this->assertSame(200, $response->get_status(), wp_json_encode($response->get_data()));
+        $payload = $this->onlySessionPayload();
+        $this->assertValidSessionPayload($payload);
+        $details = $payload['requiredCustomerDetails'] ?? [];
+        sort($details);
+        if (!$ships) {
+            $this->assertArrayNotHasKey('shipping', $payload);
+            $this->assertSame(['billing-address', 'email'], $details);
+
+            return;
+        }
+        $base = rest_url('mollie/v1/express/shipping');
+        $url = (string) ($payload['shipping']['callbackUrl'] ?? '');
+        $this->assertStringStartsWith('https://', $url);
+        $this->assertStringStartsWith($base, $url);
+        $this->assertRegExp('/[A-Za-z0-9_-]{16,}/', substr($url, strlen($base)), 'The URL must carry a secret.');
+        $this->assertArrayNotHasKey('options', $payload['shipping'], 'Mollie takes options or a callbackUrl, not both.');
+        $types = array_column($payload['lines'], 'type');
+        $this->assertNotContains('shipping_fee', $types);
+        $this->assertSame($this->cartTotalWithoutShipping(), $payload['amount']['value']);
+        $this->assertSame(['billing-address', 'email', 'shipping-address'], $details);
+    }
+
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public function cartsThatShipOrNot(): array
+    {
+        return [
+            'a cart that ships' => [true],
+            'a cart that ships nothing' => [false],
+        ];
+    }
+
+    /**
+     * Scenario: an empty shipping form neither blocks the component nor moves the session
+     *   Given a guest with a cart that ships and an empty checkout form
+     *   When a session is requested
+     *   Then it is answered 200, not shipping_incomplete
+     *   And when the shopper then fills the form with another destination and rate, the next request gets the same token
+     *   And only one session was ever sent to Mollie
+     *
+     * @test
+     * @group REQ-H2
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
+     */
+    public function it_offers_express_with_an_empty_shipping_form_and_keeps_the_session_when_the_form_changes(): void
+    {
+        // Given
+        $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+        $this->fillCheckoutForm([], []);
+
+        // When
+        $first = $this->startSession();
+        $this->fillCheckoutForm($this->billing(), $this->shipping('AT'));
+        $this->chooseRate('austria');
+        $second = $this->startSession();
+
+        // Then
+        $this->assertSame(200, $first->get_status(), wp_json_encode($first->get_data()));
+        $this->assertSame($this->token($first), $this->token($second));
+        $this->assertCount(1, $this->fakeMollie()->requests('POST', 'sessions'));
     }
 
     /**
@@ -175,20 +271,23 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: whatever the browser sends, the session is priced from the server-side cart
-     *   Given a guest ready to check out with a chosen shipping rate
+     * Scenario: whatever the browser sends, the session is priced from the server-side cart, without shipping
+     *   Given a guest ready to check out
      *   When the request also carries an amount, a currency, lines, an address and a country
      *   Then it is answered 200
-     *   And the amount that reached Mollie is the WooCommerce cart total including the rate
-     *   And the shipping_fee line is the chosen rate's cost including its tax
+     *   And the amount that reached Mollie is the WooCommerce cart total without shipping
+     *   And no line is a shipping_fee: Mollie adds the option the shopper picks in the wallet
      *
      * @test
      * @group REQ-B4
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
      */
     public function it_prices_from_the_server_cart_whatever_the_request_sends(): void
     {
+        // Given
         $this->readyGuestCheckout();
 
+        // When
         $response = $this->startSession([
             'amount' => '0.01',
             'currency' => 'USD',
@@ -198,24 +297,18 @@ class StartExpressSessionTest extends ExpressFlowTestCase
             'country' => 'US',
         ]);
 
+        // Then
         $this->assertSame(200, $response->get_status());
         $payload = $this->onlySessionPayload();
-        $this->assertSame(['currency' => get_woocommerce_currency(), 'value' => $this->cartTotal()], $payload['amount']);
-        $shippingLines = array_values(array_filter($payload['lines'], static function (array $line): bool {
-            return ($line['type'] ?? '') === 'shipping_fee';
-        }));
-        $this->assertCount(1, $shippingLines);
-        $this->assertSame(
-            $this->decimal((float) WC()->cart->get_shipping_total() + (float) WC()->cart->get_shipping_tax()),
-            $shippingLines[0]['totalAmount']['value']
-        );
+        $this->assertSame(['currency' => get_woocommerce_currency(), 'value' => $this->cartTotalWithoutShipping()], $payload['amount']);
+        $this->assertNotContains('shipping_fee', array_column($payload['lines'], 'type'));
     }
 
     /**
      * Scenario: a product line another plugin priced below zero does not cost the shopper the wallets
      *   Given a guest whose cart holds a product a plugin priced at -0.02 and a product above zero
      *   When the session is requested
-     *   Then a session is created for the cart total
+     *   Then a session is created for the cart total without shipping
      *   And the line below zero is a discount line named after its product
      *
      * @test
@@ -238,7 +331,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
 
         $this->assertSame(200, $response->get_status(), 'Expected a started session: ' . wp_json_encode($response->get_data()));
         $payload = $this->onlySessionPayload();
-        $this->assertSame($this->cartTotal(), $payload['amount']['value']);
+        $this->assertSame($this->cartTotalWithoutShipping(), $payload['amount']['value']);
         $discounts = array_values(array_filter($payload['lines'], static function (array $line) use ($belowZero): bool {
             return $line['description'] === wc_get_product($belowZero)->get_name();
         }));
@@ -323,32 +416,32 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
-     * Scenario: a cart that ships waits for the checkout form
+     * Scenario: a cart that ships does not wait for the checkout form
      *   Given a guest with a cart that ships
-     *   And the shipping address is incomplete, or no rate can be chosen for the destination
+     *   And the form's shipping address is incomplete, or no rate ships to its destination
      *   When a session is requested
-     *   Then it is answered 409 with the code shipping_incomplete and a message for the shopper
-     *   And nothing is sent to Mollie
+     *   Then it is answered 200, not shipping_incomplete
+     *   And exactly one session is sent to Mollie
      *
      * @test
      * @dataProvider incompleteShipping
+     * @group REQ-H2
      */
-    public function it_refuses_a_shipping_cart_until_the_form_is_complete(string $country, bool $fullAddress): void
+    public function it_starts_a_session_for_a_shipping_cart_whatever_the_form_holds(string $country, bool $fullAddress): void
     {
+        // Given
         $this->bootExpress();
         $this->actAsGuest();
         $this->cartWith(['simple']);
         $this->fillCheckoutForm([], $fullAddress ? $this->shipping($country) : ['country' => $country]);
         $this->recalculate();
 
+        // When
         $response = $this->startSession();
 
-        $this->assertSame(409, $response->get_status());
-        $data = (array) $response->get_data();
-        $this->assertSame('shipping_incomplete', $data['code']);
-        $this->assertNotEmpty($data['message']);
-        $this->assertNotSame('shipping_incomplete', $data['message'], 'The shopper must be told why, not given a code.');
-        $this->assertSame([], $this->fakeMollie()->requests('POST'));
+        // Then
+        $this->assertSame(200, $response->get_status(), wp_json_encode($response->get_data()));
+        $this->assertCount(1, $this->fakeMollie()->requests('POST', 'sessions'));
     }
 
     /**
@@ -409,41 +502,36 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: a cart whose taxes wait for an address nobody gave is refused before Mollie is asked
-     *   Given a guest with a cart with nothing to ship and an empty checkout form
-     *   And taxes based on the customer's billing (or shipping) address
+     * Scenario: a shop whose taxes follow the buyer's address in more than one country is refused before Mollie is asked
+     *   Given taxes on, based on the customer's billing (or shipping) address
+     *   And a shop that sells to Germany and Italy
+     *   And a guest with a cart that ships, a complete destination and a chosen rate
      *   When a session is requested
-     *   Then it is answered 409 as not available, with the reason tax_address_unknown
+     *   Then it is answered 409 as not available, with the reason tax_depends_on_address
      *   And nothing is sent to Mollie
      *
      * @test
      * @dataProvider taxBasesOnTheCustomer
+     * @group REQ-NEW-EXPRESS-TAX
      */
-    public function it_refuses_a_session_without_a_mollie_call_when_taxes_wait_for_the_address(string $taxBasedOn): void
+    public function it_refuses_a_session_without_a_mollie_call_when_taxes_depend_on_the_address(string $taxBasedOn): void
     {
-        $this->setOptionForTest('woocommerce_calc_taxes', 'yes');
-        $this->setOptionForTest('woocommerce_tax_based_on', $taxBasedOn);
-        $product = wc_get_product((int) wc_get_product_id_by_sku(ProductPresets::get()['simple']['sku']));
-        $this->assertInstanceOf(\WC_Product::class, $product);
-        $wasVirtual = $product->get_virtual();
-        $product->set_virtual(true);
-        $product->save();
-        try {
-            $this->bootExpress();
-            $this->actAsGuest();
-            $this->cartWith(['simple']);
-            $this->fillCheckoutForm([], []);
-            $this->recalculate();
-            $this->assertFalse(WC()->cart->needs_shipping(), 'The cart must ship nothing, or the scenario proves nothing.');
+        // Given
+        $this->shopSellingToGermanyAndItalyWithTaxesOn($taxBasedOn);
+        $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+        $this->chooseRate('standard');
+        $this->assertTrue(WC()->cart->needs_shipping(), 'The cart must ship, or the scenario proves nothing.');
 
-            $response = $this->startSession();
-        } finally {
-            $product->set_virtual($wasVirtual);
-            $product->save();
-        }
+        // When
+        $response = $this->startSession();
 
+        // Then
         $this->assertSame(409, $response->get_status());
-        $this->assertSame('tax_address_unknown', $this->loggedEvents('express.session.refused')[0]['context']['reason'] ?? null);
+        $this->assertSame('tax_depends_on_address', ((array) $response->get_data())['code']);
+        $this->assertSame('tax_depends_on_address', $this->loggedEvents('express.session.refused')[0]['context']['reason'] ?? null);
         $this->assertSame([], $this->fakeMollie()->requests('POST'));
     }
 
@@ -456,6 +544,106 @@ class StartExpressSessionTest extends ExpressFlowTestCase
             'taxes on the billing address' => ['billing'],
             'taxes on the shipping address' => ['shipping'],
         ];
+    }
+
+    /**
+     * Scenario: a saved address does not make a shop with address-dependent taxes eligible
+     *   Given the same shop, taxes based on the billing address
+     *   And a logged-in customer whose account has a saved billing country
+     *   When a session is requested
+     *   Then it is answered 409 as not available, with the reason tax_depends_on_address
+     *   And nothing is sent to Mollie
+     *
+     * @test
+     * @group REQ-NEW-EXPRESS-TAX
+     */
+    public function it_refuses_a_session_for_a_customer_with_a_saved_address_when_taxes_depend_on_the_address(): void
+    {
+        // Given
+        $this->shopSellingToGermanyAndItalyWithTaxesOn('billing');
+        $this->bootExpress();
+        $this->actAsCustomer();
+        update_user_meta($this->customer_id, 'billing_country', 'DE');
+        try {
+            $this->cartWith(['simple']);
+            $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+            $this->chooseRate('standard');
+
+            // When
+            $response = $this->startSession();
+        } finally {
+            delete_user_meta($this->customer_id, 'billing_country');
+        }
+
+        // Then
+        $this->assertSame(409, $response->get_status());
+        $this->assertSame('tax_depends_on_address', ((array) $response->get_data())['code']);
+        $this->assertSame([], $this->fakeMollie()->requests('POST'));
+    }
+
+    /**
+     * Scenario: a guest whose cart is priced for no country is refused where taxes follow one country's address
+     *   Given taxes on, based on the customer's billing address, and a shop that sells to Austria only
+     *   And a guest who typed no address, so the cart is priced for the store's default customer location
+     *   When a session is requested
+     *   Then a session is created when the default location is Austria: the cart carries Austria's VAT
+     *   And it is answered 409 with tax_depends_on_address when there is no default location, or the shop
+     *       base is a country the shop does not sell to, prices entered with or without VAT: the cart
+     *       carries no VAT, and the wallet's Austrian address would add it
+     *   And nothing is sent to Mollie for a refused cart
+     *
+     * @test
+     * @dataProvider defaultCustomerLocations
+     * @group REQ-NEW-EXPRESS-TAX
+     */
+    public function it_refuses_a_session_for_a_cart_that_is_not_priced_for_the_only_tax_country(
+        string $baseCountry,
+        string $defaultLocation,
+        string $pricesIncludeTax,
+        int $status,
+        ?string $code
+    ): void {
+
+        // Given
+        $this->setOptionForTest('woocommerce_tax_based_on', 'billing');
+        $this->setOptionForTest('woocommerce_allowed_countries', 'specific');
+        $this->setOptionForTest('woocommerce_specific_allowed_countries', ['AT']);
+        $this->setOptionForTest('woocommerce_default_country', $baseCountry);
+        $this->setOptionForTest('woocommerce_default_customer_address', $defaultLocation);
+        $this->setOptionForTest('woocommerce_prices_include_tax', $pricesIncludeTax);
+        $this->newShopper();
+        $this->bootExpress();
+        $this->actAsGuest();
+        $this->cartWith(['simple']);
+
+        // When
+        $response = $this->startSession();
+
+        // Then
+        $this->assertSame($status, $response->get_status());
+        $this->assertSame($code, ((array) $response->get_data())['code'] ?? null);
+        $this->assertCount($code === null ? 1 : 0, $this->fakeMollie()->requests('POST', 'sessions'));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: string, 3: int, 4: ?string}>
+     */
+    public function defaultCustomerLocations(): array
+    {
+        return [
+            'the default location is the shop base, Austria' => ['AT', 'base', 'no', 200, null],
+            'no default location' => ['AT', '', 'no', 409, 'tax_depends_on_address'],
+            'the shop base is not a selling country' => ['DE', 'base', 'no', 409, 'tax_depends_on_address'],
+            'no default location, prices include VAT' => ['AT', '', 'yes', 409, 'tax_depends_on_address'],
+        ];
+    }
+
+    private function shopSellingToGermanyAndItalyWithTaxesOn(string $taxBasedOn): void
+    {
+        $this->setOptionForTest('woocommerce_calc_taxes', 'yes');
+        $this->setOptionForTest('woocommerce_tax_based_on', $taxBasedOn);
+        $this->setOptionForTest('woocommerce_allowed_countries', 'specific');
+        $this->setOptionForTest('woocommerce_specific_allowed_countries', ['DE', 'IT']);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -597,37 +785,40 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: a change of shipping that changes the total is a new checkout
+     * Scenario: a change of the cart that changes the total is a new checkout
      *   Given a guest who started a session
-     *   When the shopper chooses another rate, or ships to another destination, and the total changes
+     *   When the cart changes and the total changes
      *   Then the next request creates a new session priced with the new total, under a new idempotency key
-     *   And going back to the first choice never returns the first token again
+     *   And going back to the first cart never returns the first token again
      *
      * @test
-     * @dataProvider shippingChanges
+     * @dataProvider cartChanges
      * @group REQ-G2
      * @group REQ-B4
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
+     * @param array<int, string> $presets
      */
-    public function it_creates_a_new_session_when_shipping_changes_the_total(string $country, string $rate): void
+    public function it_creates_a_new_session_when_the_cart_changes_the_total(array $presets, int $quantity): void
     {
+        // Given
         $this->readyGuestCheckout();
         $first = $this->startSession();
-        $firstTotal = $this->cartTotal();
+        $firstTotal = $this->cartTotalWithoutShipping();
 
-        $this->fillCheckoutForm($this->billing(), $this->shipping($country));
-        $this->chooseRate($rate);
+        // When
+        $this->cartWith($presets, $quantity);
         $second = $this->startSession();
 
+        // Then
         $this->assertSame(200, $second->get_status());
-        $this->assertNotSame($firstTotal, $this->cartTotal(), 'The scenario needs a change of total.');
+        $this->assertNotSame($firstTotal, $this->cartTotalWithoutShipping(), 'The scenario needs a change of total.');
         $requests = $this->fakeMollie()->requests('POST', 'sessions');
         $this->assertCount(2, $requests);
-        $this->assertSame($this->cartTotal(), $requests[1]['body']['amount']['value']);
+        $this->assertSame($this->cartTotalWithoutShipping(), $requests[1]['body']['amount']['value']);
         $this->assertNotSame($requests[0]['idempotencyKey'], $requests[1]['idempotencyKey']);
         $this->assertNotSame($this->token($first), $this->token($second));
 
-        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
-        $this->chooseRate('standard');
+        $this->cartWith(['simple'], 2);
         $third = $this->startSession();
 
         $this->assertSame(200, $third->get_status());
@@ -635,13 +826,13 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     }
 
     /**
-     * @return array<string, array{0: string, 1: string}>
+     * @return array<string, array{0: array<int, string>, 1: int}>
      */
-    public function shippingChanges(): array
+    public function cartChanges(): array
     {
         return [
-            'another rate' => ['LU', 'express'],
-            'another destination' => ['AT', 'austria'],
+            'more of the same product' => [['simple'], 3],
+            'another product' => [['simple_expensive'], 1],
         ];
     }
 
@@ -652,7 +843,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     /**
      * Scenario: a shopper cannot make the shop create sessions without limit
      *   Given the configured budget of new sessions per window
-     *   When the shopper changes the rate and starts a session more times than the budget allows
+     *   When the shopper changes the cart and starts a session more times than the budget allows
      *   Then the request over the budget is answered 429
      *   And it sends nothing to Mollie
      *
@@ -666,10 +857,10 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         $this->readyGuestCheckout();
 
         for ($attempt = 0; $attempt < $budget; $attempt++) {
-            $this->chooseRate($attempt % 2 === 0 ? 'express' : 'standard');
+            $this->changeTheTotal($attempt);
             $this->assertSame(200, $this->startSession()->get_status(), "Session {$attempt} is within the budget.");
         }
-        $this->chooseRate($budget % 2 === 0 ? 'express' : 'standard');
+        $this->changeTheTotal($budget);
         $over = $this->startSession();
 
         $this->assertSame(429, $over->get_status());
@@ -804,13 +995,13 @@ class StartExpressSessionTest extends ExpressFlowTestCase
             'log.always_on' => static fn (): LoggerInterface => $alwaysOn,
         ]);
         for ($attempt = 0; $attempt < $budget; $attempt++) {
-            $this->chooseRate($attempt % 2 === 0 ? 'express' : 'standard');
+            $this->changeTheTotal($attempt);
             $this->assertSame(200, $this->startSession()->get_status());
         }
         $this->assertSame([], $alwaysOn->records(), 'Nothing is a problem while the budget has room.');
 
         foreach ([0, 1] as $refusal) {
-            $this->chooseRate(($budget + $refusal) % 2 === 0 ? 'express' : 'standard');
+            $this->changeTheTotal($budget + $refusal);
             $this->assertSame(429, $this->startSession()->get_status());
         }
 
@@ -889,7 +1080,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
 
     /**
      * Scenario: an outage or a rate limit at Mollie leaves nothing behind
-     *   Given a guest who holds a session for one rate and then chooses another
+     *   Given a guest who holds a session for one cart and then changes its quantity
      *   And Mollie answers the next session request with an outage or a rate limit
      *   When a session is requested
      *   Then the route answers 503
@@ -904,7 +1095,7 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         $this->readyGuestCheckout();
         $dropped = $this->token($this->startSession());
         $this->assertStringContainsString($dropped, $this->storedShopperSession(), 'The check must be able to see a remembered token.');
-        $this->chooseRate('express');
+        $this->changeTheTotal(0);
         $this->fakeMollie()->failNext('POST', 'sessions', $mollieStatus);
 
         $response = $this->startSession();
@@ -933,6 +1124,14 @@ class StartExpressSessionTest extends ExpressFlowTestCase
     // ──────────────────────────────────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────
+
+    /**
+     * A new total for the next session: the cart quantity alternates, a change of the shipping form does not reprice.
+     */
+    private function changeTheTotal(int $attempt): void
+    {
+        $this->cartWith(['simple'], 3 - $attempt % 2);
+    }
 
     /**
      * A new guest with the checkout ready for a session.
@@ -1053,4 +1252,62 @@ class StartExpressSessionTest extends ExpressFlowTestCase
         $this->filters[] = ['pre_http_request', $filter, 2];
     }
 
+    /**
+     * @scenario A session opens for the page the shopper is on, the cart or the checkout, and for no other
+     *   Given a guest ready to pay, PayPal enabled and active at Mollie
+     *   And PayPal's express switches set for the page asked: only the cart switch on for the cart,
+     *        only the checkout switch on for the checkout, both on for any other surface
+     *   When the browser posts a valid nonce with that surface to the session route
+     *   Then a session opens for the cart and for the checkout, each through its own switch
+     *   And the product page, an unknown surface or no surface at all is refused
+     *   And nothing is sent to Mollie for a refused surface
+     *
+     * @test
+     * @dataProvider surfacesAsked
+     * @param string|null $surface null sends no surface
+     * @group REQ-A1
+     * @group REQ-NG2
+     */
+    public function it_opens_a_session_only_for_the_cart_or_the_checkout(?string $surface, string $cartSwitch, string $checkoutSwitch, bool $opens): void
+    {
+        // Given
+        $this->setGatewaySettingsForTest('paypal', [
+            'enabled' => 'yes',
+            'mollie_paypal_button_enabled_cart' => $cartSwitch,
+            'mollie_paypal_button_enabled_checkout' => $checkoutSwitch,
+        ]);
+        $this->readyGuestCheckout();
+        $params = ['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)];
+        if ($surface !== null) {
+            $params['surface'] = $surface;
+        }
+
+        // When
+        $response = $this->restRequest('POST', self::ROUTE, $params);
+
+        // Then
+        if ($opens) {
+            $this->assertNotSame('', $this->token($response));
+            $this->assertNotSame([], $this->fakeMollie()->requests('POST'));
+
+            return;
+        }
+        $this->assertGreaterThanOrEqual(400, $response->get_status(), "Surface '" . (string) $surface . "' must be refused.");
+        $this->assertLessThan(500, $response->get_status());
+        $this->assertSame([], $this->fakeMollie()->requests('POST'));
+    }
+
+    /**
+     * @return array<string, array{0: ?string, 1: string, 2: string, 3: bool}>
+     */
+    public function surfacesAsked(): array
+    {
+        return [
+            'the cart, through its cart switch' => ['cart', 'yes', 'no', true],
+            'the checkout, through its checkout switch' => ['checkout', 'no', 'yes', true],
+            'the product page' => ['product', 'yes', 'yes', false],
+            'an unknown surface' => ['minicart', 'yes', 'yes', false],
+            'no surface' => [null, 'yes', 'yes', false],
+        ];
+    }
 }

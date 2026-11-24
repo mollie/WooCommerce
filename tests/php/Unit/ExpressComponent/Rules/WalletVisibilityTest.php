@@ -12,7 +12,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility;
 use Mollie\WooCommerceTests\TestCase;
 
 /**
- * Which wallets the Express Component offers, and when a wallet waits for the checkout form.
+ * Which wallets the Express Component offers.
  * Uses the real wallet rows in config/express.php; only "shown" is asserted.
  *
  * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility
@@ -49,7 +49,8 @@ class WalletVisibilityTest extends TestCase
 
         $buttons = WalletVisibility::buttons(
             $this->settings(),
-            $this->shop($isHttps, $registered, $enabled, $active, $expressOn)
+            $this->shop($isHttps, $registered, $enabled, $active, $expressOn),
+            'checkout'
         );
 
         $this->assertShownExactly($expectedShown, $buttons);
@@ -80,7 +81,7 @@ class WalletVisibilityTest extends TestCase
             surchargedGatewayIds: $this->column($surcharged, 'gatewayId')
         );
 
-        $this->assertShownExactly($expectedShown, WalletVisibility::buttons($this->settings(), $shop));
+        $this->assertShownExactly($expectedShown, WalletVisibility::buttons($this->settings(), $shop, 'checkout'));
     }
 
     /**
@@ -140,108 +141,26 @@ class WalletVisibilityTest extends TestCase
     {
         $buttons = WalletVisibility::buttons(
             $this->settings(),
-            $this->shop(true, self::WALLETS, self::WALLETS, self::WALLETS, self::WALLETS)
+            $this->shop(true, self::WALLETS, self::WALLETS, self::WALLETS, self::WALLETS),
+            'checkout'
         );
 
         $this->assertShownExactly(self::WALLETS, $buttons);
     }
 
     /**
-     * Scenario: every wallet waits for the checkout form, Apple Pay included
-     *   Given Apple Pay and PayPal visible and a cart that ships
-     *   When the buttons map is built while the shipping destination or rate is missing
-     *   Then neither is shown: both take the shipping address from the checkout form
-     *   And with the form complete, or nothing to ship, both are shown
-     *
-     * @dataProvider carts
-     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons
-     * @param array<int, string> $expectedShown
-     */
-    public function testHidesFormWalletsWhileTheCheckoutFormIsIncomplete(
-        bool $needsShipping,
-        bool $destinationComplete,
-        bool $rateChosen,
-        array $expectedShown
-    ): void {
-
-        $both = ['applepay', 'paypal'];
-        $cart = new CartFacts(
-            lines: [new CartLine(productId: 1, quantity: 1, isSubscription: false)],
-            needsShipping: $needsShipping,
-            shippingDestinationComplete: $destinationComplete,
-            shippingRateChosen: $rateChosen
-        );
-
-        $buttons = WalletVisibility::buttons(
-            $this->settings(),
-            $this->shop(true, $both, $both, $both, $both),
-            $cart
-        );
-
-        $this->assertShownExactly($expectedShown, $buttons);
-    }
-
-    /**
-     * @return array<string, array{0: bool, 1: bool, 2: bool, 3: array<int, string>}>
-     */
-    public function carts(): array
-    {
-        $both = ['applepay', 'paypal'];
-
-        return [
-            'ships, destination incomplete' => [true, false, true, []],
-            'ships, no rate chosen' => [true, true, false, []],
-            'ships, neither' => [true, false, false, []],
-            'ships, form complete' => [true, true, true, $both],
-            'nothing to ship, form empty' => [false, false, false, $both],
-        ];
-    }
-
-    /**
-     * Scenario: a wallet with its own address sheet does not wait for the checkout form
-     *   Given a wallets table where Apple Pay takes its address from its own sheet ('wallet')
-     *   And PayPal takes it from the form
-     *   When the buttons map is built for a cart that ships while the form is incomplete
-     *   Then Apple Pay is shown and PayPal is not
-     *
-     * No real row uses 'wallet' today; this keeps the rule working if one is switched back.
-     *
-     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons
-     */
-    public function testKeepsAWalletWithItsOwnSheetWhileTheFormIsIncomplete(): void
-    {
-        $config = self::config();
-        $wallets = $config['wallets'];
-        $wallets['applepay']['addressFrom'] = 'wallet';
-        $settings = new ExpressSettings(
-            supportedSurfaces: $config['surfaces'],
-            allowedModes: $config['allowedModes'],
-            wallets: $wallets
-        );
-        $both = ['applepay', 'paypal'];
-        $cart = new CartFacts(
-            lines: [new CartLine(productId: 1, quantity: 1, isSubscription: false)],
-            needsShipping: true,
-            shippingDestinationComplete: false,
-            shippingRateChosen: false
-        );
-
-        $buttons = WalletVisibility::buttons($settings, $this->shop(true, $both, $both, $both, $both), $cart);
-
-        $this->assertShownExactly(['applepay'], $buttons);
-    }
-
-    /**
-     * Scenario: the real wallets table takes every shipping address from the checkout form
+     * Scenario: the real wallets table takes every shipping address from the wallet
      *   Given config/express.php
-     *   Then every wallet row has addressFrom 'form'
+     *   Then every wallet row has addressFrom 'wallet', so a cart that ships never waits for the checkout form
      *
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons
+     * @group REQ-H2
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
      */
-    public function testEveryWalletTakesItsAddressFromTheCheckoutForm(): void
+    public function testEveryWalletTakesItsAddressFromTheWallet(): void
     {
         foreach (self::config()['wallets'] as $wallet => $row) {
-            self::assertSame('form', $row['addressFrom'], "Wallet '{$wallet}' must wait for the checkout form.");
+            self::assertSame('wallet', $row['addressFrom'], "Wallet '{$wallet}' must take its address from the wallet.");
         }
     }
 
@@ -263,14 +182,24 @@ class WalletVisibilityTest extends TestCase
         }
     }
 
-    private function settings(): ExpressSettings
+    /**
+     * @param string|null $addressFrom Sets every wallet's addressFrom: no real row uses 'form' any more,
+     *        the switch is what is under test.
+     */
+    private function settings(?string $addressFrom = null): ExpressSettings
     {
         $config = self::config();
+        $wallets = $config['wallets'];
+        if ($addressFrom !== null) {
+            foreach ($wallets as $wallet => $row) {
+                $wallets[$wallet]['addressFrom'] = $addressFrom;
+            }
+        }
 
         return new ExpressSettings(
             supportedSurfaces: $config['surfaces'],
             allowedModes: $config['allowedModes'],
-            wallets: $config['wallets']
+            wallets: $wallets
         );
     }
 
@@ -312,7 +241,7 @@ class WalletVisibilityTest extends TestCase
     }
 
     /**
-     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, cartSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
      */
     private static function config(): array
     {

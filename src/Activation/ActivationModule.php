@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Inpsyde\Modularity\Module\ExecutableModule;
 use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Activation\Migrations\GooglePayButtonSettingsMigrator;
 use Mollie\WooCommerce\Activation\Migrations\MigratorInterface;
 use Mollie\WooCommerce\Activation\Migrations\PaymentMethodSettingsMigrator;
 use Mollie\WooCommerce\Activation\Migrations\VoucherTermMetaTranslationMigrator;
@@ -39,6 +40,7 @@ class ActivationModule implements ExecutableModule, ServiceModule
                 return [
                     new PaymentMethodSettingsMigrator(),
                     new VoucherTermMetaTranslationMigrator(),
+                    new GooglePayButtonSettingsMigrator(),
                 ];
             },
         ];
@@ -156,6 +158,8 @@ class ActivationModule implements ExecutableModule, ServiceModule
 
         if (!$dbVersionOption && !$dbPluginOption) {
             update_option(SharedDataDictionary::NEW_INSTALL_PARAM_NAME, 'yes', true);
+            // Written once; add_option never overwrites it.
+            add_option(SharedDataDictionary::EXPRESS_DEFAULT_ON_PARAM_NAME, 'yes', '', true);
             update_option(SharedDataDictionary::PLUGIN_VERSION_PARAM_NAME, $this->pluginVersion, true);
             return;
         }

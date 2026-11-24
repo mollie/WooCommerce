@@ -10,6 +10,7 @@ use Mollie\WooCommerce\Shared\Values\Admit;
 use Mollie\WooCommerce\Shared\Values\Money;
 use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
 use Mollie\WooCommerce\Shared\Values\Refuse;
+use Mollie\WooCommerce\Shared\Values\ShippingFee;
 use Mollie\WooCommerceTests\TestCase;
 
 /**
@@ -102,6 +103,98 @@ class ExpressOrderMatchTest extends TestCase
             'the currency differs' => [['amount' => Money::fromDecimal('26.05', 'USD')], [], 'amount_mismatch'],
             'a paid order tracks a different payment' => [[], ['trackedPaymentId' => 'tr_other', 'needsPayment' => false], 'other_payment'],
             'the order no longer needs payment and tracks none' => [[], ['needsPayment' => false], 'not_payable'],
+        ];
+    }
+
+    /**
+     * Scenario: a cart that ships is paid for its order total plus the shipping option chosen in the wallet
+     *   Given an express order made at submit without shipping, for a cart that ships or not
+     *   And a payment with or without a shipping_fee line
+     *   When the match is decided
+     *   Then it is admitted only when the payment's amount is the order total plus that line,
+     *        or the order total alone once the order holds its shipping line or ships nothing
+     *   And any other amount, a missing line or a line in another currency is refused as amount_mismatch
+     *
+     * @dataProvider shippingAmounts
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressOrderMatch::admit
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
+     * @param array<string, mixed> $paymentOverrides
+     * @param array<string, mixed> $orderOverrides
+     */
+    public function testComparesThePaymentOfACartThatShipsWithTheOrderTotalPlusItsShippingFee(
+        array $paymentOverrides,
+        array $orderOverrides,
+        ?string $expectedReason
+    ): void {
+
+        $decision = ExpressOrderMatch::admit($this->payment($paymentOverrides), $this->order($orderOverrides));
+
+        if ($expectedReason === null) {
+            self::assertInstanceOf(Admit::class, $decision);
+
+            return;
+        }
+        self::assertInstanceOf(Refuse::class, $decision);
+        self::assertSame($expectedReason, $decision->code());
+        self::assertSame(200, $decision->httpStatus());
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>, 1: array<string, mixed>, 2: ?string}>
+     */
+    public function shippingAmounts(): array
+    {
+        $ships = ['needsShipping' => true];
+        $fee = static fn (string $amount, string $currency = 'EUR'): ShippingFee
+            => new ShippingFee('flat_rate:12', 'Express', Money::fromDecimal($amount, $currency));
+
+        return [
+            'ships, paid the total plus the option' => [
+                ['amount' => Money::fromDecimal('38.15', 'EUR'), 'shippingFee' => $fee('12.10')],
+                $ships,
+                null,
+            ],
+            'ships, a free option' => [
+                ['shippingFee' => $fee('0.00')],
+                $ships,
+                null,
+            ],
+            'ships, the amount misses the option' => [
+                ['shippingFee' => $fee('12.10')],
+                $ships,
+                'amount_mismatch',
+            ],
+            'ships, the amount is a cent off the total plus the option' => [
+                ['amount' => Money::fromDecimal('38.14', 'EUR'), 'shippingFee' => $fee('12.10')],
+                $ships,
+                'amount_mismatch',
+            ],
+            'ships, the payment has no shipping_fee line' => [
+                ['amount' => Money::fromDecimal('38.15', 'EUR')],
+                $ships,
+                'amount_mismatch',
+            ],
+            'ships, the payment has no shipping_fee line and the order total' => [[], $ships, 'amount_mismatch'],
+            'ships, the option is in another currency' => [
+                ['amount' => Money::fromDecimal('38.15', 'EUR'), 'shippingFee' => $fee('12.10', 'USD')],
+                $ships,
+                'amount_mismatch',
+            ],
+            'ships, the order already holds its line: the total is the whole price' => [
+                ['shippingFee' => $fee('12.10')],
+                $ships + ['holdsShippingLine' => true],
+                null,
+            ],
+            'ships, holds its line, the option added again' => [
+                ['amount' => Money::fromDecimal('38.15', 'EUR'), 'shippingFee' => $fee('12.10')],
+                $ships + ['holdsShippingLine' => true],
+                'amount_mismatch',
+            ],
+            'ships nothing, a stray shipping_fee line is not added' => [
+                ['amount' => Money::fromDecimal('38.15', 'EUR'), 'shippingFee' => $fee('12.10')],
+                [],
+                'amount_mismatch',
+            ],
         ];
     }
 
@@ -283,6 +376,7 @@ class ExpressOrderMatchTest extends TestCase
             'method' => 'paypal',
             'amount' => Money::fromDecimal('26.05', 'EUR'),
             'expressRef' => self::REF,
+            'shippingFee' => null,
         ], $overrides);
 
         return new PaymentSnapshot(
@@ -291,7 +385,8 @@ class ExpressOrderMatchTest extends TestCase
             $values['method'],
             $values['amount'],
             mode: 'live',
-            expressRef: $values['expressRef']
+            expressRef: $values['expressRef'],
+            shippingFee: $values['shippingFee']
         );
     }
 
@@ -308,6 +403,8 @@ class ExpressOrderMatchTest extends TestCase
             'needsPayment' => true,
             'cancelled' => false,
             'cancelledBy' => null,
+            'needsShipping' => false,
+            'holdsShippingLine' => false,
         ], $overrides);
         $values['webhookNeedsPayment'] = $overrides['webhookNeedsPayment'] ?? $values['needsPayment'];
 
@@ -319,10 +416,11 @@ class ExpressOrderMatchTest extends TestCase
             trackedPaymentId: $values['trackedPaymentId'],
             needsPayment: $values['needsPayment'],
             holdsShipping: false,
-            needsShipping: false,
+            needsShipping: $values['needsShipping'],
             cancelledBy: $values['cancelledBy'],
             webhookNeedsPayment: $values['webhookNeedsPayment'],
-            cancelled: $values['cancelled']
+            cancelled: $values['cancelled'],
+            holdsShippingLine: $values['holdsShippingLine']
         );
     }
 }

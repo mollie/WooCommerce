@@ -574,6 +574,8 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     /**
      * Scenario: a mismatched payment is refused and the order's state is untouched
      *   Given a pending express order and a paid payment differing in ref, origin or amount
+     *   Or, for a cart that ships, a payment with no shipping_fee line, one the amount does not include,
+     *     or one that cannot be used (no reference, a negative or an unreadable amount)
      *   When the webhook arrives
      *   Then 200, status and meta unchanged, unmatched logged with the reason
      *   And an order the ref found gets one note
@@ -582,6 +584,7 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
      * @dataProvider mismatches
      * @group REQ-G5
      * @group REQ-D7
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
      */
     public function it_refuses_a_mismatched_payment_and_touches_nothing(string $case, string $expectedReason, int $newNotes): void
     {
@@ -589,6 +592,24 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $outcome = ['status' => 'paid', 'method' => 'paypal'];
         if ($case === 'amount') {
             $outcome['amount'] = ['currency' => 'EUR', 'value' => $this->decimal((float) $order->get_total() + 0.01)];
+        }
+        if ($case === 'no shipping fee') {
+            // The amount is the order total, which only a cart that ships nothing may pay.
+            $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
+            $outcome['shippingFee'] = null;
+        }
+        if ($case === 'fee not added') {
+            $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
+            $outcome['amount'] = ['currency' => 'EUR', 'value' => $this->decimal((float) $order->get_total())];
+        }
+        $unusable = [
+            'fee without reference' => ['reference' => '', 'description' => 'Express', 'value' => '4.95'],
+            'negative fee' => ['reference' => 'flat_rate:1', 'description' => 'Express', 'value' => '-4.95'],
+            'unreadable fee' => ['reference' => 'flat_rate:1', 'description' => 'Express', 'value' => 'four'],
+        ];
+        if (isset($unusable[$case])) {
+            $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
+            $outcome['shippingFee'] = $unusable[$case];
         }
         $payment = $this->fakeMollie()->completeSession($sessionId, $outcome);
         switch ($case) {
@@ -615,6 +636,9 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $unmatched = $this->loggedEvents('express.webhook.unmatched');
         $this->assertCount(1, $unmatched);
         $this->assertSame($expectedReason, $unmatched[0]['context']['reason'] ?? null);
+        if (in_array($case, ['no shipping fee', 'fee not added'], true) || isset($unusable[$case])) {
+            $this->assertRememberedWithOneNoteAndOneError($order, $notes, $payment, $expectedReason);
+        }
     }
 
     /**
@@ -627,6 +651,11 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             'a ref no order carries' => ['unknown ref', 'unknown_ref', 0],
             'an order not created via mollie_express' => ['not express', 'not_express', 1],
             'an amount that differs from the order total' => ['amount', 'amount_mismatch', 1],
+            'a cart that ships, paid without a shipping_fee line' => ['no shipping fee', 'amount_mismatch', 1],
+            'a shipping_fee line the amount does not add up to' => ['fee not added', 'amount_mismatch', 1],
+            'a shipping_fee line without a reference' => ['fee without reference', 'amount_mismatch', 1],
+            'a shipping_fee line with a negative amount' => ['negative fee', 'amount_mismatch', 1],
+            'a shipping_fee line with an unreadable amount' => ['unreadable fee', 'amount_mismatch', 1],
         ];
     }
 
@@ -1161,27 +1190,33 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the wallet's billing address replaces the store's, and the shipping address does not move
-     *   Given an express order whose billing and shipping came from the guest's checkout form, or from the account
-     *   And the paid payment carries a different billing and a different shipping address
+     * Scenario: the shipping option chosen in the wallet becomes the order's shipping line, once
+     *   Given an express order of a cart that ships, created with no shipping line, for a guest or a customer
+     *   And a paid payment whose shipping_fee line names the 'express' rate, at the amount raised by it
+     *   And the wallet's shipping address and a billing address different from the order's
      *   When Mollie calls the webhook
-     *   Then the order's billing address and email are the wallet's
-     *   And its shipping address is exactly as it was, because that is what priced the shipping
-     *   And the order is paid
+     *   Then the order has one shipping line for that rate: method and instance, label, net cost and its VAT
+     *   And the order total equals the payment amount, and the order is paid
+     *   And the shipping address is the wallet's, the billing address and email are the wallet's
+     *   When Mollie calls the webhook again for the same payment
+     *   Then the order still has that one shipping line and the same total
      *
      * @test
-     * @dataProvider heldAddresses
-     * @group REQ-C2
+     * @dataProvider shoppers
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
      * @group REQ-C3
      * @group REQ-D5
+     * @group REQ-C2
      */
-    public function it_takes_the_wallets_billing_address_and_leaves_the_shipping_one(string $source): void
+    public function it_writes_the_chosen_shipping_line_and_the_wallets_shipping_address_once(string $shopper): void
     {
-        [$order, , $sessionId] = $source === 'account' ? $this->expressOrderForTheAccount() : $this->expressOrder();
-        $this->assertTrue($order->needs_shipping_address(), 'The scenario needs an order with something to ship.');
-        $billingBefore = $order->get_address('billing');
-        $shipping = $order->get_address('shipping');
-        $this->assertNotSame('', $billingBefore['address_1']);
+        [$order, , $sessionId] = $shopper === 'account' ? $this->expressOrderForTheAccount() : $this->expressOrder();
+        $this->assertTrue($this->ships($order), 'The scenario needs an order with something to ship.');
+        $this->assertCount(0, $order->get_items('shipping'), 'The order is created before the shipping option is known.');
+        $totalBefore = (float) $order->get_total();
+        $this->chooseRate('express');
+        $gross = (float) WC()->cart->get_shipping_total() + (float) WC()->cart->get_shipping_tax();
+        $this->assertGreaterThan(0, $gross);
         $walletEmail = 'other.CANARY7f3a@example.org';
         $payment = $this->fakeMollie()->completeSession($sessionId, [
             'status' => 'paid',
@@ -1189,61 +1224,436 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
             'billingAddress' => CanaryData::mollieAddress(['city' => 'Rotterdam', 'email' => $walletEmail]),
             'shippingAddress' => CanaryData::mollieAddress(['city' => 'Utrecht']),
         ]);
+        $this->assertSame($this->decimal($totalBefore + $gross), $payment['amount']['value'], 'The payment is the order plus the option.');
 
         $this->assertSame(200, $this->deliverWebhook($payment['id']));
 
         $after = $this->fresh($order);
-        $this->assertSame('Rotterdam', $after->get_billing_city(), 'The wallet chose this billing address.');
-        $this->assertSame($walletEmail, $after->get_billing_email(), 'The wallet chose this contact.');
-        $this->assertNotSame($billingBefore['city'], $after->get_billing_city());
-        $this->assertSame($shipping, $after->get_address('shipping'), 'The shipping address priced the order.');
+        $lines = array_values($after->get_items('shipping'));
+        $this->assertCount(1, $lines);
+        [$methodId, $instanceId] = explode(':', $this->rates['express']);
+        $this->assertSame($methodId, $lines[0]->get_method_id());
+        $this->assertSame($instanceId, (string) $lines[0]->get_instance_id());
+        $this->assertSame($lines[0]->get_name(), $lines[0]->get_method_title());
+        $this->assertNotSame('', $lines[0]->get_name());
+        $this->assertSame($this->decimal(round($gross / 1.21, 2)), $this->decimal((float) $lines[0]->get_total()));
+        $this->assertSame($this->decimal($gross), $this->decimal((float) $lines[0]->get_total() + (float) $lines[0]->get_total_tax()));
+        $this->assertGreaterThan(0, (float) $lines[0]->get_total_tax());
+        $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
         $this->assertTrue($after->is_paid());
+        $this->assertSame('Utrecht', $after->get_shipping_city());
+        $this->assertSame(CanaryData::STREET, $after->get_shipping_address_1());
+        $this->assertSame('Rotterdam', $after->get_billing_city());
+        $this->assertSame($walletEmail, $after->get_billing_email());
+
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        $again = $this->fresh($order);
+        $this->assertCount(1, $again->get_items('shipping'));
+        $this->assertSame($payment['amount']['value'], $this->formattedTotal($again));
     }
 
     /**
      * @return array<string, array{0: string}>
      */
-    public function heldAddresses(): array
+    public function shoppers(): array
     {
         return [
-            'a guest who filled the checkout form' => ['form'],
+            'a guest' => ['guest'],
             'a logged-in customer with an account address' => ['account'],
         ];
     }
 
     /**
-     * Scenario: an order that needs shipping never takes the wallet's shipping address, even when it holds none
-     *   Given an express order with something to ship whose shipping address is empty
-     *   And the paid payment carries a shipping address from the wallet
+     * Scenario: the shipping option is booked on the order at the store's own tax rates
+     *   Given a store whose shipping is taxed at one rate, at no rate, at two rates or at a compound rate,
+     *     with prices entered with or without tax
+     *   And an express order of a cart that ships, paid with the 'express' option chosen in the wallet
      *   When Mollie calls the webhook
-     *   Then the order's shipping address is still empty: its shipping cost was not calculated for the wallet's
-     *   And the order is paid
+     *   Then the shipping line's cost plus its tax is the option's price, each rate holds the share
+     *     WooCommerce gives it of a price that includes tax, and each tax line carries that share
+     *   And the order's shipping tax and total tax add up, and its total equals the payment amount
      *
      * @test
-     * @group REQ-C3
+     * @dataProvider shippingTaxes
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
+     * @param array<string, string> $luRate Overrides of the fixture's 21% rate for LU.
+     * @param list<array<string, mixed>> $extraRates More LU rates.
      */
-    public function it_never_writes_the_wallets_shipping_address_on_an_order_that_needs_shipping(): void
+    public function it_books_the_shipping_option_at_the_stores_tax_rates(string $pricesIncludeTax, array $luRate, array $extraRates): void
     {
-        [$order, , $sessionId] = $this->expressOrder();
-        foreach (['first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country', 'phone'] as $field) {
-            $order->{"set_shipping_{$field}"}('');
+        // Given
+        $this->setOptionForTest('woocommerce_prices_include_tax', $pricesIncludeTax);
+        \WC_Tax::_update_tax_rate($this->taxRateIds[0], $luRate);
+        foreach ($extraRates as $rate) {
+            $this->taxRateIds[] = \WC_Tax::_insert_tax_rate($rate + [
+                'tax_rate_country' => 'LU',
+                'tax_rate_name' => 'Extra',
+                'tax_rate_shipping' => 1,
+                'tax_rate_order' => 0,
+                'tax_rate_class' => '',
+            ]);
         }
-        $order->save();
-        $before = $this->fresh($order);
-        $this->assertTrue($before->needs_shipping_address(), 'The scenario needs an order with something to ship.');
-        $this->assertSame('', $before->get_shipping_address_1());
-        $shipping = $before->get_address('shipping');
-        $payment = $this->fakeMollie()->completeSession($sessionId, [
-            'status' => 'paid',
-            'method' => 'applepay',
-            'shippingAddress' => CanaryData::mollieAddress(['city' => 'Utrecht']),
-        ]);
+        \WC_Cache_Helper::invalidate_cache_group('taxes');
+        [$order, , $sessionId] = $this->expressOrder();
+        $this->chooseRate('express');
+        $shippingRates = \WC_Tax::get_shipping_tax_rates();
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+        $gross = (float) $payment['lines'][0]['totalAmount']['value'];
 
+        // When
         $this->assertSame(200, $this->deliverWebhook($payment['id']));
 
+        // Then
         $after = $this->fresh($order);
-        $this->assertSame($shipping, $after->get_address('shipping'));
         $this->assertTrue($after->is_paid());
+        $lines = array_values($after->get_items('shipping'));
+        $this->assertCount(1, $lines);
+        $this->assertSame($this->decimal($gross), $this->decimal((float) $lines[0]->get_total() + (float) $lines[0]->get_total_tax()));
+        $expected = array_map(
+            fn (float $tax): string => $this->decimal(round($tax, 2)),
+            \WC_Tax::calc_inclusive_tax($gross, $shippingRates)
+        );
+        $booked = [];
+        foreach ($after->get_taxes() as $taxItem) {
+            if ((float) $taxItem->get_shipping_tax_total() !== 0.0 || isset($expected[$taxItem->get_rate_id()])) {
+                $booked[$taxItem->get_rate_id()] = $this->decimal((float) $taxItem->get_shipping_tax_total());
+            }
+        }
+        ksort($expected);
+        ksort($booked);
+        $this->assertSame($expected, $booked);
+        $this->assertSame(
+            $expected,
+            array_map(fn ($tax): string => $this->decimal((float) $tax), $this->sortedByKey($lines[0]->get_taxes()['total'] ?? []))
+        );
+        $this->assertSame($this->decimal((float) $lines[0]->get_total_tax()), $this->decimal((float) $after->get_shipping_tax()));
+        $this->assertSame(
+            $this->decimal((float) $after->get_cart_tax() + (float) $after->get_shipping_tax()),
+            $this->decimal((float) $after->get_total_tax())
+        );
+        $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: array<string, string>, 2: list<array<string, mixed>>}>
+     */
+    public function shippingTaxes(): array
+    {
+        return [
+            '9% VAT, prices include tax' => ['yes', ['tax_rate' => '9.0000'], []],
+            '9% VAT, prices exclude tax' => ['no', ['tax_rate' => '9.0000'], []],
+            'shipping not taxed' => ['yes', ['tax_rate_shipping' => '0'], []],
+            'two regular rates, 5% and 7%' => [
+                'yes',
+                ['tax_rate' => '5.0000'],
+                [['tax_rate' => '7.0000', 'tax_rate_priority' => 2, 'tax_rate_compound' => 0]],
+            ],
+            'a 5% compound rate on 10%' => [
+                'no',
+                ['tax_rate' => '10.0000'],
+                [['tax_rate' => '5.0000', 'tax_rate_priority' => 2, 'tax_rate_compound' => 1]],
+            ],
+        ];
+    }
+
+    /**
+     * Scenario: the shipping option is taxed with the rates of the shipping tax class, not of every class in the cart
+     *   Given LU with a 21% standard rate and a rate of another tax class, both taxing shipping
+     *   And the "Shipping tax class" setting: Standard, or the class of the cart's items
+     *   And an express order of items of those classes, paid with the 5.00 'standard' option chosen in the wallet
+     *   When Mollie calls the webhook
+     *   Then the shipping line's cost and tax are what WooCommerce charges that cart for shipping:
+     *     the rates of one tax class, the setting's or the items' (standard first)
+     *   And the rate of that class gets its tax line even when no item of the order has it
+     *   And the order's total equals the payment amount
+     *
+     * @test
+     * @dataProvider shippingTaxClasses
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
+     */
+    public function it_taxes_the_shipping_option_with_the_shipping_tax_class(
+        bool $withStandardItem,
+        string $otherClass,
+        string $otherPercent,
+        string $shippingTaxClass,
+        bool $formFilled,
+        string $taxedBy,
+        string $expectedTax
+    ): void {
+
+        // Given
+        $this->setOptionForTest('woocommerce_shipping_tax_class', $shippingTaxClass);
+        $classCreated = !in_array($otherClass, \WC_Tax::get_tax_class_slugs(), true);
+        if ($classCreated) {
+            \WC_Tax::create_tax_class(ucwords(str_replace('-', ' ', $otherClass)), $otherClass);
+        }
+        $otherRateId = \WC_Tax::_insert_tax_rate([
+            'tax_rate_country' => 'LU',
+            'tax_rate' => $otherPercent,
+            'tax_rate_name' => 'VAT ' . $otherClass,
+            'tax_rate_priority' => 1,
+            'tax_rate_compound' => 0,
+            'tax_rate_shipping' => 1,
+            'tax_rate_order' => 0,
+            'tax_rate_class' => $otherClass,
+        ]);
+        $this->taxRateIds[] = $otherRateId;
+        \WC_Cache_Helper::invalidate_cache_group('taxes');
+        $product = new \WC_Product_Simple();
+        $product->set_name('Item of class ' . $otherClass);
+        $product->set_regular_price('10');
+        $product->set_tax_class($otherClass);
+        $product->save();
+        $expected = [($taxedBy === 'standard' ? $this->taxRateIds[0] : $otherRateId) => $expectedTax];
+        $gross = $this->decimal(5.0 + (float) $expectedTax);
+
+        try {
+            if (!$formFilled) {
+                $this->setOptionForTest('woocommerce_default_customer_address', '');
+                $this->newShopper();
+            }
+            $this->boot();
+            $this->actAsGuest();
+            $this->cartWith($withStandardItem ? ['simple'] : [], 1);
+            $this->withoutCookieWarnings(static function () use ($product): void {
+                WC()->cart->add_to_cart($product->get_id(), 1);
+            });
+            if ($formFilled) {
+                $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+                $this->chooseRate('standard');
+                $charged = array_map(
+                    fn ($tax): string => $this->decimal(round((float) $tax, 2)),
+                    WC()->cart->get_shipping_taxes()
+                );
+                $this->assertSame($expected, $charged, 'WooCommerce must charge this for shipping, or the scenario proves nothing.');
+            }
+            $this->fakeMollie()->selectShippingOption($this->rates['standard'], 'Standard', $gross);
+            [$order, , $sessionId] = $this->submittedOrder();
+            $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+
+            // When
+            $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+            // Then
+            $after = $this->fresh($order);
+            $this->assertTrue($after->is_paid());
+            $lines = array_values($after->get_items('shipping'));
+            $this->assertCount(1, $lines);
+            $this->assertSame('5.00', $this->decimal((float) $lines[0]->get_total()));
+            $this->assertSame($expected, array_map(
+                fn ($tax): string => $this->decimal((float) $tax),
+                array_filter($lines[0]->get_taxes()['total'] ?? [], static fn ($tax): bool => (float) $tax !== 0.0)
+            ));
+            $booked = [];
+            foreach ($after->get_taxes() as $taxItem) {
+                if ((float) $taxItem->get_shipping_tax_total() !== 0.0) {
+                    $booked[$taxItem->get_rate_id()] = $this->decimal((float) $taxItem->get_shipping_tax_total());
+                }
+            }
+            $this->assertSame($expected, $booked);
+            $this->assertSame($expectedTax, $this->decimal((float) $after->get_shipping_tax()));
+            $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
+        } finally {
+            $product->delete(true);
+            if ($classCreated) {
+                \WC_Tax::delete_tax_class_by('slug', $otherClass);
+            }
+        }
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: string, 2: string, 3: string, 4: bool, 5: string, 6: string}>
+     */
+    public function shippingTaxClasses(): array
+    {
+        return [
+            'standard and reduced items, shipping class Standard' => [true, 'reduced-rate', '10.0000', '', true, 'standard', '1.05'],
+            'standard and reduced items, class from the items' => [true, 'reduced-rate', '10.0000', 'inherit', true, 'standard', '1.05'],
+            'a reduced item only, class from the items' => [false, 'reduced-rate', '10.0000', 'inherit', true, 'other', '0.50'],
+            'a zero-rated item only, shipping class Standard' => [false, 'zero-rate', '0.0000', '', true, 'standard', '1.05'],
+            'a zero-rated item only, empty form: no item has the rate' => [false, 'zero-rate', '0.0000', '', false, 'standard', '1.05'],
+        ];
+    }
+
+    /**
+     * Scenario: an option whose shipping method charges no tax is booked without tax
+     *   Given LU with a 21% standard rate that taxes shipping
+     *   And the 'standard' flat rate (5.00) set to "Tax status: None"
+     *   And an express order of a standard item whose shipping callback offered that option at 5.00
+     *   And the payment of that option, 5.00 in the wallet
+     *   When Mollie calls the webhook
+     *   Then the shipping line costs 5.00 with no tax, as WooCommerce charged the cart
+     *   And the order's total equals the payment amount
+     *
+     * @test
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
+     */
+    public function it_books_an_option_of_an_untaxed_shipping_method_without_tax(): void
+    {
+        // Given
+        [, $instanceId] = explode(':', $this->rates['standard']);
+        $settings = (array) get_option("woocommerce_flat_rate_{$instanceId}_settings");
+        update_option("woocommerce_flat_rate_{$instanceId}_settings", ['tax_status' => 'none'] + $settings);
+        \WC_Cache_Helper::get_transient_version('shipping', true);
+
+        $this->boot();
+        $this->actAsGuest();
+        $this->cartWith(['simple'], 1);
+        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+        $this->chooseRate('standard');
+        $this->assertSame([], array_filter(WC()->cart->get_shipping_taxes()), 'WooCommerce must charge no shipping tax, or the scenario proves nothing.');
+        $this->assertSame('5.00', $this->decimal((float) WC()->cart->get_shipping_total()));
+        [$order, , $sessionId] = $this->submittedOrder();
+        $this->mollieAsksForShippingOptions($sessionId, 'LU');
+        $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+
+        // When
+        $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+        // Then
+        $after = $this->fresh($order);
+        $this->assertTrue($after->is_paid());
+        $lines = array_values($after->get_items('shipping'));
+        $this->assertCount(1, $lines);
+        $this->assertSame('5.00', $this->decimal((float) $lines[0]->get_total()));
+        $this->assertSame('0.00', $this->decimal((float) $lines[0]->get_total_tax()));
+        $this->assertSame('0.00', $this->decimal((float) $after->get_shipping_tax()));
+        $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
+    }
+
+    /**
+     * Scenario: a virtual item does not change the class the shipping is taxed with
+     *   Given LU with a 21% standard rate and a 10% reduced rate, both taxing shipping
+     *   And the "Shipping tax class" setting: the class of the cart's items
+     *   And an express order of a shipped reduced item and a virtual standard item, paid with the 5.00 option
+     *   And the shipping callback offered that option, or what it offered is gone
+     *   When Mollie calls the webhook
+     *   Then the shipping line is taxed at the reduced rate only, as WooCommerce charged the cart: 5.00 + 0.50
+     *   And the order's total equals the payment amount
+     *
+     * @test
+     * @dataProvider offeredOrGone
+     * @group REQ-NEW-EXPRESS-SHIPPING-LINE
+     */
+    public function it_takes_the_shipping_tax_class_from_the_items_that_ship(bool $offeredByTheCallback): void
+    {
+        // Given
+        $this->setOptionForTest('woocommerce_shipping_tax_class', 'inherit');
+        $classCreated = !in_array('reduced-rate', \WC_Tax::get_tax_class_slugs(), true);
+        if ($classCreated) {
+            \WC_Tax::create_tax_class('Reduced Rate', 'reduced-rate');
+        }
+        $reducedRateId = \WC_Tax::_insert_tax_rate([
+            'tax_rate_country' => 'LU',
+            'tax_rate' => '10.0000',
+            'tax_rate_name' => 'VAT reduced',
+            'tax_rate_priority' => 1,
+            'tax_rate_compound' => 0,
+            'tax_rate_shipping' => 1,
+            'tax_rate_order' => 0,
+            'tax_rate_class' => 'reduced-rate',
+        ]);
+        $this->taxRateIds[] = $reducedRateId;
+        \WC_Cache_Helper::invalidate_cache_group('taxes');
+        $shipped = new \WC_Product_Simple();
+        $shipped->set_name('Shipped reduced item');
+        $shipped->set_regular_price('10');
+        $shipped->set_tax_class('reduced-rate');
+        $shipped->save();
+        $virtual = new \WC_Product_Simple();
+        $virtual->set_name('Virtual standard item');
+        $virtual->set_regular_price('10');
+        $virtual->set_virtual(true);
+        $virtual->save();
+        $expected = [$reducedRateId => '0.50'];
+
+        try {
+            $this->boot();
+            $this->actAsGuest();
+            $this->cartWith([], 1);
+            $this->withoutCookieWarnings(static function () use ($shipped, $virtual): void {
+                WC()->cart->add_to_cart($shipped->get_id(), 1);
+                WC()->cart->add_to_cart($virtual->get_id(), 1);
+            });
+            $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
+            $this->chooseRate('standard');
+            $charged = array_map(
+                fn ($tax): string => $this->decimal(round((float) $tax, 2)),
+                array_filter(WC()->cart->get_shipping_taxes())
+            );
+            $this->assertSame($expected, $charged, 'WooCommerce must charge this for shipping, or the scenario proves nothing.');
+            [$order, , $sessionId] = $this->submittedOrder();
+            if ($offeredByTheCallback) {
+                $this->mollieAsksForShippingOptions($sessionId, 'LU');
+            }
+            $payment = $this->fakeMollie()->completeSession($sessionId, ['status' => 'paid', 'method' => 'paypal']);
+
+            // When
+            $this->assertSame(200, $this->deliverWebhook($payment['id']));
+
+            // Then
+            $after = $this->fresh($order);
+            $this->assertTrue($after->is_paid());
+            $lines = array_values($after->get_items('shipping'));
+            $this->assertCount(1, $lines);
+            $this->assertSame('5.00', $this->decimal((float) $lines[0]->get_total()));
+            $this->assertSame($expected, array_map(
+                fn ($tax): string => $this->decimal((float) $tax),
+                array_filter($lines[0]->get_taxes()['total'] ?? [], static fn ($tax): bool => (float) $tax !== 0.0)
+            ));
+            $this->assertSame('0.50', $this->decimal((float) $after->get_shipping_tax()));
+            $this->assertSame($payment['amount']['value'], $this->formattedTotal($after));
+        } finally {
+            $shipped->delete(true);
+            $virtual->delete(true);
+            if ($classCreated) {
+                \WC_Tax::delete_tax_class_by('slug', 'reduced-rate');
+            }
+        }
+    }
+
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public function offeredOrGone(): array
+    {
+        return [
+            'the callback offered the option' => [true],
+            'what the callback offered is gone' => [false],
+        ];
+    }
+
+    /**
+     * Mollie asks the session's shipping callback for the options to an address in that country: to the URL it
+     * was given, with no cookie and no nonce.
+     */
+    private function mollieAsksForShippingOptions(string $sessionId, string $country): void
+    {
+        $payloads = $this->sessionPayloads();
+        $url = (string) (end($payloads)['shipping']['callbackUrl'] ?? '');
+        $this->assertNotSame('', $url, 'The session must carry shipping.callbackUrl.');
+        $this->newShopper();
+        $this->actAsGuest();
+        parse_str((string) wp_parse_url($url, PHP_URL_QUERY), $query);
+        $route = '/' . ltrim(substr((string) strtok($url, '?'), strlen(rest_url())), '/');
+        $response = $this->restRequest('POST', $route, $query + [
+            'event' => 'shipping-address-changed',
+            'sessionId' => $sessionId,
+            'shippingAddress' => ['country' => $country, 'postalCode' => '1234', 'city' => 'Cityville'],
+        ]);
+        $this->assertSame(200, $response->get_status(), 'The callback must offer options for that address.');
+    }
+
+    /**
+     * @param array<int|string, mixed> $values
+     * @return array<int|string, mixed>
+     */
+    private function sortedByKey(array $values): array
+    {
+        ksort($values);
+
+        return $values;
     }
 
     /**
@@ -1618,6 +2028,17 @@ class ExpressWebhookResolutionTest extends ExpressFlowTestCase
         $service->shouldReceive('getPaymentIdFromRequest')->andReturn($paymentId);
 
         return $service;
+    }
+
+    private function ships(WC_Order $order): bool
+    {
+        foreach ($order->get_items() as $item) {
+            if ($item->get_product() instanceof \WC_Product && $item->get_product()->needs_shipping()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function fresh(WC_Order $order): WC_Order

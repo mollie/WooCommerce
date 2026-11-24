@@ -32,7 +32,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
 
     private const V1_URL = 'https://js.mollie.com/v1/mollie.js';
 
-    private const ALLOWED_KEYS = ['buttons', 'locale', 'messages', 'nonce', 'restUrl'];
+    private const ALLOWED_KEYS = ['buttons', 'locale', 'messages', 'nonce', 'restUrl', 'surface'];
 
     private const WALLETS = ['applepay', 'googlepay', 'paypal'];
 
@@ -44,6 +44,19 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     private const APPLE_PAY_EXPRESS = 'mollie_apple_pay_button_enabled_express_checkout';
 
     private const PAYPAL_CHECKOUT = 'mollie_paypal_button_enabled_checkout';
+
+    private const APPLE_PAY_CART = 'mollie_apple_pay_button_enabled_cart';
+
+    private const PAYPAL_CART = 'mollie_paypal_button_enabled_cart';
+
+    /**
+     * Each wallet's switch per page, by the option names merchants already have (Google Pay's are new).
+     */
+    private const PAGE_SWITCHES = [
+        'applepay' => ['cart' => self::APPLE_PAY_CART, 'checkout' => self::APPLE_PAY_EXPRESS],
+        'paypal' => ['cart' => self::PAYPAL_CART, 'checkout' => self::PAYPAL_CHECKOUT],
+        'googlepay' => ['cart' => 'mollie_googlepay_button_enabled_cart', 'checkout' => 'mollie_googlepay_button_enabled_checkout'],
+    ];
 
     private const OWNS_SURFACE = 'mollie_wc_express_owns_surface';
 
@@ -169,8 +182,8 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: nothing of the Express Component loads where Express does not own a block checkout
-     *   Given one of: the block cart, a product page, the classic checkout, a page holding the checkout
+     * Scenario: nothing of the Express Component loads where Express does not own the page
+     *   Given one of: the block cart with no wallet's cart button on, a product page, the classic checkout, a page holding the checkout
      *         block that is not the store's checkout page, the order-received page, test mode, no
      *         wallet with its checkout button on, or a site on plain HTTP
      *   When that page enqueues its scripts
@@ -181,12 +194,18 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      * @dataProvider pagesExpressDoesNotOwn
      * @group REQ-A1
      * @group REQ-A2
+     * @group REQ-A6
      */
     public function it_loads_nothing_where_express_does_not_own_the_block_checkout(string $page, string $shop): void
     {
         switch ($shop) {
             case 'test mode':
                 $this->useTestMode();
+                break;
+            case 'no cart button':
+                foreach (self::PAGE_SWITCHES as $wallet => $switches) {
+                    $this->setGatewaySettingsForTest($wallet, [$switches['cart'] => 'no']);
+                }
                 break;
             case 'no wallet button':
                 $this->setGatewaySettingsForTest('paypal', [self::PAYPAL_CHECKOUT => 'no']);
@@ -216,7 +235,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     public function pagesExpressDoesNotOwn(): array
     {
         return [
-            'block cart' => ['block cart', 'owned'],
+            'block cart with no wallet\'s cart button on' => ['block cart', 'no cart button'],
             'product page' => ['product', 'owned'],
             'classic checkout' => ['classic checkout', 'owned'],
             // Legacy buttons step aside only where is_checkout() holds: two express offers otherwise.
@@ -229,15 +248,15 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     }
 
     /**
-     * Scenario: the cart is totalled for ownership only on the block checkout
+     * Scenario: the cart is totalled for ownership only on the block checkout and the block cart
      *   Given a guest with a cart priced at page load
      *   When a page enqueues its scripts
-     *   Then WooCommerce totals the cart for that only on the store's block checkout page
+     *   Then WooCommerce totals the cart for that only on the store's block checkout and block cart pages
      *
      * @test
      * @dataProvider pagesThatTotalTheCart
      */
-    public function it_totals_the_cart_for_ownership_only_on_the_block_checkout(string $page, bool $totals): void
+    public function it_totals_the_cart_for_ownership_only_on_the_block_checkout_and_cart(string $page, bool $totals): void
     {
         $this->bootExpressOwning(['wp_enqueue_scripts', self::OWNS_SURFACE]);
         $this->actAsGuest();
@@ -251,7 +270,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
 
         $this->openPage($page, false);
 
-        $this->assertSame($totals, $calculated > 0, $totals ? 'Ownership is decided from the totalled cart.' : 'Only the block checkout may total the cart.');
+        $this->assertSame($totals, $calculated > 0, $totals ? 'Ownership is decided from the totalled cart.' : 'Only the block checkout and the block cart may total the cart.');
     }
 
     /**
@@ -261,7 +280,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     {
         return [
             'block checkout' => ['block checkout', true],
-            'block cart' => ['block cart', false],
+            'block cart' => ['block cart', true],
             'product page' => ['product', false],
             'classic checkout' => ['classic checkout', false],
             'a page with the checkout block that is not the checkout page' => ['stray checkout block', false],
@@ -281,12 +300,12 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      *   And no marked value and no profile id is in it
      *   And the nonce is one the express routes admit
      *   And restUrl is the plugin's REST base
-     *   And the messages hold the two labels of the "Ships to" line, and nothing for a waiting state,
-     *       which is never shown
+     *   And the messages hold nothing for a waiting state or the form's shipping address: neither is shown
      *   And they hold the routes' refusal text, for a refusal WordPress makes before the route runs
      *
      * @test
      * @group REQ-G1
+     * @group REQ-H2
      */
     public function it_localizes_only_the_allowlisted_express_data(): void
     {
@@ -313,15 +332,13 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         $this->assertSame(rest_url('mollie/v1/'), $data['restUrl']);
 
         $this->assertIsArray($data['messages']);
-        $this->assertSame(__('Ships to %1$s · %2$s', 'mollie-payments-for-woocommerce'), $data['messages']['shipsTo'] ?? null);
-        $this->assertSame(__('Change', 'mollie-payments-for-woocommerce'), $data['messages']['change'] ?? null);
         $this->assertSame(
             'Express checkout could not be started. Please reload the page and try again.',
             $data['messages']['reload'] ?? null,
             'WordPress refuses a request whose login changed in another tab before the route runs: the script shows the route\'s own refusal text.'
         );
-        foreach (['shippingIncomplete', 'waitingForShipping'] as $gone) {
-            $this->assertArrayNotHasKey($gone, $data['messages'], "The blocked state renders nothing, so '{$gone}' is not sent.");
+        foreach (['shippingIncomplete', 'waitingForShipping', 'shipsTo', 'change'] as $gone) {
+            $this->assertArrayNotHasKey($gone, $data['messages'], "The component never waits for the shipping form and shows no form address, so '{$gone}' is not sent.");
         }
         foreach ($data['messages'] as $key => $message) {
             $this->assertIsString($message, "Message '{$key}' must be a string.");
@@ -412,7 +429,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     {
         $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
         $this->flushMollieMethodsCache();
-        $this->setGatewaySettingsForTest('googlepay', ['enabled' => $enabled]);
+        $this->setGatewaySettingsForTest('googlepay', ['enabled' => $enabled, 'mollie_googlepay_button_enabled_checkout' => 'yes']);
 
         $this->openPage('block checkout');
         $data = $this->localizedExpressData();
@@ -444,25 +461,41 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     /**
      * Scenario: Express owns the block checkout only when the price is known when the page loads
      *   Given Apple Pay and PayPal with their legacy checkout buttons configured on
-     *   And the cart, the shopper and the shop's tax basis as they are when the checkout page loads
+     *   And the cart, the shopper, the shop's tax basis and the countries it sells to as they are
+     *        when the checkout page loads
      *   When the block checkout page enqueues its scripts
-     *   Then mollieExpressData is printed exactly when the cart is ready: nothing to ship and no tax
-     *        that waits for an address nobody gave, or a complete shipping address with a chosen rate
+     *   Then mollieExpressData is printed exactly when the cart is ready and its price does not depend
+     *        on an address the wallet gives later: whatever the shipping form holds, and no taxes that
+     *        follow the customer's address in a shop selling to more than one country
+     *   And an address saved on the customer's account changes nothing
+     *   And where taxes follow one country's address, a new guest is owned only when the store's default
+     *        customer location prices the cart for that country
      *   And the legacy Apple Pay and PayPal buttons step aside exactly then, and show as configured otherwise
      *
      * @test
      * @dataProvider pageLoads
      * @group REQ-A3
      * @group REQ-A4
+     * @group REQ-NEW-EXPRESS-TAX
+     * @param string $sells 'many countries' (sells and ships everywhere), 'one country' (sells and ships to Luxembourg
+     *        only) or 'one country, ships worldwide' (sells to Luxembourg, ships anywhere).
      */
     public function it_owns_the_block_checkout_at_page_load_only_when_the_price_is_known(
         bool $ships,
         string $taxes,
+        string $sells,
         string $shopper,
         bool $owned
     ): void {
 
         $this->legacyButtonsConfiguredOn();
+        if ($sells !== 'many countries') {
+            $this->setOptionForTest('woocommerce_allowed_countries', 'specific');
+            $this->setOptionForTest('woocommerce_specific_allowed_countries', ['LU']);
+        }
+        if ($sells === 'one country, ships worldwide') {
+            $this->setOptionForTest('woocommerce_ship_to_countries', 'all');
+        }
         if ($taxes === 'off') {
             $this->setOptionForTest('woocommerce_calc_taxes', 'no');
         } else {
@@ -491,31 +524,49 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     }
 
     /**
-     * @return array<string, array{0: bool, 1: string, 2: string, 3: bool}>
+     * @return array<string, array{0: bool, 1: string, 2: string, 3: string, 4: bool}>
      */
     public function pageLoads(): array
     {
+        $many = 'many countries';
+        $one = 'one country';
+        $worldwide = 'one country, ships worldwide';
+
         return [
-            'nothing ships, taxes off, guest' => [false, 'off', 'guest, nothing typed', true],
-            'nothing ships, taxes on the shop address, guest' => [false, 'base', 'guest, nothing typed', true],
-            'nothing ships, taxes on the billing address, guest' => [false, 'billing', 'guest, nothing typed', false],
-            'nothing ships, taxes on the shipping address, guest' => [false, 'shipping', 'guest, nothing typed', false],
-            'nothing ships, taxes on the billing address, its country saved on the account' => [false, 'billing', 'customer, billing country saved', true],
-            'nothing ships, taxes on the shipping address, its country saved on the account' => [false, 'shipping', 'customer, shipping country saved', true],
-            'nothing ships, taxes on the billing address, only the shipping country saved' => [false, 'billing', 'customer, shipping country saved', false],
-            'ships, guest who typed only a country' => [true, 'shipping', 'guest, only a country typed', false],
-            'ships, guest who typed nothing' => [true, 'shipping', 'guest, nothing typed', false],
-            'ships, customer with a saved address and a chosen rate' => [true, 'shipping', 'customer, shipping address saved', true],
-            'ships, returning guest whose session holds the address and a rate' => [true, 'shipping', 'returning guest, address and rate in the session', true],
+            'nothing ships, taxes off, many countries' => [false, 'off', $many, 'guest, nothing typed', true],
+            'nothing ships, taxes on the shop address, many countries' => [false, 'base', $many, 'guest, nothing typed', true],
+            'nothing ships, taxes on the billing address, many countries' => [false, 'billing', $many, 'guest, nothing typed', false],
+            'nothing ships, taxes on the shipping address, many countries' => [false, 'shipping', $many, 'guest, nothing typed', false],
+            'nothing ships, taxes on the billing address, one country' => [false, 'billing', $one, 'guest, nothing typed', true],
+            'nothing ships, taxes on the shipping address, one country' => [false, 'shipping', $one, 'guest, nothing typed', true],
+            // A saved address does not change the answer.
+            'nothing ships, taxes on the billing address, many countries, its country saved on the account' => [false, 'billing', $many, 'customer, billing country saved', false],
+            'nothing ships, taxes on the shipping address, many countries, its country saved on the account' => [false, 'shipping', $many, 'customer, shipping country saved', false],
+            'nothing ships, taxes on the shop address, many countries, a country saved on the account' => [false, 'base', $many, 'customer, billing country saved', true],
+            // The taxes follow the shipping address only where the cart ships: the shipping countries count then.
+            'nothing ships, taxes on the shipping address, sells to one country, ships worldwide' => [false, 'shipping', $worldwide, 'guest, nothing typed', true],
+            'ships, taxes on the shipping address, sells to one country, ships worldwide' => [true, 'shipping', $worldwide, 'customer, shipping address saved', false],
+            'ships, taxes on the billing address, sells to one country, ships worldwide' => [true, 'billing', $worldwide, 'customer, shipping address saved', true],
+            // The shipping form never decides: the wallet gives the address.
+            'ships, shop sells to one country, shipping form not complete (only a country typed)' => [true, 'shipping', $one, 'guest, only a country typed', true],
+            'ships, shop sells to one country, shipping form empty' => [true, 'shipping', $one, 'guest, nothing typed', true],
+            'ships, shop sells to one country, customer with a saved address and a chosen rate' => [true, 'shipping', $one, 'customer, shipping address saved', true],
+            'ships, shop sells to one country, returning guest whose session holds the address and a rate' => [true, 'shipping', $one, 'returning guest, address and rate in the session', true],
+            'ships, many countries, taxes on the shop address, customer with a saved address and a rate' => [true, 'base', $many, 'customer, shipping address saved', true],
+            'ships, many countries, taxes on the shipping address, customer with a saved address and a rate' => [true, 'shipping', $many, 'customer, shipping address saved', false],
+            // A guest is priced for the default customer location: with none, the cart carries no taxes yet.
+            'nothing ships, taxes on the billing address, one country, no default location' => [false, 'billing', $one, 'guest, no default location', false],
+            'ships, taxes on the shipping address, one country, no default location' => [true, 'shipping', $one, 'guest, no default location', false],
+            'nothing ships, taxes on the shop address, many countries, no default location' => [false, 'base', $many, 'guest, no default location', true],
         ];
     }
 
     /**
      * Scenario: ownership is decided once per request, whoever asks first
-     *   Given a block checkout whose cart is ready, or not, when ownership is first asked
+     *   Given a block checkout whose cart holds a product, or is empty, when ownership is first asked
      *   When the page and the legacy buttons ask, in either order, and the cart changes in between
      *   Then both get the first answer: a page that was not owned stays without the Express Component
-     *        after the shopper completes the form, and one that was owned keeps it
+     *        after the shopper adds a product, and one that was owned keeps it
      *
      * @test
      * @dataProvider firstAskers
@@ -524,14 +575,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     {
         $this->bootExpressOwning(['wp_enqueue_scripts', self::OWNS_SURFACE]);
         $this->actAsGuest();
-        $this->cartWith(['simple']);
-        if ($readyAtFirst) {
-            $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
-            $this->chooseRate('standard');
-        } else {
-            $this->fillCheckoutForm([], ['country' => 'LU']);
-            $this->recalculate();
-        }
+        $this->cartWith($readyAtFirst ? ['simple'] : []);
 
         if ($asksFirst === 'the legacy buttons') {
             $first = $this->ownsTheCheckout();
@@ -633,6 +677,11 @@ class ExpressAssetsTest extends ExpressFlowTestCase
                 $this->setOptionForTest('woocommerce_cart_page_id', $pageId);
                 $args = ['page_id' => $pageId];
                 break;
+            case 'classic cart':
+                $pageId = $this->page('Classic cart', '<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->');
+                $this->setOptionForTest('woocommerce_cart_page_id', $pageId);
+                $args = ['page_id' => $pageId];
+                break;
             case 'product':
                 $productId = (int) wc_get_product_id_by_sku(ProductPresets::get()['simple']['sku']);
                 $this->assertGreaterThan(0, $productId, "The 'simple' preset product does not exist.");
@@ -683,13 +732,23 @@ class ExpressAssetsTest extends ExpressFlowTestCase
             return;
         }
 
+        if (in_array($shopper, ['guest, nothing typed', 'guest, no default location'], true)) {
+            // A new visitor holds what WooCommerce gives one: the store's default customer location, or none.
+            $this->setOptionForTest(
+                'woocommerce_default_customer_address',
+                $shopper === 'guest, nothing typed' ? 'base' : ''
+            );
+            $this->newShopper();
+            $this->actAsGuest();
+            $this->cartWith(['simple']);
+            $this->recalculate();
+
+            return;
+        }
+
         $this->actAsGuest();
         $this->cartWith(['simple']);
         switch ($shopper) {
-            case 'guest, nothing typed':
-                $this->fillCheckoutForm([], []);
-                $this->recalculate();
-                break;
             case 'guest, only a country typed':
                 $this->fillCheckoutForm([], ['country' => 'LU']);
                 $this->recalculate();
@@ -741,13 +800,7 @@ class ExpressAssetsTest extends ExpressFlowTestCase
      */
     private function changeTheCart(bool $wasReady): void
     {
-        if ($wasReady) {
-            WC()->cart->empty_cart();
-
-            return;
-        }
-        $this->fillCheckoutForm($this->billing(), $this->shipping('LU'));
-        $this->chooseRate('standard');
+        $this->cartWith($wasReady ? [] : ['simple']);
     }
 
     private function ownsTheCheckout(): bool
@@ -772,6 +825,21 @@ class ExpressAssetsTest extends ExpressFlowTestCase
     private function legacyButtons(): array
     {
         $this->assertTrue(is_checkout(), 'The legacy buttons must be asked on the checkout page.');
+
+        return [
+            'applepay' => (new Applepay())->isExpressCheckoutEnabled(),
+            'paypal' => (new Paypal())->isExpressCheckoutEnabled(),
+        ];
+    }
+
+    /**
+     * What each legacy express button answers on the cart page now open.
+     *
+     * @return array{applepay: bool, paypal: bool}
+     */
+    private function legacyCartButtons(): array
+    {
+        $this->assertTrue(is_cart(), 'The legacy buttons must be asked on the cart page.');
 
         return [
             'applepay' => (new Applepay())->isExpressCheckoutEnabled(),
@@ -892,5 +960,113 @@ class ExpressAssetsTest extends ExpressFlowTestCase
         }
 
         return $offered;
+    }
+
+    /**
+     * @scenario Each wallet shows on the page its own switch is on, Google Pay included
+     *   Given Apple Pay, PayPal and Google Pay enabled and active at Mollie, every page switch off
+     *   And one wallet with only its cart switch on, or only its checkout switch on
+     *   When the block cart or the block checkout enqueues its scripts
+     *   Then the component offers that wallet, and only it, on the page whose switch is on
+     *   And loads nothing on the other page
+     *
+     * @test
+     * @dataProvider walletPageSwitches
+     * @group REQ-A1
+     */
+    public function it_offers_each_wallet_only_on_the_page_its_switch_is_on(string $wallet, string $switchOn, string $page, bool $offered): void
+    {
+        // Given
+        $this->fakeMollie()->setMethods(['ideal', 'creditcard', 'banktransfer', 'paypal', 'applepay', 'googlepay']);
+        $this->flushMollieMethodsCache();
+        foreach (self::PAGE_SWITCHES as $name => $switches) {
+            $this->setGatewaySettingsForTest($name, [
+                'enabled' => 'yes',
+                $switches['cart'] => $name === $wallet && $switchOn === 'cart' ? 'yes' : 'no',
+                $switches['checkout'] => $name === $wallet && $switchOn === 'checkout' ? 'yes' : 'no',
+            ]);
+        }
+
+        // When
+        $this->openPage($page);
+        $data = $this->localizedExpressData();
+
+        // Then
+        if (!$offered) {
+            $this->assertNull($data, "Nothing may load on the {$page} with only the {$switchOn} switch of {$wallet} on.");
+
+            return;
+        }
+        $this->assertIsArray($data, "The component must load on the {$page} with the {$switchOn} switch of {$wallet} on.");
+        $this->assertIsArray($data['buttons']);
+        $expected = [];
+        foreach (self::WALLETS as $name) {
+            $expected[$name] = $name === $wallet;
+        }
+        $this->assertSame($expected, $this->offered($data['buttons']), 'Offered wallets are wrong in ' . wp_json_encode($data['buttons']));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: string, 3: bool}>
+     */
+    public function walletPageSwitches(): array
+    {
+        $cases = [];
+        foreach (array_keys(self::PAGE_SWITCHES) as $wallet) {
+            foreach (['cart', 'checkout'] as $switchOn) {
+                foreach (['block cart' => 'cart', 'block checkout' => 'checkout'] as $page => $surface) {
+                    $cases["{$wallet}, {$switchOn} switch on, {$page}"] = [$wallet, $switchOn, $page, $switchOn === $surface];
+                }
+            }
+        }
+
+        return $cases;
+    }
+
+    /**
+     * @scenario The legacy buttons step aside on the cart exactly where the component shows
+     *   Given Apple Pay and PayPal enabled, with every legacy cart and checkout switch on
+     *   When the block cart, the classic cart, or the block cart of a shop in test mode renders
+     *   Then on the block cart the component loads and both legacy buttons answer off
+     *   And with only PayPal's cart button on, the block cart still hides the legacy Apple Pay button:
+     *        one express offer per page
+     *   And on the classic cart and where the component cannot run nothing of it loads
+     *        and both legacy buttons answer as configured
+     *
+     * @test
+     * @dataProvider cartPages
+     * @group REQ-A3
+     */
+    public function it_hides_legacy_buttons_on_the_cart_only_where_express_owns_it(string $page, string $shop, bool $owned): void
+    {
+        // Given
+        $this->setGatewaySettingsForTest('applepay', ['enabled' => 'yes', self::APPLE_PAY_CART => 'yes', self::APPLE_PAY_EXPRESS => 'yes']);
+        $this->setGatewaySettingsForTest('paypal', ['enabled' => 'yes', self::PAYPAL_CART => 'yes', self::PAYPAL_CHECKOUT => 'yes']);
+        if ($shop === 'test mode') {
+            $this->useTestMode();
+        }
+        if ($shop === 'only PayPal on the cart') {
+            $this->setGatewaySettingsForTest('applepay', [self::APPLE_PAY_CART => 'no']);
+        }
+
+        // When
+        $this->openPage($page);
+
+        // Then
+        $this->assertSame($owned, $this->localizedExpressData() !== null, $owned ? 'The component must load here.' : 'The component must not load here.');
+        $this->assertSame(['applepay' => !$owned, 'paypal' => !$owned], $this->legacyCartButtons());
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string, 2: bool}>
+     */
+    public function cartPages(): array
+    {
+        return [
+            'block cart, the component can run' => ['block cart', 'live', true],
+            'classic cart' => ['classic cart', 'live', false],
+            'block cart in test mode' => ['block cart', 'test mode', false],
+            'block cart with only PayPal\'s cart button on' => ['block cart', 'only PayPal on the cart', true],
+        ];
     }
 }

@@ -40,10 +40,11 @@ class ExpressOrderFactory
     }
 
     /**
-     * @param array{billing: array<string, string>, shipping: array<string, string>} $details
+     * The order carries no address: the wallet's sheet is where the shopper gives them.
+     *
      * @throws RuntimeException When WooCommerce did not create the order; nothing is left behind.
      */
-    public function create(array $details): WC_Order
+    public function create(): WC_Order
     {
         $session = WC()->session;
         $this->releaseStockHeldByShoppersPendingOrder($session);
@@ -60,7 +61,7 @@ class ExpressOrderFactory
         $session->set('order_awaiting_payment', null);
 
         try {
-            $orderId = WC()->checkout()->create_order($this->orderData($details));
+            $orderId = WC()->checkout()->create_order(['payment_method' => '', 'ship_to_different_address' => true]);
         } catch (\Throwable $error) {
             $orderId = null;
         } finally {
@@ -125,21 +126,5 @@ class ExpressOrderFactory
         $order = $orderId > 0 ? wc_get_order($orderId) : null;
 
         return $order instanceof WC_Order ? $order : null;
-    }
-
-    /**
-     * @param array{billing: array<string, string>, shipping: array<string, string>} $details
-     * @return array<string, mixed>
-     */
-    private function orderData(array $details): array
-    {
-        $data = ['payment_method' => '', 'ship_to_different_address' => true];
-        foreach (['billing', 'shipping'] as $type) {
-            foreach ($details[$type] as $field => $value) {
-                $data["{$type}_{$field}"] = $value;
-            }
-        }
-
-        return $data;
     }
 }

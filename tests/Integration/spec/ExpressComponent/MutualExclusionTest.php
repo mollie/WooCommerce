@@ -104,6 +104,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      */
     public function it_keeps_express_off_when_no_wallet_has_its_checkout_button_on(?string $applePay, ?string $payPal): void
     {
+        $this->markTestIncomplete('REQ-A2 changed by feat:express:placement');
         // The site under test keeps the developer's own settings, so "never saved" means removing them.
         $this->setWalletSettings('applepay', ['enabled' => 'yes', self::APPLE_PAY_EXPRESS => $applePay]);
         $this->setWalletSettings('paypal', ['enabled' => 'yes', self::PAYPAL_CART => 'yes', self::PAYPAL_CHECKOUT => $payPal]);
@@ -181,6 +182,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      */
     public function it_never_owns_the_cart_or_the_product_page(): void
     {
+        $this->markTestIncomplete('REQ-A1 changed by feat:express:placement');
         $this->configureLegacyButtons();
         $this->useHttps(true);
         $this->bootExpress();
@@ -209,6 +211,7 @@ class MutualExclusionTest extends ExpressFlowTestCase
      */
     public function it_hides_legacy_buttons_on_checkout_only_when_express_owns_it(): void
     {
+        $this->markTestIncomplete('REQ-A6 changed by feat:express:placement');
         $this->configureLegacyButtons();
         $this->useHttps(true);
         $this->bootExpress();
@@ -221,6 +224,43 @@ class MutualExclusionTest extends ExpressFlowTestCase
                 'other' => ['applepay' => true, 'paypal' => false],
             ],
             $this->legacyValues()
+        );
+    }
+
+    /**
+     * @scenario Where Express owns the checkout, the product page and the classic cart keep their legacy buttons
+     *   Given a live, HTTPS shop where Express owns the checkout
+     *   And the Apple Pay express flag and both PayPal page settings on
+     *   When each legacy method is asked on the classic cart, the checkout and another page such as the product page
+     *   Then both answer off on the checkout
+     *   And both answer as configured on the classic cart and on the other page
+     *   And Express owns neither the classic cart nor the product page
+     *
+     * @test
+     * @group REQ-A3
+     * @group REQ-A6
+     */
+    public function it_keeps_legacy_buttons_as_configured_off_the_owned_checkout(): void
+    {
+        // Given
+        $this->configureLegacyButtons();
+        $this->useHttps(true);
+        $this->bootExpress();
+
+        // When
+        $values = $this->legacyValues();
+
+        // Then
+        $this->assertTrue(mollieWooCommerceExpressOwnsSurface('checkout'), 'Precondition: Express can run here.');
+        $this->assertFalse(mollieWooCommerceExpressOwnsSurface('cart'), 'A cart without the cart block is not owned.');
+        $this->assertFalse(mollieWooCommerceExpressOwnsSurface('product'));
+        $this->assertSame(
+            [
+                'cart' => self::AS_CONFIGURED['cart'],
+                'checkout' => ['applepay' => false, 'paypal' => false],
+                'other' => self::AS_CONFIGURED['other'],
+            ],
+            $values
         );
     }
 
@@ -406,6 +446,40 @@ class MutualExclusionTest extends ExpressFlowTestCase
             'only Apple Pay active' => [['ideal', 'applepay'], true],
             'neither wallet active' => [['ideal'], false],
         ];
+    }
+
+    /**
+     * Scenario: on a new install a wallet's express button shows as soon as its method is enabled
+     *   Given a live, HTTPS shop installed new, where no express switch was ever saved
+     *   And the Apple Pay and PayPal payment methods disabled
+     *   When the plugin is asked whether Express owns the checkout
+     *   Then it does not
+     *   And once the merchant enables PayPal, with no other step, it does
+     *
+     * @test
+     * @group REQ-A7
+     * @group REQ-NEW-EXPRESS-DEFAULTS
+     */
+    public function it_shows_a_wallet_once_its_method_is_enabled_on_a_new_install(): void
+    {
+        // Given
+        $this->setOptionForTest('mollie_express_default_on', 'yes');
+        $this->setWalletSettings('applepay', [
+            'enabled' => 'no',
+            self::APPLE_PAY_EXPRESS => null,
+            'mollie_apple_pay_button_enabled_cart' => null,
+        ]);
+        $this->setWalletSettings('paypal', ['enabled' => 'no', self::PAYPAL_CHECKOUT => null, self::PAYPAL_CART => null]);
+        $this->useHttps(true);
+        $this->bootExpress();
+        $this->assertFalse(mollieWooCommerceExpressOwnsSurface('checkout'), 'With every wallet disabled, no express button shows.');
+
+        // When
+        $this->setWalletSettings('paypal', ['enabled' => 'yes']);
+        $this->bootExpress();
+
+        // Then
+        $this->assertTrue(mollieWooCommerceExpressOwnsSurface('checkout'));
     }
 
     // ──────────────────────────────────────────────────────────────────────────

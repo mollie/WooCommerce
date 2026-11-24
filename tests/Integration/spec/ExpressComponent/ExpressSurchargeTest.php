@@ -63,7 +63,7 @@ class ExpressSurchargeTest extends ExpressFlowTestCase
      * Scenario: the express session is priced without the surcharge of the method chosen in the form
      *   Given iDEAL carries a fixed surcharge of 2.00 and is the method chosen in the form
      *   When the checkout asks for an express session and the shopper pays with a wallet
-     *   Then the session amount is the cart total without iDEAL's fee, and has no surcharge line
+     *   Then the session amount is the cart total without iDEAL's fee and without shipping, and has no surcharge line
      *   And the express order carries no fee
      *   And the form still has iDEAL chosen, with its fee in the cart
      *
@@ -72,7 +72,7 @@ class ExpressSurchargeTest extends ExpressFlowTestCase
     public function it_prices_the_express_session_without_the_surcharge_of_the_method_chosen_in_the_form(): void
     {
         $this->checkoutWithSurcharges(['ideal' => '2.00']);
-        $withoutFee = $this->cartTotal();
+        $withoutFee = $this->cartTotalWithoutShipping();
         $this->chooseInTheForm(self::IDEAL);
 
         $session = $this->startedSession();

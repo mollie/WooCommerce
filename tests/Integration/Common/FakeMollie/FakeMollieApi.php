@@ -520,11 +520,25 @@ final class FakeMollieApi
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
+     * The option the shopper picks in the wallet for every session paid afterwards: its reference is
+     * the WooCommerce rate id, its value the price with VAT.
+     */
+    public function selectShippingOption(string $reference, string $description, string $value): void
+    {
+        $state = $this->state();
+        $state['selectedShippingOption'] = ['reference' => $reference, 'description' => $description, 'value' => $value];
+        $this->store->save($state);
+    }
+
+    /**
      * The shopper authorised in the wallet: Mollie creates the payment for the session.
      *
      * @param array<string, mixed> $outcome status (paid), method (applepay), billingAddress,
      *                                      shippingAddress, amount (to simulate a mismatch), id (any
-     *                                      tr_ id, since Mollie only promises the prefix).
+     *                                      tr_ id, since Mollie only promises the prefix), shippingFee
+     *                                      (reference, description, value; null leaves the line out).
+     *                                      A session that asks for shipping options pays its amount plus
+     *                                      the option the shopper selected, see selectShippingOption().
      * @return array<string, mixed> The payment as stored, including its webhookUrl.
      */
     public function completeSession(string $sessionId, array $outcome = []): array
@@ -541,12 +555,30 @@ final class FakeMollieApi
         $status = (string) ($outcome['status'] ?? 'paid');
         $now = $this->now($state);
         $id = (string) ($outcome['id'] ?? 'tr_fake' . $this->nextSequence($state));
+        $fee = array_key_exists('shippingFee', $outcome) ? $outcome['shippingFee'] : ($state['selectedShippingOption'] ?? null);
+        $asksForShipping = isset($session['shipping']);
+        $lines = [];
+        $amount = $session['amount'];
+        if ($asksForShipping && $fee !== null) {
+            $feeMoney = ['currency' => $session['amount']['currency'], 'value' => $fee['value']];
+            $lines[] = [
+                'type' => 'shipping_fee',
+                'description' => $fee['description'],
+                'reference' => $fee['reference'],
+                'quantity' => 1,
+                'unitPrice' => $feeMoney,
+                'totalAmount' => $feeMoney,
+            ];
+            $cents = (int) round((float) $session['amount']['value'] * 100) + (int) round((float) $fee['value'] * 100);
+            $amount = ['currency' => $session['amount']['currency'], 'value' => number_format($cents / 100, 2, '.', '')];
+        }
         $payment = [
             'id' => $id,
             'mode' => $session['mode'],
             'status' => $status,
             'method' => (string) ($outcome['method'] ?? 'applepay'),
-            'amount' => $outcome['amount'] ?? $session['amount'],
+            'amount' => $outcome['amount'] ?? $amount,
+            'lines' => $lines === [] ? null : $lines,
             'description' => $session['description'],
             'metadata' => $session['metadata'] ?? null,
             'redirectUrl' => $session['redirectUrl'],

@@ -10,7 +10,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
 
 /**
- * The first failing check is the reason. Waiting for the shipping form is blocked, not unavailable.
+ * The first failing check is the reason.
  */
 final class ExpressAvailability
 {
@@ -30,17 +30,17 @@ final class ExpressAvailability
         if (!$shop->isHttps()) {
             return ExpressAvailabilityResult::unavailable('not_https');
         }
-        if (!in_array(true, WalletVisibility::buttons($settings, $shop), true)) {
+        if (!in_array(true, WalletVisibility::buttons($settings, $shop, $surface), true)) {
             return ExpressAvailabilityResult::unavailable('no_wallet_visible');
         }
         if ($cart === null) {
             return ExpressAvailabilityResult::available();
         }
 
-        return self::resolveCart($settings, $shop, $cart);
+        return self::resolveCart($cart);
     }
 
-    private static function resolveCart(ExpressSettings $settings, ShopFacts $shop, CartFacts $cart): ExpressAvailabilityResult
+    private static function resolveCart(CartFacts $cart): ExpressAvailabilityResult
     {
         if ($cart->lines() === []) {
             return ExpressAvailabilityResult::unavailable('cart_empty');
@@ -50,18 +50,27 @@ final class ExpressAvailability
                 return ExpressAvailabilityResult::unavailable('subscription_in_cart');
             }
         }
-        // Nothing ships, so no form gives the address the taxes wait for: the price is not known yet.
+        // Mollie cannot change a session's amount: the price must not depend on an address the wallet gives later.
         if (
-            !$cart->needsShipping()
-            && $cart->taxesFollowCustomerAddress()
-            && !$cart->customerAddressSaved()
+            TaxCompatibility::decide(
+                $cart->taxEnabled(),
+                $cart->taxBasedOn(),
+                $cart->taxCountries(),
+                $cart->ratesVaryWithinCountry()
+            ) === TaxCompatibility::INCOMPATIBLE
         ) {
-            return ExpressAvailabilityResult::unavailable('tax_address_unknown');
+            return ExpressAvailabilityResult::unavailable('tax_depends_on_address');
         }
-        if (!in_array(true, WalletVisibility::buttons($settings, $shop, $cart), true)) {
-            return ExpressAvailabilityResult::blocked('shipping_incomplete');
+        if (
+            !TaxCompatibility::cartPricedForTaxCountry(
+                $cart->taxEnabled(),
+                $cart->taxBasedOn(),
+                $cart->taxCountries(),
+                $cart->taxableCountry()
+            )
+        ) {
+            return ExpressAvailabilityResult::unavailable('tax_depends_on_address');
         }
-        // After the shipping check: until then the total is not final.
         $total = $cart->total();
         if ($total !== null && $total->minorUnits() <= 0) {
             return ExpressAvailabilityResult::unavailable('nothing_to_pay');

@@ -56,8 +56,6 @@ class PricingFingerprintTest extends TestCase
             'the cart contents' => [['cartHash' => 'another-cart-hash']],
             'the total' => [['total' => '26.06']],
             'the currency' => [['currency' => 'USD']],
-            'the shipping rate' => [['rateIds' => ['flat_rate:2']]],
-            'the shipping destination' => [['destination' => 'AT|1010|Wien']],
         ];
     }
 
@@ -84,7 +82,6 @@ class PricingFingerprintTest extends TestCase
      *   Given two carts with nothing to ship that differ only in their destination
      *   When their fingerprints are taken
      *   Then the two are the same
-     *   And a cart that ships is still repriced by the same change
      *
      * The Store API copies the billing address onto such a cart's shipping fields, unseen by the page.
      *
@@ -96,11 +93,34 @@ class PricingFingerprintTest extends TestCase
         $there = PricingFingerprint::of($this->cart(['needsShipping' => false, 'destination' => 'ES|48001|Bilbao']));
 
         self::assertSame($here, $there, 'An address nothing is shipped to cannot reprice a session.');
-        self::assertNotSame(
-            PricingFingerprint::of($this->cart(['destination' => 'LU|L-1234|Luxembourg'])),
-            PricingFingerprint::of($this->cart(['destination' => 'ES|48001|Bilbao'])),
-            'A cart that ships is still repriced by its destination.'
-        );
+    }
+
+    /**
+     * Scenario: the shipping the shopper picks in the wallet never reprices a session
+     *   Given two carts that ship and differ only in their shipping rate or their destination
+     *   When their fingerprints are taken
+     *   Then the two are the same: the session is priced without shipping, Mollie adds the chosen option
+     *
+     * @dataProvider shippingChanges
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\PricingFingerprint::of
+     * @group REQ-H2
+     * @group REQ-NEW-EXPRESS-SHIPPING-CALLBACK
+     * @param array<string, mixed> $change
+     */
+    public function testShippingRateAndDestinationLeaveTheFingerprint(array $change): void
+    {
+        self::assertSame(PricingFingerprint::of($this->cart()), PricingFingerprint::of($this->cart($change)));
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>}>
+     */
+    public function shippingChanges(): array
+    {
+        return [
+            'the shipping rate' => [['rateIds' => ['flat_rate:2']]],
+            'the shipping destination' => [['destination' => 'AT|1010|Wien']],
+        ];
     }
 
     /**

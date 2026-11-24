@@ -64,14 +64,14 @@ class ExpressAvailabilityTest extends TestCase
         return [
             'everything holds on the checkout' => ['checkout', 'live', true, self::ALL_WALLETS, 'available', null],
             'one wallet is enough' => ['checkout', 'live', true, ['paypal'], 'available', null],
-            'the cart is not a v1 surface' => ['cart', 'live', true, self::ALL_WALLETS, 'unavailable', 'surface_not_supported'],
+            'the product page is not a surface' => ['product', 'live', true, self::ALL_WALLETS, 'unavailable', 'surface_not_supported'],
             'the product page is not a v1 surface' => ['product', 'live', true, self::ALL_WALLETS, 'unavailable', 'surface_not_supported'],
             'test mode is not allowed' => ['checkout', 'test', true, self::ALL_WALLETS, 'unavailable', 'mode_not_allowed'],
             'the site is not HTTPS' => ['checkout', 'live', false, self::ALL_WALLETS, 'unavailable', 'not_https'],
             // No wallet has its express button turned on (or exists, is enabled, is active): the merchant asked for nothing.
             'no wallet is visible' => ['checkout', 'live', true, [], 'unavailable', 'no_wallet_visible'],
             // The order is fixed: each row fails every later check too, and must report only the first.
-            'an unsupported surface is reported before the mode' => ['cart', 'test', false, [], 'unavailable', 'surface_not_supported'],
+            'an unsupported surface is reported before the mode' => ['product', 'test', false, [], 'unavailable', 'surface_not_supported'],
             'the mode is reported before HTTPS' => ['checkout', 'test', false, [], 'unavailable', 'mode_not_allowed'],
             'HTTPS is reported before the wallets' => ['checkout', 'live', false, [], 'unavailable', 'not_https'],
         ];
@@ -122,21 +122,20 @@ class ExpressAvailabilityTest extends TestCase
     }
 
     /**
-     * Scenario: a cart that ships waits for the checkout form only where the wallet needs it
-     *   Given the checkout is otherwise available and the cart holds a normal product
-     *   When availability is resolved while the shipping destination or rate is missing
-     *   Then it is blocked with shipping_incomplete, not unavailable, if every visible wallet takes
-     *        its address from the checkout form
-     *   And it is available once the destination is complete and a rate is chosen
-     *   And Apple Pay waits for the form like PayPal: it has no address sheet of its own here
-     *   And a cart that needs no shipping is available whatever the form says
+     * Scenario: a cart that ships never waits for the checkout form
+     *   Given a wallets table where every wallet takes its address from the checkout form (no real row does)
+     *   And the checkout is otherwise available and the cart holds a normal product
+     *   When availability is resolved whether the shipping destination and rate are filled in or not
+     *   Then it is available: the order is made without the form's address, the wallet gives it
+     *   And a subscription in the cart is still unavailable
      *
      * @dataProvider shippingCases
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @group REQ-H2
      * @param array<int, bool> $lines
      * @param array<int, string> $wallets
      */
-    public function testBlocksAShippableCartUntilTheFormIsCompleteWhereTheWalletNeedsIt(
+    public function testOffersAShippableCartWhateverTheCheckoutFormHolds(
         array $lines,
         array $wallets,
         bool $needsShipping,
@@ -147,7 +146,7 @@ class ExpressAvailabilityTest extends TestCase
     ): void {
 
         $result = ExpressAvailability::resolve(
-            $this->settings(),
+            $this->settings('form'),
             $this->shop('live', true, $wallets),
             $this->cart($lines, $needsShipping, $destinationComplete, $rateChosen),
             'checkout'
@@ -163,18 +162,14 @@ class ExpressAvailabilityTest extends TestCase
     public function shippingCases(): array
     {
         return [
-            'PayPal only, ships, destination incomplete' => [[false], ['paypal'], true, false, true, 'blocked', 'shipping_incomplete'],
-            'PayPal only, ships, no rate chosen' => [[false], ['paypal'], true, true, false, 'blocked', 'shipping_incomplete'],
-            'PayPal only, ships, neither' => [[false], ['paypal'], true, false, false, 'blocked', 'shipping_incomplete'],
+            'PayPal only, ships, destination incomplete' => [[false], ['paypal'], true, false, true, 'available', null],
+            'PayPal only, ships, no rate chosen' => [[false], ['paypal'], true, true, false, 'available', null],
+            'PayPal only, ships, form empty' => [[false], ['paypal'], true, false, false, 'available', null],
             'PayPal only, ships, destination and rate complete' => [[false], ['paypal'], true, true, true, 'available', null],
             'PayPal only, nothing to ship, form empty' => [[false], ['paypal'], false, false, false, 'available', null],
-            // Every wallet takes the shipping address from the checkout form, Apple Pay included.
-            'Apple Pay only, ships, form empty' => [[false], ['applepay'], true, false, false, 'blocked', 'shipping_incomplete'],
-            'Apple Pay only, ships, no rate chosen' => [[false], ['applepay'], true, true, false, 'blocked', 'shipping_incomplete'],
-            'Apple Pay only, ships, destination and rate complete' => [[false], ['applepay'], true, true, true, 'available', null],
-            'both wallets, ships, form empty: both wait' => [[false], self::ALL_WALLETS, true, false, false, 'blocked', 'shipping_incomplete'],
-            // Filling in the form cannot fix a subscription, so it is unavailable, not blocked.
-            'PayPal only, ships incomplete, with a subscription' => [[true], ['paypal'], true, false, false, 'unavailable', 'subscription_in_cart'],
+            'Apple Pay only, ships, form empty' => [[false], ['applepay'], true, false, false, 'available', null],
+            'both wallets, ships, form empty' => [[false], self::ALL_WALLETS, true, false, false, 'available', null],
+            'PayPal only, ships, form empty, with a subscription' => [[true], ['paypal'], true, false, false, 'unavailable', 'subscription_in_cart'],
         ];
     }
 
@@ -183,7 +178,7 @@ class ExpressAvailabilityTest extends TestCase
      *   Given the checkout is otherwise available and the cart's price is final
      *   When availability is resolved for a cart whose total is zero
      *   Then it is unavailable with nothing_to_pay
-     *   And a cart that still waits for its shipping is blocked, not refused: its total is not final
+     *   And a cart that ships is refused the same way: its total is the cart's without shipping, so it is final
      *   And a cart whose total is not known is not refused for it
      *
      * @dataProvider totals
@@ -220,32 +215,38 @@ class ExpressAvailabilityTest extends TestCase
         return [
             'nothing ships, total zero' => [0, false, false, 'unavailable', 'nothing_to_pay'],
             'ships, form complete, total zero' => [0, true, true, 'unavailable', 'nothing_to_pay'],
-            'ships, form incomplete, total zero so far' => [0, true, false, 'blocked', 'shipping_incomplete'],
+            'ships, form incomplete, total zero' => [0, true, false, 'unavailable', 'nothing_to_pay'],
             'one cent to pay' => [1, false, false, 'available', null],
             'total not known' => [null, false, false, 'available', null],
         ];
     }
 
     /**
-     * Scenario: a cart with nothing to ship waits for no address unless its taxes follow one nobody gave yet
+     * Scenario: a cart is offered only where its price, taxes included, is known before the wallet gives an address
      *   Given the checkout is otherwise available
-     *   And a cart whose taxes do or do not follow the customer's address, saved on the account or not
-     *   When availability is resolved
-     *   Then a cart with nothing to ship whose taxes follow an address that is not saved is unavailable
-     *        with tax_address_unknown, because its price is not known when the page loads
-     *   And a cart that ships keeps the shipping rule, which already waits for the whole address
-     *   And an empty cart or a subscription is reported first, and the tax rule before nothing_to_pay
+     *   And the shop's tax settings: taxes on or off, the address they follow, the countries it sells to
+     *        and whether rates differ inside one country
+     *   When availability is resolved, whether the cart ships or not and whether the form is complete or not
+     *   Then it is unavailable with tax_depends_on_address when taxes follow the customer's address and
+     *        the shop sells to more than one country
+     *   And it is available when the shop sells to one country, even if its rates differ by state or postcode
+     *   And an empty cart or a subscription is reported first, and the tax reason before shipping_incomplete
+     *        and nothing_to_pay
      *
-     * @dataProvider taxAddressCases
+     * @dataProvider taxCases
      * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
      * @param array<int, bool> $lines One entry per line: whether it is a subscription.
+     * @param array<int, string> $taxCountries
+     * @group REQ-NEW-EXPRESS-TAX
      */
-    public function testRefusesACartWhoseTaxesWaitForAnAddressNobodyGaveYet(
+    public function testResolvesTheTaxVerdictForEveryCart(
         array $lines,
         bool $needsShipping,
         bool $shippingComplete,
-        bool $taxesFollowCustomerAddress,
-        bool $customerAddressSaved,
+        bool $taxEnabled,
+        string $taxBasedOn,
+        array $taxCountries,
+        bool $ratesVaryWithinCountry,
         int $totalInCents,
         string $expectedStatus,
         ?string $expectedReason
@@ -261,8 +262,11 @@ class ExpressAvailabilityTest extends TestCase
             shippingDestinationComplete: $shippingComplete,
             shippingRateChosen: $shippingComplete,
             total: Money::fromMinorUnits($totalInCents, 'EUR'),
-            taxesFollowCustomerAddress: $taxesFollowCustomerAddress,
-            customerAddressSaved: $customerAddressSaved
+            taxEnabled: $taxEnabled,
+            taxBasedOn: $taxBasedOn,
+            taxCountries: $taxCountries,
+            ratesVaryWithinCountry: $ratesVaryWithinCountry,
+            taxableCountry: 'DE'
         );
 
         $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
@@ -272,31 +276,106 @@ class ExpressAvailabilityTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0: array<int, bool>, 1: bool, 2: bool, 3: bool, 4: bool, 5: int, 6: string, 7: ?string}>
+     * Scenario: a cart priced for no country, or for another one, is not offered where taxes follow one country's address
+     *   Given the checkout is otherwise available
+     *   And taxes on, following the customer's address, in a shop where that address can be in Germany only
+     *   When availability is resolved for a cart whose taxes were calculated for Germany, for no country
+     *        or for another country
+     *   Then it is available only when the cart was priced for Germany
+     *   And it is unavailable with tax_depends_on_address otherwise, regional rates or not
+     *   And with taxes off or on the shop address the country the cart was priced for does not matter
+     *
+     * @dataProvider taxableCountryCases
+     * @covers \Mollie\WooCommerce\ExpressComponent\Rules\ExpressAvailability::resolve
+     * @group REQ-NEW-EXPRESS-TAX
      */
-    public function taxAddressCases(): array
+    public function testRefusesACartThatIsNotPricedForTheCountryItsTaxesFollow(
+        bool $taxEnabled,
+        string $taxBasedOn,
+        bool $ratesVaryWithinCountry,
+        string $taxableCountry,
+        string $expectedStatus,
+        ?string $expectedReason
+    ): void {
+
+        $cart = new CartFacts(
+            lines: [new CartLine(productId: 100, quantity: 1, isSubscription: false)],
+            needsShipping: false,
+            shippingDestinationComplete: false,
+            shippingRateChosen: false,
+            total: Money::fromMinorUnits(1000, 'EUR'),
+            taxEnabled: $taxEnabled,
+            taxBasedOn: $taxBasedOn,
+            taxCountries: ['DE'],
+            ratesVaryWithinCountry: $ratesVaryWithinCountry,
+            taxableCountry: $taxableCountry
+        );
+
+        $result = ExpressAvailability::resolve($this->settings(), $this->shop('live', true, ['paypal']), $cart, 'checkout');
+
+        self::assertSame($expectedStatus, $result->status());
+        self::assertSame($expectedReason, $result->reason());
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: string, 2: bool, 3: string, 4: string, 5: ?string}>
+     */
+    public function taxableCountryCases(): array
     {
         return [
-            'nothing ships, taxes off or on the shop address' => [[false], false, false, false, false, 1000, 'available', null],
-            'nothing ships, taxes follow the address, guest' => [[false], false, false, true, false, 1000, 'unavailable', 'tax_address_unknown'],
-            'nothing ships, taxes follow the address, saved on the account' => [[false], false, false, true, true, 1000, 'available', null],
-            'nothing ships, taxes on the shop address, saved on the account' => [[false], false, false, false, true, 1000, 'available', null],
-            'ships, form complete, taxes follow an address not saved' => [[false], true, true, true, false, 1000, 'available', null],
-            'ships, form incomplete, taxes follow an address not saved' => [[false], true, false, true, false, 1000, 'blocked', 'shipping_incomplete'],
-            'an empty cart is reported first' => [[], false, false, true, false, 1000, 'unavailable', 'cart_empty'],
-            'a subscription is reported first' => [[true], false, false, true, false, 1000, 'unavailable', 'subscription_in_cart'],
-            'the tax rule before nothing to pay' => [[false], false, false, true, false, 0, 'unavailable', 'tax_address_unknown'],
+            'priced for the only country' => [true, 'billing', false, 'DE', 'available', null],
+            'priced for no country' => [true, 'billing', false, '', 'unavailable', 'tax_depends_on_address'],
+            'priced for another country' => [true, 'shipping', false, 'AT', 'unavailable', 'tax_depends_on_address'],
+            'regional rates, priced for no country' => [true, 'billing', true, '', 'unavailable', 'tax_depends_on_address'],
+            'taxes off, priced for no country' => [false, 'billing', false, '', 'available', null],
+            'taxes on the shop address, priced for no country' => [true, 'base', false, '', 'available', null],
         ];
     }
 
-    private function settings(): ExpressSettings
+    /**
+     * @return array<string, array{0: array<int, bool>, 1: bool, 2: bool, 3: bool, 4: string, 5: array<int, string>, 6: bool, 7: int, 8: string, 9: ?string}>
+     */
+    public function taxCases(): array
+    {
+        $two = ['DE', 'IT'];
+        $one = ['DE'];
+
+        return [
+            'taxes off, ships, form complete' => [[false], true, true, false, 'billing', $two, false, 1000, 'available', null],
+            'taxes on the shop address, many countries' => [[false], true, true, true, 'base', $two, false, 1000, 'available', null],
+            'one country, one rate, nothing ships' => [[false], false, false, true, 'billing', $one, false, 1000, 'available', null],
+            'one country, one rate, ships, form incomplete' => [[false], true, false, true, 'billing', $one, false, 1000, 'available', null],
+            'regional rates, nothing ships' => [[false], false, false, true, 'billing', $one, true, 1000, 'available', null],
+            'regional rates, ships, form complete' => [[false], true, true, true, 'shipping', $one, true, 1000, 'available', null],
+            'two countries on the billing address, ships, form complete' => [[false], true, true, true, 'billing', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
+            'two countries on the shipping address, ships, form complete' => [[false], true, true, true, 'shipping', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
+            'two countries, nothing ships' => [[false], false, false, true, 'billing', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
+            'two countries, ships, form incomplete: not blocked' => [[false], true, false, true, 'billing', $two, false, 1000, 'unavailable', 'tax_depends_on_address'],
+            'two countries, total zero: the tax reason first' => [[false], false, false, true, 'billing', $two, false, 0, 'unavailable', 'tax_depends_on_address'],
+            'compatible taxes, total zero' => [[false], false, false, false, 'base', [], false, 0, 'unavailable', 'nothing_to_pay'],
+            'an empty cart is reported first' => [[], false, false, true, 'billing', $two, false, 1000, 'unavailable', 'cart_empty'],
+            'a subscription is reported first' => [[true], false, false, true, 'billing', $two, false, 1000, 'unavailable', 'subscription_in_cart'],
+        ];
+    }
+
+    /**
+     * @param string|null $addressFrom Sets every wallet's addressFrom: no real row uses 'form' any more,
+     *        the switch is what the blocked cases test.
+     */
+    private function settings(?string $addressFrom = null): ExpressSettings
     {
         $config = self::config();
+        $wallets = $config['wallets'];
+        if ($addressFrom !== null) {
+            foreach ($wallets as $wallet => $row) {
+                $wallets[$wallet]['addressFrom'] = $addressFrom;
+            }
+        }
 
         return new ExpressSettings(
             supportedSurfaces: $config['surfaces'],
             allowedModes: $config['allowedModes'],
-            wallets: $config['wallets']
+            wallets: $wallets
         );
     }
 
@@ -344,7 +423,7 @@ class ExpressAvailabilityTest extends TestCase
     }
 
     /**
-     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, cartSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
      */
     private static function config(): array
     {

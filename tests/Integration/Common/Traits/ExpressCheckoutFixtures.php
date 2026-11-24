@@ -114,7 +114,7 @@ trait ExpressCheckoutFixtures
      */
     private function startSession(array $extra = []): WP_REST_Response
     {
-        $response = $this->restRequest('POST', '/mollie/v1/express/session', array_merge(['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION)], $extra));
+        $response = $this->restRequest('POST', '/mollie/v1/express/session', array_merge(['nonce' => wp_create_nonce(ExpressRoutes::NONCE_ACTION), 'surface' => 'checkout'], $extra));
         $this->shownToken = (string) (((array) $response->get_data())['clientAccessToken'] ?? $this->shownToken);
 
         return $response;
@@ -130,6 +130,16 @@ trait ExpressCheckoutFixtures
     private function cartTotal(): string
     {
         return $this->decimal((float) WC()->cart->get_total('edit'));
+    }
+
+    /**
+     * What an express session is priced at: the cart total, shipping and its tax left out.
+     */
+    private function cartTotalWithoutShipping(): string
+    {
+        return $this->decimal(
+            (float) WC()->cart->get_total('edit') - (float) WC()->cart->get_shipping_total() - (float) WC()->cart->get_shipping_tax()
+        );
     }
 
     private function decimal(float $amount): string
@@ -203,6 +213,20 @@ trait ExpressCheckoutFixtures
     {
         WC()->session->set('chosen_shipping_methods', [$this->rates[$name]]);
         $this->recalculate();
+        $this->walletSelects($name);
+    }
+
+    /**
+     * The option the shopper picks in the wallet is the rate chosen in the cart, at its price with VAT.
+     */
+    private function walletSelects(string $name): void
+    {
+        $rate = WC()->shipping()->get_packages()[0]['rates'][$this->rates[$name]] ?? null;
+        if ($rate === null) {
+            return;
+        }
+        $gross = (float) $rate->get_cost() + array_sum($rate->get_taxes());
+        $this->fakeMollie()->selectShippingOption($this->rates[$name], $rate->get_label(), $this->decimal($gross));
     }
 
     private function recalculate(): void
@@ -259,6 +283,9 @@ trait ExpressCheckoutFixtures
         $this->setOptionForTest('woocommerce_ship_to_countries', '');
         $this->setOptionForTest('woocommerce_allowed_countries', 'all');
         $this->setOptionForTest('woocommerce_currency', 'EUR');
+        // Taxes on the shop's address, so the tax rule never hides the component; every rate is 21%, amounts unchanged.
+        $this->setOptionForTest('woocommerce_default_country', 'LU');
+        $this->setOptionForTest('woocommerce_tax_based_on', 'base');
 
         foreach (['LU', 'AT', 'MT'] as $country) {
             $this->taxRateIds[] = \WC_Tax::_insert_tax_rate([

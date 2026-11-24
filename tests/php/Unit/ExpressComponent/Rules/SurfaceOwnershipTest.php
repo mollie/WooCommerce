@@ -27,9 +27,8 @@ class SurfaceOwnershipTest extends TestCase
      *   Given express settings, shop facts and the cart as it is when the page loads
      *   When ownership of a surface is asked
      *   Then the checkout is owned when the mode is allowed, the site is HTTPS, a wallet is visible
-     *        and the cart is ready: nothing to ship, or a complete shipping address with a chosen rate,
-     *        and no tax that waits for an address nobody gave
-     *   And a cart that waits for the shipping form is not owned, so no placeholder is ever shown
+     *        and the cart is ready: whatever the shipping form holds, since the wallet gives the address,
+     *        and no tax that depends on an address the wallet gives later
      *   And the cart and the product page are never owned
      *   And the answer is the same as availability resolved with that cart
      *
@@ -75,11 +74,11 @@ class SurfaceOwnershipTest extends TestCase
             'the checkout, nothing to ship' => ['checkout', 'live', true, $wallets, $nothingShips, true],
             'the checkout, ships, address and rate known' => ['checkout', 'live', true, $wallets, $shipsReady, true],
             'the checkout, through one wallet' => ['checkout', 'live', true, ['paypal'], $nothingShips, true],
-            'the checkout, ships, address not complete yet' => ['checkout', 'live', true, $wallets, self::cart(true, false), false],
-            'the checkout, taxes follow an address nobody gave' => ['checkout', 'live', true, $wallets, self::cart(false, false, true, false), false],
-            'the checkout, taxes follow the saved address' => ['checkout', 'live', true, $wallets, self::cart(false, false, true, true), true],
+            'the checkout, ships, address not complete yet' => ['checkout', 'live', true, $wallets, self::cart(true, false), true],
+            'the checkout, taxes follow the address and the shop sells to two countries' => ['checkout', 'live', true, $wallets, self::cart(false, false, true), false],
+            'the checkout, ships, taxes follow the address and the shop sells to two countries' => ['checkout', 'live', true, $wallets, self::cart(true, true, true), false],
             'the checkout, an empty cart' => ['checkout', 'live', true, $wallets, new CartFacts([], false, false, false), false],
-            'the checkout, a subscription in the cart' => ['checkout', 'live', true, $wallets, self::cart(false, false, false, false, true), false],
+            'the checkout, a subscription in the cart' => ['checkout', 'live', true, $wallets, self::cart(false, false, false, true), false],
             'the cart, even with wallets on' => ['cart', 'live', true, $wallets, $nothingShips, false],
             'the product page, even with wallets on' => ['product', 'live', true, $wallets, $nothingShips, false],
             'the checkout, in test mode' => ['checkout', 'test', true, $wallets, $nothingShips, false],
@@ -91,8 +90,7 @@ class SurfaceOwnershipTest extends TestCase
     private static function cart(
         bool $needsShipping,
         bool $shippingComplete,
-        bool $taxesFollowCustomerAddress = false,
-        bool $customerAddressSaved = false,
+        bool $taxesDependOnTheAddress = false,
         bool $isSubscription = false
     ): CartFacts {
 
@@ -102,8 +100,9 @@ class SurfaceOwnershipTest extends TestCase
             shippingDestinationComplete: $shippingComplete,
             shippingRateChosen: $shippingComplete,
             total: Money::fromMinorUnits(1000, 'EUR'),
-            taxesFollowCustomerAddress: $taxesFollowCustomerAddress,
-            customerAddressSaved: $customerAddressSaved
+            taxEnabled: $taxesDependOnTheAddress,
+            taxBasedOn: $taxesDependOnTheAddress ? 'billing' : 'base',
+            taxCountries: $taxesDependOnTheAddress ? ['DE', 'IT'] : ['DE']
         );
     }
 
@@ -144,7 +143,7 @@ class SurfaceOwnershipTest extends TestCase
     }
 
     /**
-     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
+     * @return array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, cartSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>}
      */
     private static function config(): array
     {

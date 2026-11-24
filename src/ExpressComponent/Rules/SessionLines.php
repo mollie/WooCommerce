@@ -60,16 +60,6 @@ final class SessionLines
                 $fee->vatRate()
             );
         }
-        $shipping = $cart->shipping();
-        if ($shipping !== null) {
-            $lines[] = self::raw(
-                'shipping_fee',
-                self::nameOr($shipping->label(), 'Shipping'),
-                1,
-                $shipping->cost()->minorUnits(),
-                $shipping->vatRate()
-            );
-        }
         foreach ($cart->coupons() as $coupon) {
             $lines[] = self::raw('discount', $coupon->code(), 1, -abs($coupon->amount()->minorUnits()), null);
         }

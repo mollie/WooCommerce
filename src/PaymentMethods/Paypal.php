@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mollie\WooCommerce\PaymentMethods;
 
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressDefaults;
 use Mollie\WooCommerce\Buttons\PayPalButton\DataToPayPal;
 use Psr\Container\ContainerInterface;
 
@@ -49,10 +50,10 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                     'mollie-payments-for-woocommerce'
                 ),
                 'description' => __(
-                    'Enable the PayPal button to be used in the cart page.',
+                    'Enable the PayPal button to be used in the cart page. On the block cart, Mollie express checkout shows the button where it can run; otherwise the classic PayPal button is shown.',
                     'mollie-payments-for-woocommerce'
                 ),
-                'default' => 'no',
+                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_paypal') ? 'yes' : 'no',
             ],
             'mollie_paypal_button_enabled_product' => [
                 'type' => 'checkbox',
@@ -76,7 +77,7 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
                     'Enable the PayPal button to be used in the Express Buttons section of the checkout page. On the block checkout, Mollie express checkout shows the button where it can run; otherwise the classic PayPal button is shown.',
                     'mollie-payments-for-woocommerce'
                 ),
-                'default' => 'no',
+                'default' => ExpressDefaults::onByDefault('mollie_wc_gateway_paypal') ? 'yes' : 'no',
             ],
             'color' => [
                 'type' => 'select',
@@ -110,16 +111,11 @@ class Paypal extends AbstractPaymentMethod implements PaymentMethodI
 
     public function isExpressCheckoutEnabled(): bool
     {
-        if (is_cart()) {
-            return $this->getProperty('mollie_paypal_button_enabled_cart') === 'yes';
+        $surface = is_cart() ? 'cart' : (is_checkout() ? 'checkout' : null);
+        if ($surface === null || mollieWooCommerceExpressOwnsSurface($surface)) {
+            return false;
         }
-        if (is_checkout()) {
-            if (mollieWooCommerceExpressOwnsSurface('checkout')) {
-                return false;
-            }
-            return $this->getProperty('mollie_paypal_button_enabled_checkout') === 'yes';
-        }
-        return false;
+        return $this->getProperty('mollie_paypal_button_enabled_' . $surface) === 'yes';
     }
 
     protected function blocksExpressData(ContainerInterface $container): ?array

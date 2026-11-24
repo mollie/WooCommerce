@@ -6,10 +6,11 @@ namespace Mollie\WooCommerce\Shared\Values;
 /**
  * expressRef is metadata.express_ref, inherited from the express session.
  * wallet is details.wallet: Mollie reports Apple Pay and Google Pay both as creditcard.
+ * shippingFee is the payment's shipping_fee line: the option the shopper chose in the wallet.
  */
 final class PaymentSnapshot
 {
-    public function __construct(private string $id, private string $status, private ?string $method, private \Mollie\WooCommerce\Shared\Values\Money $amount, private string $mode = 'live', private ?string $expressRef = null, private ?\Mollie\WooCommerce\Shared\Values\MollieAddress $billingAddress = null, private ?\Mollie\WooCommerce\Shared\Values\MollieAddress $shippingAddress = null, private ?string $wallet = null)
+    public function __construct(private string $id, private string $status, private ?string $method, private \Mollie\WooCommerce\Shared\Values\Money $amount, private string $mode = 'live', private ?string $expressRef = null, private ?\Mollie\WooCommerce\Shared\Values\MollieAddress $billingAddress = null, private ?\Mollie\WooCommerce\Shared\Values\MollieAddress $shippingAddress = null, private ?string $wallet = null, private ?\Mollie\WooCommerce\Shared\Values\ShippingFee $shippingFee = null)
     {
     }
     public function id(): string
@@ -47,5 +48,9 @@ final class PaymentSnapshot
     public function wallet(): ?string
     {
         return $this->wallet;
+    }
+    public function shippingFee(): ?\Mollie\WooCommerce\Shared\Values\ShippingFee
+    {
+        return $this->shippingFee;
     }
 }

@@ -8,7 +8,7 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressAvailabilityResult;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ExpressSettings;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShopFacts;
 /**
- * The first failing check is the reason. Waiting for the shipping form is blocked, not unavailable.
+ * The first failing check is the reason.
  */
 final class ExpressAvailability
 {
@@ -29,9 +29,9 @@ final class ExpressAvailability
         if ($cart === null) {
             return ExpressAvailabilityResult::available();
         }
-        return self::resolveCart($settings, $shop, $cart);
+        return self::resolveCart($cart);
     }
-    private static function resolveCart(ExpressSettings $settings, ShopFacts $shop, CartFacts $cart): ExpressAvailabilityResult
+    private static function resolveCart(CartFacts $cart): ExpressAvailabilityResult
     {
         if ($cart->lines() === []) {
             return ExpressAvailabilityResult::unavailable('cart_empty');
@@ -45,10 +45,6 @@ final class ExpressAvailability
         if (\Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility::decide($cart->taxEnabled(), $cart->taxBasedOn(), $cart->taxCountries(), $cart->ratesVaryWithinCountry()) === \Mollie\WooCommerce\ExpressComponent\Rules\TaxCompatibility::INCOMPATIBLE) {
             return ExpressAvailabilityResult::unavailable('tax_depends_on_address');
         }
-        if (!in_array(\true, \Mollie\WooCommerce\ExpressComponent\Rules\WalletVisibility::buttons($settings, $shop, $cart), \true)) {
-            return ExpressAvailabilityResult::blocked('shipping_incomplete');
-        }
-        // After the shipping check: until then the total is not final.
         $total = $cart->total();
         if ($total !== null && $total->minorUnits() <= 0) {
             return ExpressAvailabilityResult::unavailable('nothing_to_pay');

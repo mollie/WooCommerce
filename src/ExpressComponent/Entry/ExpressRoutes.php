@@ -152,7 +152,6 @@ class ExpressRoutes
     {
         return match ($code) {
             'mollie_express_forbidden' => __('Express checkout could not be started. Please reload the page and try again.', 'mollie-payments-for-woocommerce'),
-            'shipping_incomplete' => __('Your order contains items to ship. Please fill in the shipping details to use express checkout.', 'mollie-payments-for-woocommerce'),
             'session_missing', 'session_expired' => __('Express checkout has expired. Please try again.', 'mollie-payments-for-woocommerce'),
             'cart_changed', 'session_replaced' => __('Your order changed after express checkout was started. Please try again.', 'mollie-payments-for-woocommerce'),
             'try_again' => __('Express checkout is busy with this order. Please try again in a moment.', 'mollie-payments-for-woocommerce'),

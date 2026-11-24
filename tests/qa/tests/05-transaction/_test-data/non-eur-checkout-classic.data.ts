@@ -105,6 +105,7 @@ export const classicCheckoutNonEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C4237586',
+		knownBug: 'PIWOO-569',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'expired',

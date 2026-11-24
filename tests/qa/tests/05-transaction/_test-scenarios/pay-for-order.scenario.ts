@@ -43,6 +43,10 @@ export const testPaymentStatusOnPayForOrder = (
 			! gateway.availableForApiMethods.includes( mollieApiMethod ),
 			`Test is not eligible for ${ mollieApiMethod } API method.`
 		);
+		test.fail(
+			!! testData.knownBug,
+			`Expected failure until ${ testData.knownBug } is fixed.`
+		);
 
 		// Sets the default orderStatus based on API method, if specific is not set
 		if ( ! testData.orderStatus ) {

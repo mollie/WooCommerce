@@ -217,6 +217,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C420247',
+		knownBug: 'PIWOO-569',
 		payment: {
 			gateway: gateways.ideal,
 			status: 'expired',
@@ -707,6 +708,7 @@ export const checkoutEur: MollieTestData.ShopOrder[] = [
         {
                 ...baseOrder,
                 testId: 'C4257962',
+                knownBug: 'PIWOO-569',
                 payment: {
                         gateway: gateways.bizum,
                         status: 'expired',

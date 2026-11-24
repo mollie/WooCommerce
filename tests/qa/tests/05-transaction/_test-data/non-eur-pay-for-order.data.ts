@@ -105,6 +105,7 @@ export const payForOrderNonEur: MollieTestData.ShopOrder[] = [
 	{
 		...baseOrder,
 		testId: 'C4237618',
+		knownBug: 'PIWOO-569',
 		payment: {
 			gateway: gateways.paybybank,
 			status: 'expired',

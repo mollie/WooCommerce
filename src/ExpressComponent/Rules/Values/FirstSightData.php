@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
 final class FirstSightData
@@ -13,37 +12,25 @@ final class FirstSightData
      * @param array<string, string>|null $shipping Null when not written.
      * @param ShippingLine|null $shippingLine Null when the order gets no shipping line.
      */
-    public function __construct(
-        private string $paymentId,
-        private string $mode,
-        private ?string $gatewayId,
-        private ?string $unmatchedMethod,
-        private array $billing,
-        private ?array $shipping,
-        private ?ShippingLine $shippingLine = null
-    ) {
+    public function __construct(private string $paymentId, private string $mode, private ?string $gatewayId, private ?string $unmatchedMethod, private array $billing, private ?array $shipping, private ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingLine $shippingLine = null)
+    {
     }
-
     public function paymentId(): string
     {
         return $this->paymentId;
     }
-
     public function mode(): string
     {
         return $this->mode;
     }
-
     public function gatewayId(): ?string
     {
         return $this->gatewayId;
     }
-
     public function unmatchedMethod(): ?string
     {
         return $this->unmatchedMethod;
     }
-
     /**
      * @return array<string, string>
      */
@@ -51,7 +38,6 @@ final class FirstSightData
     {
         return $this->billing;
     }
-
     /**
      * @return array<string, string>|null
      */
@@ -59,8 +45,7 @@ final class FirstSightData
     {
         return $this->shipping;
     }
-
-    public function shippingLine(): ?ShippingLine
+    public function shippingLine(): ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingLine
     {
         return $this->shippingLine;
     }

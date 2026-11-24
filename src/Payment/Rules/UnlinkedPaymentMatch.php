@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Rules;
 
 use Mollie\WooCommerce\Shared\Values\Admit;
 use Mollie\WooCommerce\Shared\Values\Money;
 use Mollie\WooCommerce\Shared\Values\Refuse;
-
 /**
  * Whether a Mollie order no WooCommerce order is linked to yet may be handed to the order its
  * metadata names. Only a Mollie order qualifies: the plugin creates one per WooCommerce order, with
@@ -24,18 +22,8 @@ final class UnlinkedPaymentMatch
     public const NOT_MOLLIE = 'not_mollie';
     public const NOT_PAYABLE = 'not_payable';
     public const AMOUNT_MISMATCH = 'amount_mismatch';
-
-    public static function admit(
-        bool $isMollieOrder,
-        int $metadataOrderId,
-        bool $orderExists,
-        bool $orderNumberMatches,
-        bool $isMollieGateway,
-        bool $orderNeedsPayment,
-        ?Money $paymentAmount,
-        ?Money $orderTotal
-    ): Admit|Refuse {
-
+    public static function admit(bool $isMollieOrder, int $metadataOrderId, bool $orderExists, bool $orderNumberMatches, bool $isMollieGateway, bool $orderNeedsPayment, ?Money $paymentAmount, ?Money $orderTotal): Admit|Refuse
+    {
         if (!$isMollieOrder) {
             return self::refuse(self::NOT_A_MOLLIE_ORDER);
         }
@@ -57,10 +45,8 @@ final class UnlinkedPaymentMatch
         if ($paymentAmount === null || $orderTotal === null || !$orderTotal->isSameAs($paymentAmount)) {
             return self::refuse(self::AMOUNT_MISMATCH);
         }
-
         return new Admit();
     }
-
     private static function refuse(string $code): Refuse
     {
         return new Refuse($code, 200);

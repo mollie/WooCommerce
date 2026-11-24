@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\WooCommerce;
 
 use InvalidArgumentException;
 use Mollie\WooCommerce\Shared\Values\Money;
-
 /** WooCommerce amounts are floats: format them to a decimal string, never compare as floats. */
 final class WooCommerceAmount
 {

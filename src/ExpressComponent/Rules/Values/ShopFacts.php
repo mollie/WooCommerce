@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
 final class ShopFacts
@@ -15,28 +14,17 @@ final class ShopFacts
      * @param list<string> $surchargedGatewayIds The merchant set a surcharge on the payment method.
      * @param list<string> $expressCartGatewayIds Express button on the cart turned on.
      */
-    public function __construct(
-        private string $mode,
-        private bool $isHttps,
-        private array $registeredGatewayIds,
-        private array $enabledGatewayIds,
-        private array $activeMollieMethods,
-        private array $expressCheckoutGatewayIds,
-        private array $surchargedGatewayIds = [],
-        private array $expressCartGatewayIds = []
-    ) {
+    public function __construct(private string $mode, private bool $isHttps, private array $registeredGatewayIds, private array $enabledGatewayIds, private array $activeMollieMethods, private array $expressCheckoutGatewayIds, private array $surchargedGatewayIds = [], private array $expressCartGatewayIds = [])
+    {
     }
-
     public function mode(): string
     {
         return $this->mode;
     }
-
     public function isHttps(): bool
     {
         return $this->isHttps;
     }
-
     /**
      * @return list<string>
      */
@@ -44,7 +32,6 @@ final class ShopFacts
     {
         return $this->registeredGatewayIds;
     }
-
     /**
      * @return list<string>
      */
@@ -52,7 +39,6 @@ final class ShopFacts
     {
         return $this->enabledGatewayIds;
     }
-
     /**
      * @return list<string>
      */
@@ -60,7 +46,6 @@ final class ShopFacts
     {
         return $this->activeMollieMethods;
     }
-
     /**
      * @return list<string>
      */
@@ -68,7 +53,6 @@ final class ShopFacts
     {
         return $this->expressCheckoutGatewayIds;
     }
-
     /**
      * Gateways whose express button is turned on for the surface; none for a surface without a switch.
      *
@@ -82,10 +66,8 @@ final class ShopFacts
         if ($surface === 'cart') {
             return $this->expressCartGatewayIds;
         }
-
         return [];
     }
-
     /**
      * @return list<string>
      */

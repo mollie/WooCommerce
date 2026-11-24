@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
-
 /**
  * Class SelectedIssuerMiddleware
  *
@@ -13,13 +11,12 @@ use WC_Order;
  *
  * @package Mollie\WooCommerce\Payment\Request\Middleware
  */
-class SelectedIssuerMiddleware implements RequestMiddlewareInterface
+class SelectedIssuerMiddleware implements \Mollie\WooCommerce\Payment\Request\Middleware\RequestMiddlewareInterface
 {
     /**
      * @var string The plugin ID.
      */
     private $pluginId;
-
     /**
      * SelectedIssuerMiddleware constructor.
      *
@@ -29,7 +26,6 @@ class SelectedIssuerMiddleware implements RequestMiddlewareInterface
     {
         $this->pluginId = $pluginId;
     }
-
     /**
      * Invoke the middleware.
      *
@@ -45,22 +41,18 @@ class SelectedIssuerMiddleware implements RequestMiddlewareInterface
         if (!$gateway) {
             return $next($requestData, $order, $context);
         }
-
         $gatewayId = $gateway->id;
         $selectedIssuer = $this->getSelectedIssuer($gatewayId);
         if (empty($selectedIssuer)) {
             return $next($requestData, $order, $context);
         }
-
         if ($context === 'order') {
             $requestData['payment']['issuer'] = $selectedIssuer;
         } elseif ($context === 'payment') {
             $requestData['issuer'] = $selectedIssuer;
         }
-
         return $next($requestData, $order, $context);
     }
-
     /**
      * Get the selected issuer.
      *

@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\Activation\Migrations;
 
 /**
@@ -36,25 +35,21 @@ namespace Mollie\WooCommerce\Activation\Migrations;
  * the relevant key is already absent, so a manual replay (or a downgrade-then-
  * upgrade cycle) produces no further writes. `display_logo` is never touched.
  */
-class PaymentMethodSettingsMigrator implements MigratorInterface
+class PaymentMethodSettingsMigrator implements \Mollie\WooCommerce\Activation\Migrations\MigratorInterface
 {
     public function targetVersion(): string
     {
         return '8.1.7';
     }
-
     public function migrate(): void
     {
         global $wpdb;
         // Pull every gateway settings row in one query — including ones for
         // gateways that aren't currently registered (deactivated extensions,
         // renamed classes) so no merchant ends up with a half-migrated DB.
-        $optionNames = $wpdb->get_col(
-            "SELECT option_name FROM {$wpdb->options}
-             WHERE option_name LIKE 'mollie_wc_gateway_%_settings'"
-        );
+        $optionNames = $wpdb->get_col("SELECT option_name FROM {$wpdb->options}\n             WHERE option_name LIKE 'mollie_wc_gateway_%_settings'");
         foreach ($optionNames as $optionName) {
-            $settings = get_option($optionName, false);
+            $settings = get_option($optionName, \false);
             if (!is_array($settings)) {
                 // Row exists but stores a non-array (corrupted or never
                 // written by us). Skip — overwriting would mask the problem
@@ -66,7 +61,6 @@ class PaymentMethodSettingsMigrator implements MigratorInterface
             update_option($optionName, $settings);
         }
     }
-
     /**
      * Drop `use_api_title` and decide whether to keep the stored `title`.
      *
@@ -90,7 +84,6 @@ class PaymentMethodSettingsMigrator implements MigratorInterface
         unset($settings['use_api_title']);
         return $settings;
     }
-
     /**
      * Drop `enable_custom_logo` and decide whether to keep the stored
      * `iconFileUrl` / `iconFilePath` pair.

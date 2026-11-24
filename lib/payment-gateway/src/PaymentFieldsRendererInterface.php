@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Inpsyde\PaymentGateway;
+declare (strict_types=1);
+namespace Mollie\Inpsyde\PaymentGateway;
 
 use Throwable;
-
 interface PaymentFieldsRendererInterface
 {
     /**

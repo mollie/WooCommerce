@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
 use Mollie\WooCommerce\Shared\Values\Money;
-
 /**
  * Pricing fields are optional: availability needs only the shipping state.
  */
@@ -22,25 +20,9 @@ final class CartFacts
      * @param bool $ratesVaryWithinCountry The tax rates of the only such country differ by state, postcode or city; false when the taxes do not follow the customer's address, where it cannot matter.
      * @param string $taxableCountry The country the cart's taxes were calculated for; empty when the customer has none.
      */
-    public function __construct(
-        private array $lines,
-        private bool $needsShipping,
-        private bool $shippingDestinationComplete,
-        private bool $shippingRateChosen,
-        private ?Money $total = null,
-        private array $fees = [],
-        private array $coupons = [],
-        private ?CartShipping $shipping = null,
-        private string $cartHash = '',
-        private string $destination = '',
-        private bool $taxEnabled = false,
-        private string $taxBasedOn = 'base',
-        private array $taxCountries = [],
-        private bool $ratesVaryWithinCountry = false,
-        private string $taxableCountry = ''
-    ) {
+    public function __construct(private array $lines, private bool $needsShipping, private bool $shippingDestinationComplete, private bool $shippingRateChosen, private ?Money $total = null, private array $fees = [], private array $coupons = [], private ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\CartShipping $shipping = null, private string $cartHash = '', private string $destination = '', private bool $taxEnabled = \false, private string $taxBasedOn = 'base', private array $taxCountries = [], private bool $ratesVaryWithinCountry = \false, private string $taxableCountry = '')
+    {
     }
-
     /**
      * @return list<CartLine>
      */
@@ -48,27 +30,22 @@ final class CartFacts
     {
         return $this->lines;
     }
-
     public function needsShipping(): bool
     {
         return $this->needsShipping;
     }
-
     public function shippingDestinationComplete(): bool
     {
         return $this->shippingDestinationComplete;
     }
-
     public function shippingRateChosen(): bool
     {
         return $this->shippingRateChosen;
     }
-
     public function total(): ?Money
     {
         return $this->total;
     }
-
     /**
      * @return list<CartFee>
      */
@@ -76,7 +53,6 @@ final class CartFacts
     {
         return $this->fees;
     }
-
     /**
      * @return list<CartCoupon>
      */
@@ -84,32 +60,26 @@ final class CartFacts
     {
         return $this->coupons;
     }
-
-    public function shipping(): ?CartShipping
+    public function shipping(): ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\CartShipping
     {
         return $this->shipping;
     }
-
     public function cartHash(): string
     {
         return $this->cartHash;
     }
-
     public function destination(): string
     {
         return $this->destination;
     }
-
     public function taxEnabled(): bool
     {
         return $this->taxEnabled;
     }
-
     public function taxBasedOn(): string
     {
         return $this->taxBasedOn;
     }
-
     /**
      * @return list<string>
      */
@@ -117,12 +87,10 @@ final class CartFacts
     {
         return $this->taxCountries;
     }
-
     public function ratesVaryWithinCountry(): bool
     {
         return $this->ratesVaryWithinCountry;
     }
-
     public function taxableCountry(): string
     {
         return $this->taxableCountry;

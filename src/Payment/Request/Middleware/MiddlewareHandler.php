@@ -3,7 +3,6 @@
 namespace Mollie\WooCommerce\Payment\Request\Middleware;
 
 use WC_Order;
-
 /**
  * Class MiddlewareHandler
  *
@@ -18,7 +17,6 @@ class MiddlewareHandler
      * @var array The list of middleware.
      */
     private array $middlewares;
-
     /**
      * MiddlewareHandler constructor.
      *
@@ -28,7 +26,6 @@ class MiddlewareHandler
     {
         $this->middlewares = $middlewares;
     }
-
     /**
      * Handle the request data through the middleware chain.
      *
@@ -40,10 +37,8 @@ class MiddlewareHandler
     public function handle(array $requestData, WC_Order $order, $context): array
     {
         $middlewareChain = $this->createMiddlewareChain($this->middlewares);
-
         return $middlewareChain($requestData, $order, $context);
     }
-
     /**
      * Create a chain of middleware.
      *
@@ -52,16 +47,12 @@ class MiddlewareHandler
      */
     private function createMiddlewareChain(array $middlewares): callable
     {
-        return array_reduce(
-            array_reverse($middlewares),
-            static function ($next, $middleware) {
-                return static function ($requestData, $order, $context) use ($middleware, $next) {
-                    return $middleware($requestData, $order, $context, $next);
-                };
-            },
-            static function ($requestData) {
-                return $requestData;
-            }
-        );
+        return array_reduce(array_reverse($middlewares), static function ($next, $middleware) {
+            return static function ($requestData, $order, $context) use ($middleware, $next) {
+                return $middleware($requestData, $order, $context, $next);
+            };
+        }, static function ($requestData) {
+            return $requestData;
+        });
     }
 }

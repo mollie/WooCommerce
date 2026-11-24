@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Inpsyde\PaymentGateway;
+declare (strict_types=1);
+namespace Mollie\Inpsyde\PaymentGateway;
 
 /**
  * ServiceKeyGenerator is a utility class for generating unique service keys
@@ -12,22 +11,14 @@ namespace Inpsyde\PaymentGateway;
 class ServiceKeyGenerator
 {
     private string $id;
-
     private string $base;
-
     private string $fallbackBase;
-
-    public function __construct(
-        string $id,
-        string $base = 'payment_gateway',
-        string $fallbackBase = 'payment_gateways'
-    ) {
-
+    public function __construct(string $id, string $base = 'payment_gateway', string $fallbackBase = 'payment_gateways')
+    {
         $this->id = $id;
         $this->base = $base;
         $this->fallbackBase = $fallbackBase;
     }
-
     /**
      * Creates a unique service key by appending an item identifier to the base and id components.
      *
@@ -39,7 +30,6 @@ class ServiceKeyGenerator
     {
         return $this->base . '.' . $this->id . '.' . $item;
     }
-
     /**
      * Creates a generic service key without including an item identifier,
      * useful as a fallback option.

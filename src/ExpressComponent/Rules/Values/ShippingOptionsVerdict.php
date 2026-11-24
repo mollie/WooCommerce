@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Mollie\WooCommerce\ExpressComponent\Rules\Values;
 
 /**
@@ -16,7 +15,6 @@ final class ShippingOptionsVerdict
     private function __construct(private array $options, private ?string $refusalType)
     {
     }
-
     /**
      * @param list<array{reference: string, description: string, amount: array{currency: string, value: string}}> $options
      */
@@ -24,12 +22,10 @@ final class ShippingOptionsVerdict
     {
         return new self($options, null);
     }
-
     public static function refuse(string $type): self
     {
         return new self([], $type);
     }
-
     /**
      * @return list<array{reference: string, description: string, amount: array{currency: string, value: string}}>
      */
@@ -37,7 +33,6 @@ final class ShippingOptionsVerdict
     {
         return $this->options;
     }
-
     /** One of Mollie's unsupported-* types, or null when options are offered. */
     public function refusalType(): ?string
     {

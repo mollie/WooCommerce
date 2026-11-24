@@ -24,9 +24,6 @@ class ExpressBlocksData
             // WordPress refuses the request before the route runs when the login changed in another tab.
             'reload' => \Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes::messageFor('mollie_express_forbidden'),
             'placeholder' => __('Express checkout', 'mollie-payments-for-woocommerce'),
-            /* translators: %1$s: the shipping address, %2$s: the chosen shipping rate. */
-            'shipsTo' => __('Ships to %1$s · %2$s', 'mollie-payments-for-woocommerce'),
-            'change' => __('Change', 'mollie-payments-for-woocommerce'),
         ]];
     }
     /**

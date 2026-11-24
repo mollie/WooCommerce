@@ -22,4 +22,12 @@ class ExpressUrls
     {
         return add_query_arg('mollie_webhook_secret', $this->webhookSecret->getOrCreate(), get_rest_url(null, RestApi::ROUTE_NAMESPACE . '/' . RestApi::WEBHOOK_ROUTE));
     }
+    /**
+     * Where Mollie asks for shipping options. The secret is the session's, so only the holder of this URL can ask;
+     * Mollie calls it on every address change, so it is valid until the session expires.
+     */
+    public function shippingCallbackUrl(string $secret): string
+    {
+        return add_query_arg('secret', $secret, get_rest_url(null, RestApi::ROUTE_NAMESPACE . '/' . \Mollie\WooCommerce\ExpressComponent\Entry\ExpressRoutes::SHIPPING_ROUTE));
+    }
 }

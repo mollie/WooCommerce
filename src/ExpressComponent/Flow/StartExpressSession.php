@@ -16,6 +16,7 @@ use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressOrderFactsBuilder;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionBudget;
 use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressSessionStore;
+use Mollie\WooCommerce\ExpressComponent\WooCommerce\ExpressShippingSnapshot;
 use Mollie\WooCommerce\Log\EventLog;
 use Mollie\WooCommerce\SDK\IdempotencyKey;
 use Mollie\WooCommerce\SDK\MollieApi;
@@ -27,7 +28,7 @@ use Mollie\WooCommerce\Shared\Clock;
 final class StartExpressSession
 {
     private const INTENT = 'express.session.v1';
-    public function __construct(private CartFactsBuilder $cartFacts, private ExpressFactsBuilder $expressFacts, private ExpressOrderFactsBuilder $orderFacts, private ExpressSessionStore $store, private ExpressSessionBudget $budget, private ExpressUrls $urls, private MollieApi $mollie, private Clock $clock, private EventLog $log, private int $reuseMarginSeconds)
+    public function __construct(private CartFactsBuilder $cartFacts, private ExpressFactsBuilder $expressFacts, private ExpressOrderFactsBuilder $orderFacts, private ExpressSessionStore $store, private ExpressShippingSnapshot $snapshot, private ExpressSessionBudget $budget, private ExpressUrls $urls, private MollieApi $mollie, private Clock $clock, private EventLog $log, private int $reuseMarginSeconds, private int $sessionLifetimeSeconds)
     {
     }
     public function start(string $surface, string $callerAddress): \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult
@@ -63,7 +64,13 @@ final class StartExpressSession
         $attempt = $this->store->nextAttempt();
         $customer = $this->store->customerKey();
         $ref = $this->store->expressRef($fingerprint, $attempt);
-        $payload = SessionPayload::build($cart, SessionLines::fromCart($cart), $this->urls->returnUrl($ref), $this->urls->webhookUrl(), ['express_ref' => $ref], SessionPayload::requiredCustomerDetails());
+        // A cart that ships has no shipping line: Mollie asks the store for the options, with the secret of this session.
+        $ships = $cart->needsShipping();
+        $secret = $ships ? $this->snapshot->secretFor($ref) : '';
+        if (!$this->snapshot->save($secret, $this->sessionLifetimeSeconds)) {
+            return $this->refuse($surface, 'shipping_unavailable', 503);
+        }
+        $payload = SessionPayload::build($cart, SessionLines::fromCart($cart), $this->urls->returnUrl($ref), $this->urls->webhookUrl(), ['express_ref' => $ref], SessionPayload::requiredCustomerDetails($ships), $ships ? $this->urls->shippingCallbackUrl($secret) : null);
         $key = IdempotencyKey::for(self::INTENT, ['customer' => $customer, 'fingerprint' => $fingerprint, 'attempt' => $attempt]);
         $started = microtime(\true);
         try {
@@ -73,9 +80,11 @@ final class StartExpressSession
                 throw MollieCallFailed::fromThrowable(new \UnexpectedValueException('', 0));
             }
         } catch (MollieCallFailed $failure) {
+            $this->snapshot->forget($secret);
             $this->log->error('express.session.failed', ['surface' => $surface, 'kind' => $failure->kind(), 'ms' => $this->msSince($started)]);
             return $failure->kind() === MollieCallFailed::VALIDATION ? \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult::refused('session_refused', 502) : \Mollie\WooCommerce\ExpressComponent\Flow\ExpressSessionResult::refused('mollie_unavailable', 503);
         }
+        $this->snapshot->attachSession($secret, $session->id(), $expiresAt);
         $this->store->remember($session->id(), $session->clientAccessToken(), $expiresAt, $fingerprint, $account, $ref, $attempt);
         $total = $cart->total();
         $this->log->info('express.session.created', ['session' => $session->id(), 'surface' => $surface, 'mode' => $mode, 'amount' => $total === null ? '' : $total->toDecimal(), 'currency' => $total === null ? '' : $total->currency(), 'ms' => $this->msSince($started)]);

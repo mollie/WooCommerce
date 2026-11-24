@@ -8,7 +8,6 @@ use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartCoupon;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFacts;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartFee;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartLine;
-use Mollie\WooCommerce\ExpressComponent\Rules\Values\CartShipping;
 use Mollie\WooCommerce\Shared\Values\Money;
 use WC_Cart;
 use WC_Customer;
@@ -29,7 +28,7 @@ class CartFactsBuilder
         $needsShipping = $cart->needs_shipping();
         $chosenRates = $needsShipping ? $this->chosenRates() : null;
         [$taxEnabled, $taxBasedOn, $countries, $ratesVary] = $this->taxFacts($needsShipping);
-        return new CartFacts(lines: $this->lines($cart, $customer, $currency), needsShipping: $needsShipping, shippingDestinationComplete: $customer->has_full_shipping_address(), shippingRateChosen: $chosenRates !== null, total: $this->money($cart->get_total('edit'), $currency), fees: $this->fees($cart, $customer, $currency), coupons: $this->coupons($cart, $currency), shipping: $chosenRates === null ? null : $this->shipping($cart, $customer, $chosenRates, $currency), cartHash: $cart->get_cart_hash(), destination: implode('|', [$customer->get_shipping_country(), $customer->get_shipping_state(), $customer->get_shipping_postcode(), $customer->get_shipping_city()]), taxEnabled: $taxEnabled, taxBasedOn: $taxBasedOn, taxCountries: $countries, ratesVaryWithinCountry: $ratesVary);
+        return new CartFacts(lines: $this->lines($cart, $customer, $currency), needsShipping: $needsShipping, shippingDestinationComplete: $customer->has_full_shipping_address(), shippingRateChosen: $chosenRates !== null, total: $this->money($this->totalWithoutShipping($cart), $currency), fees: $this->fees($cart, $customer, $currency), coupons: $this->coupons($cart, $currency), cartHash: $this->cartHash($cart), destination: implode('|', [$customer->get_shipping_country(), $customer->get_shipping_state(), $customer->get_shipping_postcode(), $customer->get_shipping_city()]), taxEnabled: $taxEnabled, taxBasedOn: $taxBasedOn, taxCountries: $countries, ratesVaryWithinCountry: $ratesVary);
     }
     /**
      * The verdict for the merchant notice, read from the shop's settings alone: no cart is needed.
@@ -130,12 +129,27 @@ class CartFactsBuilder
         return $coupons;
     }
     /**
-     * @param array<string, string> $chosenRates Rate id => label.
+     * WooCommerce's own hash includes the cart total, shipping too: a change of the shipping rate would change it.
+     * The coupons are part of it: a free-shipping coupon moves the options but not the total, and the saved cart
+     * the callback prices must be the one in front of the shopper.
      */
-    private function shipping(WC_Cart $cart, WC_Customer $customer, array $chosenRates, string $currency): CartShipping
+    private function cartHash(WC_Cart $cart): string
     {
-        $tax = (float) $cart->get_shipping_tax();
-        return new CartShipping(array_keys($chosenRates), implode(', ', array_filter($chosenRates)), $this->money((float) $cart->get_shipping_total() + $tax, $currency), $tax !== 0.0 ? $this->sumOfRates(\WC_Tax::get_shipping_tax_rates(null, $customer)) : '0.00');
+        $items = [];
+        foreach ($cart->get_cart() as $key => $item) {
+            unset($item['data']);
+            $items[(string) $key] = $item;
+        }
+        $coupons = array_map('strval', $cart->get_applied_coupons());
+        sort($coupons);
+        return hash('sha256', (string) wp_json_encode([$items, $coupons]) . $this->totalWithoutShipping($cart));
+    }
+    /**
+     * The session is priced without shipping: Mollie adds the option the shopper picks in the wallet.
+     */
+    private function totalWithoutShipping(WC_Cart $cart): float
+    {
+        return (float) $cart->get_total('edit') - (float) $cart->get_shipping_total() - (float) $cart->get_shipping_tax();
     }
     /**
      * Null when any package has no chosen rate.

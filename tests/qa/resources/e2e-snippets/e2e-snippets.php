@@ -30,6 +30,11 @@ delete_transient('_wc_activation_redirect');
 add_filter('woocommerce_enable_setup_wizard', '__return_false');
 
 /**
+ * Disable the WooCommerce order milestone easter egg: its overlay blocks clicks on the order edit page.
+ */
+add_filter('wc_order_milestone_egg_enabled', '__return_false');
+
+/**
  * Disable nonce check
  */
 add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );

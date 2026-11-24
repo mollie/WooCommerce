@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Locator, expect } from '@playwright/test';
+import { type Dialog, Locator, expect } from '@playwright/test';
 import { WooCommerceOrderEdit as wooCommerceOrderEditBase } from '@inpsyde/playwright-utils/build';
 
 const { WLOP_NAME } = process.env;
@@ -53,28 +53,93 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 	// Actions
 
 	/**
-	 * Performs Mollie refund
+	 * Refunds via the Mollie gateway in the open refund box.
+	 * Puts the whole amount (default: all available) into the first line item.
+	 * Fails on the WooCommerce error alert.
+	 * TODO: replace with pw-utils refundOrder() once released.
 	 *
 	 * @param gatewayName
 	 * @param amount
 	 */
 	makeRefund = async ( gatewayName: string, amount?: string ) => {
+		if ( ! amount ) {
+			const totalAmount =
+				( await this.totalAvailableToRefund().textContent() ) || '';
+			amount = totalAmount.replace( /[^\d.-]+/g, '' );
+		}
+		if ( Number.isNaN( Number( amount ) ) ) {
+			throw new Error(
+				`Refund amount "${ amount }" is not a number (only the 1,234.56 price format is supported)`
+			);
+		}
+		// Round once, so fill() and the poll below use the same value
+		const refundAmount = Number( Number( amount ).toFixed( 2 ) );
+		if ( refundAmount <= 0 ) {
+			throw new Error(
+				`Refund amount "${ amount }" must be greater than 0`
+			);
+		}
+
+		const lineTotalInput = this.firstRefundTotalInput();
+		await lineTotalInput.fill( refundAmount.toFixed( 2 ) );
+		// Blur fires change, which updates #refund_amount
+		await lineTotalInput.blur();
+		await expect
+			.poll(
+				async () =>
+					Number(
+						( await this.refundAmountInput().inputValue() ).replace(
+							',',
+							'.'
+						)
+					),
+				{ message: 'Assert refund amount is updated' }
+			)
+			.toBe( refundAmount );
+
+		const refundError = await this.submitRefund( gatewayName );
+		expect(
+			refundError,
+			`Assert refund via ${ gatewayName } has no error`
+		).toBe( '' );
+	};
+
+	/**
+	 * Clicks "Refund via gatewayName" in the open refund box.
+	 * Returns the WooCommerce error alert text, or '' when the page reloads (refund saved).
+	 *
+	 * @param gatewayName
+	 */
+	submitRefund = async ( gatewayName: string ): Promise< string > => {
 		const refundViaMollieButton = this.refundViaMollieButton( gatewayName );
 		await expect(
 			refundViaMollieButton,
 			`Assert refund via ${ gatewayName } button is visible`
 		).toBeVisible();
-		if ( ! amount ) {
-			const totalAmount =
-				( await this.totalAvailableToRefund().textContent() ) || '';
-			amount = parseFloat(
-				totalAmount.replace( /[^\d.-]+/g, '' ).trim()
-			).toFixed( 2 );
+
+		// Success reloads the page, an error shows alert()
+		const pageReload = this.page
+			.waitForEvent( 'load', { timeout: 60_000 } )
+			.then( () => '' )
+			.catch( () => 'No page reload after refund' );
+		let onDialog: ( dialog: Dialog ) => Promise< void >;
+		const errorAlert = new Promise< string >( ( resolve ) => {
+			onDialog = async ( dialog ) => {
+				const isAlert = dialog.type() === 'alert';
+				const message = dialog.message();
+				await dialog.accept();
+				if ( isAlert ) {
+					resolve( message );
+				}
+			};
+			this.page.on( 'dialog', onDialog );
+		} );
+		try {
+			await refundViaMollieButton.click();
+			return await Promise.race( [ pageReload, errorAlert ] );
+		} finally {
+			this.page.off( 'dialog', onDialog );
 		}
-		await this.firstRefundTotalInput().fill( amount );
-		await this.page.on( 'dialog', ( dialog ) => dialog.accept() );
-		await refundViaMollieButton.click();
-		await this.page.waitForLoadState( 'networkidle' );
 	};
 
 	/**
@@ -120,12 +185,11 @@ export class WooCommerceOrderEdit extends wooCommerceOrderEditBase {
 				} else {
 					await this.page.reload();
 				}
-				await expect
-					.soft(
-						this.statusCombobox(),
-						'Assert order status combobox'
-					)
-					.toHaveText( orderStatus );
+				// Not soft: toPass() retries only when the inner assertion throws
+				await expect(
+					this.statusCombobox(),
+					'Assert order status combobox'
+				).toHaveText( orderStatus );
 			}, 'Assert order status combobox with retries' )
 			.toPass( {
 				timeout: 60_000,

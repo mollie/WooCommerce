@@ -181,6 +181,36 @@ export const testSubscriptionRenewal = (
 						renewalOrderId
 					);
 
+					// The subscription stays On hold until the renewal payment webhook arrives
+					await expect
+						.poll(
+							async () =>
+								(
+									await wooCommerceApi.getOrder(
+										renewalOrderId
+									)
+								).status,
+							{
+								message: `${ assertionPrefix }Assert renewal order status is ${ renewalOrderStatus }`,
+								timeout: 60_000,
+							}
+						)
+						.toBe( renewalOrderStatus );
+					await expect
+						.poll(
+							async () =>
+								(
+									await wooCommerceApi.getSubscription(
+										subscription.id
+									)
+								).status,
+							{
+								message: `${ assertionPrefix }Assert subscription status is active`,
+								timeout: 60_000,
+							}
+						)
+						.toBe( 'active' );
+
 					// Assert current renewal order
 					await wooCommerceOrderEdit.visit( renewalOrderId );
 					await wooCommerceOrderEdit.assertRelatedOrders(

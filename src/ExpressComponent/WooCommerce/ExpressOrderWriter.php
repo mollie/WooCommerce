@@ -8,7 +8,10 @@ use Mollie\WooCommerce\ExpressComponent\Rules\ExpressOrderMatch;
 use Mollie\WooCommerce\ExpressComponent\Rules\StartOrderDecision;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\RememberedSession;
 use Mollie\WooCommerce\ExpressComponent\Rules\Values\FirstSightData;
+use Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingLine;
 use WC_Order;
+use WC_Order_Item_Shipping;
+use WC_Order_Item_Tax;
 /**
  * Writes only what differs and notes only once, so a retried webhook changes nothing.
  * Callers pass the order as OrderLock::withFreshOrder() read it.
@@ -53,7 +56,70 @@ final class ExpressOrderWriter
         if ($shipping !== null) {
             $changed = $this->setAddress($order, 'shipping', $shipping) || $changed;
         }
+        $line = $firstSight->shippingLine();
+        if ($line !== null) {
+            $this->addShippingLine($order, $line);
+            $changed = \true;
+        }
         $this->finish($order, $changed, $notes);
+    }
+    /**
+     * The order is made from the cart before the wallet's shipping option is known: whatever shipping the cart
+     * carried (shipping lines, their cost and their tax) goes, so the order costs what the session was priced
+     * for, items and their VAT. The first webhook adds the option the shopper chose.
+     */
+    public function dropShipping(WC_Order $order): void
+    {
+        $cost = (float) $order->get_shipping_total('edit');
+        $tax = (float) $order->get_shipping_tax('edit');
+        $lines = $order->get_items('shipping');
+        if ($lines === [] && $cost === 0.0 && $tax === 0.0) {
+            return;
+        }
+        foreach (array_keys($lines) as $itemId) {
+            $order->remove_item($itemId);
+        }
+        foreach ($order->get_taxes() as $taxItem) {
+            $taxItem->set_shipping_tax_total('0');
+        }
+        $order->set_shipping_total('0');
+        $order->set_shipping_tax('0');
+        $order->set_total(wc_format_decimal((float) $order->get_total('edit') - $cost - $tax, wc_get_price_decimals()));
+        $order->save();
+    }
+    /**
+     * The option the shopper chose in the wallet, as it was paid: cost and tax per rate as the rule split them,
+     * no recalculation, so the total is exactly what Mollie took.
+     */
+    private function addShippingLine(WC_Order $order, ShippingLine $line): void
+    {
+        [$methodId, $instanceId] = array_pad(explode(':', $line->rateId(), 2), 2, '');
+        $taxItems = [];
+        foreach ($order->get_taxes() as $taxItem) {
+            $taxItems[(int) $taxItem->get_rate_id()] = $taxItem;
+        }
+        $taxes = [];
+        foreach ($line->taxes() as $rateId => $tax) {
+            // The shipping tax class can be one no item has: its rate is not on the order yet.
+            if (!isset($taxItems[$rateId])) {
+                $taxItems[$rateId] = new WC_Order_Item_Tax();
+                $taxItems[$rateId]->set_rate($rateId);
+                $order->add_item($taxItems[$rateId]);
+            }
+            $taxes[$rateId] = $tax->toDecimal();
+            $taxItems[$rateId]->set_shipping_tax_total($tax->toDecimal());
+        }
+        $net = $line->net()->toDecimal();
+        $item = new WC_Order_Item_Shipping();
+        $item->set_method_title($line->label());
+        $item->set_method_id($methodId);
+        $item->set_instance_id($instanceId);
+        $item->set_total($net);
+        $item->set_taxes(['total' => $taxes]);
+        $order->add_item($item);
+        $order->set_shipping_total($net);
+        $order->set_shipping_tax($line->tax()->toDecimal());
+        $order->set_total(wc_format_decimal((float) $order->get_total('edit') + (float) $line->gross()->toDecimal(), wc_get_price_decimals()));
     }
     /**
      * @param string $handledEvent "<session or payment id>:<status>"

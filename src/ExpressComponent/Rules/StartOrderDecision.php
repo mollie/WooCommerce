@@ -28,9 +28,6 @@ final class StartOrderDecision
         if ($now >= $session->expiresAt()) {
             return new Refuse('session_expired', self::REFUSED);
         }
-        if ($cart->needsShipping() && !($cart->shippingDestinationComplete() && $cart->shippingRateChosen())) {
-            return new Refuse('shipping_incomplete', self::REFUSED);
-        }
         if ($session->fingerprint() !== \Mollie\WooCommerce\ExpressComponent\Rules\PricingFingerprint::of($cart)) {
             return new Refuse('cart_changed', self::REFUSED);
         }

@@ -12,6 +12,7 @@ use Mollie\WooCommerce\Shared\Values\ExpressSession;
 use Mollie\WooCommerce\Shared\Values\MollieAddress;
 use Mollie\WooCommerce\Shared\Values\Money;
 use Mollie\WooCommerce\Shared\Values\PaymentSnapshot;
+use Mollie\WooCommerce\Shared\Values\ShippingFee;
 use UnexpectedValueException;
 final class SdkMollieApi implements \Mollie\WooCommerce\SDK\MollieApi
 {
@@ -80,7 +81,7 @@ final class SdkMollieApi implements \Mollie\WooCommerce\SDK\MollieApi
         }
         $method = (string) ($payment->method ?? '');
         $wallet = (string) ($payment->details->wallet ?? '');
-        return new PaymentSnapshot((string) $payment->id, (string) $payment->status, $method !== '' ? $method : null, Money::fromDecimal((string) $payment->amount->value, (string) $payment->amount->currency), mode: (string) ($payment->mode ?? 'live'), expressRef: $this->expressRef($payment->metadata ?? null), billingAddress: $this->address($payment->billingAddress ?? null), shippingAddress: $this->address($payment->shippingAddress ?? null), wallet: $wallet !== '' ? $wallet : null);
+        return new PaymentSnapshot((string) $payment->id, (string) $payment->status, $method !== '' ? $method : null, Money::fromDecimal((string) $payment->amount->value, (string) $payment->amount->currency), mode: (string) ($payment->mode ?? 'live'), expressRef: $this->expressRef($payment->metadata ?? null), billingAddress: $this->address($payment->billingAddress ?? null), shippingAddress: $this->address($payment->shippingAddress ?? null), wallet: $wallet !== '' ? $wallet : null, shippingFee: $this->shippingFee($payment));
     }
     /**
      * @template T
@@ -114,6 +115,38 @@ final class SdkMollieApi implements \Mollie\WooCommerce\SDK\MollieApi
     {
         $ref = is_object($metadata) ? $metadata->express_ref ?? null : (is_array($metadata) ? $metadata['express_ref'] ?? null : null);
         return is_string($ref) && $ref !== '' ? $ref : null;
+    }
+    /**
+     * The payment's shipping_fee line, or null when it has none or none that can be used: no reference, an
+     * amount that cannot be read, or a negative one. A cart that ships is then refused as an amount mismatch.
+     */
+    private function shippingFee(object $payment): ?ShippingFee
+    {
+        $lines = $payment->lines ?? null;
+        if (!is_array($lines)) {
+            return null;
+        }
+        foreach ($lines as $line) {
+            $line = is_array($line) ? (object) $line : $line;
+            if (!is_object($line) || ($line->type ?? '') !== 'shipping_fee') {
+                continue;
+            }
+            return $this->usableShippingFee($line);
+        }
+        return null;
+    }
+    private function usableShippingFee(object $line): ?ShippingFee
+    {
+        $reference = (string) ($line->reference ?? '');
+        if ($reference === '' || !isset($line->totalAmount->value, $line->totalAmount->currency)) {
+            return null;
+        }
+        try {
+            $amount = Money::fromDecimal((string) $line->totalAmount->value, (string) $line->totalAmount->currency);
+        } catch (InvalidArgumentException $unreadable) {
+            return null;
+        }
+        return $amount->minorUnits() < 0 ? null : new ShippingFee($reference, (string) ($line->description ?? ''), $amount);
     }
     /**
      * @param mixed $address

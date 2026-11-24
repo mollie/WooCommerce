@@ -10,8 +10,9 @@ final class FirstSightData
      * @param string|null $unmatchedMethod Mollie method no gateway matches; noted on the order.
      * @param array<string, string> $billing
      * @param array<string, string>|null $shipping Null when not written.
+     * @param ShippingLine|null $shippingLine Null when the order gets no shipping line.
      */
-    public function __construct(private string $paymentId, private string $mode, private ?string $gatewayId, private ?string $unmatchedMethod, private array $billing, private ?array $shipping)
+    public function __construct(private string $paymentId, private string $mode, private ?string $gatewayId, private ?string $unmatchedMethod, private array $billing, private ?array $shipping, private ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingLine $shippingLine = null)
     {
     }
     public function paymentId(): string
@@ -43,5 +44,9 @@ final class FirstSightData
     public function shipping(): ?array
     {
         return $this->shipping;
+    }
+    public function shippingLine(): ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\ShippingLine
+    {
+        return $this->shippingLine;
     }
 }

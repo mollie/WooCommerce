@@ -10,8 +10,12 @@ final class ExpressOrderFacts
      * @param ?string $trackedPaymentId The payment the order already follows.
      * @param list<string> $processed
      * @param bool $webhookNeedsPayment WebhookGuards::needsPayment().
+     * @param bool $holdsShippingLine The order already has a shipping line.
+     * @param list<ShippingTaxRate> $shippingTaxRates The rates WooCommerce taxes this order's shipping with, in its order; read only for a payment.
+     * @param ?PricedShippingOption $pricedShipping The option the payment's shipping_fee names, as the shipping callback
+     *                                              priced it; null when the callback's record is gone or names none.
      */
-    public function __construct(private int $orderId, private string $expressRef, private string $createdVia, private ?Money $total, private ?string $trackedPaymentId, private bool $needsPayment, private bool $holdsShipping, private bool $needsShipping, private ?string $cancelledBy = null, private array $processed = [], private bool $webhookNeedsPayment = \false, private bool $cancelled = \false)
+    public function __construct(private int $orderId, private string $expressRef, private string $createdVia, private ?Money $total, private ?string $trackedPaymentId, private bool $needsPayment, private bool $holdsShipping, private bool $needsShipping, private ?string $cancelledBy = null, private array $processed = [], private bool $webhookNeedsPayment = \false, private bool $cancelled = \false, private bool $holdsShippingLine = \false, private array $shippingTaxRates = [], private ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\PricedShippingOption $pricedShipping = null)
     {
     }
     public function orderId(): int
@@ -64,5 +68,20 @@ final class ExpressOrderFacts
     public function cancelled(): bool
     {
         return $this->cancelled;
+    }
+    public function holdsShippingLine(): bool
+    {
+        return $this->holdsShippingLine;
+    }
+    /**
+     * @return list<ShippingTaxRate> Empty when the order's shipping carries no tax.
+     */
+    public function shippingTaxRates(): array
+    {
+        return $this->shippingTaxRates;
+    }
+    public function pricedShipping(): ?\Mollie\WooCommerce\ExpressComponent\Rules\Values\PricedShippingOption
+    {
+        return $this->pricedShipping;
     }
 }

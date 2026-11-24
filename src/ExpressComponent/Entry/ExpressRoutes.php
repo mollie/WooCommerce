@@ -30,14 +30,21 @@ class ExpressRoutes
     public const ORDER_ROUTE = 'express/order';
     public const SHIPPING_ROUTE = 'express/shipping';
     private const ERROR_TYPE_BASE = 'https://docs.mollie.com/reference/errors/';
-    private const SURFACE = 'checkout';
+    /**
+     * The pages a session can start from; the product page is not one.
+     */
+    private const SURFACES = ['checkout', 'cart'];
     public function __construct(private StartExpressSession $startSession, private StartExpressOrder $startOrder, private PriceShippingOptions $priceShipping, private ExpressShippingSnapshot $snapshot, private EventLog $log)
     {
     }
     public function register(): void
     {
         $this->registerShippingRoute();
-        register_rest_route(RestApi::ROUTE_NAMESPACE, self::SESSION_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'startSession'], 'permission_callback' => [$this, 'admitSession'], 'args' => ['nonce' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field']]]]);
+        register_rest_route(RestApi::ROUTE_NAMESPACE, self::SESSION_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'startSession'], 'permission_callback' => [$this, 'admitSession'], 'args' => [
+            'nonce' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field'],
+            // Not required: WordPress checks arguments before the nonce, and a request without one must meet the nonce first.
+            'surface' => ['type' => 'string', 'required' => \false, 'enum' => self::SURFACES],
+        ]]]);
         register_rest_route(RestApi::ROUTE_NAMESPACE, self::ORDER_ROUTE, [['methods' => 'POST', 'callback' => [$this, 'startOrder'], 'permission_callback' => [$this, 'admitOrder'], 'args' => ['nonce' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field'], 'token' => ['type' => 'string', 'required' => \false, 'sanitize_callback' => 'sanitize_text_field']]]]);
     }
     private function registerShippingRoute(): void
@@ -89,14 +96,19 @@ class ExpressRoutes
      */
     public function admitSession(WP_REST_Request $request)
     {
-        return $this->admit(Admission::EXPRESS_SESSION, $request, 'express.session.refused', ['surface' => self::SURFACE]);
+        $surface = $this->surface($request);
+        return $this->admit(Admission::EXPRESS_SESSION, $request, 'express.session.refused', $surface === null ? [] : ['surface' => $surface]);
     }
     /**
      * @return WP_REST_Response|WP_Error
      */
     public function startSession(WP_REST_Request $request)
     {
-        $result = FormPaymentMethod::setAsideDuring(fn(): ExpressSessionResult => $this->startSession->start(self::SURFACE, $this->callerAddress()));
+        $surface = $this->surface($request);
+        if ($surface === null) {
+            return new WP_Error('rest_missing_callback_param', self::messageFor('mollie_unavailable'), ['status' => 400, 'params' => ['surface']]);
+        }
+        $result = FormPaymentMethod::setAsideDuring(fn(): ExpressSessionResult => $this->startSession->start($surface, $this->callerAddress()));
         if (!$result->isStarted()) {
             return new WP_Error($result->code(), self::messageFor($result->code()), ['status' => $result->httpStatus()]);
         }
@@ -140,6 +152,14 @@ class ExpressRoutes
         // Anyone can cause this: info, not a warning.
         $this->log->info($event, $fields + ['reason' => $decision->code()]);
         return new WP_Error('mollie_express_forbidden', self::messageFor('mollie_express_forbidden'), ['status' => $decision->httpStatus()]);
+    }
+    /**
+     * The page the shopper started from, as WordPress checked it against the route's list.
+     */
+    private function surface(WP_REST_Request $request): ?string
+    {
+        $surface = $request->get_param('surface');
+        return is_string($surface) && in_array($surface, self::SURFACES, \true) ? $surface : null;
     }
     private function admission(string $entryPoint, WP_REST_Request $request): Admit|Refuse
     {

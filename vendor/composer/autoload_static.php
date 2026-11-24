@@ -300,6 +300,7 @@ class ComposerStaticInit2daee74d2c40f86ce6a079000f9a8708
         'Mollie\\Symfony\\Polyfill\\Mbstring\\Mbstring' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/Mbstring.php',
         'Mollie\\WooCommerce\\Activation\\ActivationModule' => __DIR__ . '/../..' . '/src/Activation/ActivationModule.php',
         'Mollie\\WooCommerce\\Activation\\ConstraintsChecker' => __DIR__ . '/../..' . '/src/Activation/ConstraintsChecker.php',
+        'Mollie\\WooCommerce\\Activation\\Migrations\\GooglePayButtonSettingsMigrator' => __DIR__ . '/../..' . '/src/Activation/Migrations/GooglePayButtonSettingsMigrator.php',
         'Mollie\\WooCommerce\\Activation\\Migrations\\MigratorInterface' => __DIR__ . '/../..' . '/src/Activation/Migrations/MigratorInterface.php',
         'Mollie\\WooCommerce\\Activation\\Migrations\\PaymentMethodSettingsMigrator' => __DIR__ . '/../..' . '/src/Activation/Migrations/PaymentMethodSettingsMigrator.php',
         'Mollie\\WooCommerce\\Activation\\Migrations\\VoucherTermMetaTranslationMigrator' => __DIR__ . '/../..' . '/src/Activation/Migrations/VoucherTermMetaTranslationMigrator.php',

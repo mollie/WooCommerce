@@ -47,9 +47,9 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         add_action('wp_enqueue_scripts', static function () use ($container, &$owned): void {
             $assets = $container->get(ExpressAssets::class);
             assert($assets instanceof ExpressAssets);
-            $assets->enqueue(static function () use ($container, &$owned): bool {
-                $owned[ExpressAssets::SURFACE] ??= self::owns($container, ExpressAssets::SURFACE);
-                return $owned[ExpressAssets::SURFACE];
+            $assets->enqueue(static function (string $surface) use ($container, &$owned): bool {
+                $owned[$surface] ??= self::owns($container, $surface);
+                return $owned[$surface];
             });
         });
         add_action('woocommerce_api_' . ExpressUrls::RETURN_API, static function () use ($container): void {
@@ -122,10 +122,17 @@ class ExpressComponentModule implements ServiceModule, ExecutableModule
         return sprintf('<p><strong>%s</strong></p><p>%s</p><p><a href="%s">%s</a></p>', $title, $body, esc_url(admin_url('admin.php?page=wc-settings&tab=tax')), esc_html__('Open the tax settings', 'mollie-payments-for-woocommerce'));
     }
     /**
-     * A cart WooCommerce has not loaded is not owned.
+     * A cart WooCommerce has not loaded is not owned; of the two carts, only the block cart is a surface.
      */
     private static function owns(ContainerInterface $container, string $surface): bool
     {
+        if ($surface === 'cart') {
+            $assets = $container->get(ExpressAssets::class);
+            assert($assets instanceof ExpressAssets);
+            if (!$assets->isBlockCart()) {
+                return \false;
+            }
+        }
         $facts = $container->get(ExpressFactsBuilder::class);
         assert($facts instanceof ExpressFactsBuilder);
         $carts = $container->get(CartFactsBuilder::class);

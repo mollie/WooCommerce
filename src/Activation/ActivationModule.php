@@ -8,6 +8,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Mollie\Inpsyde\Modularity\Module\ExecutableModule;
 use Mollie\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use Mollie\Inpsyde\Modularity\Module\ServiceModule;
+use Mollie\WooCommerce\Activation\Migrations\GooglePayButtonSettingsMigrator;
 use Mollie\WooCommerce\Activation\Migrations\MigratorInterface;
 use Mollie\WooCommerce\Activation\Migrations\PaymentMethodSettingsMigrator;
 use Mollie\WooCommerce\Activation\Migrations\VoucherTermMetaTranslationMigrator;
@@ -28,7 +29,7 @@ class ActivationModule implements ExecutableModule, ServiceModule
     public function services(): array
     {
         return ['activation.migrators' => static function (): array {
-            return [new PaymentMethodSettingsMigrator(), new VoucherTermMetaTranslationMigrator()];
+            return [new PaymentMethodSettingsMigrator(), new VoucherTermMetaTranslationMigrator(), new GooglePayButtonSettingsMigrator()];
         }];
     }
     /**

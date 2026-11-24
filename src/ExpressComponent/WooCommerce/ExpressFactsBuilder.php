@@ -14,7 +14,7 @@ class ExpressFactsBuilder
 {
     private const GATEWAY_PREFIX = 'mollie_wc_gateway_';
     /**
-     * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
+     * @param array{wallets: array<string, array{gatewayId: string, mollieMethod: string, paidAs?: string, paidWallet?: string, checkoutSetting: string, cartSetting: string, addressFrom: string}>, surfaces: array<int, string>, allowedModes: array<int, string>} $config
      * @param array<string, mixed> $paymentMethods Keyed by Mollie method id.
      * @param callable(): array<int, string> $activeMollieMethods Cached method ids active on the profile.
      */
@@ -27,8 +27,8 @@ class ExpressFactsBuilder
     }
     public function shopFacts(): ShopFacts
     {
-        [$registered, $enabled, $expressOnCheckout, $surcharged] = $this->merchantSettings();
-        return new ShopFacts(mode: $this->mode(), isHttps: wc_site_is_https(), registeredGatewayIds: $registered, enabledGatewayIds: $enabled, activeMollieMethods: $this->activeMollieMethods(), expressCheckoutGatewayIds: $expressOnCheckout, surchargedGatewayIds: $surcharged);
+        [$registered, $enabled, $expressOnCheckout, $surcharged, $expressOnCart] = $this->merchantSettings();
+        return new ShopFacts(mode: $this->mode(), isHttps: wc_site_is_https(), registeredGatewayIds: $registered, enabledGatewayIds: $enabled, activeMollieMethods: $this->activeMollieMethods(), expressCheckoutGatewayIds: $expressOnCheckout, surchargedGatewayIds: $surcharged, expressCartGatewayIds: $expressOnCart);
     }
     /**
      * @return 'test'|'live' The mode whose key asks Mollie.
@@ -47,13 +47,14 @@ class ExpressFactsBuilder
     /** Options only, no Mollie call: cheap enough to run on every request. */
     public function anyWalletTurnedOn(): bool
     {
-        [, $enabled, $expressOnCheckout, $surcharged] = $this->merchantSettings();
-        return array_diff(array_intersect($enabled, $expressOnCheckout), $surcharged) !== [];
+        [, $enabled, $expressOnCheckout, $surcharged, $expressOnCart] = $this->merchantSettings();
+        $expressOnAnyPage = array_merge($expressOnCheckout, $expressOnCart);
+        return array_diff(array_intersect($enabled, $expressOnAnyPage), $surcharged) !== [];
     }
     /**
-     * Registered, enabled, express-on-checkout and surcharged gateway ids.
+     * Registered, enabled, express-on-checkout, surcharged and express-on-cart gateway ids.
      *
-     * @return array{0: list<string>, 1: list<string>, 2: list<string>, 3: list<string>}
+     * @return array{0: list<string>, 1: list<string>, 2: list<string>, 3: list<string>, 4: list<string>}
      */
     private function merchantSettings(): array
     {
@@ -63,6 +64,7 @@ class ExpressFactsBuilder
         }
         $enabled = [];
         $expressOnCheckout = [];
+        $expressOnCart = [];
         $surcharged = [];
         foreach ($this->config['wallets'] as $row) {
             $gatewayId = $row['gatewayId'];
@@ -76,12 +78,15 @@ class ExpressFactsBuilder
             if (mollieWooCommerceIsGatewayEnabled($settingsOption, $row['checkoutSetting'])) {
                 $expressOnCheckout[] = $gatewayId;
             }
+            if (mollieWooCommerceIsGatewayEnabled($settingsOption, $row['cartSetting'])) {
+                $expressOnCart[] = $gatewayId;
+            }
             $surcharge = ((array) get_option($settingsOption, []))['payment_surcharge'] ?? '';
             if ($surcharge !== '' && $surcharge !== Surcharge::NO_FEE) {
                 $surcharged[] = $gatewayId;
             }
         }
-        return [$registered, $enabled, $expressOnCheckout, $surcharged];
+        return [$registered, $enabled, $expressOnCheckout, $surcharged, $expressOnCart];
     }
     /**
      * @return list<string>

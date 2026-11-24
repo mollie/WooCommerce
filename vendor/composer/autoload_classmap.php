@@ -228,6 +228,7 @@ return array(
     'Mollie\\Symfony\\Polyfill\\Mbstring\\Mbstring' => $vendorDir . '/symfony/polyfill-mbstring/Mbstring.php',
     'Mollie\\WooCommerce\\Activation\\ActivationModule' => $baseDir . '/src/Activation/ActivationModule.php',
     'Mollie\\WooCommerce\\Activation\\ConstraintsChecker' => $baseDir . '/src/Activation/ConstraintsChecker.php',
+    'Mollie\\WooCommerce\\Activation\\Migrations\\GooglePayButtonSettingsMigrator' => $baseDir . '/src/Activation/Migrations/GooglePayButtonSettingsMigrator.php',
     'Mollie\\WooCommerce\\Activation\\Migrations\\MigratorInterface' => $baseDir . '/src/Activation/Migrations/MigratorInterface.php',
     'Mollie\\WooCommerce\\Activation\\Migrations\\PaymentMethodSettingsMigrator' => $baseDir . '/src/Activation/Migrations/PaymentMethodSettingsMigrator.php',
     'Mollie\\WooCommerce\\Activation\\Migrations\\VoucherTermMetaTranslationMigrator' => $baseDir . '/src/Activation/Migrations/VoucherTermMetaTranslationMigrator.php',
